@@ -1,0 +1,72 @@
+/* Footer Section */
+.footer {
+  background: linear-gradient(
+    180deg,
+    #0056b3,
+    #007bff
+  ); /* Gradient background to match navbar */
+  color: #ffffff; /* White text for high contrast */
+  text-align: center;
+  padding: 2rem 1rem; /* Consistent padding */
+  font-size: 1rem; /* Consistent font size */
+}
+
+.footer .footer-content {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  padding: 1rem 0; /* Consistent padding */
+}
+
+.footer .footer-section {
+  margin: 1rem;
+  flex: 1;
+  min-width: 200px;
+}
+
+.footer .footer-section h2,
+.footer .footer-section h3 {
+  color: #ffffff; /* White for headings */
+  margin-bottom: 0.5rem; /* Consistent margin */
+}
+
+.footer .footer-section p,
+.footer .footer-section li {
+  color: #e0e0e0; /* Light grey for text to match theme */
+  line-height: 1.6;
+}
+
+.footer .footer-section ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer .footer-section a {
+  color: #e0e0e0; /* Light grey links */
+  text-decoration: none;
+  transition:
+    color 0.3s,
+    background-color 0.3s; /* Smooth transitions */
+}
+
+.footer .footer-section a:hover,
+.footer .footer-section a:focus {
+  color: #ffffff; /* White on hover for contrast */
+  background-color: rgba(255, 255, 255, 0.1); /* Subtle hover background */
+  text-decoration: underline; /* Underline for emphasis */
+}
+
+.footer .footer-bottom {
+  text-align: center;
+  font-size: 0.875rem; /* Slightly smaller font size */
+  color: #cccccc; /* Light grey for less emphasis */
+  padding-top: 1rem; /* Consistent padding */
+}
+
+@media (max-width: 768px) {
+  .footer .footer-content {
+    flex-direction: column;
+    align-items: center;
+  }
+}

@@ -1,0 +1,110 @@
+/* src/dashboard.css */
+
+.App {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  grid-gap: 20px;
+  padding: 20px;
+  width: 100%;
+  max-width: 2000px;
+  background-color: #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  height: 100%;
+}
+
+.input-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+  align-items: center;
+}
+
+select,
+input {
+  margin: 10px 0;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: border-color 0.3s ease;
+  width: 100%;
+  max-width: 300px;
+}
+
+select:focus,
+input:focus {
+  border-color: #007bff;
+}
+
+.table-container {
+  overflow-x: auto;
+  overflow-y: auto;
+  height: calc(100vh - 160px); /* Adjust this value as needed */
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+th {
+  background-color: #007bff;
+  color: white;
+}
+
+tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+tr:hover {
+  background-color: #ddd;
+  cursor: pointer;
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  text-align: left;
+}
+
+@media (max-width: 768px) {
+  .App {
+    padding: 10px;
+    grid-gap: 10px;
+  }
+
+  th,
+  td {
+    padding: 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  th,
+  td {
+    padding: 5px;
+  }
+}

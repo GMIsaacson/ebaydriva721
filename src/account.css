@@ -1,0 +1,68 @@
+/* src/account.css */
+
+body {
+  font-family: "Arial", sans-serif;
+  background-color: #f7f9fc;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  overflow: auto;
+}
+
+.account-page {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  padding: 20px;
+  width: 90%;
+  max-width: 1200px;
+  background: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background: white;
+  border-bottom: 2px solid #ccc;
+}
+
+.activity-log {
+  margin-top: 20px;
+}
+
+.activity-log h2 {
+  margin-bottom: 10px;
+}
+
+.activity-log ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.activity-log li {
+  background: #f9f9f9;
+  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.logout-button {
+  padding: 10px 20px;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.logout-button:hover {
+  background-color: #c82333;
+}

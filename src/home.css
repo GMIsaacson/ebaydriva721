@@ -1,0 +1,452 @@
+/* General Styles */
+body {
+  font-family: "Open Sans", sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  color: #333;
+  background-color: #f8f9fa; /* Light background for the body */
+}
+
+/* Header Section */
+.header {
+  background-color: #241056; /* Consistent dark blue for header background */
+  padding: 20px 0;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.nav-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.navbar-brand img {
+  height: 40px;
+}
+
+.navbar-nav {
+  list-style: none;
+  display: flex;
+  gap: 20px;
+}
+
+.nav-item .nav-link {
+  color: #c3e0e5; /* Light blue for links */
+  text-decoration: none;
+  padding: 10px 15px;
+  transition:
+    background-color 0.3s,
+    color 0.3s;
+}
+
+.nav-item .nav-link:hover,
+.nav-item .nav-link:focus {
+  background-color: rgba(
+    255,
+    255,
+    255,
+    0.1
+  ); /* Light background on hover/focus */
+  color: #ffffff; /* White text on hover/focus */
+}
+
+.signup-btn {
+  background-color: #027ef1; /* Primary blue for signup button */
+  color: #ffffff;
+  border-radius: 5px;
+  padding: 10px 20px;
+  transition: background-color 0.3s;
+}
+
+.signup-btn:hover,
+.signup-btn:focus {
+  background-color: #025bb5; /* Darker blue on hover/focus */
+}
+
+/* Hero Section */
+.hero-section {
+  background-color: #ffffff; /* Light background for consistency */
+  color: #241056; /* Darker text color for contrast */
+  text-align: center;
+  padding: 100px 20px; /* Increased padding for a more impactful hero section */
+  background-image: url("hero-image-url.jpg");
+  background-size: cover;
+  background-position: center;
+}
+
+.hero-content h1 {
+  font-size: 3rem; /* Adjusted font size for better scalability */
+  margin-bottom: 20px;
+  color: #241056; /* Darker text color for consistency */
+}
+
+.hero-content h2 {
+  font-size: 1.5rem;
+  margin-bottom: 40px;
+  color: #333; /* Darker text for readability */
+}
+
+.button-group {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.cta-btn,
+.play-video-btn {
+  padding: 15px 30px;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem; /* Adjusted for consistency */
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.cta-btn {
+  background-color: #7852e0; /* Primary color for call-to-action */
+  color: #fff;
+}
+
+.cta-btn:hover {
+  background-color: #5a3dbd; /* Darker shade for hover effect */
+}
+
+.play-video-btn {
+  background-color: #6c757d; /* Secondary color for play video button */
+  color: #fff;
+}
+
+.play-video-btn:hover {
+  background-color: #5a6268; /* Darker shade for hover effect */
+}
+
+/* Features Section */
+.features-section {
+  padding: 60px 20px;
+  background-color: #ffffff; /* Light background for features */
+  text-align: center;
+}
+
+.features-section h2 {
+  font-size: 2.25rem;
+  margin-bottom: 2.5rem;
+  color: #241056; /* Dark blue for section headings */
+}
+
+.features-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+}
+
+.feature-item {
+  background-color: #f8f9fa; /* Light grey background */
+  padding: 20px;
+  border-radius: 10px;
+  width: 300px;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.feature-item img {
+  height: 60px;
+  margin-bottom: 20px;
+}
+
+.feature-item h3 {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+  color: #241056; /* Dark blue for headings */
+}
+
+.feature-item p {
+  font-size: 1rem;
+  color: #333;
+}
+
+/* Testimonials Section */
+.testimonials-section {
+  padding: 60px 20px;
+  background-color: #ffffff; /* Lighter background for consistency */
+  color: #333; /* Darker text for readability */
+  text-align: center;
+}
+
+.testimonials-section h2 {
+  font-size: 2.25rem;
+  margin-bottom: 40px;
+  color: #241056; /* Matching heading color with the rest of the app */
+}
+
+.testimonials-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+}
+
+.testimonial-item {
+  background-color: #f8f9fa; /* Light background for consistency */
+  padding: 20px;
+  border-radius: 10px;
+  width: 300px;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+}
+
+.testimonial-item p {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #333; /* Dark text for readability */
+}
+
+.testimonial-item h3 {
+  font-size: 1.25rem;
+  margin-top: 10px;
+  color: #241056; /* Matching heading color with the rest of the app */
+}
+
+/* Demo Section */
+.demo-section {
+  padding: 60px 20px;
+  background-color: #ffffff; /* Light background for demo section */
+  text-align: center;
+}
+
+.demo-section h2 {
+  font-size: 2.25rem;
+  margin-bottom: 2.5rem;
+  color: #241056; /* Dark blue for section headings */
+}
+
+.video-wrapper {
+  position: relative;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.video-thumbnail {
+  height: 0;
+  padding-bottom: 56.25%;
+  background-size: cover;
+  background-position: center;
+  border-radius: 10px;
+}
+
+.play-video-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(0, 0, 0, 0.6);
+  color: #ffffff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 50px;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.play-video-btn:hover {
+  background-color: rgba(0, 0, 0, 0.8); /* Darker overlay on hover */
+}
+
+/* Pricing Section */
+.pricing-section {
+  padding: 60px 20px;
+  background-color: #ffffff; /* Light background for pricing section */
+  text-align: center;
+}
+
+.pricing-section h2 {
+  font-size: 2.25rem;
+  margin-bottom: 2.5rem;
+  color: #241056; /* Dark blue for section headings */
+}
+
+.pricing-table {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+}
+
+.pricing-tier {
+  background-color: #f8f9fa; /* Light background for pricing tiers */
+  padding: 20px;
+  border-radius: 10px;
+  width: 300px;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.pricing-tier h3 {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+  color: #241056; /* Dark blue for tier headings */
+}
+
+.pricing-tier p {
+  font-size: 1.25rem;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.pricing-tier ul {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 20px;
+}
+
+.pricing-tier ul li {
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.pricing-tier .cta-btn {
+  background-color: #027ef1; /* Primary blue for CTA button */
+  color: #ffffff;
+  padding: 10px 20px;
+  border-radius: 5px;
+  transition: background-color 0.3s;
+}
+
+.pricing-tier .cta-btn:hover {
+  background-color: #025bb5; /* Darker blue on hover */
+}
+
+/* Footer Section */
+.footer {
+  background-color: #241056; /* Consistent dark blue for footer */
+  color: #ffffff; /* White text */
+  text-align: center;
+  padding: 20px 0;
+  font-size: 0.875rem; /* Smaller font size */
+}
+
+.footer .footer-content {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  padding: 20px;
+}
+
+.footer .footer-section {
+  margin: 10px;
+  flex: 1;
+  min-width: 150px;
+}
+
+.footer .footer-section h2,
+.footer .footer-section h3 {
+  color: #c3e0e5; /* Light blue for headings */
+  margin-bottom: 10px;
+}
+
+.footer .footer-section p,
+.footer .footer-section li {
+  color: #cccccc; /* Light grey for text */
+  line-height: 1.6;
+}
+
+.footer .footer-section ul {
+  list-style: none;
+  padding: 0;
+}
+
+.footer .footer-section a {
+  color: #c3e0e5; /* Light blue for links */
+  text-decoration: none;
+  transition:
+    color 0.3s,
+    background-color 0.3s;
+}
+
+.footer .footer-section a:hover,
+.footer .footer-section a:focus {
+  color: #ffffff; /* White text on hover */
+  background-color: rgba(255, 255, 255, 0.1); /* Subtle hover background */
+  text-decoration: underline;
+}
+
+.footer .footer-bottom {
+  text-align: center;
+  font-size: 0.75rem; /* Smaller font size */
+  color: #cccccc; /* Light grey */
+  padding-top: 10px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .nav-container {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .navbar-nav {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .footer .footer-content {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .hero-content h1 {
+    font-size: 2.5rem; /* Responsive font size */
+  }
+
+  .hero-content h2 {
+    font-size: 1.25rem; /* Responsive font size */
+  }
+}
+
+/* Video Modal */
+.video-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #ffffff;
+  width: 80%;
+  height: 80%;
+  padding: 0;
+  overflow: hidden;
+  z-index: 1000;
+  border-radius: 10px; /* Added border-radius for rounded corners */
+}
+
+.video-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.75);
+  z-index: 999;
+}
+
+.modal-content {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.close-modal-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #ffffff;
+  z-index: 1001;
+}

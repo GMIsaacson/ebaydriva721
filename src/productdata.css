@@ -1,0 +1,160 @@
+/* General styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1.6;
+  background-color: #f4f4f4; /* Light background for better contrast */
+  color: #333; /* Dark text for readability */
+}
+
+.header-info {
+  text-align: center;
+  padding: 1rem;
+  background-color: #241056; /* Dark blue background to match homepage */
+  color: #ffffff; /* White text for contrast */
+}
+
+.search-filter-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+  background-color: #ffffff; /* White background for input area */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  border-radius: 8px; /* Rounded corners */
+  margin: 0 auto;
+  max-width: 400px;
+}
+
+.search-input,
+select,
+button {
+  padding: 0.75rem; /* Slightly larger padding for better touch targets */
+  margin: 0.5rem 0;
+  font-size: 1rem;
+  width: 100%;
+  max-width: 400px;
+  border-radius: 5px;
+  border: 1px solid #ddd; /* Light border */
+}
+
+button {
+  background-color: #241056; /* Primary blue for button */
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+}
+
+button:hover {
+  background-color: #37015e; /* Darker blue for hover */
+}
+
+select {
+  background-color: #ffffff; /* White background for select */
+  color: #333; /* Dark text for readability */
+}
+
+.search-input {
+  background-color: #ffffff;
+  color: #333;
+}
+
+/* Product Table Styles */
+.product-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  background-color: #ffffff; /* White background for table */
+  border-radius: 8px; /* Rounded corners */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+}
+
+.product-table th,
+.product-table td {
+  border: 1px solid #ddd;
+  padding: 0.75rem; /* Increased padding for better readability */
+  text-align: left;
+}
+
+.product-table th {
+  background-color: #f4f4f4; /* Lighter background for header */
+  cursor: pointer;
+  color: #333;
+}
+
+.product-table th:hover {
+  background-color: #e0e0e0;
+}
+
+.product-table td {
+  color: #333;
+}
+
+/* Responsive styles for smaller screens */
+@media (max-width: 768px) {
+  .search-filter-container {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .search-input,
+  select,
+  button {
+    max-width: 100%;
+  }
+
+  .product-table {
+    display: none; /* Hide table for small screens */
+  }
+
+  .product-cards-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .product-card {
+    border: 1px solid #ddd;
+    padding: 1rem;
+    margin: 0.5rem 0;
+    border-radius: 8px; /* Rounded corners */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    background-color: #ffffff; /* White background for cards */
+    text-align: center;
+  }
+
+  .product-card h3 {
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .product-card p {
+    font-size: 1rem;
+    margin: 0.25rem 0;
+  }
+
+  .view-on-ebay-btn,
+  .view-supplier-info-btn {
+    display: block;
+    margin: 0.5rem auto;
+    width: 90%;
+    background-color: #027ef1; /* Primary blue for buttons */
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+    padding: 0.75rem;
+    cursor: pointer;
+    text-align: center;
+  }
+
+  .view-on-ebay-btn:hover,
+  .view-supplier-info-btn:hover {
+    background-color: #025bb5; /* Darker blue for hover */
+  }
+}

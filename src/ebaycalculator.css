@@ -1,0 +1,66 @@
+.profit-calculator {
+  font-family: "Arial", sans-serif;
+  background-color: #e9ecef; /* Light neutral background */
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-wrap: wrap; /* Allows items to wrap in smaller screens */
+  justify-content: center; /* Centers items horizontally */
+  align-items: center; /* Aligns items vertically */
+  gap: 10px; /* Space between items */
+  max-width: 600px; /* Restricts maximum width to avoid crowding */
+  margin: 20px auto; /* Centers calculator and provides vertical spacing */
+}
+
+.profit-calculator input[type="number"],
+.profit-calculator select {
+  width: auto; /* Auto-width based on content, no longer flex-grow */
+  padding: 8px;
+  margin: 0 5px; /* Smaller margins to reduce horizontal space usage */
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.profit-calculator button {
+  background-color: #28a745; /* Bright green for the calculate button */
+  color: white;
+  border: none;
+  padding: 6px 12px; /* Slightly smaller padding */
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 0.9rem; /* Slightly smaller font size for compact design */
+}
+
+.profit-calculator button:hover {
+  background-color: #218838; /* Darker green on hover */
+}
+
+.profit-result {
+  background-color: #fff;
+  color: #333;
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 1rem; /* Clear and readable font size */
+  width: 100%; /* Takes full width to separate from inputs */
+  text-align: center; /* Centers text for better readability */
+}
+
+@media (max-width: 600px) {
+  .profit-calculator {
+    flex-direction: column; /* Stacks elements vertically on small screens */
+    padding: 10px;
+    gap: 5px; /* Reduces gap in smaller screens */
+  }
+
+  .profit-calculator input[type="number"],
+  .profit-calculator select,
+  .profit-calculator button {
+    width: 100%; /* Full width for mobile for easier interaction */
+  }
+
+  .profit-result {
+    order: -1; /* Profit result appears above inputs on mobile */
+  }
+}
