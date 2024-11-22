@@ -19,13 +19,19 @@ const ProductData = () => {
   const [itemsPerPage, setItemsPerPage] = useState(10); // Adjust as needed
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalUrl, setModalUrl] = useState("");
-
-  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [showCalculator, setShowCalculator] = useState(false);
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
+  const [minProfit, setMinProfit] = useState("");
+  const [maxProfit, setMaxProfit] = useState("");
+  const [minSold, setMinSold] = useState("");
+  const [maxSold, setMaxSold] = useState("");
+
   const toggleCalculator = () => {
     setShowCalculator(!showCalculator);
   };
+
   const { currentUser, logout } = useAuth();
 
   const db = getFirestore(app);
@@ -46,13 +52,30 @@ const ProductData = () => {
         selectedCategory,
         sortField,
         sortDirection,
+        minPrice,
+        maxPrice,
+        minProfit,
+        maxProfit,
+        minSold,
+        maxSold
       );
     };
 
     fetchProducts();
-  }, [selectedCategory, sortField, sortDirection]);
+  }, [selectedCategory, sortField, sortDirection, minPrice, maxPrice, minProfit, maxProfit, minSold, maxSold]);
 
-  const sortAndFilterProducts = (products, category, sortField, direction) => {
+  const sortAndFilterProducts = (
+    products,
+    category,
+    sortField,
+    direction,
+    minPrice,
+    maxPrice,
+    minProfit,
+    maxProfit,
+    minSold,
+    maxSold
+  ) => {
     let sortedProducts = [...products];
 
     if (sortField && direction) {
@@ -67,8 +90,28 @@ const ProductData = () => {
 
     if (category) {
       sortedProducts = sortedProducts.filter(
-        (product) => product.Category?.toLowerCase() === category,
+        (product) => product.Category?.toLowerCase() === category
       );
+    }
+
+    // Filter by Price, Profit, and Sold range if set
+    if (minPrice) {
+      sortedProducts = sortedProducts.filter((product) => product.Price >= minPrice);
+    }
+    if (maxPrice) {
+      sortedProducts = sortedProducts.filter((product) => product.Price <= maxPrice);
+    }
+    if (minProfit) {
+      sortedProducts = sortedProducts.filter((product) => product.Profit >= minProfit);
+    }
+    if (maxProfit) {
+      sortedProducts = sortedProducts.filter((product) => product.Profit <= maxProfit);
+    }
+    if (minSold) {
+      sortedProducts = sortedProducts.filter((product) => product.Sold >= minSold);
+    }
+    if (maxSold) {
+      sortedProducts = sortedProducts.filter((product) => product.Sold <= maxSold);
     }
 
     // Pagination logic
@@ -89,12 +132,18 @@ const ProductData = () => {
         selectedCategory,
         sortField,
         sortDirection,
+        minPrice,
+        maxPrice,
+        minProfit,
+        maxProfit,
+        minSold,
+        maxSold
       );
     } else {
       const lowercasedFilter = search.toLowerCase();
       const filteredData = products.filter((item) => {
         return Object.keys(item).some((key) =>
-          item[key].toString().toLowerCase().includes(lowercasedFilter),
+          item[key].toString().toLowerCase().includes(lowercasedFilter)
         );
       });
       setFilteredProducts(filteredData);
@@ -113,7 +162,7 @@ const ProductData = () => {
   const handleCategoryChange = (e) => {
     const category = e.target.value.trim().toLowerCase();
     setSelectedCategory(category);
-    sortAndFilterProducts(products, category, sortField, sortDirection);
+    sortAndFilterProducts(products, category, sortField, sortDirection, minPrice, maxPrice, minProfit, maxProfit, minSold, maxSold);
   };
 
   const handleSortChange = (field) => {
@@ -121,23 +170,20 @@ const ProductData = () => {
     setSortDirection(sortDirection === "asc" ? "desc" : "asc"); // Toggle sort direction
   };
 
-  const handleSignUp = () => {
-    console.log("Redirecting to sign up...");
-    navigate("/signup"); // Use the navigate function here
-  };
-
-  const handleOpenModal = (url) => {
-    setModalUrl(url);
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-  };
-
   const handlePageChange = (page) => {
     setCurrentPage(page);
-    sortAndFilterProducts(products, selectedCategory, sortField, sortDirection);
+    sortAndFilterProducts(products, selectedCategory, sortField, sortDirection, minPrice, maxPrice, minProfit, maxProfit, minSold, maxSold);
+  };
+
+  const handleResetFilters = () => {
+    setMinPrice("");
+    setMaxPrice("");
+    setMinProfit("");
+    setMaxProfit("");
+    setMinSold("");
+    setMaxSold("");
+    setSelectedCategory("");
+    sortAndFilterProducts(products, "", sortField, sortDirection, "", "", "", "", "", "");
   };
 
   const renderTableOrCards = () => {
@@ -201,58 +247,16 @@ const ProductData = () => {
             <tbody>
               {filteredProducts.map((product) => (
                 <tr key={product.id}>
+                  <td>{product.Title}</td>
+                  <td>{product.Sold}</td>
+                  <td>{product.Dimensions}</td>
+                  <td>${product.Price}</td>
+                  <td>${product.Profit}</td>
                   <td>
-                    {currentUser ? (
-                      product.Title
-                    ) : (
-                      <button onClick={handleSignUp}>Sign Up to View</button>
-                    )}
+                    <button onClick={() => window.open(product.ProductOnEbay, "_blank")}>View on eBay</button>
                   </td>
                   <td>
-                    {currentUser ? (
-                      product.Sold
-                    ) : (
-                      <div className="blur-effect">Sign Up to View</div>
-                    )}
-                  </td>
-                  <td>
-                    {currentUser ? (
-                      product.Dimensions
-                    ) : (
-                      <div className="blur-effect">Sign Up to View</div>
-                    )}
-                  </td>
-                  <td>
-                    {currentUser ? (
-                      `$${product.Price}`
-                    ) : (
-                      <div className="blur-effect">Sign Up to View</div>
-                    )}
-                  </td>
-                  <td>$${product.Profit}</td>
-                  <td>
-                    {currentUser ? (
-                      <button
-                        onClick={() =>
-                          window.open(product.ProductOnEbay, "_blank")
-                        }
-                      >
-                        View on eBay
-                      </button>
-                    ) : (
-                      <button onClick={handleSignUp}>Sign Up to View</button>
-                    )}
-                  </td>
-                  <td>
-                    {currentUser ? (
-                      <button
-                        onClick={() => handleOpenModal(product.SupplierInfo)}
-                      >
-                        View Supplier Info
-                      </button>
-                    ) : (
-                      <button onClick={handleSignUp}>Sign Up to View</button>
-                    )}
+                    <button onClick={() => window.open(product.Source, "_blank")}>View on Alibaba</button>
                   </td>
                 </tr>
               ))}
@@ -270,14 +274,8 @@ const ProductData = () => {
               <p>Dimensions: {product.Dimensions}</p>
               <p>Price: ${product.Price}</p>
               <p>Profit: ${product.Profit}</p>
-              <button
-                onClick={() => window.open(product.ProductOnEbay, "_blank")}
-              >
-                View on eBay
-              </button>
-              <button onClick={() => handleOpenModal(product.SupplierInfo)}>
-                View Supplier Info
-              </button>
+              <button onClick={() => window.open(product.ProductOnEbay, "_blank")}>View on eBay</button>
+              <button onClick={() => handleOpenModal(product.SupplierInfo)}>View Supplier Info</button>
             </div>
           ))}
         </div>
@@ -295,6 +293,73 @@ const ProductData = () => {
           placeholder="Search..."
         />
       </div>
+
+      {/* Filter Section */}
+      <div className="filter-container">
+        {/* Price Filter */}
+        <div className="filter">
+          <label>Min Price</label>
+          <input
+            type="number"
+            value={minPrice}
+            onChange={(e) => setMinPrice(e.target.value)}
+            placeholder="Min Price"
+          />
+        </div>
+        <div className="filter">
+          <label>Max Price</label>
+          <input
+            type="number"
+            value={maxPrice}
+            onChange={(e) => setMaxPrice(e.target.value)}
+            placeholder="Max Price"
+          />
+        </div>
+
+        {/* Profit Filter */}
+        <div className="filter">
+          <label>Min Profit</label>
+          <input
+            type="number"
+            value={minProfit}
+            onChange={(e) => setMinProfit(e.target.value)}
+            placeholder="Min Profit"
+          />
+        </div>
+        <div className="filter">
+          <label>Max Profit</label>
+          <input
+            type="number"
+            value={maxProfit}
+            onChange={(e) => setMaxProfit(e.target.value)}
+            placeholder="Max Profit"
+          />
+        </div>
+
+        {/* Sold Filter */}
+        <div className="filter">
+          <label>Min Sold</label>
+          <input
+            type="number"
+            value={minSold}
+            onChange={(e) => setMinSold(e.target.value)}
+            placeholder="Min Sold"
+          />
+        </div>
+        <div className="filter">
+          <label>Max Sold</label>
+          <input
+            type="number"
+            value={maxSold}
+            onChange={(e) => setMaxSold(e.target.value)}
+            placeholder="Max Sold"
+          />
+        </div>
+
+        {/* Reset Button */}
+        <button onClick={handleResetFilters}>Reset Filters</button>
+      </div>
+
       {renderTableOrCards()}
       <Pagination
         totalItems={products.length}
@@ -318,3 +383,6 @@ const ProductData = () => {
 };
 
 export default ProductData;
+
+
+

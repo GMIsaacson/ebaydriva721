@@ -12,6 +12,7 @@ import ResetPassword from "./resetpassword";
 import ProtectedRoute from "./protectedroute";
 import { AuthProvider } from "./AuthProvider";
 import VerifyEmail from "./verifyemail"; // Import the component
+import Calculators from "./resources";
 
 const App = () => {
   return (
@@ -77,6 +78,14 @@ const App = () => {
               element={
                 <ErrorBoundary>
                   <ProductData />
+                </ErrorBoundary>
+              }
+            />
+            <Route
+              path="/resources"
+              element={
+                <ErrorBoundary>
+                  <Calculators />
                 </ErrorBoundary>
               }
             />

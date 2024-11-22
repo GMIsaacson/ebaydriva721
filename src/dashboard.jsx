@@ -194,7 +194,7 @@ const Dashboard = () => {
     setPrice(product.Price);
     setProfit(product.Profit);
     setDimensions(product.Dimensions);
-    setImageUrl(product.ImageUrl);
+    //setImageUrl(product.ImageUrl);
   };
 
 
