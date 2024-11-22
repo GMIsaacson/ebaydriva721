@@ -1,5 +1,3 @@
-// src/Dashboard.js
-
 import React, { useState, useEffect } from "react";
 import {
   getFirestore,
@@ -9,13 +7,16 @@ import {
   doc,
   updateDoc,
   deleteDoc,
+  writeBatch,
 } from "firebase/firestore";
+import Papa from "papaparse"; // Import PapaParse for CSV/JSON parsing
 import app from "./firebase-config"; // Ensure this path is correct
 import "./dashboard.css";
 import { useAuth } from "./AuthProvider"; // Import useAuth hook
 import AccountPage from "./accountspage.jsx";
-import { categoryTree } from "./categoryData";
+import { categoryTree } from "./categoryData"; // Categories data
 
+// ListingTable component to display the list of products
 const ListingTable = ({ listings, onEditClick, onDeleteClick }) => (
   <div className="table-container">
     <table>
@@ -75,6 +76,7 @@ const ListingTable = ({ listings, onEditClick, onDeleteClick }) => (
   </div>
 );
 
+// RecursiveDropdown for category selection
 const RecursiveDropdown = ({ categories, onCategorySelect }) => {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [subCategories, setSubCategories] = useState(null);
@@ -108,6 +110,7 @@ const RecursiveDropdown = ({ categories, onCategorySelect }) => {
   );
 };
 
+// Main Dashboard component
 const Dashboard = () => {
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
@@ -120,11 +123,11 @@ const Dashboard = () => {
   const [imageUrl, setImageUrl] = useState("");
   const [products, setProducts] = useState([]);
   const [editingProduct, setEditingProduct] = useState(null);
-  const [selectedCategory, setSelectedCategory] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [file, setFile] = useState(null); // For bulk upload file
 
   const { currentUser, logout } = useAuth();
-
   const db = getFirestore(app);
 
   const handleLogout = async () => {
@@ -251,6 +254,64 @@ const Dashboard = () => {
     resetFormFields();
   };
 
+  const handleFileChange = (e) => {
+    setFile(e.target.files[0]);
+  };
+
+  const parseFile = async () => {
+    return new Promise((resolve, reject) => {
+      Papa.parse(file, {
+        header: true,
+        complete: (results) => resolve(results.data),
+        error: (error) => reject(error),
+      });
+    });
+  };
+
+  const handleBulkUpload = async () => {
+    if (!file) {
+      alert("Please upload a file first.");
+      return;
+    }
+
+    try {
+      const data = await parseFile();
+      const validProducts = data.filter(
+        (product) =>
+          product.title && product.sold && product.price && product.profit
+      );
+
+      if (validProducts.length === 0) {
+        alert("No valid products to upload.");
+        return;
+      }
+
+      const batch = writeBatch(db);
+      const productsRef = collection(db, "products");
+
+      validProducts.forEach((product) => {
+        const docRef = doc(productsRef);
+        batch.set(docRef, {
+          Title: product.title,
+          Sold: product.sold,
+          ProductOnEbay: product.productOnEbay,
+          Source: product.source,
+          Price: parseFloat(product.price),
+          Profit: parseFloat(product.profit),
+          Dimensions: product.dimensions,
+          ImageUrl: product.imageUrl,
+        });
+      });
+
+      await batch.commit();
+      setProducts((prev) => [...prev, ...validProducts]);
+      alert("Bulk upload successful!");
+    } catch (error) {
+      console.error("Error during bulk upload:", error);
+      alert("Bulk upload failed. Please try again.");
+    }
+  };
+
   useEffect(() => {
     const fetchProducts = async () => {
       const productsCollection = collection(db, "products");
@@ -270,7 +331,6 @@ const Dashboard = () => {
       <div className="addproduct-dashboard">
         <AccountPage />
         <h1>Add New Product</h1>
-
         <form onSubmit={handleSubmit}>
           <RecursiveDropdown
             categories={categoryTree}
@@ -285,46 +345,36 @@ const Dashboard = () => {
             required
           />
 
+          {/* Input fields */}
           <div className="input-group">
-            <div>
-              <input
-                type="text"
-                value={sold}
-                onChange={(e) => setSold(e.target.value)}
-                placeholder="Sold"
-                required
-              />
-            </div>
-          </div>
-
-          <div className="input-group">
-            <div>
-              <input
-                type="number"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                placeholder="Price"
-                required
-              />
-            </div>
-            <div>
-              <input
-                type="number"
-                value={profit}
-                onChange={(e) => setProfit(e.target.value)}
-                placeholder="Profit"
-                required
-              />
-            </div>
-            <div>
-              <input
-                type="text"
-                value={dimensions}
-                onChange={(e) => setDimensions(e.target.value)}
-                placeholder="Dimensions"
-                required
-              />
-            </div>
+            <input
+              type="text"
+              value={sold}
+              onChange={(e) => setSold(e.target.value)}
+              placeholder="Sold"
+              required
+            />
+            <input
+              type="number"
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+              placeholder="Price"
+              required
+            />
+            <input
+              type="number"
+              value={profit}
+              onChange={(e) => setProfit(e.target.value)}
+              placeholder="Profit"
+              required
+            />
+            <input
+              type="text"
+              value={dimensions}
+              onChange={(e) => setDimensions(e.target.value)}
+              placeholder="Dimensions"
+              required
+            />
           </div>
 
           <input
@@ -342,180 +392,30 @@ const Dashboard = () => {
             required
           />
 
-          <button
-            type="submit"
-            style={{
-              marginTop: "10px",
-              padding: "10px 20px",
-              backgroundColor: "#007bff",
-              color: "#fff",
-              border: "none",
-              borderRadius: "4px",
-              cursor: "pointer",
-              fontSize: "16px",
-            }}
-          >
-            Add Product
-          </button>
+          <button type="submit">Add Product</button>
         </form>
       </div>
 
       <div className="product-list">
-        <div
-          style={{
-            position: "fixed",
-            zIndex: 1,
-            left: 0,
-            top: 0,
-            width: "100%",
-            height: "100%",
-            overflow: "auto",
-            backgroundColor: "rgba(0, 0, 0, 0.4)",
-            display: isModalOpen ? "block" : "none",
-          }}
-        >
-          <div className="modal-content">
-            <span onClick={() => setIsModalOpen(false)} className="close">
-              &times;
-            </span>
-            <form onSubmit={handleSubmit}>
-              <div className="form-group">
-                <label htmlFor="title">Title:</label>
-                <input
-                  type="text"
-                  id="title"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Enter product title"
-                  required
-                  className="form-control"
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="category">Category:</label>
-                <input
-                  type="text"
-                  id="category"
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  placeholder="Enter product category"
-                  required
-                  className="form-control"
-                  disabled
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="sold">Sold:</label>
-                <input
-                  type="text"
-                  id="sold"
-                  value={sold}
-                  onChange={(e) => setSold(e.target.value)}
-                  placeholder="Units sold"
-                  required
-                  className="form-control"
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="dimensions">Dimensions:</label>
-                <input
-                  type="text"
-                  id="dimensions"
-                  value={dimensions}
-                  onChange={(e) => setDimensions(e.target.value)}
-                  placeholder="Dimensions (e.g., 10x20 cm)"
-                  required
-                  className="form-control"
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="price">Price:</label>
-                <input
-                  type="number"
-                  id="price"
-                  value={price}
-                  onChange={(e) => setPrice(e.target.value)}
-                  placeholder="Price in USD"
-                  required
-                  className="form-control"
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="profit">Profit:</label>
-                <input
-                  type="number"
-                  id="profit"
-                  value={profit}
-                  onChange={(e) => setProfit(e.target.value)}
-                  placeholder="Profit per unit"
-                  required
-                  className="form-control"
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="productOnEbay">eBay Link:</label>
-                <input
-                  type="text"
-                  id="productOnEbay"
-                  value={productOnEbay}
-                  onChange={(e) => setProductOnEbay(e.target.value)}
-                  placeholder="URL to eBay listing"
-                  required
-                  className="form-control"
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="source">Source:</label>
-                <input
-                  type="text"
-                  id="source"
-                  value={source}
-                  onChange={(e) => setSource(e.target.value)}
-                  placeholder="URL to product source"
-                  required
-                  className="form-control"
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="imageUrl">Image URL:</label>
-                <input
-                  type="text"
-                  id="imageUrl"
-                  value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                  placeholder="URL to product image"
-                  required
-                  className="form-control"
-                />
-              </div>
-
-              <button type="submit" className="btn btn-primary">
-                Save Changes
-              </button>
-            </form>
-          </div>
-        </div>
-
-        <h2>Products in {selectedCategory || "All Categories"}</h2>
+        <h2>Products</h2>
         <ListingTable
           listings={products.filter(
             (product) =>
-              !selectedCategory || product.Category === selectedCategory,
+              !selectedCategory || product.Category === selectedCategory
           )}
           onEditClick={handleEditClick}
           onDeleteClick={handleDelete}
         />
+      </div>
+
+      <div>
+        <h3>Bulk Upload</h3>
+        <input type="file" onChange={handleFileChange} accept=".csv, .json" />
+        <button onClick={handleBulkUpload}>Upload Products</button>
       </div>
     </>
   );
 };
 
 export default Dashboard;
+
