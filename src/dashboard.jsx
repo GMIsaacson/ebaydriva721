@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import {
   getFirestore,
@@ -17,11 +18,23 @@ import AccountPage from "./accountspage.jsx";
 import { categoryTree } from "./categoryData"; // Categories data
 
 // ListingTable component to display the list of products
-const ListingTable = ({ listings, onEditClick, onDeleteClick }) => (
+const ListingTable = ({
+  listings,
+  onEditClick,
+  onDeleteClick,
+  selectedIds,
+  onSelectChange,
+}) => (
   <div className="table-container">
     <table>
       <thead>
         <tr>
+          <th>
+            <input
+              type="checkbox"
+              onChange={(e) => onSelectChange(e.target.checked, "all")}
+            />
+          </th>
           <th>Title</th>
           <th>Sold</th>
           <th>Dimensions</th>
@@ -35,27 +48,25 @@ const ListingTable = ({ listings, onEditClick, onDeleteClick }) => (
       <tbody>
         {listings.map((listing) => (
           <tr key={listing.id}>
+            <td>
+              <input
+                type="checkbox"
+                checked={selectedIds.includes(listing.id)}
+                onChange={(e) => onSelectChange(e.target.checked, listing.id)}
+              />
+            </td>
             <td>{listing.Title}</td>
             <td>{listing.Sold}</td>
             <td>{listing.Dimensions}</td>
             <td>${parseFloat(listing.Price).toFixed(2)}</td>
             <td>${parseFloat(listing.Profit).toFixed(2)}</td>
             <td>
-              <a
-                href={listing.ProductOnEbay}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+              <a href={listing.ProductOnEbay} target="_blank" rel="noopener noreferrer">
                 View on eBay
               </a>
             </td>
             <td>
-            
-              <a
-                href={listing.Source}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+              <a href={listing.Source} target="_blank" rel="noopener noreferrer">
                 Supplier Info
               </a>
             </td>
@@ -127,6 +138,8 @@ const Dashboard = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [file, setFile] = useState(null); // For bulk upload file
+  const [selectedIds, setSelectedIds] = useState([]); // Track selected product IDs for bulk actions
+  const [activityLogs, setActivityLogs] = useState([]); // Activity logs
 
   const { currentUser, logout } = useAuth();
   const db = getFirestore(app);
@@ -153,18 +166,88 @@ const Dashboard = () => {
     setEditingProduct(null);
   };
 
+
   const logAction = async (actionType, details) => {
     try {
       await addDoc(collection(getFirestore(app), "activity_logs"), {
         type: actionType,
         details,
+        userEmail: currentUser.email,  // Logging user email
+        changesCount: details.changesCount || 1, // How many changes were made
+        changedFields: details.changedFields || null,  // What changed
         timestamp: new Date(),
-        user: currentUser.email,
       });
     } catch (error) {
       console.error("Failed to log action:", error);
     }
   };
+  
+
+  const handleEditClick = (product) => {
+    setEditingProduct(product);
+    setIsModalOpen(true);
+    setTitle(product.Title);
+    setCategory(product.Category);
+    setSold(product.Sold);
+    setProductOnEbay(product.ProductOnEbay);
+    setSource(product.Source);
+    setPrice(product.Price);
+    setProfit(product.Profit);
+    setDimensions(product.Dimensions);
+    setImageUrl(product.ImageUrl);
+  };
+
+
+  const handleDelete = async (id) => {
+    try {
+      const productRef = doc(db, "products", id);
+      await deleteDoc(productRef);
+      alert("Product deleted successfully!");
+      setProducts(products.filter((product) => product.id !== id));
+  
+      const logDetails = {
+        id,
+        changesCount: 1, // Only one change for delete
+        changedFields: ["Product deleted"], // We can just note that the product was deleted
+      };
+  
+      await logAction("delete", logDetails);
+    } catch (error) {
+      console.error("Error deleting product: ", error);
+      alert("Error deleting product!");
+    }
+  };
+  
+
+  const handleBulkDelete = async () => {
+    try {
+      const batch = writeBatch(db);
+      selectedIds.forEach((id) => {
+        const productRef = doc(db, "products", id);
+        batch.delete(productRef);
+      });
+      await batch.commit();
+      setProducts(products.filter((product) => !selectedIds.includes(product.id)));
+      setSelectedIds([]);
+      logAction("bulk_delete", { success_count: selectedIds.length, failed_count: 0 });
+      alert("Bulk delete successful!");
+    } catch (error) {
+      console.error("Error during bulk delete:", error);
+      alert("Bulk delete failed. Please try again.");
+    }
+  };
+
+  const handleSelectChange = (checked, id) => {
+    if (id === "all") {
+      setSelectedIds(checked ? products.map((product) => product.id) : []);
+    } else {
+      setSelectedIds((prevIds) =>
+        checked ? [...prevIds, id] : prevIds.filter((productId) => productId !== id)
+      );
+    }
+  };
+
+ 
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -183,9 +266,26 @@ const Dashboard = () => {
           Dimensions: dimensions,
           ImageUrl: imageUrl,
         };
+  
+        // Log the fields that have changed
+        const changedFields = [];
+        if (title !== editingProduct.Title) changedFields.push('Title');
+        if (category !== editingProduct.Category) changedFields.push('Category');
+        if (sold !== editingProduct.Sold) changedFields.push('Sold');
+        if (price !== editingProduct.Price) changedFields.push('Price');
+        if (profit !== editingProduct.Profit) changedFields.push('Profit');
+        if (dimensions !== editingProduct.Dimensions) changedFields.push('Dimensions');
+  
+        // Log the action
+        logDetails = {
+          id: editingProduct.id,
+          updateDetails,
+          changesCount: changedFields.length,
+          changedFields,
+        };
+  
         await updateDoc(productRef, updateDetails);
         alert("Product updated successfully!");
-        logDetails = { id: editingProduct.id, ...updateDetails };
         await logAction("update", logDetails);
       } else {
         const newDocRef = await addDoc(collection(db, "products"), {
@@ -199,7 +299,7 @@ const Dashboard = () => {
           Dimensions: dimensions,
           ImageUrl: imageUrl,
         });
-        alert("Product added successfully!");
+  
         logDetails = {
           id: newDocRef.id,
           Title: title,
@@ -211,9 +311,14 @@ const Dashboard = () => {
           Profit: parseFloat(profit),
           Dimensions: dimensions,
           ImageUrl: imageUrl,
+          changesCount: 1, // Only one change for adding
+          changedFields: ["All fields"], // In case of add, we log all fields
         };
+  
+        alert("Product added successfully!");
         await logAction("add", logDetails);
       }
+  
       setIsModalOpen(false);
       resetFormFields();
     } catch (error) {
@@ -221,39 +326,7 @@ const Dashboard = () => {
       alert("Error saving product!");
     }
   };
-
-  const handleDelete = async (id) => {
-    try {
-      const productRef = doc(db, "products", id);
-      await deleteDoc(productRef);
-      alert("Product deleted successfully!");
-      await logAction("delete", { id });
-      setProducts(products.filter((product) => product.id !== id));
-    } catch (error) {
-      console.error("Error deleting product: ", error);
-      alert("Error deleting product!");
-    }
-  };
-
-  const handleEditClick = (product) => {
-    setEditingProduct(product);
-    setIsModalOpen(true);
-
-    setTitle(product.Title);
-    setCategory(product.Category);
-    setSold(product.Sold);
-    setProductOnEbay(product.ProductOnEbay);
-    setSource(product.Source);
-    setPrice(product.Price);
-    setProfit(product.Profit);
-    setDimensions(product.Dimensions);
-    setImageUrl(product.ImageUrl);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    resetFormFields();
-  };
+  
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
@@ -300,12 +373,13 @@ const Dashboard = () => {
           Price: parseFloat(product.price),
           Profit: parseFloat(product.profit),
           Dimensions: product.dimensions,
-          ImageUrl: product.imageUrl,
+         // ImageUrl: product.imageUrl,
         });
       });
 
       await batch.commit();
       setProducts((prev) => [...prev, ...validProducts]);
+      logAction("bulk_add", { success_count: validProducts.length, failed_count: 0 });
       alert("Bulk upload successful!");
     } catch (error) {
       console.error("Error during bulk upload:", error);
@@ -330,14 +404,12 @@ const Dashboard = () => {
   return (
     <>
       <div className="addproduct-dashboard">
-       
         <h1>Add New Product</h1>
         <form onSubmit={handleSubmit}>
           <RecursiveDropdown
             categories={categoryTree}
             onCategorySelect={setSelectedCategory}
           />
-
           <input
             type="text"
             value={title}
@@ -345,8 +417,6 @@ const Dashboard = () => {
             placeholder="Title"
             required
           />
-
-          {/* Input fields */}
           <div className="input-group">
             <input
               type="text"
@@ -377,7 +447,6 @@ const Dashboard = () => {
               required
             />
           </div>
-
           <input
             type="text"
             value={productOnEbay}
@@ -392,10 +461,10 @@ const Dashboard = () => {
             placeholder="Source Link"
             required
           />
-
           <button type="submit">Add Product</button>
         </form>
       </div>
+
       <div>
         <h3>Bulk Upload</h3>
         <input type="file" onChange={handleFileChange} accept=".csv, .json" />
@@ -411,14 +480,20 @@ const Dashboard = () => {
           )}
           onEditClick={handleEditClick}
           onDeleteClick={handleDelete}
+          selectedIds={selectedIds}
+          onSelectChange={handleSelectChange}
         />
       </div>
 
-    
+      <button onClick={handleBulkDelete}>Delete Selected Products</button>
+
       <AccountPage />
     </>
   );
 };
 
 export default Dashboard;
+
+
+
 

@@ -1,5 +1,4 @@
 // src/AccountPage.js
-
 import React, { useState, useEffect } from "react";
 import { useAuth } from "./AuthProvider";
 import {
@@ -15,6 +14,11 @@ import "./account.css";
 const AccountPage = () => {
   const { currentUser, logout } = useAuth();
   const [activityLogs, setActivityLogs] = useState([]);
+  const [filterType, setFilterType] = useState("all");
+
+  const filteredLogs = activityLogs.filter(
+    (log) => filterType === "all" || log.type === filterType
+  );
 
   useEffect(() => {
     if (currentUser) {
@@ -23,17 +27,18 @@ const AccountPage = () => {
         const logsQuery = query(
           collection(db, "activity_logs"),
           orderBy("timestamp", "desc"),
-          limit(10),
+          limit(10)
         );
         const querySnapshot = await getDocs(logsQuery);
         const logs = querySnapshot.docs.map((doc) => {
-          console.log(doc.data()); // Debug: Log the data to inspect the timestamp
+          const data = doc.data();
+          // Log to check for timestamp
+          console.log(data);
+
           return {
             id: doc.id,
-            ...doc.data(),
-            timestamp: doc.data().timestamp
-              ? doc.data().timestamp.toDate()
-              : new Date(), // Fallback to current date if timestamp is invalid
+            ...data,
+            timestamp: data.timestamp ? data.timestamp.toDate() : new Date(), // Convert Firestore Timestamp to Date object
           };
         });
         setActivityLogs(logs);
@@ -57,25 +62,51 @@ const AccountPage = () => {
   }
 
   return (
+    <>
     <div className="account-page">
-      
-      <div className="activity-log">
-        <h2>Recent Activity</h2>
-        {activityLogs.length > 0 ? (
-          <ul>
-            {activityLogs.map((log) => (
-              <li key={log.id}>
-                <strong>{log.type}:</strong> {log.id} on{" "}
-                {log.timestamp.toLocaleString()}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p>No recent activity found.</p>
-        )}
+      <h1>Activity Logs</h1>
+      <select onChange={(e) => setFilterType(e.target.value)} value={filterType}>
+        <option value="all">All Logs</option>
+        <option value="add">Add Logs</option>
+        <option value="update">Update Logs</option>
+        <option value="delete">Delete Logs</option>
+      </select>
+      <div>
+        {filteredLogs.map((log) => (
+          <div key={log.id}>
+            <p>
+              {log.type}: {log.product_title}{" "}
+              <span>{new Date(log.timestamp).toLocaleString()}</span> {/* Display formatted timestamp */}
+            </p>
+          </div>
+        ))}
       </div>
+      <button onClick={handleLogout}>Logout</button>
     </div>
+    // Displaying Enhanced Logs
+<div>
+  <select onChange={(e) => setFilterType(e.target.value)} value={filterType}>
+    <option value="all">All Logs</option>
+    <option value="add">Add Logs</option>
+    <option value="update">Update Logs</option>
+    <option value="delete">Delete Logs</option>
+  </select>
+
+  <div>
+    {filteredLogs.map((log) => (
+      <div key={log.id}>
+        <p>
+          {log.type} by {log.userEmail} on {new Date(log.timestamp).toLocaleString()}
+        </p>
+        <p>Changes: {log.changesCount} </p>
+        <p>Changed Fields: {log.changedFields ? log.changedFields.join(", ") : "N/A"}</p>
+      </div>
+    ))}
+  </div>
+</div>
+</>
   );
 };
 
 export default AccountPage;
+
