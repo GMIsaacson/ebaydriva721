@@ -58,12 +58,7 @@ const AccountPage = () => {
 
   return (
     <div className="account-page">
-      <div className="header">
-        <h4>Welcome, {currentUser.email}</h4>
-        <button className="logout-button" onClick={handleLogout}>
-          Logout
-        </button>
-      </div>
+      
       <div className="activity-log">
         <h2>Recent Activity</h2>
         {activityLogs.length > 0 ? (

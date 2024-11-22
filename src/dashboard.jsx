@@ -50,6 +50,7 @@ const ListingTable = ({ listings, onEditClick, onDeleteClick }) => (
               </a>
             </td>
             <td>
+            
               <a
                 href={listing.Source}
                 target="_blank"
@@ -329,7 +330,7 @@ const Dashboard = () => {
   return (
     <>
       <div className="addproduct-dashboard">
-        <AccountPage />
+       
         <h1>Add New Product</h1>
         <form onSubmit={handleSubmit}>
           <RecursiveDropdown
@@ -395,6 +396,11 @@ const Dashboard = () => {
           <button type="submit">Add Product</button>
         </form>
       </div>
+      <div>
+        <h3>Bulk Upload</h3>
+        <input type="file" onChange={handleFileChange} accept=".csv, .json" />
+        <button onClick={handleBulkUpload}>Upload Products</button>
+      </div>
 
       <div className="product-list">
         <h2>Products</h2>
@@ -408,11 +414,8 @@ const Dashboard = () => {
         />
       </div>
 
-      <div>
-        <h3>Bulk Upload</h3>
-        <input type="file" onChange={handleFileChange} accept=".csv, .json" />
-        <button onClick={handleBulkUpload}>Upload Products</button>
-      </div>
+    
+      <AccountPage />
     </>
   );
 };
