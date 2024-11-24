@@ -33,17 +33,28 @@ const Nav = () => {
           </Link>
         </li>
         {currentUser ? (
-          <li>
-            <button
-              className="logout"
-              onClick={() => {
-                logout();
-                setIsOpen(false);
-              }}
-            >
-              Logout
-            </button>
-          </li>
+          <>
+            <li>
+              <Link
+                to="/accounts"
+                onClick={() => setIsOpen(false)}
+                className="account-link"
+              >
+                Account
+              </Link>
+            </li>
+            <li>
+              <button
+                className="logout"
+                onClick={() => {
+                  logout();
+                  setIsOpen(false);
+                }}
+              >
+                Logout
+              </button>
+            </li>
+          </>
         ) : (
           <>
             <li>
@@ -75,3 +86,4 @@ const Nav = () => {
 };
 
 export default Nav;
+

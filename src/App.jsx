@@ -13,16 +13,16 @@ import ProtectedRoute from "./protectedroute";
 import { AuthProvider } from "./AuthProvider";
 import VerifyEmail from "./verifyemail"; // Import the component
 import Calculators from "./resources";
+import AccountPage from "./accountspage";
 
 const App = () => {
   return (
     <Router>
       <AuthProvider>
-        {" "}
-        {/* Ensure AuthProvider correctly wraps the entire application content */}
         <div className="App">
           <Nav />
           <Routes>
+            {/* Public Routes */}
             <Route
               path="/"
               element={
@@ -59,10 +59,11 @@ const App = () => {
               path="/verifyemail"
               element={
                 <ErrorBoundary>
-                  <Signup />
+                  <VerifyEmail />
                 </ErrorBoundary>
               }
             />
+            {/* Protected Routes */}
             <Route
               path="/dashboard"
               element={
@@ -89,6 +90,17 @@ const App = () => {
                 </ErrorBoundary>
               }
             />
+       
+            <Route
+  path="/accounts/*"
+  element={
+    <ProtectedRoute>
+      <ErrorBoundary>
+        <AccountPage />
+      </ErrorBoundary>
+    </ProtectedRoute>
+  }
+/>
           </Routes>
 
           <Footer />

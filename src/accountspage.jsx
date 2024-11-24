@@ -1,112 +1,99 @@
-// src/AccountPage.js
-import React, { useState, useEffect } from "react";
-import { useAuth } from "./AuthProvider";
-import {
-  getFirestore,
-  collection,
-  query,
-  orderBy,
-  limit,
-  getDocs,
-} from "firebase/firestore";
-import "./account.css";
+import React from 'react';
+import { useAuth } from './AuthProvider';
+import { Link, Route, Routes, useNavigate } from 'react-router-dom';
+import ProfileEdit from './ProfileEdit';
+import ResetPassword from './resetpassword';
+// Uncomment when these components are implemented
+// import SecuritySettings from './SecuritySettings';
+// import Preferences from './Preferences';
+import ActivityLogs from './ActivityLogs';
+// import AccountDeletion from './AccountDeletion';
+import './account.css';
 
 const AccountPage = () => {
   const { currentUser, logout } = useAuth();
-  const [activityLogs, setActivityLogs] = useState([]);
-  const [filterType, setFilterType] = useState("all");
-
-  const filteredLogs = activityLogs.filter(
-    (log) => filterType === "all" || log.type === filterType
-  );
-
-  useEffect(() => {
-    if (currentUser) {
-      const fetchActivityLogs = async () => {
-        const db = getFirestore();
-        const logsQuery = query(
-          collection(db, "activity_logs"),
-          orderBy("timestamp", "desc"),
-          limit(10)
-        );
-        const querySnapshot = await getDocs(logsQuery);
-        const logs = querySnapshot.docs.map((doc) => {
-          const data = doc.data();
-          // Log to check for timestamp
-          console.log(data);
-
-          return {
-            id: doc.id,
-            ...data,
-            timestamp: data.timestamp ? data.timestamp.toDate() : new Date(), // Convert Firestore Timestamp to Date object
-          };
-        });
-        setActivityLogs(logs);
-      };
-
-      fetchActivityLogs();
-    }
-  }, [currentUser]);
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-      console.log("Logged out successfully!");
-    } catch (error) {
-      console.error("Logout Failed", error);
-    }
-  };
+  const navigate = useNavigate();
 
   if (!currentUser) {
     return <h1>Please log in to view this page.</h1>;
   }
 
-  return (
-    <>
-    <div className="account-page">
-      <h1>Activity Logs</h1>
-      <select onChange={(e) => setFilterType(e.target.value)} value={filterType}>
-        <option value="all">All Logs</option>
-        <option value="add">Add Logs</option>
-        <option value="update">Update Logs</option>
-        <option value="delete">Delete Logs</option>
-      </select>
-      <div>
-        {filteredLogs.map((log) => (
-          <div key={log.id}>
-            <p>
-              {log.type}: {log.product_title}{" "}
-              <span>{new Date(log.timestamp).toLocaleString()}</span> {/* Display formatted timestamp */}
-            </p>
-          </div>
-        ))}
-      </div>
-      <button onClick={handleLogout}>Logout</button>
-    </div>
-    // Displaying Enhanced Logs
-<div>
-  <select onChange={(e) => setFilterType(e.target.value)} value={filterType}>
-    <option value="all">All Logs</option>
-    <option value="add">Add Logs</option>
-    <option value="update">Update Logs</option>
-    <option value="delete">Delete Logs</option>
-  </select>
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout Failed', error);
+    }
+  };
 
-  <div>
-    {filteredLogs.map((log) => (
-      <div key={log.id}>
-        <p>
-          {log.type} by {log.userEmail} on {new Date(log.timestamp).toLocaleString()}
-        </p>
-        <p>Changes: {log.changesCount} </p>
-        <p>Changed Fields: {log.changedFields ? log.changedFields.join(", ") : "N/A"}</p>
+  return (
+    <div className="account-page">
+      {/* User Info Section */}
+      <div className="account-header">
+        <h2>Welcome, {currentUser.displayName || 'User'}!</h2>
+        <p>Email: {currentUser.email}</p>
+        <p>Account Created: {new Date(currentUser.metadata.creationTime).toLocaleString()}</p>
+        <p>Last Login: {new Date(currentUser.metadata.lastSignInTime).toLocaleString()}</p>
+        <button className="logout-button" onClick={handleLogout}>Logout</button>
       </div>
-    ))}
-  </div>
-</div>
-</>
+
+      <div className="account-main">
+        {/* Sidebar Navigation */}
+        <div className="account-sidebar">
+          <ul>
+            <li>
+              <Link to="profile">
+                <i className="icon-profile"></i> Profile
+              </Link>
+            </li>
+            <li>
+              <Link to="password">
+                <i className="icon-password"></i> Change Password
+              </Link>
+            </li>
+            <li>
+              <Link to="security">
+                <i className="icon-security"></i> Security Settings
+              </Link>
+            </li>
+            <li>
+              <Link to="preferences">
+                <i className="icon-preferences"></i> Preferences
+              </Link>
+            </li>
+            <li>
+              <Link to="activity">
+                <i className="icon-activity"></i> Activity Logs
+              </Link>
+            </li>
+            <li>
+              <Link to="delete">
+                <i className="icon-delete"></i> Delete Account
+              </Link>
+            </li>
+          </ul>
+        </div>
+
+        {/* Main Content */}
+        <div className="account-content">
+          <Routes>
+            <Route path="/" element={<h2>Welcome to your account page!</h2>} />
+            <Route path="profile" element={<ProfileEdit />} />
+            <Route path="password" element={<ResetPassword />} />
+            {/* Uncomment when these components are implemented */}
+            {/* <Route path="security" element={<SecuritySettings />} /> */}
+            {/* <Route path="preferences" element={<Preferences />} /> */}
+            <Route path="activity" element={<ActivityLogs />} />
+            {/* <Route path="delete" element={<AccountDeletion />} /> */}
+          </Routes>
+        </div>
+      </div>
+    </div>
   );
 };
 
 export default AccountPage;
+
+
 
