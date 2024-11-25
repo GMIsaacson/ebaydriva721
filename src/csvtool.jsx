@@ -5,41 +5,226 @@ import "./styles.css";
 
 // Updated categories with nested structure
 const categories = {
-  "Home & Garden": {
-    Bath: {
-      "Bathroom Accessories": [
-        "Bathroom Accessory Mixed Lots",
-        "Bathroom Accessory Sets",
-        "Bathroom Cabinets",
-        "Bathroom Cladding Panels",
-        "Bathroom Sinks & Vanities",
-        "Bathroom Suites",
-        "Showers, Bathtubs & Parts",
-        "Shower & Bathtub Accessories",
-        "Steam Showers",
-        "Toilets & Bidets",
-      ],
-      "Bath Mats, Rugs & Toilet": [
-        "Bath Mats, Rugs & Toilet Covers",
-        "Bathroom Baskets & Storage",
-        "Bathroom Scales",
-        "Drain Stoppers & Strainers",
-        "Mirrors",
-        "Other Bathroom Accessories",
-        "Shelves",
-        "Soap Dishes & Dispensers",
-        "Tile Décor",
-        "Tissue Box Covers",
-        "Toilet Brushes & Holders",
-        "Toilet Paper Holders & Storage",
-        "Towel Racks",
-        "Towels & Washcloths",
-        "Tumblers & Toothbrush Holders",
-        "Wall Hooks & Hangers",
-      ],
+    "Home & Garden": {
+      Bath: {
+        "Bathroom Accessories": [
+          "Bathroom Accessory Mixed Lots",
+          "Bathroom Accessory Sets",
+          "Bathroom Cabinets",
+          "Bathroom Cladding Panels",
+          "Bathroom Sinks & Vanities",
+          "Bathroom Suites",
+          "Showers, Bathtubs & Parts",
+          "Shower & Bathtub Accessories",
+          "Steam Showers",
+          "Toilets & Bidets",
+        ],
+        "Bath Mats, Rugs & Toilet": [
+          "Bath Mats, Rugs & Toilet Covers",
+          "Bathroom Baskets & Storage",
+          "Bathroom Scales",
+          "Drain Stoppers & Strainers",
+          "Mirrors",
+          "Other Bathroom Accessories",
+          "Shelves",
+          "Soap Dishes & Dispensers",
+          "Tile Décor",
+          "Tissue Box Covers",
+          "Toilet Brushes & Holders",
+          "Toilet Paper Holders & Storage",
+          "Towel Racks",
+          "Towels & Washcloths",
+          "Tumblers & Toothbrush Holders",
+          "Wall Hooks & Hangers",
+        ],
+      },
+    
+      Bedding: {
+        "See all in Bedding": [],
+        "Bed Pillows": [
+          "Down Bed Pillows",
+          "Memory Foam Bed Pillows",
+          "Standard Bed Pillows",
+          "Specialty Bed Pillows",
+        ],
+        "Bed Skirts": [
+          "Dust Ruffles",
+          "Pleated Bed Skirts",
+          "Ruffled Bed Skirts",
+        ],
+        "Bed-in-a-Bag": [
+          "Complete Bedding Sets",
+          "Comforter Sets",
+          "Duvet Cover Sets",
+        ],
+        "Bedding Accessories": [
+          "Bed Risers",
+          "Bedding Storage Bags",
+          "Bed Canopies",
+          "Decorative Pillow Inserts",
+        ],
+        "Blankets & Throws": [
+          "Weighted Blankets",
+          "Fleece Blankets",
+          "Wool Throws",
+          "Heated Blankets",
+        ],
+        "Canopies & Netting": [
+          "Mosquito Nets",
+          "Four-Poster Canopies",
+          "Hanging Canopies",
+        ],
+        "Comforters & Sets": [
+          "Down Comforters",
+          "Synthetic Comforters",
+          "Reversible Comforters",
+        ],
+        "Duvet Covers & Sets": [
+          "Cotton Duvet Covers",
+          "Linen Duvet Covers",
+          "Silk Duvet Covers",
+        ],
+        "Duvet Inserts": [
+          "Down Duvet Inserts",
+          "Synthetic Duvet Inserts",
+          "All-Season Duvet Inserts",
+        ],
+        "Mattress & Pillow Protectors": [
+          "Waterproof Mattress Protectors",
+          "Hypoallergenic Mattress Protectors",
+          "Zippered Pillow Protectors",
+        ],
+        "Mattress Pads & Toppers": [
+          "Memory Foam Toppers",
+          "Cooling Mattress Pads",
+          "Featherbed Toppers",
+        ],
+        "Nursery Bedding": [
+          "Crib Bedding Sets",
+          "Bassinet Bedding",
+          "Changing Table Covers",
+        ],
+        "Pillow Shams": [
+          "Standard Pillow Shams",
+          "Euro Pillow Shams",
+          "King Pillow Shams",
+        ],
+        Pillowcases: [
+          "Standard Pillowcases",
+          "Silk Pillowcases",
+          "Cotton Pillowcases",
+        ],
+        "Quilts, Bedspreads & Coverlets": [
+          "Handmade Quilts",
+          "Cotton Coverlets",
+          "Decorative Bedspreads",
+        ],
+        Sheets: [
+          "Fitted Sheets",
+          "Flat Sheets",
+          "Sheet Sets",
+        ],
+      },
+      
+      "Candles & Home Fragrance": {
+        "Candles": [],
+        "Candle Holders": [],
+        "Reed Diffusers & Oils": [],
+        "Other Home Fragrance": [],
+      },
+      "Food & Beverages": {
+        "Coffee & Tea": [],
+        "Non-Perishable Items": [],
+        "Snacks": [],
+      },
+      "Fresh Cut Flowers": {
+        Bouquets: [],
+        Roses: [],
+        "Seasonal Flowers": [],
+      },
+      Furniture: {
+        Sofas: [],
+        Chairs: [],
+        Tables: [],
+        "Storage Units": [],
+      },
+      "Greeting Cards & Party Supply": {
+        Cards: [],
+        Balloons: [],
+        "Party Favors": [],
+      },
+      "Holiday & Seasonal Décor": {
+        "Christmas Decorations": [],
+        "Halloween Decorations": [],
+        "Easter Decorations": [],
+      },
+      "Home Décor": {
+        "Wall Art": [],
+        Mirrors: [],
+        Clocks: [],
+      },
+      "Home Improvement": {
+        "Tools & Equipment": [],
+        "Paint & Supplies": [],
+      },
+      "Household Supplies & Cleaning": {
+        "Cleaning Tools": [],
+        "Laundry Supplies": [],
+        "Paper Goods": [],
+      },
+      "Kids & Teens at Home": {
+        "Kids' Furniture": [],
+        "Decor for Kids": [],
+      },
+      "Kitchen, Dining & Bar": {
+        "Kitchen Tools": [],
+        "Dining Sets": [],
+        "Bar Supplies": [],
+      },
+      "Lamps, Lighting & Ceiling Fans": {
+        Lamps: [],
+        "Ceiling Fans": [],
+        "Outdoor Lighting": [],
+      },
+      "Major Appliances": {
+        Refrigerators: [],
+        Dishwashers: [],
+        "Washing Machines": [],
+      },
+      Pillows: {
+        "Throw Pillows": [],
+        "Decorative Pillows": [],
+      },
+      "Rugs & Carpets": {
+        "Area Rugs": [],
+        Carpets: [],
+        "Runners": [],
+      },
+      "School Supplies": {
+        "Backpacks": [],
+        "Stationery": [],
+        "Art Supplies": [],
+      },
+      "Tools & Workshop Equipment": {
+        Drills: [],
+        "Tool Kits": [],
+      },
+      "Wedding Supplies": {
+        "Wedding Décor": [],
+        "Favors": [],
+      },
+      "Wholesale Lots": {
+        Electronics: [],
+        "Home Goods": [],
+      },
+      "Window Treatments & Hardware": {
+        Curtains: [],
+        Blinds: [],
+        "Curtain Rods": [],
+      },
     },
-  },
-};
+  };
+  
 
 function Csvtool() {
   const [tableData, setTableData] = useState([]);
