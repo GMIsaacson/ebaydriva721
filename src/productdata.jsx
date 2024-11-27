@@ -3,13 +3,13 @@ import { getFirestore, collection, getDocs } from "firebase/firestore";
 import app from "./firebase-config";
 import Pagination from "./pagination";
 import "./productdata.css";
-import { categoryTree } from "./categoryData"; // Assuming a hierarchical structure for categories
 
 const ProductData = () => {
   // State variables
   const [products, setProducts] = useState([]); // Full product list from Firestore
   const [filteredProducts, setFilteredProducts] = useState([]); // After filters and sorting
   const [paginatedProducts, setPaginatedProducts] = useState([]); // Products for the current page
+  const [categoryTree, setCategoryTree] = useState({}); // Category hierarchy
 
   // Filter and sort state variables
   const [sortField, setSortField] = useState("");
@@ -18,8 +18,8 @@ const ProductData = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedSubCategory, setSelectedSubCategory] = useState("");
-  const [selectedItem, setSelectedItem] = useState("");
   const [selectedSubSubCategory, setSelectedSubSubCategory] = useState("");
+  const [selectedItem, setSelectedItem] = useState("");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [minProfit, setMinProfit] = useState("");
@@ -44,10 +44,55 @@ const ProductData = () => {
       }));
 
       setProducts(productList);
+      buildCategoryTree(productList); // Build category hierarchy from products
     };
 
     fetchProducts();
   }, []);
+
+  // Build category hierarchy from products
+  const buildCategoryTree = (productsList) => {
+    const tree = {};
+
+    productsList.forEach((product) => {
+      const { Category, SubCategory, SubSubCategory, Item } = product;
+
+      if (Category) {
+        if (!tree[Category]) {
+          tree[Category] = {};
+        }
+
+        if (SubCategory) {
+          if (!tree[Category][SubCategory]) {
+            tree[Category][SubCategory] = {};
+          }
+
+          if (SubSubCategory) {
+            if (!tree[Category][SubCategory][SubSubCategory]) {
+              tree[Category][SubCategory][SubSubCategory] = new Set();
+            }
+
+            if (Item) {
+              tree[Category][SubCategory][SubSubCategory].add(Item);
+            }
+          }
+        }
+      }
+    });
+
+    // Convert Sets to Arrays
+    Object.keys(tree).forEach((category) => {
+      Object.keys(tree[category]).forEach((subCategory) => {
+        Object.keys(tree[category][subCategory]).forEach((subSubCategory) => {
+          tree[category][subCategory][subSubCategory] = Array.from(
+            tree[category][subCategory][subSubCategory]
+          );
+        });
+      });
+    });
+
+    setCategoryTree(tree);
+  };
 
   // Apply filters and sorting whenever relevant state variables change
   useEffect(() => {
@@ -59,8 +104,8 @@ const ProductData = () => {
     searchTerm,
     selectedCategory,
     selectedSubCategory,
-    selectedItem,
     selectedSubSubCategory,
+    selectedItem,
     minPrice,
     maxPrice,
     minProfit,
@@ -89,14 +134,14 @@ const ProductData = () => {
         (product) => product.SubCategory === selectedSubCategory
       );
     }
-    if (selectedItem) {
-      updatedProducts = updatedProducts.filter(
-        (product) => product.Item === selectedItem
-      );
-    }
     if (selectedSubSubCategory) {
       updatedProducts = updatedProducts.filter(
         (product) => product.SubSubCategory === selectedSubSubCategory
+      );
+    }
+    if (selectedItem) {
+      updatedProducts = updatedProducts.filter(
+        (product) => product.Item === selectedItem
       );
     }
 
@@ -180,8 +225,8 @@ const ProductData = () => {
     setSearchTerm("");
     setSelectedCategory("");
     setSelectedSubCategory("");
-    setSelectedItem("");
     setSelectedSubSubCategory("");
+    setSelectedItem("");
     setMinPrice("");
     setMaxPrice("");
     setMinProfit("");
@@ -198,165 +243,159 @@ const ProductData = () => {
   const handleCategoryChange = (e) => {
     setSelectedCategory(e.target.value);
     setSelectedSubCategory("");
-    setSelectedItem("");
     setSelectedSubSubCategory("");
+    setSelectedItem("");
   };
 
   const handleSubCategoryChange = (e) => {
     setSelectedSubCategory(e.target.value);
+    setSelectedSubSubCategory("");
     setSelectedItem("");
-    setSelectedSubSubCategory("");
-  };
-
-  const handleItemChange = (e) => {
-    setSelectedItem(e.target.value);
-    setSelectedSubSubCategory("");
   };
 
   const handleSubSubCategoryChange = (e) => {
     setSelectedSubSubCategory(e.target.value);
+    setSelectedItem("");
+  };
+
+  const handleItemChange = (e) => {
+    setSelectedItem(e.target.value);
   };
 
   // Helper functions to get options for dropdowns
-  const getSubCategories = () => {
-    if (selectedCategory) {
-      return Object.keys(categoryTree[selectedCategory] || {});
-    } else {
-      // Collect all subcategories across all categories
-      return Array.from(
-        new Set(
-          Object.values(categoryTree)
-            .flatMap((subCats) => Object.keys(subCats || {}))
-            .filter((subCat) => typeof subCat === "string")
-        )
-      );
-    }
+  const getCategories = () => {
+    return Object.keys(categoryTree);
   };
 
-  const getItems = () => {
-    if (selectedCategory && selectedSubCategory) {
-      return Object.keys(
-        categoryTree[selectedCategory][selectedSubCategory] || {}
-      );
-    } else if (selectedSubCategory) {
-      // Collect all items across all categories for the selected subcategory
-      return Array.from(
-        new Set(
-          Object.values(categoryTree)
-            .map((subCats) => subCats[selectedSubCategory])
-            .filter(Boolean)
-            .flatMap((items) => Object.keys(items || {}))
-            .filter((item) => typeof item === "string")
-        )
-      );
-    } else {
-      // Collect all items across all categories and subcategories
-      return Array.from(
-        new Set(
-          Object.values(categoryTree)
-            .flatMap((subCats) =>
-              Object.values(subCats || {}).flatMap((items) =>
-                Object.keys(items || {})
-              )
-            )
-            .filter((item) => typeof item === "string")
-        )
-      );
+  const getSubCategories = () => {
+    if (selectedCategory && categoryTree[selectedCategory]) {
+      return Object.keys(categoryTree[selectedCategory]);
     }
+    return [];
   };
 
   const getSubSubCategories = () => {
-    if (selectedCategory && selectedSubCategory && selectedItem) {
-      return (
-        categoryTree[selectedCategory][selectedSubCategory][selectedItem] || []
-      );
-    } else if (selectedItem) {
-      // Collect all sub-subcategories across all categories for the selected item
-      return Array.from(
-        new Set(
-          Object.values(categoryTree)
-            .flatMap((subCats) =>
-              Object.values(subCats || {})
-                .map((items) => items[selectedItem])
-                .filter(Boolean)
-                .flat()
-            )
-            .filter((subSubCat) => typeof subSubCat === "string")
-        )
-      );
-    } else {
-      // Collect all sub-subcategories across all items
-      return Array.from(
-        new Set(
-          Object.values(categoryTree)
-            .flatMap((subCats) =>
-              Object.values(subCats || {}).flatMap((items) =>
-                Object.values(items || {}).flat()
-              )
-            )
-            .filter((subSubCat) => typeof subSubCat === "string")
-        )
+    if (
+      selectedCategory &&
+      selectedSubCategory &&
+      categoryTree[selectedCategory][selectedSubCategory]
+    ) {
+      return Object.keys(
+        categoryTree[selectedCategory][selectedSubCategory]
       );
     }
+    return [];
   };
 
-  // Render table
+  const getItems = () => {
+    if (
+      selectedCategory &&
+      selectedSubCategory &&
+      selectedSubSubCategory &&
+      categoryTree[selectedCategory][selectedSubCategory][selectedSubSubCategory]
+    ) {
+      return categoryTree[selectedCategory][selectedSubCategory][
+        selectedSubSubCategory
+      ];
+    }
+    return [];
+  };
+
   const renderTable = () => (
-    <div className="table-container">
-      <table>
-        <thead>
-          <tr>
-            <th onClick={() => handleSortChange("Title")}>Title</th>
-            <th onClick={() => handleSortChange("Sold")}>Sold</th>
-            <th onClick={() => handleSortChange("Dimensions")}>Dimensions</th>
-            <th onClick={() => handleSortChange("Price")}>Price</th>
-            <th onClick={() => handleSortChange("Profit")}>Profit</th>
-            <th>eBay Link</th>
-            <th>Supplier Info</th>
-            <th onClick={() => handleSortChange("Category")}>Category</th>
-            <th onClick={() => handleSortChange("SubCategory")}>SubCategory</th>
-            <th onClick={() => handleSortChange("Item")}>Item</th>
-            <th onClick={() => handleSortChange("SubSubCategory")}>
-              SubSubCategory
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {paginatedProducts.map((product) => (
-            <tr key={product.id}>
-              <td>{product.Title}</td>
-              <td>{product.Sold}</td>
-              <td>{product.Dimensions}</td>
-              <td>${Number(product.Price).toFixed(2)}</td>
-              <td>${Number(product.Profit).toFixed(2)}</td>
-              <td>
-                <a
-                  href={product.ProductOnEbay}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  View on eBay
-                </a>
-              </td>
-              <td>
-                <a
-                  href={product.Source}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Supplier Info
-                </a>
-              </td>
-              <td>{product.Category}</td>
-              <td>{product.SubCategory}</td>
-              <td>{product.Item}</td>
-              <td>{product.SubSubCategory}</td>
+    <div className="product-page-table-container">
+      {window.innerWidth > 800 && (
+        <table className="product-page-table">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Sold</th>
+              <th>Dimensions</th>
+              <th>Price</th>
+              <th>Profit</th>
+              <th>eBay Link</th>
+              <th>Supplier Info</th>
+              <th>Category</th>
+              <th>SubCategory</th>
+              <th>SubSubCategory</th>
+              <th>Item</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {paginatedProducts.map((product) => (
+              <tr key={product.id}>
+                <td>{product.Title}</td>
+                <td>{product.Sold}</td>
+                <td>{product.Dimensions}</td>
+                <td>${product.Price.toFixed(2)}</td>
+                <td>${product.Profit.toFixed(2)}</td>
+                <td>
+                  <a href={product.ProductOnEbay} target="_blank" rel="noopener noreferrer">
+                    View on eBay
+                  </a>
+                </td>
+                <td>
+                  <a href={product.Source} target="_blank" rel="noopener noreferrer">
+                    Supplier Info
+                  </a>
+                </td>
+                <td>{product.Category}</td>
+                <td>{product.SubCategory}</td>
+                <td>{product.SubSubCategory}</td>
+                <td>{product.Item}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+  
+      {window.innerWidth <= 800 &&
+        paginatedProducts.map((product) => (
+          <div className="product-page-card" key={product.id}>
+            <div className="product-page-card-item">
+              <span>Title:</span> {product.Title}
+            </div>
+            <div className="product-page-card-item">
+              <span>Sold:</span> {product.Sold}
+            </div>
+            <div className="product-page-card-item">
+              <span>Dimensions:</span> {product.Dimensions}
+            </div>
+            <div className="product-page-card-item">
+              <span>Price:</span> ${product.Price.toFixed(2)}
+            </div>
+            <div className="product-page-card-item">
+              <span>Profit:</span> ${product.Profit.toFixed(2)}
+            </div>
+            <div className="product-page-card-item">
+              <span>eBay Link:</span>{" "}
+              <a href={product.ProductOnEbay} target="_blank" rel="noopener noreferrer">
+                View on eBay
+              </a>
+            </div>
+            <div className="product-page-card-item">
+              <span>Supplier Info:</span>{" "}
+              <a href={product.Source} target="_blank" rel="noopener noreferrer">
+                Supplier Info
+              </a>
+            </div>
+            <div className="product-page-card-item">
+              <span>Category:</span> {product.Category}
+            </div>
+            <div className="product-page-card-item">
+              <span>SubCategory:</span> {product.SubCategory}
+            </div>
+            <div className="product-page-card-item">
+              <span>SubSubCategory:</span> {product.SubSubCategory}
+            </div>
+            <div className="product-page-card-item">
+              <span>Item:</span> {product.Item}
+            </div>
+          </div>
+        ))}
     </div>
   );
+  
+  
 
   return (
     <div className="product-data-container">
@@ -370,7 +409,7 @@ const ProductData = () => {
         />
         <select onChange={handleCategoryChange} value={selectedCategory}>
           <option value="">All Categories</option>
-          {Object.keys(categoryTree).map((cat) => (
+          {getCategories().map((cat) => (
             <option key={cat} value={cat}>
               {cat}
             </option>
@@ -387,14 +426,6 @@ const ProductData = () => {
             </option>
           ))}
         </select>
-        <select onChange={handleItemChange} value={selectedItem}>
-          <option value="">All Items</option>
-          {getItems().map((item) => (
-            <option key={item} value={item}>
-              {item}
-            </option>
-          ))}
-        </select>
         <select
           onChange={handleSubSubCategoryChange}
           value={selectedSubSubCategory}
@@ -403,6 +434,14 @@ const ProductData = () => {
           {getSubSubCategories().map((subSubCat) => (
             <option key={subSubCat} value={subSubCat}>
               {subSubCat}
+            </option>
+          ))}
+        </select>
+        <select onChange={handleItemChange} value={selectedItem}>
+          <option value="">All Items</option>
+          {getItems().map((item) => (
+            <option key={item} value={item}>
+              {item}
             </option>
           ))}
         </select>
@@ -467,6 +506,8 @@ const ProductData = () => {
 };
 
 export default ProductData;
+
+
 
 
 

@@ -3,10 +3,10 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #241056; /* Dark blue background to match homepage */
-  color: #ffffff; /* White text for high contrast */
-  padding: 1rem 2rem; /* Adjusted padding for consistency */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+  background: linear-gradient(to right, #0052cc, #0066ff); /* Gradient Blue Background */
+  color: #ffffff; /* White Text */
+  padding: 1rem 2rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Subtle Shadow */
   position: relative;
   z-index: 1000;
 }
@@ -22,13 +22,15 @@
 
 .logo:hover,
 .logo:focus {
-  color: #ffffff; /* Lighter shade of dark blue for hover/focus */
+  color: #ffcc00; /* Bright yellow on hover for visual feedback */
 }
+
 
 .nav-links {
   list-style: none;
   display: flex;
-  gap: 1.5rem; /* Adjusted gap for spacing */
+  align-items: center;
+  gap: 2rem;
   margin: 0;
   padding: 0;
 }
@@ -37,61 +39,117 @@
   margin: 0;
 }
 
-.nav-links li a,
-.nav-links li button {
-  color: #ffffff; /* White text */
+.nav-links li a {
+  color: #ffffff;
   text-decoration: none;
-  padding: 0.5rem 1rem; /* Adjusted padding for consistency */
+  padding: 0.5rem 1rem;
   border-radius: 25px;
-  transition:
-    background-color 0.3s,
-    color 0.3s;
-  margin: 0;
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-weight: 500;
+  transition: background-color 0.3s, color 0.3s;
 }
 
 .nav-links li a:hover,
-.nav-links li a:focus,
-.nav-links li button:hover,
-.nav-links li button:focus {
-  background-color: rgba(
-    255,
-    255,
-    255,
-    0.2
-  ); /* Slightly translucent white background on hover/focus */
-  color: #ffffff; /* White text */
+.nav-links li a:focus {
+  background-color: rgba(255, 255, 255, 0.2); /* Translucent White Background */
+  color: #ffffff;
 }
 
-.nav-links li a.signup {
-  background-color: #027ef1; /* Primary blue for signup */
+/* User Menu */
+.user-menu {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
 }
 
-.nav-links li a.signup:hover,
-.nav-links li a.signup:focus,
-.nav-links li button.logout:hover,
-.nav-links li button.logout:focus {
-  background-color: #025bb5; /* Darker blue for hover/focus */
-  color: #ffffff; /* White text */
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
+.profile-img {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+}
+
+.user-email {
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #fff;
+}
+
+/* Dropdown Menu */
+.dropdown {
+  position: relative;
+}
+
+.dropdown-btn {
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  right: 0;
+  background: linear-gradient(to right, #0052cc, #0066ff); /* Gradient Blue Background */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  z-index: 10;
+}
+
+.dropdown-content a,
+.dropdown-content button {
+  color: #fff;
+  text-decoration: none;
+  display: block;
+  padding: 0.5rem 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.dropdown-content a:hover,
+.dropdown-content button:hover {
+  background-color: rgba(255, 255, 255, 0.2); /* Translucent Background */
+}
+
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+.notification-badge {
+  background-color: red;
+  color: white;
+  font-size: 0.8rem;
+  padding: 2px 6px;
+  border-radius: 50%;
+  margin-left: 5px;
+}
+
+/* Hamburger Menu Icon */
 .menu-icon {
   display: none;
   cursor: pointer;
   font-size: 2.5em;
-  color: #ffffff; /* White icon */
-  margin: 0;
+  color: #ffffff;
   transition: color 0.3s ease;
 }
 
 .menu-icon:hover,
 .menu-icon:focus {
-  color: #5a3dbd; /* Lighter shade of dark blue for hover/focus */
+  color: #ffcc00; /* Bright Yellow for Hover/Focus */
 }
 
+/* Responsive Styles */
 @media (max-width: 768px) {
   .nav-links {
     flex-direction: column;
@@ -100,12 +158,10 @@
     height: 100vh;
     top: 0;
     left: -100%;
-    background-color: #241056; /* Dark blue for mobile */
+    background: linear-gradient(to bottom, #0052cc, #0066ff); /* Gradient for Mobile */
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0;
-    padding: 0;
     transition: left 0.3s ease;
   }
 
@@ -116,4 +172,12 @@
   .menu-icon {
     display: block;
   }
+
+  .user-menu {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
 }
+
+

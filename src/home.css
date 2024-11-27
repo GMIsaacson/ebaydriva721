@@ -1,436 +1,299 @@
 /* General Styles */
+:root {
+  --primary-color: #0052cc;
+  --secondary-color: #0066ff;
+  --accent-color: #ffcc00;
+  --dark-accent-color: #e6b800;
+  --text-color: #333;
+  --heading-color: #241056;
+  --background-color: #f0f4f8;
+}
+
+* {
+  box-sizing: border-box;
+}
+
 body {
   font-family: "Open Sans", sans-serif;
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
-  color: #333;
-  background-color: #f8f9fa; /* Light background for the body */
+  color: var(--text-color);
+  background-color: var(--background-color);
 }
 
-/* Header Section */
-.header {
-  background-color: #241056; /* Consistent dark blue for header background */
-  padding: 20px 0;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+a {
+  text-decoration: none;
+  color: inherit;
 }
 
-.nav-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  max-width: 1600px;
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  font-weight: 600;
+}
+
+p {
+  margin: 0;
+}
+
+.container {
+  max-width: 1200px;
   margin: 0 auto;
   padding: 0 20px;
 }
 
-.navbar-brand img {
-  height: 40px;
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
 }
 
-.navbar-nav {
-  list-style: none;
-  display: flex;
-  gap: 20px;
-}
-
-.nav-item .nav-link {
-  color: #c3e0e5; /* Light blue for links */
-  text-decoration: none;
-  padding: 10px 15px;
-  transition:
-    background-color 0.3s,
-    color 0.3s;
-}
-
-.nav-item .nav-link:hover,
-.nav-item .nav-link:focus {
-  background-color: rgba(
-    255,
-    255,
-    255,
-    0.1
-  ); /* Light background on hover/focus */
-  color: #ffffff; /* White text on hover/focus */
-}
-
-.signup-btn {
-  background-color: #027ef1; /* Primary blue for signup button */
-  color: #ffffff;
+/* Buttons */
+.cta-btn {
+  background-color: var(--accent-color);
+  color: var(--heading-color);
+  padding: 12px 24px;
   border-radius: 5px;
-  padding: 10px 20px;
+  font-size: 1rem;
+  font-weight: bold;
   transition: background-color 0.3s;
+  cursor: pointer;
 }
 
-.signup-btn:hover,
-.signup-btn:focus {
-  background-color: #025bb5; /* Darker blue on hover/focus */
+.cta-btn:hover {
+  background-color: var(--dark-accent-color);
 }
 
 /* Hero Section */
 .hero-section {
-  background-color: #ffffff; /* Light background for consistency */
-  color: #241056; /* Darker text color for contrast */
+  background: linear-gradient(to bottom, var(--primary-color), var(--secondary-color));
+  color: #fff;
+  padding: 100px 0;
   text-align: center;
-  padding: 100px 20px; /* Increased padding for a more impactful hero section */
-  background-image: url("hero-image-url.jpg");
-  background-size: cover;
-  background-position: center;
 }
 
 .hero-content h1 {
-  font-size: 3rem; /* Adjusted font size for better scalability */
+  font-size: 3rem;
   margin-bottom: 20px;
-  color: #241056; /* Darker text color for consistency */
 }
 
 .hero-content h2 {
   font-size: 1.5rem;
   margin-bottom: 40px;
-  color: #333; /* Darker text for readability */
 }
 
-.button-group {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-}
-
-.cta-btn,
-.play-video-btn {
-  padding: 15px 30px;
-  border: none;
-  border-radius: 5px;
-  font-size: 1rem; /* Adjusted for consistency */
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.cta-btn {
-  background-color: #7852e0; /* Primary color for call-to-action */
-  color: #fff;
-}
-
-.cta-btn:hover {
-  background-color: #5a3dbd; /* Darker shade for hover effect */
-}
-
-.play-video-btn {
-  background-color: #6c757d; /* Secondary color for play video button */
-  color: #fff;
-}
-
-.play-video-btn:hover {
-  background-color: #5a6268; /* Darker shade for hover effect */
+/* General Styling */
+:root {
+  --primary-color: #0052cc;
+  --accent-color: #ffcc00;
+  --background-color: #f0f4f8;
+  --card-bg: #ffffff;
+  --text-color: #333;
+  --heading-color: #241056;
+  --icon-color: #0052cc;
+  --shadow-light: 0 4px 10px rgba(0, 0, 0, 0.1);
+  --transition-speed: 0.3s;
 }
 
 /* Features Section */
 .features-section {
-  padding: 60px 20px;
-  background-color: #ffffff; /* Light background for features */
-  text-align: center;
+  padding: 80px 20px;
+  background-color: var(--background-color);
 }
 
-.features-section h2 {
-  font-size: 2.25rem;
-  margin-bottom: 2.5rem;
-  color: #241056; /* Dark blue for section headings */
+.section-heading {
+  text-align: center;
+  font-size: 2.5rem;
+  color: var(--heading-color);
+  margin-bottom: 50px;
+  font-weight: 600;
 }
 
 .features-grid {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 30px;
   justify-content: center;
-  gap: 20px;
 }
 
 .feature-item {
-  background-color: #f8f9fa; /* Light grey background */
-  padding: 20px;
-  border-radius: 10px;
-  width: 300px;
+  background: var(--card-bg);
+  padding: 30px;
+  border-radius: 15px;
   text-align: center;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-light);
+  transition: transform var(--transition-speed), box-shadow var(--transition-speed);
 }
 
-.feature-item img {
-  height: 60px;
-  margin-bottom: 20px;
+.feature-item:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.icon-wrapper {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 20px;
+  background-color: var(--background-color);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: var(--shadow-light);
+}
+
+.icon-wrapper .icon {
+  width: 40px;
+  height: 40px;
+  color: var(--icon-color);
 }
 
 .feature-item h3 {
   font-size: 1.5rem;
+  color: var(--heading-color);
   margin-bottom: 10px;
-  color: #241056; /* Dark blue for headings */
 }
 
 .feature-item p {
   font-size: 1rem;
-  color: #333;
+  color: var(--text-color);
+  line-height: 1.6;
 }
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 
 /* Testimonials Section */
 .testimonials-section {
-  padding: 60px 20px;
-  background-color: #ffffff; /* Lighter background for consistency */
-  color: #333; /* Darker text for readability */
-  text-align: center;
+  padding: 60px 0;
+  background-color: var(--background-color);
 }
 
 .testimonials-section h2 {
-  font-size: 2.25rem;
+  text-align: center;
+  font-size: 2rem;
   margin-bottom: 40px;
-  color: #241056; /* Matching heading color with the rest of the app */
+  color: var(--heading-color);
 }
 
 .testimonials-grid {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 20px;
+  gap: 40px;
 }
 
 .testimonial-item {
-  background-color: #f8f9fa; /* Light background for consistency */
-  padding: 20px;
+  background-color: #fff;
+  padding: 30px;
   border-radius: 10px;
   width: 300px;
-  text-align: center;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .testimonial-item p {
-  font-size: 16px;
-  line-height: 1.6;
-  color: #333; /* Dark text for readability */
+  font-size: 1rem;
+  color: #555;
+  margin-bottom: 20px;
 }
 
 .testimonial-item h3 {
-  font-size: 1.25rem;
-  margin-top: 10px;
-  color: #241056; /* Matching heading color with the rest of the app */
+  font-size: 1.1rem;
+  color: var(--heading-color);
+  margin-bottom: 5px;
+}
+
+.testimonial-item p:last-child {
+  font-size: 0.9rem;
+  color: #777;
 }
 
 /* Demo Section */
 .demo-section {
   padding: 60px 20px;
-  background-color: #ffffff; /* Light background for demo section */
+  background-color: #f8f9fa;
   text-align: center;
 }
 
 .demo-section h2 {
-  font-size: 2.25rem;
-  margin-bottom: 2.5rem;
-  color: #241056; /* Dark blue for section headings */
+  font-size: 2rem;
+  color: #2a2ef8;
+  margin-bottom: 30px;
 }
 
 .video-wrapper {
   position: relative;
-  max-width: 800px;
-  margin: 0 auto;
+  display: flex;
+  justify-content: center;
 }
 
 .video-thumbnail {
+  width: 100%;
+  max-width: 800px;
   height: 0;
-  padding-bottom: 56.25%;
+  padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
   background-size: cover;
   background-position: center;
+  background-repeat: no-repeat;
   border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(46, 43, 240, 0.1);
+  position: relative;
+  overflow: hidden;
 }
-
 .play-video-btn {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background-color: rgba(0, 0, 0, 0.6);
-  color: #ffffff;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 50px;
-  font-size: 1.5rem;
+  background-color: transparent; /* No background color */
+  border: 2px solid rgba(255, 255, 255, 0.7); /* Optional border for contrast */
+  border-radius: 50%;
+  padding: 10px;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: transform 0.3s ease, border-color 0.3s ease;
 }
 
 .play-video-btn:hover {
-  background-color: rgba(0, 0, 0, 0.8); /* Darker overlay on hover */
+  transform: translate(-50%, -50%) scale(1.2); /* Slight scale effect */
+  border-color: rgba(255, 0, 0, 0.8); /* Red border on hover */
 }
 
-/* Pricing Section */
-.pricing-section {
-  padding: 60px 20px;
-  background-color: #ffffff; /* Light background for pricing section */
-  text-align: center;
+.play-video-btn svg {
+  fill: #ff0000; /* YouTube red */
+  width: 50px;
+  height: 50px;
+  transition: fill 0.3s ease;
 }
 
-.pricing-section h2 {
-  font-size: 2.25rem;
-  margin-bottom: 2.5rem;
-  color: #241056; /* Dark blue for section headings */
+.play-video-btn:hover svg {
+  fill: #ffcc00; /* Yellow on hover */
 }
 
-.pricing-table {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 20px;
-}
 
-.pricing-tier {
-  background-color: #f8f9fa; /* Light background for pricing tiers */
-  padding: 20px;
-  border-radius: 10px;
-  width: 300px;
-  text-align: center;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
 
-.pricing-tier h3 {
-  font-size: 1.5rem;
-  margin-bottom: 10px;
-  color: #241056; /* Dark blue for tier headings */
-}
-
-.pricing-tier p {
-  font-size: 1.25rem;
-  margin-bottom: 20px;
-  color: #333;
-}
-
-.pricing-tier ul {
-  list-style: none;
-  padding: 0;
-  margin-bottom: 20px;
-}
-
-.pricing-tier ul li {
-  font-size: 1rem;
-  line-height: 1.6;
-}
-
-.pricing-tier .cta-btn {
-  background-color: #027ef1; /* Primary blue for CTA button */
-  color: #ffffff;
-  padding: 10px 20px;
-  border-radius: 5px;
-  transition: background-color 0.3s;
-}
-
-.pricing-tier .cta-btn:hover {
-  background-color: #025bb5; /* Darker blue on hover */
-}
-
-/* Footer Section */
-.footer {
-  background-color: #241056; /* Consistent dark blue for footer */
-  color: #ffffff; /* White text */
-  text-align: center;
-  padding: 20px 0;
-  font-size: 0.875rem; /* Smaller font size */
-}
-
-.footer .footer-content {
-  display: flex;
-  justify-content: space-around;
-  flex-wrap: wrap;
-  padding: 20px;
-}
-
-.footer .footer-section {
-  margin: 10px;
-  flex: 1;
-  min-width: 150px;
-}
-
-.footer .footer-section h2,
-.footer .footer-section h3 {
-  color: #c3e0e5; /* Light blue for headings */
-  margin-bottom: 10px;
-}
-
-.footer .footer-section p,
-.footer .footer-section li {
-  color: #cccccc; /* Light grey for text */
-  line-height: 1.6;
-}
-
-.footer .footer-section ul {
-  list-style: none;
-  padding: 0;
-}
-
-.footer .footer-section a {
-  color: #c3e0e5; /* Light blue for links */
-  text-decoration: none;
-  transition:
-    color 0.3s,
-    background-color 0.3s;
-}
-
-.footer .footer-section a:hover,
-.footer .footer-section a:focus {
-  color: #ffffff; /* White text on hover */
-  background-color: rgba(255, 255, 255, 0.1); /* Subtle hover background */
-  text-decoration: underline;
-}
-
-.footer .footer-bottom {
-  text-align: center;
-  font-size: 0.75rem; /* Smaller font size */
-  color: #cccccc; /* Light grey */
-  padding-top: 10px;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .nav-container {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .navbar-nav {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .footer .footer-content {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .hero-content h1 {
-    font-size: 2.5rem; /* Responsive font size */
-  }
-
-  .hero-content h2 {
-    font-size: 1.25rem; /* Responsive font size */
-  }
-}
-
-/* Video Modal */
 .video-modal {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: #ffffff;
   width: 80%;
   height: 80%;
-  padding: 0;
+  position: fixed;
+  top: 10%;
+  left: 10%;
+  background: #000;
+  border: none;
+  border-radius: 10px;
   overflow: hidden;
-  z-index: 1000;
-  border-radius: 10px; /* Added border-radius for rounded corners */
 }
 
 .video-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.75);
-  z-index: 999;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
 }
 
 .modal-content {
@@ -442,11 +305,105 @@ body {
 .close-modal-btn {
   position: absolute;
   top: 10px;
-  right: 10px;
+  right: 20px;
+  font-size: 2rem;
+  color: #fff;
   background: none;
   border: none;
-  font-size: 1.5rem;
   cursor: pointer;
-  color: #ffffff;
-  z-index: 1001;
+  z-index: 1000;
 }
+
+
+/* Pricing Section */
+.pricing-section {
+  padding: 60px 0;
+  background-color: var(--background-color);
+}
+
+.pricing-section h2 {
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 40px;
+  color: var(--heading-color);
+}
+
+.pricing-table {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 40px;
+}
+
+.pricing-tier {
+  background-color: #fff;
+  padding: 30px;
+  border-radius: 10px;
+  width: 280px;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.pricing-tier h3 {
+  font-size: 1.5rem;
+  color: var(--heading-color);
+  margin-bottom: 10px;
+}
+
+.pricing-tier p {
+  font-size: 2rem;
+  color: var(--primary-color);
+  margin-bottom: 20px;
+}
+
+.pricing-tier ul {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 20px;
+}
+
+.pricing-tier ul li {
+  font-size: 1rem;
+  color: #555;
+  margin-bottom: 10px;
+}
+
+.pricing-tier .cta-btn {
+  width: 100%;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .features-grid,
+  .testimonials-grid,
+  .pricing-table {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .feature-item,
+  .testimonial-item,
+  .pricing-tier {
+    width: 100%;
+  }
+
+  .hero-content h1 {
+    font-size: 2.5rem;
+  }
+
+  .hero-content h2 {
+    font-size: 1.2rem;
+  }
+
+  .video-thumbnail {
+    width: 100%;
+    padding-bottom: 56.25%;
+  }
+
+  .video-modal {
+    width: 90%;
+    height: auto;
+  }
+}
+
+

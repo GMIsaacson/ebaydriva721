@@ -117,7 +117,9 @@ const Dashboard = () => {
 
   const { currentUser, logout } = useAuth();
   const db = getFirestore(app);
-
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deleteConfirmationText, setDeleteConfirmationText] = useState('');
+  
   const resetFormFields = () => {
     setTitle("");
     setCategory("");
@@ -199,6 +201,35 @@ const Dashboard = () => {
     }
   };
 
+  
+  const handleBulkDelete = async (idsToDelete) => {
+    if (idsToDelete.length === 0) {
+      alert('No products selected for deletion.');
+      return;
+    }
+
+    try {
+      const batch = writeBatch(db);
+      idsToDelete.forEach((id) => {
+        const docRef = doc(db, 'products', id);
+        batch.delete(docRef);
+      });
+
+      await batch.commit();
+
+      // Update the products state to remove the deleted products
+      setProducts((prevProducts) =>
+        prevProducts.filter((product) => !idsToDelete.includes(product.id))
+      );
+      // Clear selectedIds
+      setSelectedIds([]);
+
+      alert('Selected products deleted successfully!');
+    } catch (error) {
+      console.error('Error deleting selected products:', error);
+      alert('Error deleting selected products!');
+    }
+  };
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -392,7 +423,47 @@ const Dashboard = () => {
         />
       </div>
       <button onClick={() => handleBulkDelete(selectedIds)}>Delete Selected Products</button>
-      <AccountPage />
+           {/* Delete Confirmation Modal */}
+           {isDeleteModalOpen && (
+        <div className="modal">
+          <div className="modal-content">
+            <h2>Confirm Bulk Deletion</h2>
+            <p>
+              Are you sure you want to delete {selectedIds.length} selected product(s)? This action cannot be undone.
+            </p>
+            <p>Please type <strong>DELETE</strong> to confirm:</p>
+            <input
+              type="text"
+              value={deleteConfirmationText}
+              onChange={(e) => setDeleteConfirmationText(e.target.value)}
+            />
+            <div className="modal-buttons">
+              <button
+                onClick={() => {
+                  setIsDeleteModalOpen(false);
+                  setDeleteConfirmationText('');
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  if (deleteConfirmationText === 'DELETE') {
+                    handleBulkDelete(selectedIds);
+                    setIsDeleteModalOpen(false);
+                    setDeleteConfirmationText('');
+                  } else {
+                    alert('Please type "DELETE" to confirm.');
+                  }
+                }}
+              >
+                Confirm Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
     </>
   );
 };

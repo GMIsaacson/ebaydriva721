@@ -11,16 +11,19 @@ import Signup from "./signup";
 import ResetPassword from "./resetpassword";
 import ProtectedRoute from "./protectedroute";
 import { AuthProvider } from "./AuthProvider";
-import VerifyEmail from "./verifyemail"; // Import the component
+import VerifyEmail from "./verifyemail";
 import Calculators from "./resources";
 import AccountPage from "./accountspage";
 
 const App = () => {
   return (
-    <Router>
-      <AuthProvider>
+    <AuthProvider>
+      <Router>
         <div className="App">
+          {/* Navigation Bar */}
           <Nav />
+
+          {/* Application Routes */}
           <Routes>
             {/* Public Routes */}
             <Route
@@ -63,6 +66,7 @@ const App = () => {
                 </ErrorBoundary>
               }
             />
+
             {/* Protected Routes */}
             <Route
               path="/dashboard"
@@ -77,37 +81,42 @@ const App = () => {
             <Route
               path="/products"
               element={
-                <ErrorBoundary>
-                  <ProductData />
-                </ErrorBoundary>
+                <ProtectedRoute>
+                  <ErrorBoundary>
+                    <ProductData />
+                  </ErrorBoundary>
+                </ProtectedRoute>
               }
             />
             <Route
               path="/resources"
               element={
-                <ErrorBoundary>
-                  <Calculators />
-                </ErrorBoundary>
+               
+                  <ErrorBoundary>
+                    <Calculators />
+                  </ErrorBoundary>
+               
               }
             />
-       
             <Route
-  path="/accounts/*"
-  element={
-    <ProtectedRoute>
-      <ErrorBoundary>
-        <AccountPage />
-      </ErrorBoundary>
-    </ProtectedRoute>
-  }
-/>
+              path="/accounts/*"
+              element={
+                <ProtectedRoute>
+                  <ErrorBoundary>
+                    <AccountPage />
+                  </ErrorBoundary>
+                </ProtectedRoute>
+              }
+            />
           </Routes>
 
+          {/* Footer */}
           <Footer />
         </div>
-      </AuthProvider>
-    </Router>
+      </Router>
+    </AuthProvider>
   );
 };
 
 export default App;
+

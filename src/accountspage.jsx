@@ -1,29 +1,29 @@
-import React from 'react';
-import { useAuth } from './AuthProvider';
-import { Link, Route, Routes, useNavigate } from 'react-router-dom';
-import ProfileEdit from './ProfileEdit';
-import ResetPassword from './resetpassword';
+import React from "react";
+import { useAuth } from "./AuthProvider";
+import { Link, Route, Routes, Navigate, useNavigate } from "react-router-dom";
+import ProfileEdit from "./ProfileEdit";
+import ResetPassword from "./resetpassword";
 // Uncomment when these components are implemented
-// import SecuritySettings from './SecuritySettings';
-// import Preferences from './Preferences';
-import ActivityLogs from './ActivityLogs';
-// import AccountDeletion from './AccountDeletion';
-import './account.css';
+// import SecuritySettings from "./SecuritySettings";
+// import Preferences from "./Preferences";
+import ActivityLogs from "./ActivityLogs";
+import AccountDeletion from "./AccountDeletion";
+import "./account.css";
 
 const AccountPage = () => {
   const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
 
   if (!currentUser) {
-    return <h1>Please log in to view this page.</h1>;
+    return <Navigate to="/login" replace />;
   }
 
   const handleLogout = async () => {
     try {
       await logout();
-      navigate('/login');
+      navigate("/login");
     } catch (error) {
-      console.error('Logout Failed', error);
+      console.error("Logout Failed", error);
     }
   };
 
@@ -31,11 +31,13 @@ const AccountPage = () => {
     <div className="account-page">
       {/* User Info Section */}
       <div className="account-header">
-        <h2>Welcome, {currentUser.displayName || 'User'}!</h2>
+        <h2>Welcome, {currentUser.displayName || "User"}!</h2>
         <p>Email: {currentUser.email}</p>
         <p>Account Created: {new Date(currentUser.metadata.creationTime).toLocaleString()}</p>
         <p>Last Login: {new Date(currentUser.metadata.lastSignInTime).toLocaleString()}</p>
-        <button className="logout-button" onClick={handleLogout}>Logout</button>
+        <button className="logout-button" onClick={handleLogout}>
+          Logout
+        </button>
       </div>
 
       <div className="account-main">
@@ -85,7 +87,9 @@ const AccountPage = () => {
             {/* <Route path="security" element={<SecuritySettings />} /> */}
             {/* <Route path="preferences" element={<Preferences />} /> */}
             <Route path="activity" element={<ActivityLogs />} />
-            {/* <Route path="delete" element={<AccountDeletion />} /> */}
+            <Route path="delete" element={<AccountDeletion />} />
+            {/* Redirect any unknown sub-route back to the default */}
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>
       </div>
@@ -94,6 +98,9 @@ const AccountPage = () => {
 };
 
 export default AccountPage;
+
+
+
 
 
 
