@@ -1,318 +1,25 @@
 import React, { useState } from "react";
 import { CSVLink } from "react-csv";
 import "./styles.css";
-<css></css>;
+// Import all categories
+import Furniture from "./categories/Furniture";
+import HomeAndGarden from "./categories/HomeAndGarden";
+import HealthandBeauty from "./categories/HealthandBeauty";
 
-// Updated categories with nested structure
+
 const categories = {
-    "Home & Garden": {
-      Bath: {
-        "Bathroom Accessories": [
-          "Bathroom Accessory Mixed Lots",
-          "Bathroom Accessory Sets",
-          "Bathroom Cabinets",
-          "Bathroom Cladding Panels",
-          "Bathroom Sinks & Vanities",
-          "Bathroom Suites",
-          "Showers, Bathtubs & Parts",
-          "Shower & Bathtub Accessories",
-          "Steam Showers",
-          "Toilets & Bidets",
-        ],
-        "Bath Mats, Rugs & Toilet": [
-          "Bath Mats, Rugs & Toilet Covers",
-          "Bathroom Baskets & Storage",
-          "Bathroom Scales",
-          "Drain Stoppers & Strainers",
-          "Mirrors",
-          "Other Bathroom Accessories",
-          "Shelves",
-          "Soap Dishes & Dispensers",
-          "Tile Décor",
-          "Tissue Box Covers",
-          "Toilet Brushes & Holders",
-          "Toilet Paper Holders & Storage",
-          "Towel Racks",
-          "Towels & Washcloths",
-          "Tumblers & Toothbrush Holders",
-          "Wall Hooks & Hangers",
-        ],
-      },
-    
-      Bedding: {
-        "See all in Bedding": [],
-        "Bed Pillows": [
-          "Down Bed Pillows",
-          "Memory Foam Bed Pillows",
-          "Standard Bed Pillows",
-          "Specialty Bed Pillows",
-        ],
-        "Bed Skirts": [
-          "Dust Ruffles",
-          "Pleated Bed Skirts",
-          "Ruffled Bed Skirts",
-        ],
-        "Bed-in-a-Bag": [
-          "Complete Bedding Sets",
-          "Comforter Sets",
-          "Duvet Cover Sets",
-        ],
-        "Bedding Accessories": [
-          "Bed Risers",
-          "Bedding Storage Bags",
-          "Bed Canopies",
-          "Decorative Pillow Inserts",
-        ],
-        "Blankets & Throws": [
-          "Weighted Blankets",
-          "Fleece Blankets",
-          "Wool Throws",
-          "Heated Blankets",
-        ],
-        "Canopies & Netting": [
-          "Mosquito Nets",
-          "Four-Poster Canopies",
-          "Hanging Canopies",
-        ],
-        "Comforters & Sets": [
-          "Down Comforters",
-          "Synthetic Comforters",
-          "Reversible Comforters",
-        ],
-        "Duvet Covers & Sets": [
-          "Cotton Duvet Covers",
-          "Linen Duvet Covers",
-          "Silk Duvet Covers",
-        ],
-        "Duvet Inserts": [
-          "Down Duvet Inserts",
-          "Synthetic Duvet Inserts",
-          "All-Season Duvet Inserts",
-        ],
-        "Mattress & Pillow Protectors": [
-          "Waterproof Mattress Protectors",
-          "Hypoallergenic Mattress Protectors",
-          "Zippered Pillow Protectors",
-        ],
-        "Mattress Pads & Toppers": [
-          "Memory Foam Toppers",
-          "Cooling Mattress Pads",
-          "Featherbed Toppers",
-        ],
-        "Nursery Bedding": [
-          "Crib Bedding Sets",
-          "Bassinet Bedding",
-          "Changing Table Covers",
-        ],
-        "Pillow Shams": [
-          "Standard Pillow Shams",
-          "Euro Pillow Shams",
-          "King Pillow Shams",
-        ],
-        Pillowcases: [
-          "Standard Pillowcases",
-          "Silk Pillowcases",
-          "Cotton Pillowcases",
-        ],
-        "Quilts, Bedspreads & Coverlets": [
-          "Handmade Quilts",
-          "Cotton Coverlets",
-          "Decorative Bedspreads",
-        ],
-        Sheets: [
-          "Fitted Sheets",
-          "Flat Sheets",
-          "Sheet Sets",
-        ],
-      },
-      
-      "Candles & Home Fragrance": {
-        "Candles": [],
-        "Candle Holders": [],
-        "Reed Diffusers & Oils": [],
-        "Other Home Fragrance": [],
-      },
-      "Food & Beverages": {
-        "Coffee & Tea": [],
-        "Non-Perishable Items": [],
-        "Snacks": [],
-      },
-      "Fresh Cut Flowers": {
-        Bouquets: [],
-        Roses: [],
-        "Seasonal Flowers": [],
-      },
-      Furniture: {
-        Sofas: [],
-        Chairs: [],
-        Tables: [],
-        "Storage Units": [],
-      },
-      "Greeting Cards & Party Supply": {
-        Cards: [],
-        Balloons: [],
-        "Party Favors": [],
-      },
-      "Holiday & Seasonal Décor": {
-        "Christmas Decorations": [],
-        "Halloween Decorations": [],
-        "Easter Decorations": [],
-      },
-      "Home Décor": {
-        "Wall Art": [],
-        Mirrors: [],
-        Clocks: [],
-      },
-      "Home Improvement": {
-        "Tools & Equipment": [],
-        "Paint & Supplies": [],
-      },
-      "Household Supplies & Cleaning": {
-        "Cleaning Tools": [],
-        "Laundry Supplies": [],
-        "Paper Goods": [],
-      },
-      "Kids & Teens at Home": {
-        "Kids' Furniture": [],
-        "Decor for Kids": [],
-      },
-    
-      "Kitchen, Dining & Bar": {
-        "Kitchen Tools": {
-          "Cutlery & Utensils": [
-            "Knives",
-            "Knife Sets",
-            "Cutting Boards",
-            "Peelers & Slicers",
-            "Kitchen Scissors",
-          ],
-          "Cooking Utensils": [
-            "Spatulas",
-            "Whisks",
-            "Tongs",
-            "Ladles",
-            "Wooden Spoons",
-            "Slotted Spoons",
-          ],
-          "Measuring Tools": [
-            "Measuring Cups",
-            "Measuring Spoons",
-            "Kitchen Scales",
-            "Timers & Thermometers",
-          ],
-          "Baking Tools": [
-            "Rolling Pins",
-            "Pastry Brushes",
-            "Cookie Cutters",
-            "Cake Decorating Tools",
-            "Mixing Bowls",
-          ],
-          "Preparation Tools": [
-            "Graters & Zesters",
-            "Can Openers",
-            "Garlic Presses",
-            "Citrus Juicers",
-          ],
-          "Specialty Tools": [
-            "Mandolines",
-            "Meat Tenderizers",
-            "Egg Slicers",
-            "Pizza Cutters",
-          ],
-        },
-        "Dining Sets": [],
-        "Bar Supplies": [],
-        "Kitchen Storage & Organization": {
-          "Bread Boxes": [],
-          "Canisters & Jars": [],
-          "Cling Film, Foil & Food Wraps": [],
-          "Food Storage Bags": [],
-          "Food Storage Containers": [],
-          "Lunch Containers": [],
-          "Other Kitchen Storage": [],
-          "Paper Towel Holders": [],
-          "Racks & Holders": [],
-          "Spice Jars & Racks": [],
-          "Vacuum Flasks & Mugs": [],
-        },
-      },
-      "Lamps, Lighting & Ceiling Fans": {
-        Lamps: [],
-        "Ceiling Fans": [],
-        "Outdoor Lighting": [],
-      },
-      "Major Appliances": {
-        Refrigerators: [],
-        Dishwashers: [],
-        "Washing Machines": [],
-      },
-      Pillows: {
-        "Throw Pillows": [],
-        "Decorative Pillows": [],
-      },
-      "Rugs & Carpets": {
-        "Area Rugs": [],
-        Carpets: [],
-        "Runners": [],
-      },
-      "School Supplies": {
-        "Backpacks": [],
-        "Stationery": [],
-        "Art Supplies": [],
-      },
-      "Tools & Workshop Equipment": {
-        Drills: [],
-        "Tool Kits": [],
-      },
-      "Wedding Supplies": {
-        "Wedding Décor": [],
-        "Favors": [],
-      },
-      "Wholesale Lots": {
-        Electronics: [],
-        "Home Goods": [],
-      },
-      "Window Treatments & Hardware": {
-        Curtains: [],
-        Blinds: [],
-        "Curtain Rods": [],
-      },
-    },
-  };
-  
+  "Furniture": Furniture,
+  "HomeAndGarden": HomeAndGarden,
+  "HealthandBeauty": HealthandBeauty,
+};
 
 function Csvtool() {
   const [tableData, setTableData] = useState([]);
+  const [isAccordionOpen, setIsAccordionOpen] = useState(false);
 
-  // Handle category change for each row
-  const handleCategoryChange = (index, e) => {
-    const newData = [...tableData];
-    newData[index].category = e.target.value;
-    newData[index].subCategory = ""; // Reset subcategory
-    newData[index].item = ""; // Reset item
-    setTableData(newData);
-  };
-
-  // Handle subcategory change for each row
-  const handleSubCategoryChange = (index, e) => {
-    const newData = [...tableData];
-    newData[index].subCategory = e.target.value;
-    newData[index].item = ""; // Reset item
-    setTableData(newData);
-  };
-
-  // Handle item change for each row
-  const handleItemChange = (index, e) => {
-    const newData = [...tableData];
-    newData[index].item = e.target.value;
-    setTableData(newData);
-  };
-
-  // Handle input change in the table for each row
-  const handleInputChange = (index, event) => {
-    const newData = [...tableData];
-    newData[index][event.target.name] = event.target.value;
-    setTableData(newData);
+  // Toggle accordion state
+  const toggleAccordion = () => {
+    setIsAccordionOpen((prev) => !prev);
   };
 
   // Add a new row to the table with initial empty data
@@ -323,163 +30,209 @@ function Csvtool() {
         title: "",
         sold: "",
         price: "",
-        profit: "",
+        bep: "",
         dimension: "",
-        productOnEbay: "",
-        source: "",
+        sell: "",
+        buy: "",
         category: "",
         subCategory: "",
+        subSubCategory: "",
         item: "",
       },
     ]);
   };
 
-  // Convert inputs to JSON format
-  const handleConvertToJson = () => {
-    const jsonData = {
-      category: tableData[0].category,
-      subcategories: Object.keys(categories[tableData[0].category] || {}).map(
-        (subCategory) => ({
-          name: subCategory,
-          subcategories: Object.keys(
-            categories[tableData[0].category][subCategory] || {}
-          ).map((subSubCategory) => ({
-            name: subSubCategory,
-            subcategories:
-              categories[tableData[0].category][subCategory][subSubCategory] ||
-              [],
-          })),
-        })
-      ),
-    };
-
-    const jsonBlob = new Blob([JSON.stringify(jsonData, null, 2)], {
-      type: "application/json",
-    });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(jsonBlob);
-    link.download = "category_structure.json";
-    link.click();
-  };
-
-  // Get subcategories based on selected category for each row
+  // Get subcategories based on selected category
   const getSubCategories = (category) => {
-    return category ? Object.keys(categories[category] || {}) : [];
+    if (categories && categories[category]) {
+      return Object.keys(categories[category]);
+    }
+    return [];
   };
 
-  // Get sub-subcategories based on selected subcategory for each row
+  // Get sub-subcategories based on selected subCategory
   const getSubSubCategories = (category, subCategory) => {
-    if (category && subCategory) {
-      return Object.keys(categories[category][subCategory] || {});
+    if (
+      categories &&
+      categories[category] &&
+      categories[category][subCategory]
+    ) {
+      return Object.keys(categories[category][subCategory]);
     }
     return [];
   };
 
-  // Get items based on selected sub-subcategory for each row
+  // Get items based on selected subSubCategory
   const getItems = (category, subCategory, subSubCategory) => {
-    if (category && subCategory && subSubCategory) {
-      return categories[category][subCategory][subSubCategory] || [];
+    if (
+      categories &&
+      categories[category] &&
+      categories[category][subCategory] &&
+      categories[category][subCategory][subSubCategory]
+    ) {
+      return categories[category][subCategory][subSubCategory];
     }
     return [];
+  };
+
+  // Define CSV headers explicitly to ensure correct field names
+  const csvHeaders = [
+    { label: "title", key: "title" },
+    { label: "sold", key: "sold" },
+    { label: "price", key: "price" },
+    { label: "bep", key: "bep" },
+    { label: "dimension", key: "dimension" },
+    { label: "sell", key: "sell" },
+    { label: "buy", key: "buy" },
+    { label: "category", key: "category" },
+    { label: "subCategory", key: "subCategory" },
+    { label: "subSubCategory", key: "subSubCategory" },
+    { label: "item", key: "item" },
+  ];
+
+  // CSVLink options to ensure proper formatting
+  const csvOptions = {
+    headers: csvHeaders,
+    enclosingCharacter: '"', // Enclose fields in double quotes
   };
 
   return (
-    <>
-      <div style={{ padding: "20px" }}>
-        <h1>CSV Builder</h1>
-        <div>
-          {/* Add Row Button */}
-          <button onClick={handleAddRow} style={{ marginTop: "10px" }}>
-            Add Row
-          </button>
-        </div>
-
-        {/* Table Section */}
-        <table
-          border="1"
-          cellPadding="5"
-          style={{ marginTop: "20px", width: "100%" }}
-        >
+    <div className="accordion-section">
+      <div
+        className={`accordion-header ${isAccordionOpen ? "open" : ""}`}
+        onClick={toggleAccordion}
+      >
+        <h1>CSV Builder {isAccordionOpen ? "▲" : "▼"}</h1>
+      </div>
+      <div
+        className={`accordion-content ${isAccordionOpen ? "open" : ""}`}
+        style={{ display: isAccordionOpen ? "block" : "none" }}
+      >
+        <button onClick={handleAddRow} className="btn-add-row">
+          Add Row
+        </button>
+        <table border="1" cellPadding="5" className="csv-table">
           <thead>
             <tr>
               <th>Title</th>
               <th>Sold</th>
               <th>Price</th>
-              <th>Profit</th>
+              <th>BEP</th>
               <th>Dimension</th>
-              <th>Product on eBay</th>
-              <th>Source</th>
+              <th>Sell</th>
+              <th>Buy</th>
               <th>Category</th>
               <th>SubCategory</th>
-              <th>Sub-SubCategory</th>
+              <th>SubSubCategory</th>
               <th>Item</th>
             </tr>
           </thead>
           <tbody>
             {tableData.map((row, index) => (
               <tr key={index}>
-                {/* Input Fields */}
+                {/* Title */}
                 <td>
                   <input
                     type="text"
                     name="title"
-                    onChange={(e) => handleInputChange(index, e)}
                     value={row.title}
+                    onChange={(e) => {
+                      const newData = [...tableData];
+                      newData[index].title = e.target.value;
+                      setTableData(newData);
+                    }}
                   />
                 </td>
+                {/* Sold */}
                 <td>
                   <input
                     type="number"
                     name="sold"
-                    onChange={(e) => handleInputChange(index, e)}
                     value={row.sold}
+                    onChange={(e) => {
+                      const newData = [...tableData];
+                      newData[index].sold = e.target.value;
+                      setTableData(newData);
+                    }}
                   />
                 </td>
+                {/* Price */}
                 <td>
                   <input
                     type="number"
                     name="price"
-                    onChange={(e) => handleInputChange(index, e)}
                     value={row.price}
+                    onChange={(e) => {
+                      const newData = [...tableData];
+                      newData[index].price = e.target.value;
+                      setTableData(newData);
+                    }}
                   />
                 </td>
+                {/* BEP */}
                 <td>
                   <input
                     type="number"
-                    name="profit"
-                    onChange={(e) => handleInputChange(index, e)}
-                    value={row.profit}
+                    name="bep"
+                    value={row.bep}
+                    onChange={(e) => {
+                      const newData = [...tableData];
+                      newData[index].bep = e.target.value;
+                      setTableData(newData);
+                    }}
                   />
                 </td>
+                {/* Dimension */}
                 <td>
                   <input
                     type="text"
                     name="dimension"
-                    onChange={(e) => handleInputChange(index, e)}
                     value={row.dimension}
+                    onChange={(e) => {
+                      const newData = [...tableData];
+                      newData[index].dimension = e.target.value;
+                      setTableData(newData);
+                    }}
                   />
                 </td>
+                {/* Sell */}
                 <td>
                   <input
                     type="text"
-                    name="productOnEbay"
-                    onChange={(e) => handleInputChange(index, e)}
-                    value={row.productOnEbay}
+                    name="sell"
+                    value={row.sell}
+                    onChange={(e) => {
+                      const newData = [...tableData];
+                      newData[index].sell = e.target.value;
+                      setTableData(newData);
+                    }}
                   />
                 </td>
+                {/* Buy */}
                 <td>
                   <input
                     type="text"
-                    name="source"
-                    onChange={(e) => handleInputChange(index, e)}
-                    value={row.source}
+                    name="buy"
+                    value={row.buy}
+                    onChange={(e) => {
+                      const newData = [...tableData];
+                      newData[index].buy = e.target.value;
+                      setTableData(newData);
+                    }}
                   />
                 </td>
-                {/* Category Selection */}
+                {/* Category Select */}
                 <td>
                   <select
-                    onChange={(e) => handleCategoryChange(index, e)}
                     value={row.category}
+                    onChange={(e) => {
+                      const newData = [...tableData];
+                      newData[index].category = e.target.value;
+                      newData[index].subCategory = ""; // Reset SubCategory
+                      newData[index].subSubCategory = ""; // Reset SubSubCategory
+                      newData[index].item = ""; // Reset Item
+                      setTableData(newData);
+                    }}
                   >
                     <option value="">Select Category</option>
                     {Object.keys(categories).map((category) => (
@@ -489,54 +242,68 @@ function Csvtool() {
                     ))}
                   </select>
                 </td>
-                {/* SubCategory Selection */}
+                {/* SubCategory Select */}
                 <td>
-                  {row.category && (
-                    <select
-                      onChange={(e) => handleSubCategoryChange(index, e)}
-                      value={row.subCategory}
-                    >
-                      <option value="">Select Sub-Category</option>
-                      {getSubCategories(row.category).map((subCategory) => (
+                  <select
+                    value={row.subCategory}
+                    onChange={(e) => {
+                      const newData = [...tableData];
+                      newData[index].subCategory = e.target.value;
+                      newData[index].subSubCategory = ""; // Reset SubSubCategory
+                      newData[index].item = ""; // Reset Item
+                      setTableData(newData);
+                    }}
+                    disabled={!row.category}
+                  >
+                    <option value="">Select SubCategory</option>
+                    {row.category &&
+                      getSubCategories(row.category).map((subCategory) => (
                         <option key={subCategory} value={subCategory}>
                           {subCategory}
                         </option>
                       ))}
-                    </select>
-                  )}
+                  </select>
                 </td>
-                {/* Sub-SubCategory Selection */}
+                {/* SubSubCategory Select */}
                 <td>
-                  {row.subCategory && (
-                    <select
-                      onChange={(e) => {
-                        const newData = [...tableData];
-                        newData[index].subSubCategory = e.target.value;
-                        newData[index].item = ""; // Reset item
-                        setTableData(newData);
-                      }}
-                      value={row.subSubCategory || ""}
-                    >
-                      <option value="">Select Sub-SubCategory</option>
-                      {getSubSubCategories(row.category, row.subCategory).map(
+                  <select
+                    value={row.subSubCategory}
+                    onChange={(e) => {
+                      const newData = [...tableData];
+                      newData[index].subSubCategory = e.target.value;
+                      newData[index].item = ""; // Reset Item
+                      setTableData(newData);
+                    }}
+                    disabled={!row.subCategory}
+                  >
+                    <option value="">Select SubSubCategory</option>
+                    {row.category &&
+                      row.subCategory &&
+                      getSubSubCategories(row.category, row.subCategory).map(
                         (subSubCategory) => (
                           <option key={subSubCategory} value={subSubCategory}>
                             {subSubCategory}
                           </option>
                         )
                       )}
-                    </select>
-                  )}
+                  </select>
                 </td>
-                {/* Item Selection */}
+                {/* Item Select */}
                 <td>
-                  {row.subSubCategory && (
-                    <select
-                      onChange={(e) => handleItemChange(index, e)}
-                      value={row.item}
-                    >
-                      <option value="">Select Item</option>
-                      {getItems(
+                  <select
+                    value={row.item}
+                    onChange={(e) => {
+                      const newData = [...tableData];
+                      newData[index].item = e.target.value;
+                      setTableData(newData);
+                    }}
+                    disabled={!row.subSubCategory}
+                  >
+                    <option value="">Select Item</option>
+                    {row.category &&
+                      row.subCategory &&
+                      row.subSubCategory &&
+                      getItems(
                         row.category,
                         row.subCategory,
                         row.subSubCategory
@@ -545,24 +312,38 @@ function Csvtool() {
                           {item}
                         </option>
                       ))}
-                    </select>
-                  )}
+                  </select>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
 
-        {/* Export Buttons */}
         <div style={{ marginTop: "20px" }}>
-          <CSVLink data={tableData} filename="category_data.csv">
-            <button style={{ marginRight: "10px" }}>Export as CSV</button>
+          <CSVLink
+            data={tableData}
+            headers={csvHeaders}
+            filename="category_data.csv"
+            enclosingCharacter='"' // Enclose fields in double quotes
+          >
+            <button className="btn-export-csv">Export as CSV</button>
           </CSVLink>
-          <button onClick={handleConvertToJson}>Convert to JSON</button>
         </div>
       </div>
-    </>
+    </div>
   );
 }
 
 export default Csvtool;
+
+
+
+
+
+
+
+
+
+
+
+
