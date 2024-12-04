@@ -33,7 +33,7 @@ body {
 /* Product Data Container */
 .product-data-container {
   padding: var(--padding);
-  max-width: 1400px;
+  max-width: 1600px;
   margin: 0 auto;
   background-color: #ffffff;
   border-radius: var(--border-radius);

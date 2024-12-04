@@ -1,5 +1,5 @@
 
-import Furniture from "./Furniture";
+
 import HomeAndGarden from "./HomeAndGarden";
 import HealthandBeauty from "./HealthandBeauty";
 
@@ -9,7 +9,7 @@ import HealthandBeauty from "./HealthandBeauty";
 
 const categories = {
   
-  "Furniture": Furniture,
+  
   "HomeAndGarden":HomeAndGarden,
   "HealthandBeauty":HealthandBeauty,
   

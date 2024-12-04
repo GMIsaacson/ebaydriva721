@@ -2,13 +2,13 @@ import React, { useState } from "react";
 import { CSVLink } from "react-csv";
 import "./styles.css";
 // Import all categories
-import Furniture from "./categories/Furniture";
+
 import HomeAndGarden from "./categories/HomeAndGarden";
 import HealthandBeauty from "./categories/HealthandBeauty";
 
 
 const categories = {
-  "Furniture": Furniture,
+
   "HomeAndGarden": HomeAndGarden,
   "HealthandBeauty": HealthandBeauty,
 };
