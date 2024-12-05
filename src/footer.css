@@ -1,72 +1,133 @@
-/* Footer Section */
+/* Footer Container */
 .footer {
-  background: linear-gradient(
-    180deg,
-    #0056b3,
-    #007bff
-  ); /* Gradient background to match navbar */
-  color: #ffffff; /* White text for high contrast */
+  background: linear-gradient(180deg, #0056b3, #007bff); /* Gradient background */
+  color: #ffffff; /* White text for contrast */
   text-align: center;
   padding: 2rem 1rem; /* Consistent padding */
   font-size: 1rem; /* Consistent font size */
-}
-
-.footer .footer-content {
   display: flex;
-  justify-content: space-around;
-  flex-wrap: wrap;
-  padding: 1rem 0; /* Consistent padding */
+  flex-direction: column; /* Stack content vertically */
+  justify-content: center;
+  align-items: center;
+  width: 100%; /* Full width */
+  box-sizing: border-box;
 }
 
-.footer .footer-section {
-  margin: 1rem;
-  flex: 1;
-  min-width: 200px;
+/* Footer Content */
+.footer-content {
+  display: flex;
+  flex-wrap: wrap; /* Wrap items on smaller screens */
+  justify-content: space-between; /* Space out items */
+  align-items: flex-start; /* Align items at the top */
+  max-width: 1200px; /* Center the content within a maximum width */
+  width: 100%;
+  gap: 2rem; /* Add spacing between sections */
+  margin-bottom: 1rem; /* Space below the content */
+  box-sizing: border-box;
 }
 
-.footer .footer-section h2,
-.footer .footer-section h3 {
+/* Footer Sections */
+.footer-section {
+  flex: 1 1 300px; /* Each section takes up equal space with a minimum width */
+  min-width: 250px; /* Prevent sections from shrinking too much */
+  box-sizing: border-box;
+}
+
+.footer-section h2,
+.footer-section h3 {
   color: #ffffff; /* White for headings */
-  margin-bottom: 0.5rem; /* Consistent margin */
+  font-size: 1.2rem; /* Larger headings */
+  margin-bottom: 0.75rem; /* Space below the heading */
 }
 
-.footer .footer-section p,
-.footer .footer-section li {
-  color: #e0e0e0; /* Light grey for text to match theme */
-  line-height: 1.6;
+.footer-section p {
+  color: #e0e0e0; /* Light grey for paragraphs */
+  font-size: 0.95rem; /* Slightly smaller font for readability */
+  line-height: 1.6; /* Improve readability */
+  margin: 0.5rem 0; /* Add spacing between paragraphs */
 }
 
-.footer .footer-section ul {
+/* Links Styling */
+.footer-section ul {
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
-.footer .footer-section a {
-  color: #e0e0e0; /* Light grey links */
-  text-decoration: none;
-  transition:
-    color 0.3s,
-    background-color 0.3s; /* Smooth transitions */
+.footer-section ul li {
+  margin-bottom: 0.5rem; /* Add space between list items */
 }
 
-.footer .footer-section a:hover,
-.footer .footer-section a:focus {
-  color: #ffffff; /* White on hover for contrast */
-  background-color: rgba(255, 255, 255, 0.1); /* Subtle hover background */
-  text-decoration: underline; /* Underline for emphasis */
+.footer-section ul li a {
+  color: #aad3df; /* Soft blue for links */
+  text-decoration: none; /* No underline by default */
+  font-size: 0.95rem; /* Consistent font size */
+  padding: 0.5rem 0.75rem; /* Add padding for better clickability */
+  border-radius: 5px; /* Rounded corners for links */
+  display: inline-block; /* Ensure padding applies */
+  transition: color 0.3s ease, background-color 0.3s ease; /* Smooth hover effect */
 }
 
-.footer .footer-bottom {
+.footer-section ul li a:hover,
+.footer-section ul li a:focus {
+  color: #ffffff; /* White text on hover */
+  background-color: rgba(255, 255, 255, 0.2); /* Subtle hover background */
+}
+
+/* Contact Form Styling */
+.footer-section.contact-form p {
+  margin-top: 1rem; /* Add space above contact form */
+}
+
+.footer-section.contact-form a {
+  color: #aad3df; /* Same link color */
+  text-decoration: underline; /* Underline email links */
+  transition: color 0.3s ease;
+}
+
+.footer-section.contact-form a:hover,
+.footer-section.contact-form a:focus {
+  color: #ffffff; /* White on hover/focus */
+}
+
+/* Footer Bottom */
+.footer-bottom {
   text-align: center;
-  font-size: 0.875rem; /* Slightly smaller font size */
+  font-size: 0.875rem; /* Slightly smaller text */
   color: #cccccc; /* Light grey for less emphasis */
-  padding-top: 1rem; /* Consistent padding */
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1); /* Subtle divider */
+  width: 100%;
 }
 
+/* Responsive Design */
 @media (max-width: 768px) {
-  .footer .footer-content {
-    flex-direction: column;
+  .footer-content {
+    flex-direction: column; /* Stack sections vertically */
     align-items: center;
+  }
+
+  .footer-section {
+    flex: 1 1 100%; /* Each section takes full width */
+    text-align: center; /* Center text for smaller screens */
+  }
+
+  .footer-section ul {
+    padding: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer {
+    padding: 1.5rem 0.75rem; /* Reduce padding for very small screens */
+  }
+
+  .footer-section h2,
+  .footer-section h3 {
+    font-size: 1rem; /* Smaller headings */
+  }
+
+  .footer-section p {
+    font-size: 0.9rem; /* Adjust text size */
   }
 }

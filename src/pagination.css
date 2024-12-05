@@ -43,3 +43,15 @@
     font-size: 0.875rem; /* Smaller font size on mobile */
   }
 }
+.product-data-container {
+  padding: var(--padding);
+  max-width: 1600px;
+  margin: 0 auto;
+  background-color: #ffffff;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  overflow-x: hidden;
+  min-height: calc(100vh - 6rem); /* Ensure it takes up the viewport minus the footer height */
+  box-sizing: border-box;
+}
+

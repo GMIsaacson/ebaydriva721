@@ -6,6 +6,7 @@
   "main": "src/index.tsx",
   "dependencies": {
     "@google-cloud/recaptcha-enterprise": "5.7.0",
+    "file-saver": "^2.0.5",
     "firebase": "10.11.0",
     "modal-video": "2.4.8",
     "papaparse": "^5.4.1",
