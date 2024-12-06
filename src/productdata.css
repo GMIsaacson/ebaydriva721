@@ -38,7 +38,7 @@ body {
   background-color: #ffffff;
   border-radius: var(--border-radius);
   box-shadow: var(--shadow);
-  overflow-x: hidden; /* Prevent horizontal scrolling */
+  overflow-x: hidden;
   box-sizing: border-box;
 }
 
@@ -46,14 +46,14 @@ body {
 .filter-controls {
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem; /* Consistent spacing */
+  gap: 1rem;
   margin-bottom: 1.5rem;
   padding: var(--padding);
   background-color: #ffffff;
   border-radius: var(--border-radius);
   box-shadow: var(--shadow);
-  justify-content: space-between; /* Align elements evenly */
-  align-items: flex-start; /* Align items at the top */
+  justify-content: space-between;
+  align-items: flex-start;
 }
 
 .filter-controls input,
@@ -62,9 +62,9 @@ body {
   font-size: var(--font-size-base);
   border: 1px solid #ddd;
   border-radius: var(--border-radius);
-  flex: 1 1 calc(48% - 1rem); /* Responsive size for inputs and dropdowns */
+  flex: 1 1 calc(48% - 1rem);
   min-width: 150px;
-  max-width: 300px; /* Prevents inputs from stretching too wide */
+  max-width: 300px;
   transition: border-color 0.3s ease, background-color 0.3s ease;
   box-sizing: border-box;
 }
@@ -133,9 +133,8 @@ body {
 .product-page-card-title {
   font-weight: bold;
   color: var(--primary-color);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
+  font-size: 1.1rem;
 }
 
 .product-page-card-item {
@@ -153,13 +152,14 @@ body {
 
 .product-page-card-buttons {
   display: flex;
+  flex-direction: column;
   gap: 0.5rem;
   margin-top: 0.5rem;
 }
 
 .buy-button,
 .sell-button {
-  padding: 0.5rem 1rem;
+  padding: 0.6rem 1rem;
   border-radius: var(--border-radius);
   font-size: var(--font-size-small);
   font-weight: bold;
@@ -185,21 +185,24 @@ body {
 /* Pagination */
 .pagination {
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.3rem;
   margin: 2rem 0;
 }
 
 .pagination button {
-  padding: 0.75rem;
-  font-size: var(--font-size-base);
+  padding: 0.5rem;
+  font-size: 0.85rem;
   background-color: var(--primary-color);
   color: #ffffff;
   border: none;
   border-radius: 50%;
   cursor: pointer;
   transition: background-color 0.3s ease, transform 0.2s ease;
+  width: 2rem;
+  height: 2rem;
 }
 
 .pagination button:hover {
@@ -208,8 +211,10 @@ body {
 }
 
 .pagination .active {
-  background-color: var(--secondary-color);
+  background-color: var(--primary-hover-color);
   color: #ffffff;
+  font-weight: bold;
+  border: 2px solid var(--secondary-color);
 }
 
 .pagination button.disabled {
@@ -226,144 +231,82 @@ body {
     gap: 1rem;
   }
 
-  .filter-controls input,
-  .filter-controls select {
-    grid-column: span 1;
-    width: 100%;
-  }
-
-  .filter-controls button {
-    grid-column: span 2;
-    width: auto;
-    justify-self: center;
-  }
-
   .product-page-card {
     padding: 1rem;
-  }
-
-  .product-page-card-title {
-    font-size: 1.05rem;
-  }
-
-  .product-page-card-item {
-    font-size: 0.95rem;
-  }
-
-  .product-page-card-buttons {
-    flex-direction: row;
-    gap: 0.75rem;
-  }
-
-  .buy-button,
-  .sell-button {
-    flex: 1;
-    text-align: center;
   }
 }
 
 /* Responsive Adjustments for Small Screens (Below 451px) */
 @media (max-width: 450px) {
   .filter-controls {
-   
-    gap: 0.75rem;
-  }
-
-  .filter-controls input,
-  .filter-controls select {
-    flex: 1 1 100%;
-    max-width: 100%;
-  }
-
-  .filter-controls button {
-    width: 100%;
-  }
-
-  .product-page-card {
+    gap: 0.5rem;
     padding: 0.75rem;
-    font-size: 0.9rem;
-  }
-
-  .product-page-card-title {
-    font-size: 1rem;
-    white-space: normal; /* Allow text to wrap */
-  }
-
-  .product-page-card-item {
-    font-size: 0.9rem;
-  }
-
-  .product-page-card-buttons {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .buy-button,
-  .sell-button {
-    width: 100%;
-    text-align: center;
-  }
-
-  /* Pagination adjustments */
-  .pagination {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .pagination button {
-    padding: 0.5rem;
-    font-size: 0.85rem;
-  }
-}
-
-/* Responsive Adjustments for Extra Small Screens (Below 400px) */
-@media (max-width: 400px) {
-  .filter-controls {
-    gap: 0.5rem;
-    padding: 0.5rem;
   }
 
   .filter-controls input,
   .filter-controls select {
     padding: 0.6rem;
     font-size: 0.85rem;
+    width: 100%;
   }
 
   .filter-controls button {
-    padding: 0.6rem 1rem;
+    padding: 0.7rem;
     font-size: 0.9rem;
+    width: 100%;
   }
 
   .product-page-card {
-    padding: 0.5rem;
+    padding: 0.75rem;
     gap: 0.5rem;
-    font-size: 0.85rem;
-  }
-
-  .product-page-card-title {
-    font-size: 0.95rem;
-  }
-
-  .product-page-card-item {
-    font-size: 0.85rem;
-  }
-
-  .product-page-card-buttons {
-    gap: 0.5rem;
-  }
-
-  .buy-button,
-  .sell-button {
-    padding: 0.5rem;
     font-size: 0.9rem;
   }
 
-  .pagination button {
-    padding: 0.5rem;
-    
-    font-size: 0.85rem;
+  .product-page-card-buttons {
+    flex-direction: column;
+  }
+
+  .pagination {
+    gap: 0.5rem;
   }
 }
+
+/* Adjustments for Large Screens */
+@media (min-width: 1024px) {
+  .product-data-container {
+    max-width: 1400px;
+    margin: 2rem auto;
+    padding: 2rem;
+  }
+
+  .filter-controls {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+  }
+
+  .filter-controls button {
+    grid-column: span 4;
+    justify-self: center;
+  }
+
+  .product-page-table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  .product-page-table th,
+  .product-page-table td {
+    padding: 1rem;
+    text-align: left;
+  }
+
+  .product-page-table tbody tr:nth-child(even) {
+    background-color: #f8f8f8;
+  }
+}
+
+
 
 
 
