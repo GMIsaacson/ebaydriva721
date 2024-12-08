@@ -1,16 +1,43 @@
+
+
+
 import React, { useState } from "react";
 import { CSVLink } from "react-csv";
 import "./styles.css";
 // Import all categories
 
 import HomeAndGarden from "./categories/HomeAndGarden";
+import BabyEssentials from "./categories/BabyEssentials";
+import BooksMoviesandMusic from "./categories/BooksMoviesandMusic";
+import BusinessandIndustrial from "./categories/BusinessandIndustrial";
+import ClothingShoesandAcessories from "./categories/ClothingShoesandAcessories";
+import CollectiblesArt from "./categories/CollectiblesArt";
+import eBayMotors from "./categories/eBayMotors";
+import Electronics from "./categories/Electronics";
+import JewelryWatches from "./categories/JewelryWatches";
+import Others from "./categories/others"; // Corrected casing for consistency
+import PetSupplies from "./categories/PetSupplies";
+import SportingGoods from "./categories/SportingGoods";
+import ToysandHobbies from "./categories/ToysandHobbies";
 import HealthandBeauty from "./categories/HealthandBeauty";
 
-
 const categories = {
+  HomeAndGarden: HomeAndGarden,
+  BabyEssentials: BabyEssentials,
+  BooksMoviesandMusic: BooksMoviesandMusic,
+  BusinessandIndustrial: BusinessandIndustrial,
+  ClothingShoesandAcessories: ClothingShoesandAcessories,
+  CollectiblesArt: CollectiblesArt,
+  eBayMotors: eBayMotors,
+  Electronics: Electronics,
+  JewelryWatches: JewelryWatches,
+  Others: Others,
+  PetSupplies: PetSupplies,
+  SportingGoods: SportingGoods,
+  ToysandHobbies: ToysandHobbies,
+  HealthandBeauty: HealthandBeauty,
 
-  "HomeAndGarden": HomeAndGarden,
-  "HealthandBeauty": HealthandBeauty,
+  // Add other categories as needed...
 };
 
 function Csvtool() {
