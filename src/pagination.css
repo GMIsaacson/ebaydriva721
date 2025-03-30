@@ -3,55 +3,124 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 1rem; /* Adjusted padding for consistency */
-  margin-top: 1rem; /* Adjusted margin for spacing */
-  list-style: none; /* Removes default list styling */
+  flex-wrap: wrap;
+  gap: 0.5rem; /* Space between buttons */
+  padding: 1rem;
+  margin-top: 1.5rem;
 }
 
-.page-link {
-  color: #241046; /* Primary blue for a cohesive look */
-  background-color: white; /* Light background for clarity */
-  padding: 0.75rem 1rem; /* Slightly larger padding for better touch targets */
-  margin: 0 0.5rem; /* Adjusted margin for spacing */
-  text-decoration: none;
-  border-radius: 8px; /* Rounded corners for a modern look */
-  border: 1px solid #ddd; /* Light border for consistency */
-  transition:
-    background-color 0.3s,
-    color 0.3s,
-    border-color 0.3s; /* Smooth transitions */
-  cursor: pointer; /* Cursor pointer for interactivity */
+.pagination button {
+  padding: 0.5rem 0.8rem; /* Compact padding */
+  font-size: 0.85rem; /* Standard font size */
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  width: auto; /* Allow buttons to size naturally */
+  min-width: 2rem;
+  text-align: center;
 }
 
-.page-link:hover,
-.page-link:focus {
-  background-color: #241046; /* Dark blue for hover/focus state */
-  color: white; /* White text for contrast */
-  border-color: #004085; /* Darker border for hover/focus state */
+.pagination button:hover {
+  background-color: var(--primary-hover-color);
+  transform: scale(1.05); /* Slight scaling for hover effect */
 }
 
-.page-link.active {
-  background-color: #241046; /* Primary blue for active page */
-  color: white; /* White text for high contrast on active */
-  border-color: #0056b3; /* Darker blue border for active link */
+.pagination .active {
+  background-color: var(--primary-hover-color);
+  font-weight: bold;
 }
 
-/* Responsive styles for smaller screens */
+.pagination button.disabled {
+  background-color: #ddd;
+  color: #aaa;
+  cursor: not-allowed;
+}
+
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem; /* Adjust for consistent spacing */
+}
+
+/* Pagination Controls */
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+}
+
+.pagination-controls select,
+.pagination-controls input {
+  font-size: 0.9rem; /* Slightly larger font for readability */
+  padding: 0.4rem 0.6rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  text-align: center;
+  width: 5rem;
+}
+
+.pagination-controls label {
+  font-size: 0.9rem; /* Match input font size */
+  margin-right: 0.5rem;
+  color: var(--text-color);
+}
+
+/* Responsive Adjustments */
 @media (max-width: 768px) {
-  .page-link {
-    padding: 0.5rem 0.75rem; /* Smaller padding on mobile */
-    font-size: 0.875rem; /* Smaller font size on mobile */
+  .pagination {
+    gap: 0.3rem; /* Reduce space between buttons */
+  }
+
+  .pagination button {
+    padding: 0.4rem;
+    font-size: 0.8rem; /* Adjust font size for smaller screens */
+  }
+
+  .pagination-controls {
+    flex-wrap: wrap; /* Allow wrapping if space is limited */
+    gap: 0.5rem;
+  }
+
+  .pagination-controls select,
+  .pagination-controls input {
+    width: auto; /* Adapt width to content */
   }
 }
+
+@media (max-width: 450px) {
+  .pagination button {
+    padding: 0.3rem;
+    font-size: 0.75rem;
+  }
+
+  .pagination-controls select,
+  .pagination-controls input {
+    font-size: 0.8rem;
+    padding: 0.3rem;
+  }
+
+  .pagination-controls label {
+    font-size: 0.75rem;
+  }
+}
+
+/* Product Data Container */
 .product-data-container {
-  padding: var(--padding);
+  padding: 1rem;
   max-width: 1600px;
   margin: 0 auto;
-  background-color: #ffffff;
-  border-radius: var(--border-radius);
+  background-color: white;
+  border-radius: 8px;
   box-shadow: var(--shadow);
   overflow-x: hidden;
-  min-height: calc(100vh - 6rem); /* Ensure it takes up the viewport minus the footer height */
   box-sizing: border-box;
+  min-height: calc(100vh - 6rem); /* Ensures content fills the screen */
 }
+
 
