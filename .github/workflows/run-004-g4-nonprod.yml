@@ -72,19 +72,34 @@ jobs:
           docker exec run004-n8n n8n import:workflow \
             --input=/repo/agent-factory/run-004/n8n/run-004-g4-offline.workflow.json \
             --activeState=false
+          docker stop run004-n8n
       - name: Execute and validate synthetic workflow
         run: |
-          docker exec run004-n8n n8n execute --id=RUN004G4OFFLINE --rawOutput \
+          docker run --rm --name run004-n8n-cli \
+            --volume run004_n8n_data:/home/node/.n8n \
+            --volume "$PWD:/repo:ro" \
+            --env N8N_DIAGNOSTICS_ENABLED=false \
+            --env N8N_VERSION_NOTIFICATIONS_ENABLED=false \
+            --env N8N_PUBLIC_API_DISABLED=true \
+            --env N8N_BLOCK_ENV_ACCESS_IN_NODE=true \
+            --env N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true \
+            n8nio/n8n:2.34.6 execute --id=RUN004G4OFFLINE --rawOutput \
             > /tmp/run-004-n8n-execution.json
           node agent-factory/run-004/scripts/validate-n8n-execution.cjs \
             /tmp/run-004-n8n-execution.json
       - name: Verify workflow remained inactive and export evidence
         run: |
-          docker exec run004-n8n n8n export:workflow \
+          docker run --rm --name run004-n8n-export \
+            --volume run004_n8n_data:/home/node/.n8n \
+            --volume /tmp:/evidence \
+            --env N8N_DIAGNOSTICS_ENABLED=false \
+            --env N8N_VERSION_NOTIFICATIONS_ENABLED=false \
+            --env N8N_PUBLIC_API_DISABLED=true \
+            --env N8N_BLOCK_ENV_ACCESS_IN_NODE=true \
+            --env N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true \
+            n8nio/n8n:2.34.6 export:workflow \
             --id=RUN004G4OFFLINE \
-            --output=/home/node/.n8n/run-004-export.json
-          docker cp run004-n8n:/home/node/.n8n/run-004-export.json \
-            /tmp/run-004-n8n-export.json
+            --output=/evidence/run-004-n8n-export.json
           node -e 'const fs=require("node:fs"); const raw=JSON.parse(fs.readFileSync("/tmp/run-004-n8n-export.json","utf8")); const workflow=Array.isArray(raw)?raw[0]:raw; if(workflow.active!==false) throw new Error("workflow activated"); if((workflow.nodes||[]).some((node)=>node.credentials)) throw new Error("credentials added"); process.stdout.write(JSON.stringify({result:"Pass",id:workflow.id,active:workflow.active,nodes:workflow.nodes.length,credentials:0})+"\n");'
       - uses: actions/upload-artifact@v4
         if: always()
@@ -98,6 +113,7 @@ jobs:
       - name: Destroy isolated n8n environment
         if: always()
         run: |
+          docker rm --force run004-n8n-cli run004-n8n-export || true
           docker rm --force run004-n8n || true
           docker volume rm run004_n8n_data || true
 
