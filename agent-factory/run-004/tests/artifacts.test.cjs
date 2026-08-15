@@ -2,6 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const { parseExecution } = require('../scripts/validate-n8n-execution.cjs');
 
 const ROOT = path.resolve(__dirname, '..');
 
@@ -22,6 +23,14 @@ test('all JSON deployment artifacts parse', () => {
   ]) {
     assert.doesNotThrow(() => JSON.parse(read(file)), file);
   }
+});
+
+test('n8n evidence parser tolerates task-runner startup output', () => {
+  const parsed = parseExecution(
+    'n8n Task Broker ready on 127.0.0.1, port 5679\n' +
+      JSON.stringify({ data: { resultData: {} }, mode: 'cli' }),
+  );
+  assert.equal(parsed.mode, 'cli');
 });
 
 test('n8n workflow is inactive, manual, credential-free, and connector-free', () => {
