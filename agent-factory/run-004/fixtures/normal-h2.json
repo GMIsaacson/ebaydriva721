@@ -1,0 +1,46 @@
+{
+  "handoff": {
+    "schema_version": "1.0",
+    "run_id": "DS-S2M-004",
+    "handoff_id": "H2-DS-S2M-004-001",
+    "idempotency_key": "DS-S2M-004:H2:0123456789abcdef",
+    "producer_agent_id": "AGT-RESEARCH-VALIDATION-001",
+    "consumer_agent_id": "OWNER-ABERDEEN",
+    "opportunity_url": "https://app.notion.com/p/3bbe161eac8a81468d30d80f2bdfcf09",
+    "candidate_ids": ["H-596B", "H-157WB"],
+    "evidence_refs": [
+      {
+        "source_url": "fixture://run-004/normal-h2",
+        "captured_at": "2099-01-01T00:00:00.000Z",
+        "evidence_type": "synthetic-g4-fixture",
+        "confidence": "synthetic"
+      }
+    ],
+    "decision_requested": "Recommend Go, Modify or Reject; owner decides",
+    "approval_ref": null,
+    "expires_at": "2099-01-02T00:00:00.000Z",
+    "status": "Accepted"
+  },
+  "request": {
+    "requestedAction": "recommend",
+    "candidateCount": 2,
+    "sourceRequestCount": 20,
+    "spendingRequestedCents": 0,
+    "exactIdentity": true,
+    "hasSoldEvidence": true,
+    "evidenceAgeDays": 1,
+    "conflictingEvidence": false,
+    "promptInjection": false,
+    "partialFailure": false,
+    "approvalRef": null,
+    "economics": {
+      "collectedRevenueCents": 4000,
+      "sourceCostCents": 1000,
+      "inboundFreightCents": 500,
+      "marketplaceFeesCents": 600,
+      "outboundShippingCents": 700,
+      "packagingCents": 100,
+      "riskReserveCents": 200
+    }
+  }
+}

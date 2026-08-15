@@ -1,0 +1,65 @@
+{
+  "schema_version": "1.0",
+  "run_id": "DS-S2M-004",
+  "lifecycle_status": "Testing",
+  "business_owner": "Aberdeen / DataScout owner",
+  "system_owner": "DataScout engineering",
+  "units": [
+    {
+      "unit_id": "AGT-PORTFOLIO-STEWARD-001",
+      "type": "decision-support-agent",
+      "name": "Opportunity Portfolio Steward",
+      "version": "1.0.0",
+      "authority_level": "Recommend",
+      "allowed_actions": ["read approved control records", "produce bounded validation brief"],
+      "prohibited_actions": ["external communication", "spending", "publishing", "permission changes"],
+      "trigger_type": "manual",
+      "lifecycle_status": "Testing"
+    },
+    {
+      "unit_id": "AGT-RESEARCH-VALIDATION-001",
+      "type": "decision-support-agent",
+      "name": "Research and Validation Agent",
+      "version": "1.0.0",
+      "authority_level": "Recommend",
+      "allowed_actions": ["read approved evidence", "write provenance-bound internal evidence", "recommend Go Modify or Reject"],
+      "prohibited_actions": ["authoritative economics", "external communication", "purchasing", "publishing"],
+      "trigger_type": "manual bounded handoff",
+      "lifecycle_status": "Testing"
+    },
+    {
+      "unit_id": "AGT-OFFER-ASSET-BUILDER-001",
+      "type": "decision-support-agent",
+      "name": "Offer and Asset Builder",
+      "version": "1.0.0",
+      "authority_level": "Draft",
+      "allowed_actions": ["create unpublished drafts after exact owner approval"],
+      "prohibited_actions": ["publish", "list", "contact recipients", "purchase", "spend"],
+      "approval_gates": ["exact owner approval_ref required"],
+      "trigger_type": "manual approved handoff",
+      "lifecycle_status": "Testing"
+    },
+    {
+      "unit_id": "SW-DS-ECONOMICS-001",
+      "type": "deterministic-software",
+      "name": "DataScout Landed Economics",
+      "version": "1.0.0",
+      "authority_level": "Observe",
+      "allowed_actions": ["calculate deterministic internal economics"],
+      "prohibited_actions": ["guess missing inputs", "write external systems"],
+      "trigger_type": "internal function",
+      "lifecycle_status": "Testing"
+    },
+    {
+      "unit_id": "WF-DS-S2M-004-G4-001",
+      "type": "n8n-workflow",
+      "name": "Run 004 G4 Offline Acceptance",
+      "version": "1.0.0",
+      "authority_level": "Observe",
+      "allowed_actions": ["manual synthetic fixture processing", "internal telemetry output"],
+      "prohibited_actions": ["scheduling", "webhooks", "HTTP calls", "credentials", "external actions"],
+      "trigger_type": "manual",
+      "lifecycle_status": "Testing"
+    }
+  ]
+}

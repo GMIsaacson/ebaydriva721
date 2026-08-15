@@ -29,7 +29,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:g4": "node --test agent-factory/run-004/tests/artifacts.test.cjs agent-factory/run-004/tests/config.test.cjs agent-factory/run-004/tests/economics.test.cjs agent-factory/run-004/tests/handoff-policy.test.cjs agent-factory/run-004/tests/runtime.test.cjs",
+    "validate:g4": "node agent-factory/run-004/scripts/validate-package.cjs"
   },
   "browserslist": [
     ">0.2%",

@@ -1,0 +1,146 @@
+{
+  "id": "RUN004G4OFFLINE",
+  "name": "Run 004 - DataScout G4 Offline Acceptance",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "3fb4b952-13b8-4fb0-a82e-8dfc30cc6e90",
+      "name": "Manual Trigger Only",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [-720, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { runId: 'DS-S2M-004', workflowVersion: '1.0.0', control: { mode: 'offline', killSwitch: false, externalActionsEnabled: false, spendingAuthorityCents: 0, maxCandidates: 25, maxSourceRequests: 200, maxRetries: 2 }, handoff: { schema_version: '1.0', run_id: 'DS-S2M-004', handoff_id: 'H2-G4-FIXTURE-001', idempotency_key: 'DS-S2M-004:H2:0123456789abcdef', producer_agent_id: 'AGT-RESEARCH-VALIDATION-001', consumer_agent_id: 'OWNER-ABERDEEN', candidate_ids: ['H-596B', 'H-157WB'], approval_ref: null }, request: { requestedAction: 'recommend', candidateCount: 2, sourceRequestCount: 20, spendingRequestedCents: 0, exactIdentity: true, hasSoldEvidence: true, evidenceAgeDays: 1, economics: { collectedRevenueCents: 4000, sourceCostCents: 1000, inboundFreightCents: 500, marketplaceFeesCents: 600, outboundShippingCents: 700, packagingCents: 100, riskReserveCents: 200 } }, traceId: 'TRACE-DS-S2M-004-G4-FIXTURE' } }];"
+      },
+      "id": "60174780-73ff-42c8-8759-a0e9d77062c2",
+      "name": "Load Synthetic Fixture",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-500, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $json; const violations = []; if (item.runId !== 'DS-S2M-004') violations.push('wrong run'); if (item.control.mode !== 'offline') violations.push('not offline'); if (item.control.killSwitch) violations.push('kill switch'); if (item.control.externalActionsEnabled !== false) violations.push('external actions'); if (item.control.spendingAuthorityCents !== 0 || item.request.spendingRequestedCents !== 0) violations.push('spending'); if (item.request.candidateCount > 25) violations.push('candidate cap'); if (item.request.sourceRequestCount > 200) violations.push('request cap'); if (!['read_internal','read_public_evidence','write_internal_evidence','recommend','draft_unpublished'].includes(item.request.requestedAction)) violations.push('prohibited action'); return [{ json: { ...item, allowed: violations.length === 0, violations, guardStatus: violations.length ? 'Rejected' : 'Accepted', externalActions: 0 } }];"
+      },
+      "id": "76aab491-b340-4fc1-b5ad-e317021c1e20",
+      "name": "Enforce Authority Lock",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-260, 0]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "37ddd3e0-1d85-474c-912f-b52c39390087",
+              "leftValue": "={{ $json.allowed }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "31d734ff-b40e-4082-884d-b21d9ac7620e",
+      "name": "Authority Lock Passed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [-20, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const i = $json.request.economics; const required = ['collectedRevenueCents','sourceCostCents','inboundFreightCents','marketplaceFeesCents','outboundShippingCents','packagingCents','riskReserveCents']; const missing = required.filter((key) => !Number.isSafeInteger(i[key]) || i[key] < 0); if (missing.length) return [{ json: { ...$json, status: 'Incomplete', missing, externalActions: 0 } }]; const totalCostCents = i.sourceCostCents + i.inboundFreightCents + i.marketplaceFeesCents + i.outboundShippingCents + i.packagingCents + i.riskReserveCents; const netProfitCents = i.collectedRevenueCents - totalCostCents; return [{ json: { ...$json, status: 'Accepted', economics: { formulaVersion: 'datascout-landed-economics/1.0.0', totalCostCents, netProfitCents, marginBps: Math.round((netProfitCents / i.collectedRevenueCents) * 10000), roiBps: Math.round((netProfitCents / totalCostCents) * 10000), breakEvenCollectedRevenueCents: totalCostCents }, externalActions: 0 } }];"
+      },
+      "id": "d3638cad-d312-4f24-be87-67382348870a",
+      "name": "Calculate Deterministic Economics",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [220, -100]
+    },
+    {
+      "parameters": {
+        "jsCode": "const now = new Date().toISOString(); return [{ json: { ...$json, telemetry: { runId: $json.runId, handoffId: $json.handoff.handoff_id, agentId: $json.handoff.producer_agent_id, workflowVersion: $json.workflowVersion, traceId: $json.traceId, status: $json.status, retries: 0, humanReviewRequired: $json.status !== 'Accepted', estimatedCostCents: 0, externalActions: 0, finishedAt: now } } }];"
+      },
+      "id": "3db24a4e-42c4-435b-8d68-a853261219df",
+      "name": "Build Offline Telemetry",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, -100]
+    },
+    {
+      "parameters": {
+        "jsCode": "const now = new Date().toISOString(); return [{ json: { ...$json, status: 'Review', deadLetter: { runId: $json.runId, handoffId: $json.handoff?.handoff_id || null, traceId: $json.traceId, violations: $json.violations, retries: 0, humanReviewRequired: true, externalActions: 0, spendingCents: 0, createdAt: now } } }];"
+      },
+      "id": "2f8a480a-a32e-4cc4-8d74-bca962de8d83",
+      "name": "Build Dead Letter",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [220, 120]
+    },
+    {
+      "parameters": {},
+      "id": "f1182929-a93c-423c-9bf1-f560ac972196",
+      "name": "Internal Result Only",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [700, 0]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual Trigger Only": {
+      "main": [[{ "node": "Load Synthetic Fixture", "type": "main", "index": 0 }]]
+    },
+    "Load Synthetic Fixture": {
+      "main": [[{ "node": "Enforce Authority Lock", "type": "main", "index": 0 }]]
+    },
+    "Enforce Authority Lock": {
+      "main": [[{ "node": "Authority Lock Passed?", "type": "main", "index": 0 }]]
+    },
+    "Authority Lock Passed?": {
+      "main": [
+        [{ "node": "Calculate Deterministic Economics", "type": "main", "index": 0 }],
+        [{ "node": "Build Dead Letter", "type": "main", "index": 0 }]
+      ]
+    },
+    "Calculate Deterministic Economics": {
+      "main": [[{ "node": "Build Offline Telemetry", "type": "main", "index": 0 }]]
+    },
+    "Build Offline Telemetry": {
+      "main": [[{ "node": "Internal Result Only", "type": "main", "index": 0 }]]
+    },
+    "Build Dead Letter": {
+      "main": [[{ "node": "Internal Result Only", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "saveExecutionProgress": true,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all"
+  },
+  "versionId": "dfc3b08c-7487-4d9f-ab32-acbcab555af4",
+  "meta": {
+    "runId": "DS-S2M-004",
+    "workflowId": "WF-DS-S2M-004-G4-001",
+    "authority": "Observe",
+    "deploymentMode": "offline-acceptance"
+  },
+  "tags": []
+}
