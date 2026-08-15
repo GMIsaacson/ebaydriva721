@@ -1,0 +1,115 @@
+{
+  "id": "RUN005G6NOTIFY",
+  "name": "Run 005 - Controlled Self Notification",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "6241cf55-ea83-43c5-97be-915532b7e78a",
+      "name": "Manual Trigger Only",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [-620, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{json:{schemaVersion:'1.0',runId:'FACT-NOTIFY-005',gate:'G6',workflowId:'WF-FACT-NOTIFY-005-G6-001',approvalRef:'CHATGPT-OWNER-APPROVAL-2026-08-15-RUN005',idempotencyKey:'FACT-NOTIFY-005:G6:SELF-EMAIL:2026-08-15',traceId:'TRACE-FACT-NOTIFY-005-G6-20260815',recipient:{selector:'authenticated_self',to:'me',cc:[],bcc:[]},message:{subject:'Agent Team Factory Run 005 — Controlled Live Pilot',body:'This is the single owner-approved, zero-cost notification for Factory Run FACT-NOTIFY-005. No reply or action is required.',mimeType:'text/plain',attachments:[]},control:{manualOnly:true,scheduleEnabled:false,webhookEnabled:false,maxExternalActions:1,spendingAuthorityCents:0,maxAiCalls:0,retryOnUnknownOutcome:false}}}];"
+      },
+      "id": "b09e3ccf-d5dc-44df-8d3b-328323cb6db7",
+      "name": "Load Approved Fixed Packet",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-400, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const p=$json; const v=[]; if(p.runId!=='FACT-NOTIFY-005'||p.gate!=='G6')v.push('wrong run or gate'); if(p.workflowId!=='WF-FACT-NOTIFY-005-G6-001')v.push('wrong workflow'); if(p.approvalRef!=='CHATGPT-OWNER-APPROVAL-2026-08-15-RUN005')v.push('approval'); if(p.idempotencyKey!=='FACT-NOTIFY-005:G6:SELF-EMAIL:2026-08-15')v.push('idempotency'); if(p.recipient.selector!=='authenticated_self'||p.recipient.to!=='me'||p.recipient.cc.length||p.recipient.bcc.length)v.push('recipient'); if(p.message.subject!=='Agent Team Factory Run 005 — Controlled Live Pilot'||p.message.body!=='This is the single owner-approved, zero-cost notification for Factory Run FACT-NOTIFY-005. No reply or action is required.'||p.message.mimeType!=='text/plain'||p.message.attachments.length)v.push('message'); if(!p.control.manualOnly||p.control.scheduleEnabled||p.control.webhookEnabled||p.control.maxExternalActions!==1||p.control.spendingAuthorityCents!==0||p.control.maxAiCalls!==0||p.control.retryOnUnknownOutcome)v.push('control'); return [{json:{...p,allowed:v.length===0,violations:v,guardStatus:v.length?'Rejected':'Accepted',externalActionsPerformed:0,spendingCents:0}}];"
+      },
+      "id": "78f774b9-04d6-440e-a7ff-d0e00cb06d99",
+      "name": "Enforce Live Pilot Authority",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-170, 0]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 2 },
+          "conditions": [
+            {
+              "id": "245463be-0c3a-474d-96a2-4772327ae92c",
+              "leftValue": "={{ $json.allowed }}",
+              "rightValue": true,
+              "operator": { "type": "boolean", "operation": "true", "singleValue": true }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "e60cd845-ce1f-48d0-9a7d-3f623bd9823c",
+      "name": "Approval Lock Passed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [60, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{json:{runId:$json.runId,gate:$json.gate,workflowId:$json.workflowId,traceId:$json.traceId,status:'ReadyForApprovedExecutor',guardStatus:$json.guardStatus,idempotencyKey:$json.idempotencyKey,approvalRef:$json.approvalRef,executorHandoff:{action:'gmail.send_email',recipient:'me',subject:$json.message.subject,body:$json.message.body,mimeType:'text/plain',cc:[],bcc:[],attachments:[]},retryAllowed:false,humanReviewRequired:false,externalActionsPerformed:0,externalActionLimit:1,spendingCents:0}}];"
+      },
+      "id": "99e3b34b-e2dd-4454-a4dc-0a3323eecc83",
+      "name": "Build Gmail Executor Handoff",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [300, -90]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{json:{runId:$json.runId,gate:$json.gate,workflowId:$json.workflowId,traceId:$json.traceId,status:'Review',guardStatus:$json.guardStatus,violations:$json.violations,retryAllowed:false,humanReviewRequired:true,externalActionsPerformed:0,spendingCents:0}}];"
+      },
+      "id": "5db1ba5f-8ca1-4a0e-8d9a-9da3ff24811d",
+      "name": "Build Review Record",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [300, 100]
+    },
+    {
+      "parameters": {},
+      "id": "d8610adf-0152-45b6-8540-834e8c401966",
+      "name": "Internal Pilot Result",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [540, 0]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual Trigger Only": { "main": [[{ "node": "Load Approved Fixed Packet", "type": "main", "index": 0 }]] },
+    "Load Approved Fixed Packet": { "main": [[{ "node": "Enforce Live Pilot Authority", "type": "main", "index": 0 }]] },
+    "Enforce Live Pilot Authority": { "main": [[{ "node": "Approval Lock Passed?", "type": "main", "index": 0 }]] },
+    "Approval Lock Passed?": {
+      "main": [
+        [{ "node": "Build Gmail Executor Handoff", "type": "main", "index": 0 }],
+        [{ "node": "Build Review Record", "type": "main", "index": 0 }]
+      ]
+    },
+    "Build Gmail Executor Handoff": { "main": [[{ "node": "Internal Pilot Result", "type": "main", "index": 0 }]] },
+    "Build Review Record": { "main": [[{ "node": "Internal Pilot Result", "type": "main", "index": 0 }]] }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "saveExecutionProgress": true,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all"
+  },
+  "versionId": "bb2420e6-fe05-4660-9f29-967ef9a46b74",
+  "meta": {
+    "runId": "FACT-NOTIFY-005",
+    "workflowId": "WF-FACT-NOTIFY-005-G6-001",
+    "authority": "Act with approval",
+    "deploymentMode": "single-controlled-live-handoff"
+  },
+  "tags": []
+}
+

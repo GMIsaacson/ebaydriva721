@@ -1,0 +1,41 @@
+{
+  "schema_version": "1.0",
+  "run_id": "FACT-NOTIFY-005",
+  "lifecycle_status": "Testing",
+  "business_owner": "Aberdeen / Agent Team Factory owner",
+  "system_owner": "Agent Team Factory engineering",
+  "units": [
+    {
+      "unit_id": "WF-FACT-NOTIFY-005-G6-001",
+      "type": "n8n-workflow",
+      "name": "Run 005 Controlled Self-Notification",
+      "version": "1.0.0",
+      "business_outcome": "Prove one approved external notification with deterministic recipient, duplicate suppression, evidence and safe unknown-outcome handling.",
+      "authority_level": "Act with approval",
+      "allowed_actions": [
+        "validate the fixed owner-approved packet",
+        "prepare one typed Gmail self-send handoff",
+        "record success or human-review evidence"
+      ],
+      "prohibited_actions": [
+        "send to any address other than the authenticated account",
+        "cc or bcc",
+        "attachments or links",
+        "schedule or webhook triggers",
+        "spending",
+        "automatic retry after an unknown send outcome"
+      ],
+      "approval_gates": [
+        "exact owner approval_ref is required",
+        "recipient selector must equal authenticated_self",
+        "idempotency key must be unused"
+      ],
+      "trigger_type": "manual owner-approved",
+      "idempotency_strategy": "one immutable run-gate-action key",
+      "failure_policy": "reject authority expansion; suppress duplicates; stop and escalate unknown outcomes",
+      "cost_per_run_cents": 0,
+      "lifecycle_status": "Testing"
+    }
+  ]
+}
+
