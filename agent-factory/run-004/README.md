@@ -103,11 +103,15 @@ The acceptance result is valid only when all commands pass without adding creden
 
 Import `n8n/run-004-g4-offline.workflow.json` into a non-production workspace and keep it inactive. It must contain only Manual Trigger, Code, IF, and No Operation nodes and no credentials. Run the synthetic fixture manually and retain the exported execution evidence.
 
+The reproducible non-production acceptance job uses the official `n8nio/n8n:2.34.6` container, an ephemeral local database, and the stable workflow ID `RUN004G4OFFLINE`. It creates only a synthetic local owner, imports the workflow with `activeState=false`, executes it through the n8n CLI, validates the terminal result, and destroys the environment after evidence capture.
+
 ## Firestore emulator acceptance
 
 The rules under `firestore/` are intentionally isolated and default-deny. They must be tested only with a disposable emulator project.
 
 Do **not** deploy `firestore.g4.emulator.rules` to the current `salescope-7f11d` project: it denies legacy collections by design. Production rule integration requires a separate reviewed change after emulator evidence passes.
+
+`tests/firestore-rules.test.cjs` covers authenticated operator allow cases plus unauthenticated, wrong-role, wrong-run, prohibited-bucket, authority-expansion, delete, and legacy-collection deny cases. The CI job runs these tests only against the disposable `demo-datascout-run004` project.
 
 ## G4 exit evidence still required
 

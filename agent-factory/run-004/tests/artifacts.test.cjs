@@ -33,6 +33,7 @@ test('n8n workflow is inactive, manual, credential-free, and connector-free', ()
     'n8n-nodes-base.noOp',
   ]);
   assert.equal(workflow.active, false);
+  assert.equal(workflow.id, 'RUN004G4OFFLINE');
   assert.equal(workflow.nodes.filter((node) => node.type === 'n8n-nodes-base.manualTrigger').length, 1);
   assert.ok(workflow.nodes.every((node) => allowedTypes.has(node.type)));
   assert.ok(workflow.nodes.every((node) => node.credentials === undefined));

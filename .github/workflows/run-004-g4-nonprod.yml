@@ -1,0 +1,127 @@
+name: Run 004 G4 non-production acceptance
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - bulkupload3.0
+    paths:
+      - "agent-factory/run-004/**"
+      - "package.json"
+      - ".github/workflows/run-004-g4-nonprod.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: run-004-g4-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  package-and-runtime:
+    name: Package and controlled runtime
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: node --test agent-factory/run-004/tests/artifacts.test.cjs agent-factory/run-004/tests/config.test.cjs agent-factory/run-004/tests/economics.test.cjs agent-factory/run-004/tests/handoff-policy.test.cjs agent-factory/run-004/tests/runtime.test.cjs
+      - run: node agent-factory/run-004/scripts/validate-package.cjs
+      - run: node node_modules/vite/bin/vite.js build
+
+  n8n-nonproduction:
+    name: Inactive n8n import and execution
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Start isolated n8n 2.34.6
+        run: |
+          docker volume create run004_n8n_data
+          docker run --detach --name run004-n8n \
+            --publish 127.0.0.1:5678:5678 \
+            --volume run004_n8n_data:/home/node/.n8n \
+            --volume "$PWD:/repo:ro" \
+            --env N8N_DIAGNOSTICS_ENABLED=false \
+            --env N8N_VERSION_NOTIFICATIONS_ENABLED=false \
+            --env N8N_PUBLIC_API_DISABLED=true \
+            --env N8N_BLOCK_ENV_ACCESS_IN_NODE=true \
+            --env N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true \
+            --env N8N_SECURE_COOKIE=false \
+            n8nio/n8n:2.34.6
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:5678/healthz >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          docker logs run004-n8n
+          exit 1
+      - name: Create synthetic local owner
+        run: |
+          curl --fail --silent --show-error \
+            --header "Content-Type: application/json" \
+            --data '{"email":"run004@example.invalid","firstName":"Run","lastName":"004","password":"Run004-G4-Only-2026!"}' \
+            http://127.0.0.1:5678/rest/owner/setup >/dev/null
+      - name: Import inactive workflow
+        run: |
+          docker exec run004-n8n n8n import:workflow \
+            --input=/repo/agent-factory/run-004/n8n/run-004-g4-offline.workflow.json \
+            --activeState=false
+      - name: Execute and validate synthetic workflow
+        run: |
+          docker exec run004-n8n n8n execute --id=RUN004G4OFFLINE --rawOutput \
+            > /tmp/run-004-n8n-execution.json
+          node agent-factory/run-004/scripts/validate-n8n-execution.cjs \
+            /tmp/run-004-n8n-execution.json
+      - name: Verify workflow remained inactive and export evidence
+        run: |
+          docker exec run004-n8n n8n export:workflow \
+            --id=RUN004G4OFFLINE \
+            --output=/home/node/.n8n/run-004-export.json
+          docker cp run004-n8n:/home/node/.n8n/run-004-export.json \
+            /tmp/run-004-n8n-export.json
+          node -e 'const fs=require("node:fs"); const raw=JSON.parse(fs.readFileSync("/tmp/run-004-n8n-export.json","utf8")); const workflow=Array.isArray(raw)?raw[0]:raw; if(workflow.active!==false) throw new Error("workflow activated"); if((workflow.nodes||[]).some((node)=>node.credentials)) throw new Error("credentials added"); process.stdout.write(JSON.stringify({result:"Pass",id:workflow.id,active:workflow.active,nodes:workflow.nodes.length,credentials:0})+"\n");'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: run-004-n8n-nonproduction-evidence
+          path: |
+            /tmp/run-004-n8n-execution.json
+            /tmp/run-004-n8n-export.json
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Destroy isolated n8n environment
+        if: always()
+        run: |
+          docker rm --force run004-n8n || true
+          docker volume rm run004_n8n_data || true
+
+  firestore-emulator:
+    name: Firestore emulator security rules
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - run: npm ci --ignore-scripts
+      - name: Install emulator test tooling without changing the lockfile
+        run: npm install --no-save --ignore-scripts @firebase/rules-unit-testing@3.0.3
+      - name: Execute allow and deny cases in a disposable project
+        run: |
+          npx --yes firebase-tools@13.29.2 emulators:exec \
+            --config agent-factory/run-004/firestore/firebase.g4.emulator.json \
+            --project demo-datascout-run004 \
+            --only firestore \
+            "node --test agent-factory/run-004/tests/firestore-rules.test.cjs"
