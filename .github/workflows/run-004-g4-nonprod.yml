@@ -63,10 +63,21 @@ jobs:
           exit 1
       - name: Create synthetic local owner
         run: |
-          curl --fail --silent --show-error \
-            --header "Content-Type: application/json" \
-            --data '{"email":"run004@example.invalid","firstName":"Run","lastName":"004","password":"Run004-G4-Only-2026!"}' \
-            http://127.0.0.1:5678/rest/owner/setup >/dev/null
+          for attempt in $(seq 1 30); do
+            status=$(curl --silent --show-error \
+              --output /tmp/run-004-owner-setup-response.json \
+              --write-out "%{http_code}" \
+              --header "Content-Type: application/json" \
+              --data '{"email":"run004@example.invalid","firstName":"Run","lastName":"004","password":"Run004-G4-Only-2026!"}' \
+              http://127.0.0.1:5678/rest/owner/setup || true)
+            case "$status" in
+              200|201|204|409) exit 0 ;;
+            esac
+            sleep 2
+          done
+          docker logs run004-n8n
+          cat /tmp/run-004-owner-setup-response.json || true
+          exit 1
       - name: Import inactive workflow
         run: |
           docker exec run004-n8n n8n import:workflow \
