@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aberdeen.example/schemas/subscription-handoff-v1.json",
+  "title": "Run 006 Typed Handoff",
+  "type": "object",
+  "required": [
+    "event_id",
+    "workflow_version",
+    "occurred_at",
+    "producer",
+    "subject",
+    "payload",
+    "policy_context",
+    "trace_id",
+    "attempt"
+  ],
+  "properties": {
+    "event_id": { "type": "string" },
+    "workflow_version": { "const": "1.0.0" },
+    "occurred_at": { "type": "string", "format": "date-time" },
+    "producer": { "type": "string" },
+    "subject": { "type": "string" },
+    "payload": { "type": "object" },
+    "policy_context": {
+      "type": "object",
+      "required": ["authority", "externalActionsAllowed", "spendingAuthorityCents"],
+      "properties": {
+        "authority": { "enum": ["Observe", "Recommend", "Draft"] },
+        "externalActionsAllowed": { "const": 0 },
+        "spendingAuthorityCents": { "const": 0 }
+      }
+    },
+    "trace_id": { "type": "string" },
+    "attempt": { "type": "integer", "minimum": 1, "maximum": 1 }
+  }
+}

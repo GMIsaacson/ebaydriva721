@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aberdeen.example/schemas/subscription-record-v1.json",
+  "title": "Subscription Register Proposal",
+  "type": "object",
+  "required": [
+    "dedupeKey",
+    "vendor",
+    "productPlan",
+    "status",
+    "billingCycle",
+    "currency",
+    "confidence",
+    "sourceEvidence",
+    "lastVerified"
+  ],
+  "properties": {
+    "dedupeKey": { "type": "string", "minLength": 8 },
+    "vendor": { "type": "string", "minLength": 1 },
+    "productPlan": { "type": "string", "minLength": 1 },
+    "accountEmail": { "type": ["string", "null"], "format": "email" },
+    "status": { "enum": ["Candidate", "Verified Active", "Trial", "Paused", "Cancelled", "Unknown"] },
+    "billingCycle": { "enum": ["Monthly", "Annual", "Usage-based", "Other", "Unknown"] },
+    "amountCents": { "type": ["integer", "null"], "minimum": 0 },
+    "currency": { "type": "string", "pattern": "^[A-Z]{3}$" },
+    "monthlyEquivalentCents": { "type": ["integer", "null"], "minimum": 0 },
+    "renewalDate": { "type": ["string", "null"], "format": "date" },
+    "cancellationDeadline": { "type": ["string", "null"], "format": "date" },
+    "confidence": { "enum": ["High", "Medium", "Low"] },
+    "sourceEvidence": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["evidenceId", "sourceType", "sourceRef", "observedAt"],
+        "properties": {
+          "evidenceId": { "type": "string" },
+          "sourceType": { "type": "string" },
+          "sourceRef": { "type": "string" },
+          "observedAt": { "type": "string", "format": "date-time" }
+        }
+      }
+    },
+    "lastVerified": { "type": "string", "format": "date" }
+  },
+  "additionalProperties": true
+}
