@@ -59,7 +59,10 @@ test('workflow source contains all hard authority caps', () => {
 });
 
 test('emulator rules isolate Run 004 and deny delete and default access', () => {
+  const firebaseConfig = JSON.parse(read('firestore/firebase.g4.emulator.json'));
   const rules = read('firestore/firestore.g4.emulator.rules');
+  assert.equal(firebaseConfig.firestore.rules, 'firestore.g4.emulator.rules');
+  assert.equal(firebaseConfig.firestore.indexes, 'firestore.g4.indexes.json');
   assert.match(rules, /runId == 'DS-S2M-004'/);
   assert.match(rules, /external_actions_enabled == false/);
   assert.match(rules, /spending_authority_cents == 0/);
