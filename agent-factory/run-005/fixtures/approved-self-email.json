@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "1.0",
+  "runId": "FACT-NOTIFY-005",
+  "gate": "G6",
+  "workflowId": "WF-FACT-NOTIFY-005-G6-001",
+  "approvalRef": "CHATGPT-OWNER-APPROVAL-2026-08-15-RUN005",
+  "approvedAt": "2026-08-15T12:23:55-05:00",
+  "idempotencyKey": "FACT-NOTIFY-005:G6:SELF-EMAIL:2026-08-15",
+  "traceId": "TRACE-FACT-NOTIFY-005-G6-20260815",
+  "recipient": {
+    "selector": "authenticated_self",
+    "to": "me",
+    "cc": [],
+    "bcc": []
+  },
+  "message": {
+    "subject": "Agent Team Factory Run 005 — Controlled Live Pilot",
+    "body": "This is the single owner-approved, zero-cost notification for Factory Run FACT-NOTIFY-005. No reply or action is required.",
+    "mimeType": "text/plain",
+    "attachments": []
+  },
+  "control": {
+    "manualOnly": true,
+    "scheduleEnabled": false,
+    "webhookEnabled": false,
+    "maxExternalActions": 1,
+    "spendingAuthorityCents": 0,
+    "maxAiCalls": 0,
+    "retryOnUnknownOutcome": false
+  }
+}
+
