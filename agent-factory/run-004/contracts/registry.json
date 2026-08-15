@@ -60,6 +60,18 @@
       "prohibited_actions": ["scheduling", "webhooks", "HTTP calls", "credentials", "external actions"],
       "trigger_type": "manual",
       "lifecycle_status": "Testing"
+    },
+    {
+      "unit_id": "WF-DS-S2M-004-G5-001",
+      "type": "n8n-workflow",
+      "name": "Run 004 G5 Bounded Shadow",
+      "version": "1.0.0",
+      "authority_level": "Observe",
+      "allowed_actions": ["manual processing of approved public evidence", "internal telemetry output", "route incomplete economics to owner review"],
+      "prohibited_actions": ["live retrieval", "scheduling", "webhooks", "credentials", "external actions", "purchasing", "listing", "outreach", "publishing", "spending"],
+      "approval_gates": ["owner approval required for each shadow scope", "G6 requires a separate owner authorization"],
+      "trigger_type": "manual owner-approved shadow",
+      "lifecycle_status": "Testing"
     }
   ]
 }

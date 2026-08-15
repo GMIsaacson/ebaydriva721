@@ -1,0 +1,151 @@
+{
+  "schemaVersion": "1.0",
+  "runId": "DS-S2M-004",
+  "gate": "G5",
+  "workflowId": "WF-DS-S2M-004-G5-001",
+  "capturedAt": "2026-08-15T16:47:34.000Z",
+  "shadowExecutedAt": "2026-08-15T16:48:00.000Z",
+  "expiresAt": "2026-08-22T16:47:34.000Z",
+  "captureMethod": "Manual, read-only retrieval from public Uline and eBay pages; no login, cart, message, purchase, listing, or other external action.",
+  "authority": {
+    "mode": "shadow",
+    "candidateLimit": 2,
+    "sourceRequestLimit": 7,
+    "externalActionsEnabled": false,
+    "spendingAuthorityCents": 0,
+    "maxAiCalls": 0,
+    "credentialMode": "none"
+  },
+  "sharedEvidence": [
+    {
+      "sourceUrl": "https://www.ebay.com/help/selling/fees-credits-invoices/selling-fees?id=4822",
+      "evidenceType": "official-marketplace-fee-policy",
+      "capturedAt": "2026-08-15T16:47:34.000Z",
+      "confidence": "high",
+      "facts": {
+        "basicFinalValueFeeRateBps": 1360,
+        "perOrderFeeAtOrBelowTenDollarsCents": 30,
+        "perOrderFeeAboveTenDollarsCents": 40,
+        "limitation": "The exact seller fee also depends on buyer sales tax, seller plan, performance, and optional services, so the fee is not treated as a verified deterministic input."
+      }
+    }
+  ],
+  "candidates": [
+    {
+      "candidateId": "H-596B",
+      "expectedStatus": "Incomplete",
+      "exactIdentity": true,
+      "source": {
+        "sourceUrl": "https://www.uline.com/Product/Detail/H-596B/Hand-Held-Tape-Dispensers/Replacement-Blades-for-3-Uline-Side-Loader-Tape-Dispenser",
+        "evidenceType": "official-source-product-page",
+        "capturedAt": "2026-08-15T16:47:34.000Z",
+        "confidence": "high",
+        "model": "H-596B",
+        "description": "Replacement blades for 3-inch Uline Side Loader Tape Dispenser",
+        "packageQuantity": 10,
+        "packagePriceCents": 1600,
+        "unitWeightLbs": 0.13,
+        "availability": "In Stock; Ships Today"
+      },
+      "marketplaceComparables": [
+        {
+          "sourceUrl": "https://www.ebay.com/itm/306760796219",
+          "evidenceType": "live-marketplace-comparable",
+          "capturedAt": "2026-08-15T16:47:34.000Z",
+          "confidence": "high",
+          "itemId": "306760796219",
+          "model": "U-Line H-596B",
+          "offerQuantity": 3,
+          "itemPriceCents": 1395,
+          "buyerShippingCents": 0,
+          "soldCount": 12,
+          "availableCount": 17,
+          "selectedBenchmark": true
+        },
+        {
+          "sourceUrl": "https://www.ebay.com/itm/125670139794",
+          "evidenceType": "live-marketplace-comparable",
+          "capturedAt": "2026-08-15T16:47:34.000Z",
+          "confidence": "high",
+          "itemId": "125670139794",
+          "model": "U-Line H-596B",
+          "offerQuantity": 1,
+          "itemPriceCents": 698,
+          "buyerShippingCents": 644,
+          "soldCount": 41,
+          "availableCount": 10,
+          "selectedBenchmark": false
+        }
+      ],
+      "economics": {
+        "collectedRevenueCents": 1395,
+        "sourceCostCents": 480,
+        "inboundFreightCents": null,
+        "marketplaceFeesCents": null,
+        "outboundShippingCents": null,
+        "packagingCents": null,
+        "riskReserveCents": null,
+        "feeBenchmarkCents": 230,
+        "missingReason": "A verified Uline freight quote, exact seller fee, outbound postage, packaging cost, and risk reserve are unavailable from read-only public evidence."
+      }
+    },
+    {
+      "candidateId": "H-157WB",
+      "expectedStatus": "Incomplete",
+      "exactIdentity": true,
+      "source": {
+        "sourceUrl": "https://www.uline.com/Product/Detail/H-157WB/Hand-Held-Tape-Dispensers/Wipe-Down-Blade-for-Uline-Top-Gun-Tape-Dispenser-2",
+        "evidenceType": "official-source-product-page",
+        "capturedAt": "2026-08-15T16:47:34.000Z",
+        "confidence": "high",
+        "model": "H-157WB",
+        "description": "Wipe-down blade for 2-inch Uline Top Gun Tape Dispenser",
+        "minimumQuantity": 3,
+        "unitPriceCents": 200,
+        "unitWeightLbs": 0.03,
+        "availability": "In Stock; Ships Today"
+      },
+      "marketplaceComparables": [
+        {
+          "sourceUrl": "https://www.ebay.com/itm/306680494176",
+          "evidenceType": "live-marketplace-comparable",
+          "capturedAt": "2026-08-15T16:47:34.000Z",
+          "confidence": "high",
+          "itemId": "306680494176",
+          "model": "U-Line H-157WB",
+          "offerQuantity": 3,
+          "itemPriceCents": 1750,
+          "buyerShippingCents": 0,
+          "soldCount": 2,
+          "availableCount": 11,
+          "selectedBenchmark": true
+        },
+        {
+          "sourceUrl": "https://www.ebay.com/itm/235812411636",
+          "evidenceType": "live-marketplace-comparable",
+          "capturedAt": "2026-08-15T16:47:34.000Z",
+          "confidence": "high",
+          "itemId": "235812411636",
+          "model": "H-157WB",
+          "offerQuantity": 1,
+          "itemPriceCents": 324,
+          "buyerShippingCents": 860,
+          "soldCount": 17,
+          "availableCount": 23,
+          "selectedBenchmark": false
+        }
+      ],
+      "economics": {
+        "collectedRevenueCents": 1750,
+        "sourceCostCents": 600,
+        "inboundFreightCents": null,
+        "marketplaceFeesCents": null,
+        "outboundShippingCents": null,
+        "packagingCents": null,
+        "riskReserveCents": null,
+        "feeBenchmarkCents": 278,
+        "missingReason": "A verified Uline freight quote, exact seller fee, outbound postage, packaging cost, and risk reserve are unavailable from read-only public evidence."
+      }
+    }
+  ]
+}
