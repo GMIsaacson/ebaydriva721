@@ -15,7 +15,7 @@
   ],
   "properties": {
     "run_id": { "const": "DS-S2M-004" },
-    "mode": { "enum": ["offline", "firestore-emulator"] },
+    "mode": { "enum": ["offline", "firestore-emulator", "shadow"] },
     "state": { "enum": ["ready", "running", "stopped", "failed", "cancelled", "completed"] },
     "kill_switch": { "type": "boolean" },
     "external_actions_enabled": { "const": false },

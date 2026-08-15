@@ -1,4 +1,4 @@
-# Run 004 — DataScout Source-to-Marketplace G4 package
+# Run 004 — DataScout Source-to-Marketplace G4–G5 package
 
 This directory is the controlled, non-external deployment package for Factory Run `DS-S2M-004`.
 
@@ -10,8 +10,9 @@ It rehabilitates the existing React/Vite/Firebase DataScout repository. It does 
 - G1 Classification: passed
 - G2 Design: passed
 - G3 Simulation: passed, 21/21 offline contract cases
-- G4 Deployment: package built; local acceptance must pass and n8n/Firestore emulator execution evidence is still required before the gate can pass
-- G5–G7: blocked
+- G4 Deployment: passed on final PR-head acceptance; package, Firestore Emulator, and inactive n8n evidence retained
+- G5 Shadow: owner-authorized bounded two-SKU run packaged; fresh public evidence is processed without external action
+- G6–G7: blocked pending separate owner decisions
 
 ## Authority lock
 
@@ -113,9 +114,23 @@ Do **not** deploy `firestore.g4.emulator.rules` to the current `salescope-7f11d`
 
 `tests/firestore-rules.test.cjs` covers authenticated operator allow cases plus unauthenticated, wrong-role, wrong-run, prohibited-bucket, authority-expansion, delete, and legacy-collection deny cases. The CI job runs these tests only against the disposable `demo-datascout-run004` project.
 
-## G4 exit evidence still required
+## G5 bounded shadow
 
-This package is not itself a G4 pass. The remaining evidence is:
+The owner authorized one read-only shadow on 2026-08-15 for `H-596B` and `H-157WB`. The checked-in evidence packet records direct Uline product facts, direct eBay model and sold-count comparables, and the official eBay fee policy. It deliberately excludes cart, account, purchase, listing, messaging, scraping, credential, and production data.
+
+Run locally with:
+
+```bash
+npm run test:g5
+npm run validate:g5
+npm run run:g5
+```
+
+The expected business result is `Incomplete`, because a verified Uline inbound-freight quote and actual seller fee, postage, packaging, and risk inputs are not available from read-only public evidence. That safe stop is the correct shadow output; it does not authorize a purchase or G6.
+
+## Historical G4 exit evidence
+
+G4 passed after the package supplied all of the following evidence:
 
 1. Import and manually execute the inactive n8n workflow in a non-production workspace.
 2. Run Firestore emulator allow/deny tests with a synthetic `datascoutG4Operator` claim.
@@ -123,4 +138,4 @@ This package is not itself a G4 pass. The remaining evidence is:
 4. Record exact runtime versions, environment, results, logs, and rollback steps.
 5. Complete the G4 Gate Review without changing any authority.
 
-No G5 shadow run or external activation may begin before that review passes.
+G4 passed on 2026-08-15. G5 may run only within the separately approved two-SKU shadow scope; no external activation may begin without a new G6 owner decision.

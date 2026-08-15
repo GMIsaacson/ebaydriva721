@@ -17,9 +17,11 @@ test('all JSON deployment artifacts parse', () => {
     'contracts/telemetry.schema.json',
     'contracts/registry.json',
     'fixtures/normal-h2.json',
+    'fixtures/g5-shadow-two-sku.json',
     'firestore/firestore.g4.indexes.json',
     'firestore/firebase.g4.emulator.json',
     'n8n/run-004-g4-offline.workflow.json',
+    'n8n/run-004-g5-shadow.workflow.json',
   ]) {
     assert.doesNotThrow(() => JSON.parse(read(file)), file);
   }
@@ -79,5 +81,6 @@ test('registry preserves stable IDs and Testing lifecycle', () => {
   assert.ok(ids.includes('AGT-RESEARCH-VALIDATION-001'));
   assert.ok(ids.includes('AGT-OFFER-ASSET-BUILDER-001'));
   assert.ok(ids.includes('WF-DS-S2M-004-G4-001'));
+  assert.ok(ids.includes('WF-DS-S2M-004-G5-001'));
   assert.ok(registry.units.every((unit) => unit.lifecycle_status === 'Testing'));
 });

@@ -31,7 +31,10 @@
     "build": "vite build",
     "preview": "vite preview",
     "test:g4": "node --test agent-factory/run-004/tests/artifacts.test.cjs agent-factory/run-004/tests/config.test.cjs agent-factory/run-004/tests/economics.test.cjs agent-factory/run-004/tests/handoff-policy.test.cjs agent-factory/run-004/tests/runtime.test.cjs",
-    "validate:g4": "node agent-factory/run-004/scripts/validate-package.cjs"
+    "validate:g4": "node agent-factory/run-004/scripts/validate-package.cjs",
+    "test:g5": "node --test agent-factory/run-004/tests/g5-shadow.test.cjs",
+    "validate:g5": "node agent-factory/run-004/scripts/validate-g5-package.cjs",
+    "run:g5": "node agent-factory/run-004/scripts/run-g5-shadow.cjs"
   },
   "browserslist": [
     ">0.2%",
