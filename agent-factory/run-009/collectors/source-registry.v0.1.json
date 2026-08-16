@@ -8,22 +8,21 @@
     {
       "sourceId": "MPLS-CPC",
       "municipality": "Minneapolis",
-      "baseUrl": "https://lims.minneapolismn.gov/boards/cpc",
-      "sourceType": "planning_agenda_index",
+      "baseUrl": "https://www.minneapolismn.gov/government/boards-and-commissions/planning-commission/",
+      "sourceType": "planning_commission",
       "tier": 1,
       "enabled": true,
-      "followLinks": true,
-      "linkPattern": "/(?:board|Board)/Agenda/CPC/\\d+"
+      "followLinks": false
     },
     {
       "sourceId": "BLOOM-PLAN-NOTICES",
       "municipality": "Bloomington",
-      "baseUrl": "https://www.bloomingtonmn.gov/plan/news",
-      "sourceType": "planning_notices",
+      "baseUrl": "https://www.bloomingtonmn.gov/atty/public-hearing-notices",
+      "sourceType": "public_hearing_notices",
       "tier": 1,
       "enabled": true,
       "followLinks": true,
-      "linkPattern": "/plan/news/"
+      "linkPattern": "/plan/news/notice-public-hearing"
     },
     {
       "sourceId": "STP-PED",
@@ -38,7 +37,7 @@
       "sourceId": "MAPLEGROVE-PLANNING",
       "municipality": "Maple Grove",
       "baseUrl": "https://www.maplegrovemn.gov/AgendaCenter/Planning-Commission-6",
-      "sourceType": "planning_agenda_index",
+      "sourceType": "planning_commission_agenda_center",
       "tier": 1,
       "enabled": true,
       "followLinks": true,
