@@ -8,10 +8,12 @@
     {
       "sourceId": "MPLS-CPC",
       "municipality": "Minneapolis",
-      "baseUrl": "https://lims.minneapolismn.gov/board/agenda/CPC/",
-      "sourceType": "planning_agenda",
+      "baseUrl": "https://lims.minneapolismn.gov/boards/cpc",
+      "sourceType": "planning_agenda_index",
       "tier": 1,
-      "enabled": true
+      "enabled": true,
+      "followLinks": true,
+      "linkPattern": "/(?:board|Board)/Agenda/CPC/\\d+"
     },
     {
       "sourceId": "BLOOM-PLAN-NOTICES",
@@ -19,7 +21,9 @@
       "baseUrl": "https://www.bloomingtonmn.gov/plan/news",
       "sourceType": "planning_notices",
       "tier": 1,
-      "enabled": true
+      "enabled": true,
+      "followLinks": true,
+      "linkPattern": "/plan/news/"
     },
     {
       "sourceId": "STP-PED",
@@ -27,15 +31,18 @@
       "baseUrl": "https://www.stpaul.gov/departments/planning-and-economic-development/planning/current-activities",
       "sourceType": "planning_current_activities",
       "tier": 1,
-      "enabled": true
+      "enabled": true,
+      "followLinks": false
     },
     {
       "sourceId": "MAPLEGROVE-PLANNING",
       "municipality": "Maple Grove",
-      "baseUrl": "https://www.maplegrovemn.gov/413/Planning-Commission",
-      "sourceType": "planning_commission",
+      "baseUrl": "https://www.maplegrovemn.gov/AgendaCenter/Planning-Commission-6",
+      "sourceType": "planning_agenda_index",
       "tier": 1,
-      "enabled": true
+      "enabled": true,
+      "followLinks": true,
+      "linkPattern": "/AgendaCenter/ViewFile/Agenda/"
     }
   ]
 }
