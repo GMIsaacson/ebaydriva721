@@ -6,6 +6,7 @@ const ALLOWED_HOSTS = new Set([
   'www.stpaul.gov',
   'www.maplegrovemn.gov',
 ]);
+const REQUEST_TIMEOUT_MS = 12000;
 
 function assertReadOnlySource(source) {
   if (!source || source.enabled !== true) throw new Error('source_disabled');
@@ -34,9 +35,7 @@ function detectProjectSignals(text) {
     /\b(?:conditional use permit|development plan|site plan|planned development)\b[^.]{0,180}/gi,
   ];
   const out = [];
-  for (const pattern of patterns) {
-    for (const m of t.matchAll(pattern)) out.push(m[0].trim());
-  }
+  for (const pattern of patterns) for (const m of t.matchAll(pattern)) out.push(m[0].trim());
   return [...new Set(out)].slice(0, 25);
 }
 
@@ -58,12 +57,19 @@ function extractSameHostLinks(html, baseUrl, linkPattern) {
 }
 
 async function fetchPage(url, source, fetchImpl) {
-  const res = await fetchImpl(url, {
+  const options = {
     method: 'GET',
     redirect: 'follow',
     headers: { 'user-agent': 'Aberdeen-Municipal-Intel-Shadow/0.1' },
-  });
-  if (!res || !res.ok) throw new Error(`source_fetch_failed:${source.sourceId}`);
+  };
+  if (fetchImpl === fetch && typeof AbortSignal?.timeout === 'function') options.signal = AbortSignal.timeout(REQUEST_TIMEOUT_MS);
+  let res;
+  try { res = await fetchImpl(url, options); }
+  catch (error) {
+    if (error?.name === 'TimeoutError' || error?.name === 'AbortError') throw new Error(`source_timeout:${source.sourceId}`);
+    throw new Error(`source_fetch_error:${source.sourceId}:${error?.message || 'unknown'}`);
+  }
+  if (!res || !res.ok) throw new Error(`source_fetch_failed:${source.sourceId}:${res?.status || 'unknown'}`);
   const finalUrl = new URL(res.url || url);
   if (finalUrl.protocol !== 'https:' || !ALLOWED_HOSTS.has(finalUrl.hostname)) throw new Error('redirect_host_not_allowlisted');
   if (finalUrl.hostname !== new URL(source.baseUrl).hostname) throw new Error('redirect_cross_host_not_allowed');
@@ -79,9 +85,8 @@ async function collectSource(source, fetchImpl = fetch, maxPages = 5) {
   if (source.followLinks === true && maxPages > 1) {
     const links = extractSameHostLinks(root.body, root.finalUrl, source.linkPattern).slice(0, maxPages - 1);
     for (const link of links) {
-      try { pages.push(await fetchPage(link, source, fetchImpl)); } catch (error) {
-        pages.push({ finalUrl: link, body: '', text: '', error: error.message });
-      }
+      try { pages.push(await fetchPage(link, source, fetchImpl)); }
+      catch (error) { pages.push({ finalUrl: link, body: '', text: '', error: error.message }); }
     }
   }
   const signals = [...new Set(pages.flatMap(p => detectProjectSignals(p.text || '')))].slice(0, 50);
@@ -127,25 +132,19 @@ async function collectRegistry(registry, fetchImpl = fetch) {
 
 function collectorRecordsToPipelineCandidates(records) {
   const candidates = [];
-  for (const r of records || []) {
-    r.signals.forEach((signal, i) => {
-      candidates.push({
-        id: `${r.sourceId}-${i + 1}`,
-        municipality: r.municipality,
-        project: signal.slice(0, 100),
-        signal,
-        source: r.source,
-        status: 'WATCH',
-        confidence: 0.5,
-        electricalThesis: 'Collector-only signal; requires extraction/enrichment before ACTIONABLE classification.',
-      });
-    });
-  }
+  for (const r of records || []) r.signals.forEach((signal, i) => candidates.push({
+    id: `${r.sourceId}-${i + 1}`,
+    municipality: r.municipality,
+    project: signal.slice(0, 100),
+    signal,
+    source: r.source,
+    status: 'WATCH',
+    confidence: 0.5,
+    electricalThesis: 'Collector-only signal; requires extraction/enrichment before ACTIONABLE classification.',
+  }));
   return candidates;
 }
 
-function feedCollectedSignals(records) {
-  return runShadowPipeline(collectorRecordsToPipelineCandidates(records));
-}
+function feedCollectedSignals(records) { return runShadowPipeline(collectorRecordsToPipelineCandidates(records)); }
 
 module.exports = { assertReadOnlySource, stripHtml, detectProjectSignals, extractSameHostLinks, collectSource, collectRegistry, collectorRecordsToPipelineCandidates, feedCollectedSignals };
