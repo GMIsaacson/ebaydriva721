@@ -18,3 +18,5 @@ jobs:
           node-version: '20'
       - name: Test Run 009 G3 shadow acceptance
         run: npm run test:run009:g3
+      - name: Test Run 009 G4 repeatable shadow pipeline
+        run: npm run test:run009:g4
