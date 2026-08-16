@@ -1,6 +1,6 @@
 {
   "policyId": "SUB-OPS-006-OWNER-BRIEFING-V1",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "purpose": "Minimize owner interruption while ensuring time-sensitive subscription, billing, account, and renewal risks are surfaced early enough for a human decision.",
   "defaultBehavior": "SILENT",
   "authority": {
@@ -12,9 +12,27 @@
     "maySpend": false
   },
   "channels": {
-    "immediate": "OWNER_ALERT_CHANNEL_TBD",
-    "dailyBrief": "OWNER_BRIEF_CHANNEL_TBD",
-    "noFinding": "NO_MESSAGE"
+    "immediate": "CHATGPT_NOTIFICATION",
+    "dailyBrief": "CHATGPT_NOTIFICATION",
+    "noFinding": "NO_MESSAGE",
+    "activationState": "DEFINED_NOT_SCHEDULED",
+    "activationGate": "G6 owner approval required before recurring ChatGPT tasks are created or enabled"
+  },
+  "chatgptDelivery": {
+    "urgentMode": "condition_watch",
+    "urgentCheckCadence": "hourly maximum supported frequency after G6 approval",
+    "dailyBriefMode": "flexible_schedule",
+    "dailyBriefPreferredDaypart": "morning",
+    "dailyBriefDefaultLocalTime": "08:00",
+    "timezone": "America/Chicago",
+    "urgentNotificationRule": "Notify only when an immediateAlerts rule is newly true or materially worsens; otherwise produce no notification.",
+    "dailyNotificationRule": "Send one compact brief only when one or more dailyBriefRules or unresolved owner decisions exist; otherwise produce no notification.",
+    "activationRequires": [
+      "G6 manual end-to-end connector acceptance passed",
+      "explicit owner approval to enable recurring ChatGPT notifications",
+      "source of truth query path verified",
+      "duplicate suppression verified"
+    ]
   },
   "deduplication": {
     "sameEventWindowHours": 24,
