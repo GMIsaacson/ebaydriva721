@@ -1,23 +1,25 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { getFirestore, collection, getDocs } from "firebase/firestore";
+import React, { useEffect, useMemo, useState } from "react";
+import { collection, getDocs, getFirestore } from "firebase/firestore";
+import { FaFilter, FaTag, FaShoppingCart } from "react-icons/fa";
 import app from "./firebase-config";
 import Pagination from "./pagination";
-//import { FaFilter, FaTag, FaShoppingCart } from "react-icons/fa6"; // Updated import path for filter icon and added new icons
-import { FaFilter, FaTag, FaShoppingCart } from "react-icons/fa"; // Updated import path for filter icon and added new icons
 import "./productdata.css";
 
+const numberValue = (value) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+};
 
 const ProductData = () => {
-  // State variables
-  const [products, setProducts] = useState([]); // Full product list from Firestore
-  const [filteredProducts, setFilteredProducts] = useState([]); // After filters and sorting
-  const [paginatedProducts, setPaginatedProducts] = useState([]); // Products for the current page
-  const [categoryTree, setCategoryTree] = useState({}); // Category hierarchy
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
-  // Filter and sort state variables
   const [sortField, setSortField] = useState("");
   const [sortDirection, setSortDirection] = useState("asc");
-
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedSubCategory, setSelectedSubCategory] = useState("");
@@ -30,458 +32,254 @@ const ProductData = () => {
   const [minSold, setMinSold] = useState("");
   const [maxSold, setMaxSold] = useState("");
 
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10); // You can make this dynamic if needed
-
   const db = getFirestore(app);
 
-  // Filters toggle state
-  const [showFilters, setShowFilters] = useState(false);
-  const [loading, setLoading] = useState(true);
-
-  // Screen size state
-  const [isDesktop, setIsDesktop] = useState(window.innerWidth > 800);
-
-  // Handle window resize
   useEffect(() => {
-    const handleResize = () => setIsDesktop(window.innerWidth > 800);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  // Fetch products from Firestore on component mount
-  useEffect(() => {
+    let cancelled = false;
     const fetchProducts = async () => {
       setLoading(true);
+      setError("");
       try {
-        const productsCol = collection(db, "products");
-        const productsSnapshot = await getDocs(productsCol);
-        const productList = productsSnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-
-        setProducts(productList);
-        buildCategoryTree(productList); // Build category hierarchy from products
-      } catch (error) {
-        console.error("Error fetching products:", error);
+        const snapshot = await getDocs(collection(db, "products"));
+        if (!cancelled) {
+          setProducts(snapshot.docs.map((document) => ({ id: document.id, ...document.data() })));
+        }
+      } catch (fetchError) {
+        console.error("Error fetching products:", fetchError);
+        if (!cancelled) setError("We could not load product data. Please try again.");
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
-
     fetchProducts();
-  }, []);
+    return () => { cancelled = true; };
+  }, [db]);
 
-  // Build category hierarchy from products
-  const buildCategoryTree = (productsList) => {
+  const categoryTree = useMemo(() => {
     const tree = {};
+    products.forEach((product) => {
+      const { Category, SubCategory, SubSubCategory, Item } = product || {};
+      if (!Category) return;
+      tree[Category] ||= {};
+      if (!SubCategory) return;
+      tree[Category][SubCategory] ||= {};
+      if (!SubSubCategory) return;
+      tree[Category][SubCategory][SubSubCategory] ||= new Set();
+      if (Item) tree[Category][SubCategory][SubSubCategory].add(Item);
+    });
+    return tree;
+  }, [products]);
 
-    productsList.forEach((product) => {
-      if (!product) return; // Added null check to prevent errors
-      const { Category, SubCategory, SubSubCategory, Item } = product;
+  const categories = useMemo(() => Object.keys(categoryTree).sort(), [categoryTree]);
+  const subCategories = useMemo(
+    () => (selectedCategory ? Object.keys(categoryTree[selectedCategory] || {}).sort() : []),
+    [categoryTree, selectedCategory]
+  );
+  const subSubCategories = useMemo(
+    () => (selectedCategory && selectedSubCategory
+      ? Object.keys(categoryTree[selectedCategory]?.[selectedSubCategory] || {}).sort()
+      : []),
+    [categoryTree, selectedCategory, selectedSubCategory]
+  );
+  const items = useMemo(() => {
+    if (!selectedCategory || !selectedSubCategory || !selectedSubSubCategory) return [];
+    return Array.from(categoryTree[selectedCategory]?.[selectedSubCategory]?.[selectedSubSubCategory] || []).sort();
+  }, [categoryTree, selectedCategory, selectedSubCategory, selectedSubSubCategory]);
 
-      if (Category) {
-        if (!tree[Category]) {
-          tree[Category] = {};
-        }
+  const filteredProducts = useMemo(() => {
+    const lowerSearch = searchTerm.trim().toLowerCase();
+    const rangeMatch = (product, field, min, max) => {
+      const value = numberValue(product[field]);
+      if (min !== "" && (value === null || value < Number(min))) return false;
+      if (max !== "" && (value === null || value > Number(max))) return false;
+      return true;
+    };
 
-        if (SubCategory) {
-          if (!tree[Category][SubCategory]) {
-            tree[Category][SubCategory] = {};
-          }
-
-          if (SubSubCategory) {
-            if (!tree[Category][SubCategory][SubSubCategory]) {
-              tree[Category][SubCategory][SubSubCategory] = new Set();
-            }
-
-            if (Item) {
-              tree[Category][SubCategory][SubSubCategory].add(Item);
-            }
-          }
-        }
+    const result = products.filter((product) => {
+      if (selectedCategory && product.Category !== selectedCategory) return false;
+      if (selectedSubCategory && product.SubCategory !== selectedSubCategory) return false;
+      if (selectedSubSubCategory && product.SubSubCategory !== selectedSubSubCategory) return false;
+      if (selectedItem && product.Item !== selectedItem) return false;
+      if (!rangeMatch(product, "Price", minPrice, maxPrice)) return false;
+      if (!rangeMatch(product, "BEP", minBEP, maxBEP)) return false;
+      if (!rangeMatch(product, "Sold", minSold, maxSold)) return false;
+      if (lowerSearch) {
+        const searchable = [product.Title, product.Category, product.SubCategory, product.SubSubCategory, product.Item]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+        if (!searchable.includes(lowerSearch)) return false;
       }
+      return true;
     });
 
-    // Convert Sets to Arrays
-    Object.keys(tree).forEach((category) => {
-      Object.keys(tree[category]).forEach((subCategory) => {
-        Object.keys(tree[category][subCategory]).forEach((subSubCategory) => {
-          tree[category][subCategory][subSubCategory] = Array.from(
-            tree[category][subCategory][subSubCategory]
-          );
-        });
-      });
+    if (!sortField) return result;
+    return [...result].sort((a, b) => {
+      const aValue = a[sortField] ?? "";
+      const bValue = b[sortField] ?? "";
+      const numeric = ["Price", "BEP", "Sold"].includes(sortField);
+      const comparison = numeric
+        ? (Number(aValue) || 0) - (Number(bValue) || 0)
+        : String(aValue).localeCompare(String(bValue));
+      return sortDirection === "asc" ? comparison : -comparison;
     });
+  }, [products, searchTerm, selectedCategory, selectedSubCategory, selectedSubSubCategory, selectedItem, minPrice, maxPrice, minBEP, maxBEP, minSold, maxSold, sortField, sortDirection]);
 
-    setCategoryTree(tree);
-  };
+  useEffect(() => { setCurrentPage(1); }, [searchTerm, selectedCategory, selectedSubCategory, selectedSubSubCategory, selectedItem, minPrice, maxPrice, minBEP, maxBEP, minSold, maxSold, sortField, sortDirection]);
 
-  // Apply filters and sorting whenever relevant state variables change
-  useEffect(() => {
-    sortAndFilterProducts();
-  }, [
-    products,
-    sortField,
-    sortDirection,
-    searchTerm,
-    selectedCategory,
-    selectedSubCategory,
-    selectedSubSubCategory,
-    selectedItem,
-    minPrice,
-    maxPrice,
-    minBEP,
-    maxBEP,
-    minSold,
-    maxSold,
-  ]);
-
-  // Update paginated products whenever filteredProducts or pagination state changes
-  useEffect(() => {
-    paginateProducts();
+  const paginatedProducts = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredProducts.slice(start, start + itemsPerPage);
   }, [filteredProducts, currentPage]);
 
-  // Function to sort and filter products
-  const sortAndFilterProducts = () => {
-    let updatedProducts = [...products];
-
-    // Category filters
-    if (selectedCategory) {
-      updatedProducts = updatedProducts.filter(
-        (product) => product.Category === selectedCategory
-      );
+  const handleSort = (field) => {
+    if (sortField === field) setSortDirection((direction) => (direction === "asc" ? "desc" : "asc"));
+    else {
+      setSortField(field);
+      setSortDirection("asc");
     }
-    if (selectedSubCategory) {
-      updatedProducts = updatedProducts.filter(
-        (product) => product.SubCategory === selectedSubCategory
-      );
-    }
-    if (selectedSubSubCategory) {
-      updatedProducts = updatedProducts.filter(
-        (product) => product.SubSubCategory === selectedSubSubCategory
-      );
-    }
-    if (selectedItem) {
-      updatedProducts = updatedProducts.filter(
-        (product) => product.Item === selectedItem
-      );
-    }
-
-    // Range filters
-    updatedProducts = filterProductByRange(updatedProducts, "Price", minPrice, maxPrice);
-    updatedProducts = filterProductByRange(updatedProducts, "BEP", minBEP, maxBEP);
-    updatedProducts = filterProductByRange(updatedProducts, "Sold", minSold, maxSold);
-
-    // Search filter
-    if (searchTerm) {
-      const lowercasedSearch = searchTerm.toLowerCase();
-      updatedProducts = updatedProducts.filter((product) =>
-        Object.keys(product).some((key) =>
-          product[key]?.toString().toLowerCase().includes(lowercasedSearch)
-        )
-      );
-    }
-
-    // Sorting logic
-    if (sortField) {
-      updatedProducts.sort((a, b) => {
-        const fieldA = a[sortField] ?? "";
-        const fieldB = b[sortField] ?? "";
-        if (fieldA < fieldB) return sortDirection === "asc" ? -1 : 1;
-        if (fieldA > fieldB) return sortDirection === "asc" ? 1 : -1;
-        return 0;
-      });
-    }
-
-    setFilteredProducts(updatedProducts);
-    setCurrentPage(1); // Reset to first page when filters change
   };
 
-  // Helper function to filter products by range
-  const filterProductByRange = (products, fieldName, minValue, maxValue) => {
-    if (minValue) {
-      products = products.filter(
-        (product) => Number(product[fieldName]) >= Number(minValue)
-      );
-    }
-    if (maxValue) {
-      products = products.filter(
-        (product) => Number(product[fieldName]) <= Number(maxValue)
-      );
-    }
-    return products;
-  };
-
-  // Function to paginate products
-  const paginateProducts = () => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const paginated = filteredProducts.slice(
-      startIndex,
-      startIndex + itemsPerPage
-    );
-    setPaginatedProducts(paginated);
-  };
-
-  // Handle sort change
-  const handleSortChange = (field) => {
-    const newSortDirection =
-      sortField === field && sortDirection === "asc" ? "desc" : "asc";
-    setSortField(field);
-    setSortDirection(newSortDirection);
-  };
-
-  // Reset filters
-  const handleResetFilters = () => {
+  const resetFilters = () => {
     setSearchTerm("");
     setSelectedCategory("");
     setSelectedSubCategory("");
     setSelectedSubSubCategory("");
     setSelectedItem("");
-    setMinPrice("");
-    setMaxPrice("");
-    setMinBEP("");
-    setMaxBEP("");
-    setMinSold("");
-    setMaxSold("");
+    setMinPrice(""); setMaxPrice("");
+    setMinBEP(""); setMaxBEP("");
+    setMinSold(""); setMaxSold("");
+    setSortField(""); setSortDirection("asc");
   };
 
-  // Memoized category data
-  const categories = useMemo(() => Object.keys(categoryTree), [categoryTree]);
-  const subCategories = useMemo(() => selectedCategory ? Object.keys(categoryTree[selectedCategory] ?? {}) : [], [categoryTree, selectedCategory]);
-  const subSubCategories = useMemo(() => selectedCategory && selectedSubCategory ? Object.keys(categoryTree[selectedCategory][selectedSubCategory] ?? {}) : [], [categoryTree, selectedCategory, selectedSubCategory]);
-  const items = useMemo(() => selectedCategory && selectedSubCategory && selectedSubSubCategory ? categoryTree[selectedCategory][selectedSubCategory][selectedSubSubCategory] ?? [] : [], [categoryTree, selectedCategory, selectedSubCategory, selectedSubSubCategory]);
+  const money = (value) => {
+    const parsed = numberValue(value);
+    return parsed === null ? "N/A" : `$${parsed.toFixed(2)}`;
+  };
 
-  // Render Table
-  const renderTable = () => (
-    <div className="product-page-table-container">
-      {isDesktop && (
-        <table className="product-page-table">
-          <thead>
-            <tr>
-              <th onClick={() => handleSortChange("Title")}>Title</th>
-              <th onClick={() => handleSortChange("Sold")}>Sold</th>
-              <th>Dimensions</th>
-              <th onClick={() => handleSortChange("Price")}>Price</th>
-              <th onClick={() => handleSortChange("BEP")}>BEP</th>
-              <th>Sell</th>
-              <th>Buy</th>
-              <th>Category</th>
-              <th>SubCategory</th>
-              <th>SubSubCategory</th>
-              <th>Item</th>
-            </tr>
-          </thead>
-          <tbody>
-            {paginatedProducts.map((product) => (
-              <tr key={product.id}>
-                <td title={product.Title || "N/A"} className="truncate-text">
-                  {product.Title ? truncateText(product.Title, 3) : "N/A"}
-                </td>
-                <td>{product.Sold !== undefined ? product.Sold : "N/A"}</td>
-                <td title={product.Dimensions || "N/A"} className="truncate-text">
-                  {product.Dimensions ? truncateText(product.Dimensions, 3) : "N/A"}
-                </td>
-                <td>
-                  {product.Price !== undefined && !isNaN(product.Price) ? (
-                    `$${Number(product.Price).toFixed(2)}`
-                  ) : (
-                    "N/A"
-                  )}
-                </td>
-                <td>
-                  {product.BEP !== undefined && !isNaN(product.BEP) ? (
-                    `$${Number(product.BEP).toFixed(2)}`
-                  ) : (
-                    "N/A"
-                  )}
-                </td>
-                <td>
-                  {product.Sell ? (
-                    <a href={product.Sell} target="_blank" rel="noopener noreferrer">
-                      View Sell
-                    </a>
-                  ) : (
-                    "N/A"
-                  )}
-                </td>
-                <td>
-                  {product.Buy ? (
-                    <a href={product.Buy} target="_blank" rel="noopener noreferrer">
-                      View Buy
-                    </a>
-                  ) : (
-                    "N/A"
-                  )}
-                </td>
-                <td>{product.Category || "N/A"}</td>
-                <td>{product.SubCategory || "N/A"}</td>
-                <td>{product.SubSubCategory || "N/A"}</td>
-                <td>{product.Item || "N/A"}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-      {!isDesktop && paginatedProducts.map((product) => (
-        <div className="product-page-card" key={product.id}>
-          {/* Highlight important details first */}
-          <div className="product-page-card-item truncate-text" title={product.Title || "N/A"}>
-            <span><FaTag /> Title:</span> {product.Title ? truncateText(product.Title, 3) : "N/A"}
-          </div>
-          <div className="product-page-card-item">
-            <span><FaShoppingCart /> Sold:</span> {product.Sold !== undefined ? product.Sold : "N/A"}
-          </div>
-          <div className="product-page-card-item">
-            <span>Price:</span> {product.Price !== undefined && !isNaN(product.Price) ? (`$${Number(product.Price).toFixed(2)}`) : "N/A"}
-          </div>
-          <div className="product-page-card-item">
-            <span>BEP:</span> {product.BEP !== undefined && !isNaN(product.BEP) ? (`$${Number(product.BEP).toFixed(2)}`) : "N/A"}
-          </div>
-          {/* Action buttons */}
-          <div className="product-page-card-item action-buttons">
-            {product.Sell ? (
-              <a href={product.Sell} target="_blank" rel="noopener noreferrer" className="buy-button">
-                Buy
-              </a>
-            ) : (
-              "N/A"
-            )}
-            {product.Buy ? (
-              <a href={product.Buy} target="_blank" rel="noopener noreferrer" className="sell-button">
-                Sell
-              </a>
-            ) : (
-              "N/A"
-            )}
-          </div>
-          {/* Expandable details */}
-          <details className="product-page-card-details">
-            <summary>More Info</summary>
-            <div className="product-page-card-item truncate-text" title={product.Dimensions || "N/A"}>
-              <span>Dimensions:</span> {product.Dimensions ? truncateText(product.Dimensions, 3) : "N/A"}
-            </div>
-            <div className="product-page-card-item"><span>Category:</span> {product.Category || "N/A"}</div>
-            <div className="product-page-card-item"><span>SubCategory:</span> {product.SubCategory || "N/A"}</div>
-            <div className="product-page-card-item"><span>SubSubCategory:</span> {product.SubSubCategory || "N/A"}</div>
-            <div className="product-page-card-item"><span>Item:</span> {product.Item || "N/A"}</div>
-          </details>
-        </div>
-      ))}
-    </div>
-  );
-
-  // Helper function to truncate text
-  const truncateText = (text, wordLimit) => {
-    const words = text.split(" ");
-    if (words.length > wordLimit) {
-      return words.slice(0, wordLimit).join(" ") + "...";
-    }
-    return text;
+  const truncate = (text, limit = 48) => {
+    if (!text) return "N/A";
+    return text.length > limit ? `${text.slice(0, limit - 1)}…` : text;
   };
 
   return (
-    <div className="product-data-container">
-      {/* Filters Toggle Button - visible only on smaller screens */}
-      {!isDesktop && (
-        <button className="filter-toggle-button" onClick={() => setShowFilters((prev) => !prev)}>
-          <FaFilter />
-          {showFilters ? "Hide Filters" : "Show Filters"}
-        </button>
-      )}
+    <main className="ds-page ds-products-page">
+      <header className="ds-products-header">
+        <div>
+          <p className="ds-products-eyebrow">SOURCING DATABASE</p>
+          <h1>Product opportunities</h1>
+          <p>Search, filter, compare, and open the underlying buy/sell evidence.</p>
+        </div>
+        <div className="ds-products-count"><strong>{filteredProducts.length}</strong><span>matches</span></div>
+      </header>
 
-      {/* Filters Section - conditionally rendered based on screen size and toggle state */}
-      <div className="filter-controls">
-        <input
-          type="text"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Search products..."
-        />
-        <select onChange={(e) => setSelectedCategory(e.target.value)} value={selectedCategory}>
-          <option value="">All Categories</option>
-          {categories.map((cat) => (
-            <option key={cat} value={cat}>{cat}</option>
-          ))}
-        </select>
-        <select onChange={(e) => setSelectedSubCategory(e.target.value)} value={selectedSubCategory}>
-          <option value="">All SubCategories</option>
-          {subCategories.map((subCat) => (
-            <option key={subCat} value={subCat}>{subCat}</option>
-          ))}
-        </select>
-        <select onChange={(e) => setSelectedSubSubCategory(e.target.value)} value={selectedSubSubCategory}>
-          <option value="">All SubSubCategories</option>
-          {subSubCategories.map((subSubCat) => (
-            <option key={subSubCat} value={subSubCat}>{subSubCat}</option>
-          ))}
-        </select>
-        <select onChange={(e) => setSelectedItem(e.target.value)} value={selectedItem}>
-          <option value="">All Items</option>
-          {items.map((item) => (
-            <option key={item} value={item}>{item}</option>
-          ))}
-        </select>
-        {/* Range filters - conditionally visible on small screens */}
-        {(!isDesktop && showFilters) || isDesktop ? (
+      <section className="ds-panel ds-products-filters">
+        <div className="ds-filter-topline">
+          <div>
+            <h2 className="ds-section-title">Filters</h2>
+            <p className="ds-section-copy">Narrow the catalog without losing the underlying sourcing evidence.</p>
+          </div>
+          <button className="ds-filter-toggle ds-button ds-button-secondary" type="button" onClick={() => setShowFilters((value) => !value)}>
+            <FaFilter /> {showFilters ? "Hide advanced" : "Advanced filters"}
+          </button>
+        </div>
+
+        <div className="ds-filter-grid ds-filter-grid-primary">
+          <label><span>Search</span><input value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Title or category..." /></label>
+          <label><span>Category</span><select value={selectedCategory} onChange={(e) => { setSelectedCategory(e.target.value); setSelectedSubCategory(""); setSelectedSubSubCategory(""); setSelectedItem(""); }}><option value="">All categories</option>{categories.map((value) => <option key={value} value={value}>{value}</option>)}</select></label>
+          <label><span>Subcategory</span><select value={selectedSubCategory} disabled={!selectedCategory} onChange={(e) => { setSelectedSubCategory(e.target.value); setSelectedSubSubCategory(""); setSelectedItem(""); }}><option value="">All subcategories</option>{subCategories.map((value) => <option key={value} value={value}>{value}</option>)}</select></label>
+          <label><span>Item</span><select value={selectedItem} disabled={!selectedSubSubCategory} onChange={(e) => setSelectedItem(e.target.value)}><option value="">All items</option>{items.map((value) => <option key={value} value={value}>{value}</option>)}</select></label>
+        </div>
+
+        <div className={`ds-advanced-filters ${showFilters ? "open" : ""}`}>
+          <div className="ds-filter-grid">
+            <label><span>Sub-subcategory</span><select value={selectedSubSubCategory} disabled={!selectedSubCategory} onChange={(e) => { setSelectedSubSubCategory(e.target.value); setSelectedItem(""); }}><option value="">All sub-subcategories</option>{subSubCategories.map((value) => <option key={value} value={value}>{value}</option>)}</select></label>
+            <label><span>Min price</span><input type="number" value={minPrice} onChange={(e) => setMinPrice(e.target.value)} placeholder="$0" /></label>
+            <label><span>Max price</span><input type="number" value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} placeholder="Any" /></label>
+            <label><span>Min BEP</span><input type="number" value={minBEP} onChange={(e) => setMinBEP(e.target.value)} placeholder="$0" /></label>
+            <label><span>Max BEP</span><input type="number" value={maxBEP} onChange={(e) => setMaxBEP(e.target.value)} placeholder="Any" /></label>
+            <label><span>Min sold</span><input type="number" value={minSold} onChange={(e) => setMinSold(e.target.value)} placeholder="0" /></label>
+            <label><span>Max sold</span><input type="number" value={maxSold} onChange={(e) => setMaxSold(e.target.value)} placeholder="Any" /></label>
+          </div>
+        </div>
+
+        <div className="ds-filter-footer">
+          <span>{filteredProducts.length} of {products.length} products</span>
+          <button className="ds-button ds-button-secondary" type="button" onClick={resetFilters}>Reset filters</button>
+        </div>
+      </section>
+
+      <section className="ds-panel ds-products-results">
+        <div className="ds-results-toolbar">
+          <div>
+            <h2 className="ds-section-title">Results</h2>
+            <p className="ds-section-copy">Click sortable column headings to change ranking.</p>
+          </div>
+          <label className="ds-sort-mobile"><span>Sort</span><select value={sortField} onChange={(e) => handleSort(e.target.value)}><option value="">Default</option><option value="Title">Title</option><option value="Sold">Sold</option><option value="Price">Price</option><option value="BEP">BEP</option></select></label>
+        </div>
+
+        {loading && <div className="ds-empty">Loading product data…</div>}
+        {!loading && error && <div className="ds-empty ds-danger-text">{error}</div>}
+        {!loading && !error && paginatedProducts.length === 0 && <div className="ds-empty">No products match these filters.</div>}
+
+        {!loading && !error && paginatedProducts.length > 0 && (
           <>
-            <div className="range-filter">
-              <label>Min Price:</label>
-              <input type="number" value={minPrice} onChange={(e) => setMinPrice(e.target.value)} />
-              <label>Max Price:</label>
-              <input type="number" value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} />
+            <div className="ds-products-table-wrap">
+              <table className="ds-products-table">
+                <thead><tr>
+                  <th onClick={() => handleSort("Title")}>Title</th>
+                  <th onClick={() => handleSort("Sold")}>Sold</th>
+                  <th onClick={() => handleSort("Price")}>Price</th>
+                  <th onClick={() => handleSort("BEP")}>BEP</th>
+                  <th>Category</th><th>Item</th><th>Sell evidence</th><th>Buy source</th>
+                </tr></thead>
+                <tbody>{paginatedProducts.map((product) => (
+                  <tr key={product.id}>
+                    <td title={product.Title}>{truncate(product.Title)}</td>
+                    <td>{product.Sold ?? "N/A"}</td>
+                    <td>{money(product.Price)}</td>
+                    <td>{money(product.BEP)}</td>
+                    <td>{product.Category || "N/A"}<small>{product.SubCategory || ""}</small></td>
+                    <td>{product.Item || product.SubSubCategory || "N/A"}</td>
+                    <td>{product.Sell ? <a className="ds-evidence-link" href={product.Sell} target="_blank" rel="noopener noreferrer">View sell ↗</a> : "N/A"}</td>
+                    <td>{product.Buy ? <a className="ds-evidence-link" href={product.Buy} target="_blank" rel="noopener noreferrer">View buy ↗</a> : "N/A"}</td>
+                  </tr>
+                ))}</tbody>
+              </table>
             </div>
-            <div className="range-filter">
-              <label>Min BEP:</label>
-              <input type="number" value={minBEP} onChange={(e) => setMinBEP(e.target.value)} />
-              <label>Max BEP:</label>
-              <input type="number" value={maxBEP} onChange={(e) => setMaxBEP(e.target.value)} />
-            </div>
-            <div className="range-filter">
-              <label>Min Sold:</label>
-              <input type="number" value={minSold} onChange={(e) => setMinSold(e.target.value)} />
-              <label>Max Sold:</label>
-              <input type="number" value={maxSold} onChange={(e) => setMaxSold(e.target.value)} />
+
+            <div className="ds-product-cards">
+              {paginatedProducts.map((product) => (
+                <article className="ds-product-card" key={product.id}>
+                  <div className="ds-product-card-title"><FaTag /><span>{truncate(product.Title, 80)}</span></div>
+                  <div className="ds-product-card-stats">
+                    <div><span><FaShoppingCart /> Sold</span><strong>{product.Sold ?? "N/A"}</strong></div>
+                    <div><span>Price</span><strong>{money(product.Price)}</strong></div>
+                    <div><span>BEP</span><strong>{money(product.BEP)}</strong></div>
+                  </div>
+                  <div className="ds-product-card-actions">
+                    {product.Sell ? <a className="ds-button ds-button-primary" href={product.Sell} target="_blank" rel="noopener noreferrer">View sell evidence</a> : <span className="ds-muted">No sell link</span>}
+                    {product.Buy ? <a className="ds-button ds-button-secondary" href={product.Buy} target="_blank" rel="noopener noreferrer">View buy source</a> : <span className="ds-muted">No buy link</span>}
+                  </div>
+                  <details><summary>More details</summary><dl>
+                    <div><dt>Dimensions</dt><dd>{product.Dimensions || "N/A"}</dd></div>
+                    <div><dt>Category</dt><dd>{product.Category || "N/A"}</dd></div>
+                    <div><dt>Subcategory</dt><dd>{product.SubCategory || "N/A"}</dd></div>
+                    <div><dt>Sub-subcategory</dt><dd>{product.SubSubCategory || "N/A"}</dd></div>
+                    <div><dt>Item</dt><dd>{product.Item || "N/A"}</dd></div>
+                  </dl></details>
+                </article>
+              ))}
             </div>
           </>
-        ) : null}
-        <button onClick={handleResetFilters}>Reset Filters</button>
-      </div>
+        )}
 
-      {/* Render Table */}
-      {loading ? <div>Loading...</div> : renderTable()}
-
-      {/* Pagination */}
-      <Pagination
-        totalItems={filteredProducts.length}
-        itemsPerPage={itemsPerPage}
-        currentPage={currentPage}
-        onPageChange={(page) => setCurrentPage(page)}
-      />
-    </div>
+        {!loading && !error && filteredProducts.length > itemsPerPage && (
+          <Pagination totalItems={filteredProducts.length} itemsPerPage={itemsPerPage} currentPage={currentPage} onPageChange={setCurrentPage} />
+        )}
+      </section>
+    </main>
   );
 };
 
 export default ProductData;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

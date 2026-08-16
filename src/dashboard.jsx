@@ -1,744 +1,390 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
-  getFirestore,
-  collection,
-  getDocs,
   addDoc,
-  doc,
-  updateDoc,
+  collection,
   deleteDoc,
-  writeBatch,
+  doc,
+  getDocs,
+  getFirestore,
   serverTimestamp,
+  updateDoc,
+  writeBatch,
 } from "firebase/firestore";
-import Papa from "papaparse"; // For CSV/JSON parsing
-import app from "./firebase-config"; // Firebase config
-import "./dashboard.css";
-import { useAuth } from "./AuthProvider"; // Authentication hook
+import Papa from "papaparse";
+import app from "./firebase-config";
+import { useAuth } from "./AuthProvider";
 import Csvtool from "./csvtool.jsx";
+import "./dashboard.css";
 
-// ListingTable component to display the list of products
-const ListingTable = ({
-  listings,
-  onEditClick,
-  onDeleteClick,
-  selectedIds,
-  onSelectChange,
-}) => (
-  <div className="table-container">
-    <table>
-      <thead>
-        <tr>
-          <th>
-            <input
-              type="checkbox"
-              onChange={(e) => onSelectChange(e.target.checked, "all")}
-            />
-          </th>
-          <th>Title</th>
-          <th>Sold</th>
-          <th>Dimensions</th>
-          <th>Price</th>
-          <th>BEP</th>
-          <th>Sell</th>
-          <th>Buy</th>
-          <th>Category</th>
-          <th>SubCategory</th>
-          <th>SubSubCategory</th>
-          <th>Item</th>
-          <th>Status</th>
-          <th>Last Modified By</th>
-          <th>Last Modified At</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {listings.map((listing) => (
-          <tr
-            key={listing.id}
-            className={listing.status === "Updated" ? "highlight-updated" : ""}
-          >
-            <td>
-              <input
-                type="checkbox"
-                checked={selectedIds.includes(listing.id)}
-                onChange={(e) => onSelectChange(e.target.checked, listing.id)}
-              />
-            </td>
-            <td>{listing.Title}</td>
-            <td>{listing.Sold}</td>
-            <td>{listing.Dimensions}</td>
-            <td>${parseFloat(listing.Price).toFixed(2)}</td>
-            <td>${parseFloat(listing.BEP).toFixed(2)}</td>
-            <td>
-              <a href={listing.Sell} target="_blank" rel="noopener noreferrer">
-                Sell Link
-              </a>
-            </td>
-            <td>
-              <a href={listing.Buy} target="_blank" rel="noopener noreferrer">
-                Buy Link
-              </a>
-            </td>
-            <td>{listing.Category}</td>
-            <td>{listing.SubCategory}</td>
-            <td>{listing.SubSubCategory}</td>
-            <td>{listing.Item}</td>
-            <td>{listing.status}</td>
-            <td>{listing.lastModifiedBy}</td>
-            <td>
-              {listing.lastModifiedAt?.toDate().toLocaleString() || "N/A"}
-            </td>
-            <td>
-              <button className="btn-edit" onClick={() => onEditClick(listing)}>
-                Edit
-              </button>
-              <button
-                className="btn-delete"
-                onClick={() => onDeleteClick(listing.id)}
-              >
-                Delete
-              </button>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
-);
+const emptyProduct = {
+  title: "", category: "", subCategory: "", subSubCategory: "", item: "",
+  sold: "", price: "", bep: "", sell: "", buy: "", dimensions: "",
+};
 
-// Main Dashboard component
+const formatTimestamp = (timestamp) => {
+  if (!timestamp) return "N/A";
+  try {
+    if (typeof timestamp.toDate === "function") return timestamp.toDate().toLocaleString();
+    if (timestamp instanceof Date) return timestamp.toLocaleString();
+    return "N/A";
+  } catch {
+    return "N/A";
+  }
+};
+
 const Dashboard = () => {
-  const [title, setTitle] = useState("");
-  const [category, setCategory] = useState("");
-  const [subCategory, setSubCategory] = useState("");
-  const [subSubCategory, setSubSubCategory] = useState("");
-  const [item, setItem] = useState("");
-  const [sold, setSold] = useState("");
-  const [price, setPrice] = useState("");
-  const [bep, setBep] = useState("");
-  const [sell, setSell] = useState("");
-  const [buy, setBuy] = useState("");
-  const [dimensions, setDimensions] = useState("");
-  const [products, setProducts] = useState([]);
-  const [editingProduct, setEditingProduct] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [file, setFile] = useState(null); // For bulk upload file
-  const [selectedIds, setSelectedIds] = useState([]); // Selected product IDs
-  const [sortField, setSortField] = useState("");
-  const [sortOrder, setSortOrder] = useState("asc");
-  const [filterValues, setFilterValues] = useState({
-    title: "",
-    category: "",
-    subCategory: "",
-    subSubCategory: "",
-    priceMin: "",
-    priceMax: "",
-  });
-  const [totalProducts, setTotalProducts] = useState(0);
-  const [filteredTotal, setFilteredTotal] = useState(0);
-  const [categories, setCategories] = useState([]);
-  const [subCategories, setSubCategories] = useState([]);
-  const [subSubCategories, setSubSubCategories] = useState([]);
-  const [userActivities, setUserActivities] = useState([]);
-
   const { currentUser } = useAuth();
   const db = getFirestore(app);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+  const [products, setProducts] = useState([]);
+  const [activities, setActivities] = useState([]);
+  const [form, setForm] = useState(emptyProduct);
+  const [editingProduct, setEditingProduct] = useState(null);
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [file, setFile] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [notice, setNotice] = useState("");
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deleteConfirmationText, setDeleteConfirmationText] = useState("");
+  const [showTools, setShowTools] = useState(false);
+  const [filters, setFilters] = useState({ title: "", category: "", subCategory: "", subSubCategory: "", priceMin: "", priceMax: "" });
+  const [sortField, setSortField] = useState("");
+  const [sortOrder, setSortOrder] = useState("asc");
 
-  const resetFormFields = () => {
-    setTitle("");
-    setCategory("");
-    setSubCategory("");
-    setSubSubCategory("");
-    setItem("");
-    setSold("");
-    setPrice("");
-    setBep("");
-    setSell("");
-    setBuy("");
-    setDimensions("");
-    setEditingProduct(null);
+  const loadProducts = async () => {
+    const snapshot = await getDocs(collection(db, "products"));
+    setProducts(snapshot.docs.map((document) => ({ id: document.id, ...document.data() })));
   };
 
-  const resetFilters = () => {
-    setFilterValues({
-      title: "",
-      category: "",
-      subCategory: "",
-      subSubCategory: "",
-      priceMin: "",
-      priceMax: "",
+  const loadActivities = async () => {
+    if (!currentUser) return;
+    const snapshot = await getDocs(collection(db, "activities"));
+    const rows = snapshot.docs
+      .map((document) => ({ id: document.id, ...document.data() }))
+      .filter((activity) => activity.userId === currentUser.uid)
+      .sort((a, b) => (b.timestamp?.toMillis?.() || 0) - (a.timestamp?.toMillis?.() || 0))
+      .slice(0, 5);
+    setActivities(rows);
+  };
+
+  useEffect(() => {
+    let active = true;
+    Promise.all([loadProducts(), loadActivities()]).catch((error) => {
+      console.error("Dashboard load failed:", error);
+      if (active) setNotice("Some dashboard data could not be loaded.");
     });
-  };
+    return () => { active = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser?.uid]);
 
-  const logUserActivity = async (action, productId) => {
-    const activityRef = collection(db, "activities");
-    await addDoc(activityRef, {
+  const logActivity = async (action, productId) => {
+    if (!currentUser) return;
+    await addDoc(collection(db, "activities"), {
       userId: currentUser.uid,
       action,
       productId,
       timestamp: serverTimestamp(),
     });
+    await loadActivities();
   };
 
-  const parseFile = async () => {
-    return new Promise((resolve, reject) => {
-      Papa.parse(file, {
-        header: true,
-        skipEmptyLines: true,
-        complete: (results) => {
-          console.log("Parsed Data:", results.data);
-          resolve(results.data);
-        },
-        error: (error) => reject(error),
-      });
+  const categories = useMemo(() => [...new Set(products.map((p) => p.Category).filter(Boolean))].sort(), [products]);
+  const subCategories = useMemo(() => [...new Set(products.filter((p) => !filters.category || p.Category === filters.category).map((p) => p.SubCategory).filter(Boolean))].sort(), [products, filters.category]);
+  const subSubCategories = useMemo(() => [...new Set(products.filter((p) => (!filters.category || p.Category === filters.category) && (!filters.subCategory || p.SubCategory === filters.subCategory)).map((p) => p.SubSubCategory).filter(Boolean))].sort(), [products, filters.category, filters.subCategory]);
+
+  const filteredProducts = useMemo(() => {
+    let rows = products.filter((product) => {
+      const title = String(product.Title || "").toLowerCase();
+      if (filters.title && !title.includes(filters.title.toLowerCase())) return false;
+      if (filters.category && product.Category !== filters.category) return false;
+      if (filters.subCategory && product.SubCategory !== filters.subCategory) return false;
+      if (filters.subSubCategory && product.SubSubCategory !== filters.subSubCategory) return false;
+      if (filters.priceMin !== "" && Number(product.Price) < Number(filters.priceMin)) return false;
+      if (filters.priceMax !== "" && Number(product.Price) > Number(filters.priceMax)) return false;
+      return true;
     });
+    if (sortField) {
+      rows = [...rows].sort((a, b) => {
+        const numeric = ["Price", "BEP", "Sold"].includes(sortField);
+        const comparison = numeric
+          ? (Number(a[sortField]) || 0) - (Number(b[sortField]) || 0)
+          : String(a[sortField] || "").localeCompare(String(b[sortField] || ""));
+        return sortOrder === "asc" ? comparison : -comparison;
+      });
+    }
+    return rows;
+  }, [products, filters, sortField, sortOrder]);
+
+  const resetFilters = () => {
+    setFilters({ title: "", category: "", subCategory: "", subSubCategory: "", priceMin: "", priceMax: "" });
+    setSortField("");
+    setSortOrder("asc");
   };
 
-  const handleBulkUpload = async () => {
-    if (!file) {
-      alert("Please upload a file first.");
-      return;
-    }
+  const updateForm = (field, value) => setForm((previous) => ({ ...previous, [field]: value }));
+  const resetForm = () => { setForm(emptyProduct); setEditingProduct(null); };
 
-    try {
-      const data = await parseFile();
-
-      // Validate products with all required fields
-      const validProducts = data.filter((product) => {
-        const isValid =
-          product.title &&
-          product.sold &&
-          product.price &&
-          product.bep &&
-          product.dimension &&
-          product.sell &&
-          product.buy &&
-          product.category &&
-          product.subCategory &&
-          product.subSubCategory &&
-          product.item;
-
-        if (!isValid) {
-          console.log("Invalid product:", product);
-        }
-
-        return isValid;
-      });
-
-      if (validProducts.length === 0) {
-        alert("No valid products to upload.");
-        return;
-      }
-
-      const batch = writeBatch(db);
-      const productsRef = collection(db, "products");
-
-      validProducts.forEach((product) => {
-        const docRef = doc(productsRef);
-        batch.set(docRef, {
-          Title: product.title,
-          Sold: product.sold,
-          Price: parseFloat(product.price),
-          BEP: parseFloat(product.bep),
-          Dimensions: product.dimension,
-          Sell: product.sell,
-          Buy: product.buy,
-          Category: product.category,
-          SubCategory: product.subCategory,
-          SubSubCategory: product.subSubCategory,
-          Item: product.item,
-          status: "New",
-          lastModifiedBy: currentUser.email,
-          lastModifiedAt: serverTimestamp(),
-        });
-      });
-
-      await batch.commit();
-      // Fetch the updated products list
-      fetchProducts();
-      alert("Bulk upload successful!");
-      logUserActivity("Bulk upload", "multiple");
-    } catch (error) {
-      console.error("Error during bulk upload:", error);
-      alert("Bulk upload failed. Please try again.");
-    }
-  };
-
-  const handleBulkDelete = async (idsToDelete) => {
-    if (idsToDelete.length === 0) {
-      alert("No products selected for deletion.");
-      return;
-    }
-
-    try {
-      const batch = writeBatch(db);
-      idsToDelete.forEach((id) => {
-        const docRef = doc(db, "products", id);
-        batch.delete(docRef);
-      });
-
-      await batch.commit();
-
-      // Update the products state to remove the deleted products
-      setProducts((prevProducts) =>
-        prevProducts.filter((product) => !idsToDelete.includes(product.id))
-      );
-      // Clear selectedIds
-      setSelectedIds([]);
-
-      alert("Selected products deleted successfully!");
-      logUserActivity("Bulk delete", "multiple");
-    } catch (error) {
-      console.error("Error deleting selected products:", error);
-      alert("Error deleting selected products!");
-    }
-  };
-
-  const handleSubmit = async (event) => {
+  const saveProduct = async (event) => {
     event.preventDefault();
-
+    if (!currentUser) return;
+    setBusy(true);
+    setNotice("");
+    const payload = {
+      Title: form.title.trim(),
+      Category: form.category.trim(),
+      SubCategory: form.subCategory.trim(),
+      SubSubCategory: form.subSubCategory.trim(),
+      Item: form.item.trim(),
+      Sold: form.sold,
+      Price: Number(form.price),
+      BEP: Number(form.bep),
+      Sell: form.sell.trim(),
+      Buy: form.buy.trim(),
+      Dimensions: form.dimensions.trim(),
+      status: editingProduct ? "Updated" : "New",
+      lastModifiedBy: currentUser.email,
+      lastModifiedAt: serverTimestamp(),
+    };
     try {
       if (editingProduct) {
-        // Update product
-        const productRef = doc(db, "products", editingProduct.id);
-        await updateDoc(productRef, {
-          Title: title,
-          Sold: sold,
-          Price: parseFloat(price),
-          BEP: parseFloat(bep),
-          Sell: sell,
-          Buy: buy,
-          Dimensions: dimensions,
-          Category: category,
-          SubCategory: subCategory,
-          SubSubCategory: subSubCategory,
-          Item: item,
-          status: "Updated",
-          lastModifiedBy: currentUser.email,
-          lastModifiedAt: serverTimestamp(),
-        });
-        alert("Product updated successfully!");
-        logUserActivity("Update product", editingProduct.id);
+        await updateDoc(doc(db, "products", editingProduct.id), payload);
+        await logActivity("Update product", editingProduct.id);
+        setNotice("Product updated.");
       } else {
-        // Add new product
-        await addDoc(collection(db, "products"), {
-          Title: title,
-          Sold: sold,
-          Price: parseFloat(price),
-          BEP: parseFloat(bep),
-          Sell: sell,
-          Buy: buy,
-          Dimensions: dimensions,
-          Category: category,
-          SubCategory: subCategory,
-          SubSubCategory: subSubCategory,
-          Item: item,
-          status: "New",
-          lastModifiedBy: currentUser.email,
-          lastModifiedAt: serverTimestamp(),
-        });
-        alert("Product added successfully!");
-        logUserActivity("Add product", "new");
+        const created = await addDoc(collection(db, "products"), payload);
+        await logActivity("Add product", created.id);
+        setNotice("Product added.");
       }
-
-      resetFormFields();
-      // Fetch the updated products list
-      fetchProducts();
+      resetForm();
+      await loadProducts();
     } catch (error) {
-      console.error("Error saving product:", error);
-      alert("Error saving product!");
+      console.error("Product save failed:", error);
+      setNotice("Product could not be saved. Please try again.");
+    } finally {
+      setBusy(false);
     }
   };
 
-  const fetchProducts = async () => {
-    const productsCollection = collection(db, "products");
-    const productSnapshot = await getDocs(productsCollection);
-    const productList = productSnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-
-    setTotalProducts(productList.length);
-
-    // Extract unique categories, subcategories, and subsubcategories
-    const uniqueCategories = [
-      ...new Set(productList.map((product) => product.Category)),
-    ];
-    const uniqueSubCategories = [
-      ...new Set(productList.map((product) => product.SubCategory)),
-    ];
-    const uniqueSubSubCategories = [
-      ...new Set(productList.map((product) => product.SubSubCategory)),
-    ];
-    setCategories(uniqueCategories);
-    setSubCategories(uniqueSubCategories);
-    setSubSubCategories(uniqueSubSubCategories);
-
-    // Apply filtering
-    let filteredProducts = productList.filter((product) => {
-      return (
-        (filterValues.title === "" ||
-          product.Title.toLowerCase().includes(
-            filterValues.title.toLowerCase()
-          )) &&
-        (filterValues.category === "" ||
-          product.Category?.toLowerCase().includes(
-            filterValues.category.toLowerCase()
-          )) &&
-        (filterValues.subCategory === "" ||
-          product.SubCategory?.toLowerCase().includes(
-            filterValues.subCategory.toLowerCase()
-          )) &&
-        (filterValues.subSubCategory === "" ||
-          product.SubSubCategory?.toLowerCase().includes(
-            filterValues.subSubCategory.toLowerCase()
-          )) &&
-        (filterValues.priceMin === "" ||
-          parseFloat(product.Price) >= parseFloat(filterValues.priceMin)) &&
-        (filterValues.priceMax === "" ||
-          parseFloat(product.Price) <= parseFloat(filterValues.priceMax))
-      );
+  const startEdit = (product) => {
+    setEditingProduct(product);
+    setForm({
+      title: product.Title || "", category: product.Category || "", subCategory: product.SubCategory || "",
+      subSubCategory: product.SubSubCategory || "", item: product.Item || "", sold: product.Sold ?? "",
+      price: product.Price ?? "", bep: product.BEP ?? "", sell: product.Sell || "", buy: product.Buy || "",
+      dimensions: product.Dimensions || "",
     });
-
-    setFilteredTotal(filteredProducts.length);
-
-    // Apply sorting
-    if (sortField) {
-      filteredProducts.sort((a, b) => {
-        if (sortOrder === "asc") {
-          return a[sortField] > b[sortField] ? 1 : -1;
-        } else {
-          return a[sortField] < b[sortField] ? 1 : -1;
-        }
-      });
-    }
-
-    setProducts(filteredProducts);
+    document.getElementById("product-editor")?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  useEffect(() => {
-    fetchProducts();
+  const deleteSingle = async (product) => {
+    if (!window.confirm(`Delete “${product.Title || "this product"}”? This cannot be undone.`)) return;
+    try {
+      await deleteDoc(doc(db, "products", product.id));
+      await logActivity("Delete product", product.id);
+      setSelectedIds((ids) => ids.filter((id) => id !== product.id));
+      await loadProducts();
+      setNotice("Product deleted.");
+    } catch (error) {
+      console.error("Delete failed:", error);
+      setNotice("Product could not be deleted.");
+    }
+  };
 
-    const fetchUserActivities = async () => {
-      const activitiesCollection = collection(db, "activities");
-      const activitySnapshot = await getDocs(activitiesCollection);
-      const activityList = activitySnapshot.docs
-        .map((doc) => ({ id: doc.id, ...doc.data() }))
-        .filter((activity) => activity.userId === currentUser.uid)
-        .sort((a, b) => b.timestamp - a.timestamp)
-        .slice(0, 5);
-      setUserActivities(activityList);
-    };
+  const parseUpload = () => new Promise((resolve, reject) => {
+    Papa.parse(file, { header: true, skipEmptyLines: true, complete: (results) => resolve(results.data), error: reject });
+  });
 
-    fetchUserActivities();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filterValues, sortField, sortOrder]);
+  const bulkUpload = async () => {
+    if (!file || !currentUser) { setNotice("Choose a CSV file first."); return; }
+    setBusy(true);
+    try {
+      const rows = await parseUpload();
+      const validRows = rows.filter((product) => product.title && product.sold && product.price && product.bep && product.dimension && product.sell && product.buy && product.category && product.subCategory && product.subSubCategory && product.item);
+      if (!validRows.length) { setNotice("No valid products were found in that file."); return; }
+      const batch = writeBatch(db);
+      const productsRef = collection(db, "products");
+      validRows.forEach((product) => {
+        batch.set(doc(productsRef), {
+          Title: product.title, Sold: product.sold, Price: Number(product.price), BEP: Number(product.bep),
+          Dimensions: product.dimension, Sell: product.sell, Buy: product.buy, Category: product.category,
+          SubCategory: product.subCategory, SubSubCategory: product.subSubCategory, Item: product.item,
+          status: "New", lastModifiedBy: currentUser.email, lastModifiedAt: serverTimestamp(),
+        });
+      });
+      await batch.commit();
+      await logActivity("Bulk upload", `${validRows.length} products`);
+      await loadProducts();
+      setFile(null);
+      setNotice(`${validRows.length} products uploaded.`);
+    } catch (error) {
+      console.error("Bulk upload failed:", error);
+      setNotice("Bulk upload failed. Check the file and try again.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const openBulkDelete = () => {
+    if (!selectedIds.length) { setNotice("Select at least one product first."); return; }
+    setDeleteConfirmationText("");
+    setDeleteModalOpen(true);
+  };
+
+  const confirmBulkDelete = async () => {
+    if (deleteConfirmationText !== "DELETE") return;
+    setBusy(true);
+    try {
+      const batch = writeBatch(db);
+      selectedIds.forEach((id) => batch.delete(doc(db, "products", id)));
+      await batch.commit();
+      await logActivity("Bulk delete", `${selectedIds.length} products`);
+      setSelectedIds([]);
+      setDeleteModalOpen(false);
+      setDeleteConfirmationText("");
+      await loadProducts();
+      setNotice("Selected products deleted.");
+    } catch (error) {
+      console.error("Bulk delete failed:", error);
+      setNotice("Selected products could not be deleted.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const allVisibleSelected = filteredProducts.length > 0 && filteredProducts.every((product) => selectedIds.includes(product.id));
+  const toggleAllVisible = (checked) => {
+    const visibleIds = filteredProducts.map((product) => product.id);
+    setSelectedIds((previous) => checked ? [...new Set([...previous, ...visibleIds])] : previous.filter((id) => !visibleIds.includes(id)));
+  };
 
   return (
-    <>
-      <Csvtool />
-      <div className="filter-sort-controls">
-        <h3>Filter Products</h3>
-        <select
-          value={filterValues.category}
-          onChange={(e) =>
-            setFilterValues((prev) => ({ ...prev, category: e.target.value }))
-          }
-        >
-          <option value="">All Categories</option>
-          {categories.map((cat) => (
-            <option key={cat} value={cat}>
-              {cat}
-            </option>
-          ))}
-        </select>
-        <select
-          value={filterValues.subCategory}
-          onChange={(e) =>
-            setFilterValues((prev) => ({
-              ...prev,
-              subCategory: e.target.value,
-            }))
-          }
-        >
-          <option value="">All SubCategories</option>
-          {subCategories.map((subCat) => (
-            <option key={subCat} value={subCat}>
-              {subCat}
-            </option>
-          ))}
-        </select>
-        <select
-          value={filterValues.subSubCategory}
-          onChange={(e) =>
-            setFilterValues((prev) => ({
-              ...prev,
-              subSubCategory: e.target.value,
-            }))
-          }
-        >
-          <option value="">All SubSubCategories</option>
-          {subSubCategories.map((subSubCat) => (
-            <option key={subSubCat} value={subSubCat}>
-              {subSubCat}
-            </option>
-          ))}
-        </select>
-        <input
-          type="text"
-          placeholder="Filter by Title"
-          value={filterValues.title}
-          onChange={(e) =>
-            setFilterValues((prev) => ({ ...prev, title: e.target.value }))
-          }
-        />
-        <input
-          type="number"
-          placeholder="Min Price"
-          value={filterValues.priceMin}
-          onChange={(e) =>
-            setFilterValues((prev) => ({ ...prev, priceMin: e.target.value }))
-          }
-        />
-        <input
-          type="number"
-          placeholder="Max Price"
-          value={filterValues.priceMax}
-          onChange={(e) =>
-            setFilterValues((prev) => ({ ...prev, priceMax: e.target.value }))
-          }
-        />
-        <button onClick={resetFilters}>Reset Filters</button>
+    <main className="ds-page ds-dashboard">
+      <header className="ds-dashboard-header">
+        <div>
+          <p className="ds-dashboard-eyebrow">OPERATIONS</p>
+          <h1>DataScout dashboard</h1>
+          <p>Manage the sourcing database, imports, and recent changes from one workspace.</p>
+        </div>
+        <button className="ds-button ds-button-primary" type="button" onClick={() => document.getElementById("product-editor")?.scrollIntoView({ behavior: "smooth" })}>+ Add product</button>
+      </header>
 
-        <h3>Sort Products</h3>
-        <select value={sortField} onChange={(e) => setSortField(e.target.value)}>
-          <option value="">Select Field</option>
-          <option value="Title">Title</option>
-          <option value="Price">Price</option>
-          <option value="Sold">Sold</option>
-          <option value="BEP">BEP</option>
-          {/* Note: Sell and Buy are strings; sorting numerically might not be appropriate */}
-        </select>
+      <section className="ds-kpi-grid" aria-label="Dashboard summary">
+        <div className="ds-kpi"><span className="ds-kpi-label">Total products</span><strong className="ds-kpi-value">{products.length}</strong></div>
+        <div className="ds-kpi"><span className="ds-kpi-label">Current matches</span><strong className="ds-kpi-value">{filteredProducts.length}</strong></div>
+        <div className="ds-kpi"><span className="ds-kpi-label">Selected</span><strong className="ds-kpi-value">{selectedIds.length}</strong></div>
+        <div className="ds-kpi"><span className="ds-kpi-label">Recent activity</span><strong className="ds-kpi-value">{activities.length}</strong></div>
+      </section>
 
-        <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}>
-          <option value="asc">Ascending</option>
-          <option value="desc">Descending</option>
-        </select>
-      </div>
-      <div>
-        <h1>Bulk Upload</h1>
-        <input
-          type="file"
-          onChange={(e) => setFile(e.target.files[0])}
-          accept=".csv, .json"
-        />
-        <button onClick={handleBulkUpload}>Upload Products</button>
-      </div>
-      <div className="addproduct-dashboard">
-        <h1>Add Single Product</h1>
-        <form onSubmit={handleSubmit}>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Title"
-            required
-          />
-          <input
-            type="text"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            placeholder="Category"
-            required
-          />
-          <input
-            type="text"
-            value={subCategory}
-            onChange={(e) => setSubCategory(e.target.value)}
-            placeholder="SubCategory"
-            required
-          />
-          <input
-            type="text"
-            value={subSubCategory}
-            onChange={(e) => setSubSubCategory(e.target.value)}
-            placeholder="SubSubCategory"
-            required
-          />
-          <input
-            type="text"
-            value={item}
-            onChange={(e) => setItem(e.target.value)}
-            placeholder="Item"
-            required
-          />
-          <div className="input-group">
-            <input
-              type="text"
-              value={sold}
-              onChange={(e) => setSold(e.target.value)}
-              placeholder="Sold"
-              required
-            />
-            <input
-              type="number"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              placeholder="Price"
-              required
-            />
-            <input
-              type="number"
-              value={bep}
-              onChange={(e) => setBep(e.target.value)}
-              placeholder="BEP"
-              required
-            />
-            <input
-              type="text"
-              value={sell}
-              onChange={(e) => setSell(e.target.value)}
-              placeholder="Sell (e.g., Sell Link)"
-              required
-            />
-            <input
-              type="text"
-              value={buy}
-              onChange={(e) => setBuy(e.target.value)}
-              placeholder="Buy (e.g., Buy Link)"
-              required
-            />
-            <input
-              type="text"
-              value={dimensions}
-              onChange={(e) => setDimensions(e.target.value)}
-              placeholder="Dimensions"
-              required
-            />
+      {notice && <div className="ds-dashboard-notice" role="status">{notice}</div>}
+
+      <section className="ds-panel ds-dashboard-panel">
+        <div className="ds-panel-heading">
+          <div><h2 className="ds-section-title">Find products</h2><p className="ds-section-copy">Filter and sort the working catalog before taking bulk actions.</p></div>
+          <button className="ds-button ds-button-secondary" type="button" onClick={resetFilters}>Reset</button>
+        </div>
+        <div className="ds-dashboard-filter-grid">
+          <label><span>Title</span><input value={filters.title} onChange={(e) => setFilters((p) => ({ ...p, title: e.target.value }))} placeholder="Search title..." /></label>
+          <label><span>Category</span><select value={filters.category} onChange={(e) => setFilters((p) => ({ ...p, category: e.target.value, subCategory: "", subSubCategory: "" }))}><option value="">All categories</option>{categories.map((value) => <option key={value} value={value}>{value}</option>)}</select></label>
+          <label><span>Subcategory</span><select value={filters.subCategory} onChange={(e) => setFilters((p) => ({ ...p, subCategory: e.target.value, subSubCategory: "" }))}><option value="">All subcategories</option>{subCategories.map((value) => <option key={value} value={value}>{value}</option>)}</select></label>
+          <label><span>Sub-subcategory</span><select value={filters.subSubCategory} onChange={(e) => setFilters((p) => ({ ...p, subSubCategory: e.target.value }))}><option value="">All</option>{subSubCategories.map((value) => <option key={value} value={value}>{value}</option>)}</select></label>
+          <label><span>Min price</span><input type="number" value={filters.priceMin} onChange={(e) => setFilters((p) => ({ ...p, priceMin: e.target.value }))} placeholder="$0" /></label>
+          <label><span>Max price</span><input type="number" value={filters.priceMax} onChange={(e) => setFilters((p) => ({ ...p, priceMax: e.target.value }))} placeholder="Any" /></label>
+          <label><span>Sort field</span><select value={sortField} onChange={(e) => setSortField(e.target.value)}><option value="">Default</option><option value="Title">Title</option><option value="Price">Price</option><option value="Sold">Sold</option><option value="BEP">BEP</option></select></label>
+          <label><span>Direction</span><select value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}><option value="asc">Ascending</option><option value="desc">Descending</option></select></label>
+        </div>
+      </section>
+
+      <section className="ds-panel ds-dashboard-panel ds-catalog-panel">
+        <div className="ds-panel-heading ds-catalog-heading">
+          <div><h2 className="ds-section-title">Product catalog</h2><p className="ds-section-copy">{filteredProducts.length} shown of {products.length}. Table scrolls horizontally on smaller screens.</p></div>
+          <div className="ds-catalog-actions">
+            <span>{selectedIds.length} selected</span>
+            <button className="ds-button ds-button-danger" type="button" disabled={!selectedIds.length} onClick={openBulkDelete}>Delete selected</button>
           </div>
-          <button type="submit">
-            {editingProduct ? "Update Product" : "Add Product"}
-          </button>
+        </div>
+        <div className="ds-dashboard-table-wrap">
+          <table className="ds-dashboard-table">
+            <thead><tr>
+              <th><input aria-label="Select all visible products" type="checkbox" checked={allVisibleSelected} onChange={(e) => toggleAllVisible(e.target.checked)} /></th>
+              <th>Title</th><th>Sold</th><th>Price</th><th>BEP</th><th>Category</th><th>Subcategory</th><th>Item</th><th>Status</th><th>Modified</th><th>Links</th><th>Actions</th>
+            </tr></thead>
+            <tbody>
+              {filteredProducts.map((product) => (
+                <tr key={product.id} className={product.status === "Updated" ? "updated" : ""}>
+                  <td><input aria-label={`Select ${product.Title || "product"}`} type="checkbox" checked={selectedIds.includes(product.id)} onChange={(e) => setSelectedIds((ids) => e.target.checked ? [...new Set([...ids, product.id])] : ids.filter((id) => id !== product.id))} /></td>
+                  <td className="ds-title-cell">{product.Title || "Untitled"}</td>
+                  <td>{product.Sold ?? "N/A"}</td>
+                  <td>{Number.isFinite(Number(product.Price)) ? `$${Number(product.Price).toFixed(2)}` : "N/A"}</td>
+                  <td>{Number.isFinite(Number(product.BEP)) ? `$${Number(product.BEP).toFixed(2)}` : "N/A"}</td>
+                  <td>{product.Category || "N/A"}</td>
+                  <td>{product.SubCategory || "N/A"}</td>
+                  <td>{product.Item || product.SubSubCategory || "N/A"}</td>
+                  <td><span className={`ds-status ${product.status === "Updated" ? "updated" : "new"}`}>{product.status || "N/A"}</span></td>
+                  <td><span className="ds-modified-by">{product.lastModifiedBy || "N/A"}</span><small>{formatTimestamp(product.lastModifiedAt)}</small></td>
+                  <td><div className="ds-table-links">{product.Sell && <a href={product.Sell} target="_blank" rel="noopener noreferrer">Sell ↗</a>}{product.Buy && <a href={product.Buy} target="_blank" rel="noopener noreferrer">Buy ↗</a>}</div></td>
+                  <td><div className="ds-row-actions"><button type="button" onClick={() => startEdit(product)}>Edit</button><button type="button" className="danger" onClick={() => deleteSingle(product)}>Delete</button></div></td>
+                </tr>
+              ))}
+              {!filteredProducts.length && <tr><td colSpan="12"><div className="ds-empty">No products match these filters.</div></td></tr>}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="product-editor" className="ds-panel ds-dashboard-panel ds-editor-panel">
+        <div className="ds-panel-heading">
+          <div><h2 className="ds-section-title">{editingProduct ? "Edit product" : "Add product"}</h2><p className="ds-section-copy">Keep the sourcing record consistent with the DataScout product schema.</p></div>
+          {editingProduct && <button className="ds-button ds-button-secondary" type="button" onClick={resetForm}>Cancel edit</button>}
+        </div>
+        <form className="ds-product-form" onSubmit={saveProduct}>
+          <label className="wide"><span>Title</span><input required value={form.title} onChange={(e) => updateForm("title", e.target.value)} placeholder="Product title" /></label>
+          <label><span>Category</span><input required value={form.category} onChange={(e) => updateForm("category", e.target.value)} /></label>
+          <label><span>Subcategory</span><input required value={form.subCategory} onChange={(e) => updateForm("subCategory", e.target.value)} /></label>
+          <label><span>Sub-subcategory</span><input required value={form.subSubCategory} onChange={(e) => updateForm("subSubCategory", e.target.value)} /></label>
+          <label><span>Item</span><input required value={form.item} onChange={(e) => updateForm("item", e.target.value)} /></label>
+          <label><span>Sold</span><input required value={form.sold} onChange={(e) => updateForm("sold", e.target.value)} /></label>
+          <label><span>Price</span><input required type="number" step="0.01" value={form.price} onChange={(e) => updateForm("price", e.target.value)} /></label>
+          <label><span>BEP</span><input required type="number" step="0.01" value={form.bep} onChange={(e) => updateForm("bep", e.target.value)} /></label>
+          <label><span>Dimensions</span><input required value={form.dimensions} onChange={(e) => updateForm("dimensions", e.target.value)} /></label>
+          <label className="wide"><span>Sell evidence URL</span><input required type="url" value={form.sell} onChange={(e) => updateForm("sell", e.target.value)} placeholder="https://..." /></label>
+          <label className="wide"><span>Buy source URL</span><input required type="url" value={form.buy} onChange={(e) => updateForm("buy", e.target.value)} placeholder="https://..." /></label>
+          <div className="ds-form-actions wide"><button className="ds-button ds-button-primary" type="submit" disabled={busy}>{busy ? "Saving…" : editingProduct ? "Update product" : "Add product"}</button></div>
         </form>
-      </div>
-      <div className="product-list">
-        <h2>
-          Products (Total: {totalProducts}, Showing: {filteredTotal})
-        </h2>
-        <ListingTable
-          listings={products}
-          onEditClick={(product) => {
-            setEditingProduct(product);
-            setTitle(product.Title);
-            setSold(product.Sold);
-            setPrice(product.Price);
-            setBep(product.BEP);
-            setSell(product.Sell);
-            setBuy(product.Buy);
-            setDimensions(product.Dimensions);
-            setCategory(product.Category);
-            setSubCategory(product.SubCategory);
-            setSubSubCategory(product.SubSubCategory);
-            setItem(product.Item);
-            setIsModalOpen(true);
-          }}
-          onDeleteClick={(id) => {
-            const productRef = doc(db, "products", id);
-            deleteDoc(productRef).then(() => {
-              setProducts(products.filter((product) => product.id !== id));
-              alert("Product deleted successfully!");
-              logUserActivity("Delete product", id);
-            });
-          }}
-          selectedIds={selectedIds}
-          onSelectChange={(checked, id) => {
-            if (id === "all") {
-              setSelectedIds(checked ? products.map((product) => product.id) : []);
-            } else {
-              setSelectedIds((prevIds) =>
-                checked
-                  ? [...prevIds, id]
-                  : prevIds.filter((productId) => productId !== id)
-              );
-            }
-          }}
-        />
-      </div>
-      <button onClick={() => handleBulkDelete(selectedIds)}>
-        Delete Selected Products
-      </button>
-      <div className="user-activity">
-        <h3>Your Recent Activities</h3>
-        <ul>
-          {userActivities.map((activity) => (
-            <li key={activity.id}>
-              {activity.action} - {activity.productId} -{" "}
-              {activity.timestamp?.toDate().toLocaleString()}
-            </li>
-          ))}
+      </section>
+
+      <section className="ds-panel ds-dashboard-panel ds-tools-panel">
+        <div className="ds-panel-heading">
+          <div><h2 className="ds-section-title">Import & export tools</h2><p className="ds-section-copy">Secondary workflows stay available without competing with the daily catalog view.</p></div>
+          <button className="ds-button ds-button-secondary" type="button" onClick={() => setShowTools((value) => !value)}>{showTools ? "Hide tools" : "Open tools"}</button>
+        </div>
+        {showTools && (
+          <div className="ds-tools-grid">
+            <div className="ds-tool-card"><h3>Bulk upload</h3><p>Import products using the established DataScout CSV schema.</p><input type="file" accept=".csv" onChange={(e) => setFile(e.target.files?.[0] || null)} /><button className="ds-button ds-button-primary" type="button" disabled={busy || !file} onClick={bulkUpload}>Upload CSV</button></div>
+            <div className="ds-tool-card ds-csv-tool"><h3>CSV Builder</h3><p>Build and export structured product rows.</p><Csvtool /></div>
+          </div>
+        )}
+      </section>
+
+      <section className="ds-panel ds-dashboard-panel">
+        <div className="ds-panel-heading"><div><h2 className="ds-section-title">Recent activity</h2><p className="ds-section-copy">Your five most recent DataScout database actions.</p></div></div>
+        <ul className="ds-activity-list">
+          {activities.map((activity) => <li key={activity.id}><span className="ds-activity-dot" /><div><strong>{activity.action}</strong><p>{activity.productId}</p></div><time>{formatTimestamp(activity.timestamp)}</time></li>)}
+          {!activities.length && <li className="ds-empty">No recent activity yet.</li>}
         </ul>
-      </div>
-      {/* Delete Confirmation Modal */}
-      {isDeleteModalOpen && (
-        <div className="modal">
-          <div className="modal-content">
-            <h2>Confirm Bulk Deletion</h2>
-            <p>
-              Are you sure you want to delete {selectedIds.length} selected
-              product(s)? This action cannot be undone.
-            </p>
-            <p>
-              Please type <strong>DELETE</strong> to confirm:
-            </p>
-            <input
-              type="text"
-              value={deleteConfirmationText}
-              onChange={(e) => setDeleteConfirmationText(e.target.value)}
-            />
-            <div className="modal-buttons">
-              <button
-                onClick={() => {
-                  setIsDeleteModalOpen(false);
-                  setDeleteConfirmationText("");
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  if (deleteConfirmationText === "DELETE") {
-                    handleBulkDelete(selectedIds);
-                    setIsDeleteModalOpen(false);
-                    setDeleteConfirmationText("");
-                  } else {
-                    alert('Please type "DELETE" to confirm.');
-                  }
-                }}
-              >
-                Confirm Delete
-              </button>
-            </div>
+      </section>
+
+      {deleteModalOpen && (
+        <div className="ds-confirm-overlay" role="presentation" onMouseDown={(e) => { if (e.target === e.currentTarget) setDeleteModalOpen(false); }}>
+          <div className="ds-confirm-modal" role="dialog" aria-modal="true" aria-labelledby="bulk-delete-title">
+            <h2 id="bulk-delete-title">Delete {selectedIds.length} products?</h2>
+            <p>This permanently removes the selected records. Type <strong>DELETE</strong> to confirm.</p>
+            <input autoFocus value={deleteConfirmationText} onChange={(e) => setDeleteConfirmationText(e.target.value)} placeholder="DELETE" />
+            <div className="ds-confirm-actions"><button className="ds-button ds-button-secondary" type="button" onClick={() => setDeleteModalOpen(false)}>Cancel</button><button className="ds-button ds-button-danger" type="button" disabled={deleteConfirmationText !== "DELETE" || busy} onClick={confirmBulkDelete}>{busy ? "Deleting…" : "Delete products"}</button></div>
           </div>
         </div>
       )}
-    </>
+    </main>
   );
 };
 
 export default Dashboard;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
