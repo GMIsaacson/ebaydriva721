@@ -1,0 +1,91 @@
+{
+  "name": "Run 006 - G6 Gmail Read-Only Evidence Stage",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "run006-g6-manual-gmail",
+      "name": "Manual Trigger Only",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [-760, 0]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "getAll",
+        "returnAll": false,
+        "limit": 50,
+        "simple": false,
+        "filters": {
+          "includeSpamTrash": false,
+          "q": "newer_than:45d -in:spam -in:trash (subscription OR renewal OR receipt OR invoice OR trial OR payment OR charged OR billing OR cancelled OR canceled OR price)"
+        }
+      },
+      "id": "run006-g6-gmail-read",
+      "name": "Gmail Read Only - Candidate Messages",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [-520, 0],
+      "notes": "Bind only a Gmail credential whose OAuth grant is restricted to read-only access. No credential identifier or secret is stored in source control."
+    },
+    {
+      "parameters": {
+        "jsCode": "const out=[]; for (const item of $input.all()) { const m=item.json||{}; const headers=Array.isArray(m.payload?.headers)?m.payload.headers:[]; const h=(name)=>headers.find(x=>String(x.name||'').toLowerCase()===name.toLowerCase())?.value||null; const id=m.id||m.messageId||null; if(!id) continue; out.push({json:{evidenceId:'GMAIL-'+id,sourceType:'Gmail',sourceRef:'gmail:message:'+id,messageId:id,threadId:m.threadId||null,observedAt:new Date(Number(m.internalDate)||Date.now()).toISOString(),from:h('From')||m.from||null,subject:h('Subject')||m.subject||null,snippet:String(m.snippet||'').slice(0,500),evidenceLink:'https://mail.google.com/mail/#all/'+id,connectorTrust:'candidate',rawBodyRetained:false}}); } return out;"
+      },
+      "id": "run006-g6-sanitize",
+      "name": "Sanitize To Minimal Evidence",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-260, 0],
+      "notes": "Deterministic field reduction only. This node must not classify, approve, or decide subscription actions."
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO run006_subscription_evidence_stage (evidence_id, source_type, source_ref, message_id, thread_id, observed_at, sender, subject, snippet, evidence_link, connector_trust, raw_body_retained) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) ON CONFLICT (message_id) DO NOTHING;",
+        "options": {
+          "queryReplacement": "={{ [$json.evidenceId,$json.sourceType,$json.sourceRef,$json.messageId,$json.threadId,$json.observedAt,$json.from,$json.subject,$json.snippet,$json.evidenceLink,$json.connectorTrust,$json.rawBodyRetained] }}"
+        }
+      },
+      "id": "run006-g6-postgres-stage",
+      "name": "Stage Sanitized Evidence",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [0, 0],
+      "notes": "Bind the existing private PostgreSQL credential on the non-production host. Raw email bodies are prohibited from this table."
+    },
+    {
+      "parameters": {},
+      "id": "run006-g6-stage-result",
+      "name": "Internal Staging Result",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [260, 0]
+    }
+  ],
+  "connections": {
+    "Manual Trigger Only": {"main": [[{"node": "Gmail Read Only - Candidate Messages", "type": "main", "index": 0}]]},
+    "Gmail Read Only - Candidate Messages": {"main": [[{"node": "Sanitize To Minimal Evidence", "type": "main", "index": 0}]]},
+    "Sanitize To Minimal Evidence": {"main": [[{"node": "Stage Sanitized Evidence", "type": "main", "index": 0}]]},
+    "Stage Sanitized Evidence": {"main": [[{"node": "Internal Staging Result", "type": "main", "index": 0}]]}
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "saveExecutionProgress": true,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all"
+  },
+  "meta": {
+    "runId": "SUB-OPS-006",
+    "gate": "G6-CONNECTOR-PREP",
+    "authority": "Read Gmail, stage sanitized evidence only",
+    "scheduleEnabled": false,
+    "webhookEnabled": false,
+    "externalVendorActions": 0,
+    "notionWrites": 0,
+    "spendingAuthorityCents": 0
+  },
+  "tags": []
+}
