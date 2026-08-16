@@ -16,5 +16,5 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Test Run 008 contracts
+      - name: Test Run 008 contracts, runtime, decisions and notifications
         run: npm run test:run008
