@@ -1,0 +1,20 @@
+{
+  "runId": "OPS-CORE-008",
+  "version": "0.1.0",
+  "defaultPolicy": "MINIMIZE_AND_EXPIRE",
+  "classes": {
+    "PUBLIC": {"retentionDays": 3650, "rawRetentionAllowed": true},
+    "INTERNAL": {"retentionDays": 730, "rawRetentionAllowed": true},
+    "SENSITIVE": {"retentionDays": 90, "rawRetentionAllowed": false},
+    "SECRET": {"retentionDays": 0, "rawRetentionAllowed": false}
+  },
+  "rules": {
+    "credentials": "RUNTIME_REFERENCE_ONLY",
+    "paymentData": "MASKED_LABEL_ONLY",
+    "rawEmailBody": "TRANSIENT_ONLY_UNLESS_EXPLICIT_EXCEPTION",
+    "personalIdentifiers": "MINIMIZE_AND_MASK_WHERE_PRACTICAL",
+    "deletionRequiresAudit": true,
+    "retentionExtensionRequiresReason": true,
+    "sourceControlMayContainSecrets": false
+  }
+}
