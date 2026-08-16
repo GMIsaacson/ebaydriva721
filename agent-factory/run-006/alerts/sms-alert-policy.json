@@ -1,0 +1,69 @@
+{
+  "policyId": "SUB-OPS-006-SMS-URGENT-V1",
+  "version": "1.0.0",
+  "status": "DRY_RUN_ONLY",
+  "provider": "Twilio",
+  "purpose": "Provide tightly governed SMS delivery for urgent Run 006 owner alerts only.",
+  "activation": {
+    "enabled": false,
+    "liveSendAuthorized": false,
+    "scheduleAuthorized": false,
+    "requiresG6ManualE2EPass": true,
+    "requiresSeparateOwnerApprovalForFirstLiveSend": true
+  },
+  "recipient": {
+    "mode": "FIXED_OWNER_NUMBER_ONLY",
+    "numberSource": "RUNTIME_SECRET_OR_N8N_CREDENTIAL",
+    "allowDynamicRecipients": false,
+    "allowMultipleRecipients": false,
+    "storeNumberInSourceControl": false
+  },
+  "allowedEvents": [
+    "PAYMENT_FAILED",
+    "ACCOUNT_SECURITY_ANOMALY",
+    "CANCELLATION_DEADLINE_3D",
+    "RENEWAL_3D_HIGH_RISK",
+    "UNEXPECTED_HIGH_CHARGE"
+  ],
+  "messagePolicy": {
+    "maxMessagesPerIncidentPer24Hours": 1,
+    "maxCharacters": 320,
+    "includeSensitiveCredentials": false,
+    "includeFullCardNumber": false,
+    "includeRawEmailBody": false,
+    "includeEvidenceLink": false,
+    "requiredPrefix": "Subscription Ops:",
+    "requiredSuffix": "No action was taken.",
+    "format": [
+      "vendor_or_service",
+      "urgent_reason",
+      "deadline_or_amount_if_material",
+      "recommended_owner_review"
+    ]
+  },
+  "authority": {
+    "externalActionsWhenDryRun": 0,
+    "maySendSmsWhenDryRun": false,
+    "mayReplyToSms": false,
+    "mayReceiveCommandsBySms": false,
+    "mayContactVendor": false,
+    "mayChangeSubscription": false,
+    "mayChangePaymentMethod": false,
+    "maySpendBeyondApprovedMessageCost": false
+  },
+  "costControl": {
+    "providerChargesPossibleWhenLive": true,
+    "liveSendRequiresCostCap": true,
+    "maxLiveMessagesPerRun": 1,
+    "failClosedIfCostUnknown": true
+  },
+  "deduplication": {
+    "windowHours": 24,
+    "repeatOnlyIf": [
+      "severity_increased",
+      "deadline_moved_closer",
+      "new_payment_failure_after_prior_alert",
+      "new_authoritative_evidence_changes_status"
+    ]
+  }
+}
