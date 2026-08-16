@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://run006.local/schemas/account-coverage-registry.schema.json",
+  "title": "Run 006 Account Coverage Registry",
+  "type": "object",
+  "required": ["registryId", "version", "accounts"],
+  "properties": {
+    "registryId": {"const": "SUB-OPS-006-ACCOUNT-COVERAGE"},
+    "version": {"type": "string"},
+    "accounts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["accountId", "sourceType", "label", "coverageStatus", "baselineStatus", "dailyMonitoringEligible"],
+        "properties": {
+          "accountId": {"type": "string", "pattern": "^[a-z0-9-]+$"},
+          "sourceType": {"enum": ["Gmail", "EmailOther", "PaymentSource", "PlatformAccount"]},
+          "label": {"type": "string", "minLength": 1},
+          "addressHint": {"type": ["string", "null"], "description": "Optional masked or full account identifier. Never a password or token."},
+          "coverageStatus": {"enum": ["UNLISTED", "LISTED", "PENDING_CONNECTION", "CONNECTED_READ_ONLY", "BLOCKED", "RETIRED"]},
+          "baselineStatus": {"enum": ["NOT_STARTED", "PLANNED", "IN_PROGRESS", "COMPLETE", "REQUIRES_RESCAN"]},
+          "baselineLookbackDays": {"type": "integer", "minimum": 45, "maximum": 1095},
+          "dailyMonitoringEligible": {"type": "boolean"},
+          "lastSuccessfulScanAt": {"type": ["string", "null"], "format": "date-time"},
+          "lastEvidenceAt": {"type": ["string", "null"], "format": "date-time"},
+          "credentialRef": {"type": ["string", "null"], "description": "Runtime credential label/reference only; never secret material."},
+          "notes": {"type": ["string", "null"]}
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}
