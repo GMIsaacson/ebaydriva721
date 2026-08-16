@@ -1,0 +1,20 @@
+name: Run 008 Operations Core
+
+on:
+  pull_request:
+    paths:
+      - 'agent-factory/run-008/**'
+      - 'package.json'
+      - '.github/workflows/run-008-operations-core.yml'
+  workflow_dispatch:
+
+jobs:
+  test-run-008:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Test Run 008 contracts
+        run: npm run test:run008
