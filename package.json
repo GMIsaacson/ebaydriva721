@@ -6,13 +6,18 @@
   "main": "src/index.tsx",
   "dependencies": {
     "@google-cloud/recaptcha-enterprise": "5.7.0",
+    "file-saver": "^2.0.5",
     "firebase": "10.11.0",
     "modal-video": "2.4.8",
+    "papaparse": "^5.4.1",
     "react": "^18.0.0",
+    "react-csv": "^2.2.2",
     "react-dom": "^18.0.0",
     "react-google-recaptcha": "3.1.0",
+    "react-icons": "^5.4.0",
     "react-modal": "3.16.1",
-    "react-router-dom": "6.22.3"
+    "react-router-dom": "6.22.3",
+    "styled-components": "^6.1.13"
   },
   "devDependencies": {
     "@types/react": "18.2.38",
@@ -23,8 +28,19 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview"
+    "build": "vite build",
+    "preview": "vite preview",
+    "test:g4": "node --test agent-factory/run-004/tests/artifacts.test.cjs agent-factory/run-004/tests/config.test.cjs agent-factory/run-004/tests/economics.test.cjs agent-factory/run-004/tests/handoff-policy.test.cjs agent-factory/run-004/tests/runtime.test.cjs",
+    "validate:g4": "node agent-factory/run-004/scripts/validate-package.cjs",
+    "test:g5": "node --test agent-factory/run-004/tests/g5-shadow.test.cjs",
+    "validate:g5": "node agent-factory/run-004/scripts/validate-g5-package.cjs",
+    "run:g5": "node agent-factory/run-004/scripts/run-g5-shadow.cjs",
+    "test:run005": "node --test agent-factory/run-005/tests/pilot.test.cjs",
+    "validate:run005": "node agent-factory/run-005/scripts/validate-package.cjs",
+    "preflight:run005": "node agent-factory/run-005/scripts/run-preflight.cjs",
+    "test:run006": "node --test agent-factory/run-006/tests/runtime.test.cjs agent-factory/run-006/tests/firestore-rules.test.cjs",
+    "validate:run006": "node agent-factory/run-006/scripts/validate-package.cjs",
+    "demo:run006": "node agent-factory/run-006/scripts/run-demo.cjs"
   },
   "browserslist": [
     ">0.2%",

@@ -1,0 +1,65 @@
+const BabyEssentials = {
+    "Nursery Furniture": {
+      "Cribs": [],
+      "Crib Mattresses": [],
+      "Changing Tables": [],
+      "Rocking Chairs & Gliders": [],
+      "Bassinettes & Cradles": [],
+      "Nursery Storage & Organization": [],
+      "Other Nursery Furniture": [],
+    },
+    "Baby Gear": {
+      "Strollers & Accessories": [],
+      "Car Seats": [],
+      "Baby Carriers, Slings & Backpacks": [],
+      "Playpens & Play Yards": [],
+      "Swings, Jumpers & Bouncers": [],
+      "Diaper Bags": [],
+      "Other Baby Gear": [],
+    },
+    "Feeding": {
+      "Baby Bottles": [],
+      "Bottle Warmers & Sterilizers": [],
+      "High Chairs": [],
+      "Sippy Cups & Mugs": [],
+      "Utensils & Dishes": [],
+      "Breastfeeding Supplies": [],
+      "Formula": [],
+      "Other Feeding Supplies": [],
+    },
+    "Diapering": {
+      "Diapers": [],
+      "Diaper Bags": [],
+      "Wipes & Holders": [],
+      "Changing Pads & Covers": [],
+      "Diaper Pails & Refills": [],
+      "Cloth Diapers & Accessories": [],
+      "Other Diapering Products": [],
+    },
+    "Baby Safety & Health": {
+      "Baby Monitors": [],
+      "Gates & Play Yard Accessories": [],
+      "Baby Thermometers": [],
+      "Pacifiers & Teethers": [],
+      "Childproofing": [],
+      "Other Safety & Health Products": [],
+    },
+    "Toys & Activities": {
+      "Baby Toys": [],
+      "Play Mats & Gyms": [],
+      "Rattles": [],
+      "Developmental Toys": [],
+      "Bath Toys": [],
+      "Other Toys & Activities": [],
+    },
+    "Clothing & Shoes": {
+      "Baby Boy Clothing": [],
+      "Baby Girl Clothing": [],
+      "Unisex Clothing": [],
+      "Baby Shoes": [],
+      "Other Clothing & Shoes": [],
+    },
+  };
+  
+  export default BabyEssentials;
+  

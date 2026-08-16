@@ -1,41 +1,111 @@
+/* Login Form Styles */
 .login-form {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  height: 70vh; /* Make the form container take up the full viewport height */
+  height: 80vh; /* Increase form height for a more centered look */
   text-align: center;
-  background: #f7f7f7; /* Light background for the form area */
+  background: linear-gradient(to right, #0052cc, #0066ff); /* Gradient blue background to match theme */
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+.login-form h2 {
+  color: #ffffff; /* White text for better contrast */
+  margin-bottom: 1rem;
 }
 
 .login-form form {
-  padding: 20px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  background: white;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  border: 1px solid #004494; /* Border color matches theme */
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  width: 100%;
+  max-width: 400px;
 }
 
 .login-form input[type="email"],
 .login-form input[type="password"] {
-  width: 80%; /* Responsive width */
-  padding: 10px;
+  width: 90%; /* Responsive width */
+  padding: 12px;
   margin: 10px 0;
   border: 1px solid #ccc;
-  border-radius: 4px;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.3s;
+}
+
+.login-form input[type="email"]:focus,
+.login-form input[type="password"]:focus {
+  border-color: #0052cc; /* Blue border on focus to match theme */
+  outline: none;
+}
+
+.toggle-password {
+  background: none;
+  border: none;
+  color: #0052cc;
+  cursor: pointer;
+  margin-top: 10px;
+  font-size: 0.9rem;
+  transition: color 0.3s ease;
+}
+
+.toggle-password:hover {
+  color: #003c99; /* Darker blue on hover */
 }
 
 .login-form button {
-  width: 85%;
-  padding: 10px;
-  background-color: #0056b3; /* Example primary color */
+  width: 90%;
+  padding: 12px;
+  background-color: #0056b3; /* Primary color matches theme */
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  margin-top: 15px; /* Add spacing between buttons */
 }
 
 .login-form button:hover {
   background-color: #004494; /* Darker shade for hover effect */
+  transform: translateY(-2px); /* Subtle lift effect on hover */
 }
+
+.login-form button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.login-form p {
+  color: #ffffff;
+  margin-top: 1.5rem;
+}
+
+.login-form a {
+  color: #ffcc00; /* Bright yellow to draw attention */
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.login-form a:hover {
+  text-decoration: underline;
+}
+
+/* Error Message Styles */
+.login-form p[style*="color: red"] {
+  background-color: #ffdddd;
+  color: #d8000c;
+  padding: 10px;
+  border: 1px solid #d8000c;
+  border-radius: 8px;
+  width: 90%;
+  margin: 1rem auto;
+  font-size: 0.9rem;
+}
+

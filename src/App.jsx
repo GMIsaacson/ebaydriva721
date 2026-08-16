@@ -11,17 +11,21 @@ import Signup from "./signup";
 import ResetPassword from "./resetpassword";
 import ProtectedRoute from "./protectedroute";
 import { AuthProvider } from "./AuthProvider";
-import VerifyEmail from "./verifyemail"; // Import the component
+import VerifyEmail from "./verifyemail";
+import Calculators from "./resources";
+import AccountPage from "./accountspage";
 
 const App = () => {
   return (
-    <Router>
-      <AuthProvider>
-        {" "}
-        {/* Ensure AuthProvider correctly wraps the entire application content */}
+    <AuthProvider>
+      <Router>
         <div className="App">
+          {/* Navigation Bar */}
           <Nav />
+
+          {/* Application Routes */}
           <Routes>
+            {/* Public Routes */}
             <Route
               path="/"
               element={
@@ -58,10 +62,12 @@ const App = () => {
               path="/verifyemail"
               element={
                 <ErrorBoundary>
-                  <Signup />
+                  <VerifyEmail />
                 </ErrorBoundary>
               }
             />
+
+            {/* Protected Routes */}
             <Route
               path="/dashboard"
               element={
@@ -75,18 +81,42 @@ const App = () => {
             <Route
               path="/products"
               element={
-                <ErrorBoundary>
-                  <ProductData />
-                </ErrorBoundary>
+                <ProtectedRoute>
+                  <ErrorBoundary>
+                    <ProductData />
+                  </ErrorBoundary>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/resources"
+              element={
+               
+                  <ErrorBoundary>
+                    <Calculators />
+                  </ErrorBoundary>
+               
+              }
+            />
+            <Route
+              path="/accounts/*"
+              element={
+                <ProtectedRoute>
+                  <ErrorBoundary>
+                    <AccountPage />
+                  </ErrorBoundary>
+                </ProtectedRoute>
               }
             />
           </Routes>
 
+          {/* Footer */}
           <Footer />
         </div>
-      </AuthProvider>
-    </Router>
+      </Router>
+    </AuthProvider>
   );
 };
 
 export default App;
+

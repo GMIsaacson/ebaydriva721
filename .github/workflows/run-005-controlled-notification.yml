@@ -1,0 +1,141 @@
+name: Run 005 zero-cost controlled notification
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - codex/run-004-g5-shadow
+    paths:
+      - "agent-factory/run-005/**"
+      - "package.json"
+      - ".github/workflows/run-005-controlled-notification.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: run-005-notification-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  policy-preflight:
+    name: Fixed self-email policy preflight
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm run test:run005
+      - run: npm run validate:run005
+      - name: Build approved executor handoff
+        run: npm run preflight:run005 > /tmp/run-005-preflight.json
+      - run: node node_modules/vite/bin/vite.js build
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: run-005-policy-preflight-evidence
+          path: |
+            /tmp/run-005-preflight.json
+            agent-factory/run-005/fixtures/approved-self-email.json
+          if-no-files-found: error
+          retention-days: 30
+
+  n8n-handoff:
+    name: Inactive n8n executor-handoff validation
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Start isolated n8n 2.34.6
+        run: |
+          docker volume create run005_n8n_data
+          docker run --detach --name run005-n8n \
+            --publish 127.0.0.1:5678:5678 \
+            --volume run005_n8n_data:/home/node/.n8n \
+            --volume "$PWD:/repo:ro" \
+            --env N8N_DIAGNOSTICS_ENABLED=false \
+            --env N8N_VERSION_NOTIFICATIONS_ENABLED=false \
+            --env N8N_PUBLIC_API_DISABLED=true \
+            --env N8N_BLOCK_ENV_ACCESS_IN_NODE=true \
+            --env N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true \
+            --env N8N_SECURE_COOKIE=false \
+            n8nio/n8n:2.34.6
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:5678/healthz >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          docker logs run005-n8n
+          exit 1
+      - name: Create isolated local owner
+        run: |
+          local_owner_password=$(openssl rand -hex 24)
+          setup_payload=$(jq -nc --arg password "$local_owner_password" '{email:"run005@example.invalid",firstName:"Run",lastName:"005",password:$password}')
+          for attempt in $(seq 1 30); do
+            status=$(curl --silent --show-error \
+              --output /tmp/run-005-owner-setup-response.json \
+              --write-out "%{http_code}" \
+              --header "Content-Type: application/json" \
+              --data "$setup_payload" \
+              http://127.0.0.1:5678/rest/owner/setup || true)
+            case "$status" in
+              200|201|204|409) exit 0 ;;
+            esac
+            sleep 2
+          done
+          docker logs run005-n8n
+          exit 1
+      - name: Import inactive workflow
+        run: |
+          docker exec run005-n8n n8n import:workflow \
+            --input=/repo/agent-factory/run-005/n8n/run-005-controlled-notification.workflow.json \
+            --activeState=false
+          docker stop run005-n8n
+      - name: Execute and validate executor handoff
+        run: |
+          docker run --rm --name run005-n8n-cli \
+            --volume run005_n8n_data:/home/node/.n8n \
+            --volume "$PWD:/repo:ro" \
+            --env N8N_DIAGNOSTICS_ENABLED=false \
+            --env N8N_VERSION_NOTIFICATIONS_ENABLED=false \
+            --env N8N_PUBLIC_API_DISABLED=true \
+            --env N8N_BLOCK_ENV_ACCESS_IN_NODE=true \
+            --env N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true \
+            n8nio/n8n:2.34.6 execute --id=RUN005G6NOTIFY --rawOutput \
+            > /tmp/run-005-n8n-execution.json
+          node agent-factory/run-005/scripts/validate-n8n-execution.cjs /tmp/run-005-n8n-execution.json
+      - name: Verify inactive export
+        run: |
+          docker run --rm --name run005-n8n-export \
+            --volume run005_n8n_data:/home/node/.n8n \
+            --volume /tmp:/evidence \
+            --env N8N_DIAGNOSTICS_ENABLED=false \
+            --env N8N_VERSION_NOTIFICATIONS_ENABLED=false \
+            --env N8N_PUBLIC_API_DISABLED=true \
+            --env N8N_BLOCK_ENV_ACCESS_IN_NODE=true \
+            --env N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true \
+            n8nio/n8n:2.34.6 export:workflow \
+            --id=RUN005G6NOTIFY \
+            --output=/evidence/run-005-n8n-export.json
+          node -e 'const fs=require("node:fs"); const raw=JSON.parse(fs.readFileSync("/tmp/run-005-n8n-export.json","utf8")); const workflow=Array.isArray(raw)?raw[0]:raw; if(workflow.active!==false) throw new Error("workflow activated"); if((workflow.nodes||[]).some((node)=>node.credentials)) throw new Error("credentials added"); process.stdout.write(JSON.stringify({result:"Pass",id:workflow.id,active:workflow.active,nodes:workflow.nodes.length,credentials:0})+"\n");'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: run-005-n8n-handoff-evidence
+          path: |
+            /tmp/run-005-n8n-execution.json
+            /tmp/run-005-n8n-export.json
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Destroy isolated n8n environment
+        if: always()
+        run: |
+          docker rm --force run005-n8n-cli run005-n8n-export || true
+          docker rm --force run005-n8n || true
+          docker volume rm run005_n8n_data || true
+

@@ -1,68 +1,190 @@
-/* src/account.css */
-
+/* General Styles */
 body {
   font-family: "Arial", sans-serif;
-  background-color: #f7f9fc;
   margin: 0;
   padding: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  overflow: auto;
+  background-color: #f7f9fc;
+  color: #333;
 }
 
 .account-page {
-  display: grid;
-  grid-template-rows: auto 1fr auto;
-  padding: 20px;
-  width: 90%;
-  max-width: 1200px;
-  background: #fff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #fff;
 }
 
-.header {
+/* Header Section */
+.account-header {
+  background-color: #0056e0;
+  color: white;
+  padding: 20px;
+}
+
+.account-header .header-content {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  padding: 10px;
-  background: white;
-  border-bottom: 2px solid #ccc;
+  max-width: 4200px;
+  margin: 0 auto;
 }
 
-.activity-log {
-  margin-top: 20px;
-}
-
-.activity-log h2 {
-  margin-bottom: 10px;
-}
-
-.activity-log ul {
-  list-style-type: none;
-  padding: 0;
-}
-
-.activity-log li {
-  background: #f9f9f9;
-  margin-bottom: 10px;
-  padding: 10px;
-  border-radius: 4px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+.account-header h1 {
+  font-size: 2rem;
+  flex: 1 0 60%;
+  text-align: left;
 }
 
 .logout-button {
-  padding: 10px 20px;
-  background-color: #dc3545;
-  color: white;
+  background-color: #ffcc00;
   border: none;
   border-radius: 5px;
+  padding: 10px 20px;
+  color: #333;
+  font-size: 1rem;
   cursor: pointer;
   transition: background-color 0.3s ease;
+  text-align: right;
+  margin-top: 10px;
 }
 
 .logout-button:hover {
-  background-color: #c82333;
+  background-color: #e6b800;
 }
+
+/* Main Section */
+.account-main {
+  display: flex;
+  flex: 1;
+  width: 100%;
+  max-width: 1400px;
+  margin: 20px auto;
+  gap: 20px;
+}
+
+.account-sidebar {
+  flex: 0 0 300px;
+  background-color: #f7f9fc;
+  padding: 20px;
+  border-right: 2px solid #ddd;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  min-height: 100%;
+}
+
+.account-sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.account-sidebar ul li {
+  margin-bottom: 15px;
+}
+
+.account-sidebar ul li a {
+  text-decoration: none;
+  color: #0056e0;
+  font-size: 1.1rem;
+  transition: color 0.3s ease;
+}
+
+.account-sidebar ul li a:hover {
+  color: #ffcc00;
+}
+
+.account-content {
+  flex: 1;
+  background-color: white;
+  padding: 40px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  min-width: 300px;
+}
+
+/* Content Section */
+.account-content h2 {
+  margin-bottom: 20px;
+  font-size: 1.75rem;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .account-sidebar {
+    flex: 1;
+    max-width: 220px;
+    padding: 15px;
+  }
+
+  .account-content {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .account-header .header-content {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .logout-button {
+    align-self: flex-end;
+  }
+
+  .account-main {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    padding: 0 10px;
+  }
+
+  .account-sidebar {
+    flex: 0 0 auto;
+    width: 100%;
+    border-right: none;
+    border-bottom: 2px solid #ddd;
+    margin-bottom: 20px;
+  }
+
+  .account-sidebar ul li {
+    text-align: left;
+    margin-bottom: 10px;
+  }
+
+  .account-content {
+    flex: 0 1 auto;
+    width: 100%;
+    padding: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .account-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .logout-button {
+    font-size: 0.9rem;
+    padding: 8px 16px;
+  }
+
+  .account-sidebar {
+    padding: 15px;
+    box-shadow: none;
+  }
+
+  .account-sidebar ul li a {
+    font-size: 0.9rem;
+  }
+
+  .account-content {
+    padding: 15px;
+  }
+
+  .account-content h2 {
+    font-size: 1.25rem;
+  }
+}
+
+
+

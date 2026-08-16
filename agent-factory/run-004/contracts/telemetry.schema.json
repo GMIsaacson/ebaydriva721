@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://datascout.local/contracts/run-004/telemetry.schema.json",
+  "title": "DataScout Run 004 attempt telemetry",
+  "type": "object",
+  "required": [
+    "runId",
+    "handoffId",
+    "agentId",
+    "contractVersion",
+    "inputHash",
+    "startedAt",
+    "finishedAt",
+    "status",
+    "retries",
+    "humanReviewRequired",
+    "estimatedCostCents",
+    "externalActions"
+  ],
+  "properties": {
+    "runId": { "const": "DS-S2M-004" },
+    "handoffId": { "type": ["string", "null"] },
+    "agentId": { "type": ["string", "null"] },
+    "contractVersion": { "type": "string" },
+    "inputHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "startedAt": { "type": "string", "format": "date-time" },
+    "finishedAt": { "type": "string", "format": "date-time" },
+    "status": { "enum": ["Accepted", "Rejected", "Incomplete", "Review", "Cancelled"] },
+    "retries": { "type": "integer", "minimum": 0, "maximum": 2 },
+    "exceptionCategory": { "type": ["string", "null"] },
+    "humanReviewRequired": { "type": "boolean" },
+    "estimatedCostCents": { "const": 0 },
+    "externalActions": { "const": 0 }
+  }
+}

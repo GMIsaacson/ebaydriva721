@@ -1,72 +1,42 @@
-import React, { useState } from "react";
+import React from "react";
 import "./pagination.css";
 
-const Pagination = ({ totalItems, itemsPerPage, onPageChange }) => {
-  const [currentPage, setCurrentPage] = useState(1);
+const Pagination = ({
+  totalItems,
+  itemsPerPage = 10,
+  currentPage = 1,
+  onPageChange,
+  pageRange = 2,
+}) => {
+  const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+  if (totalItems <= itemsPerPage) return null;
 
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
-
-  const handlePageChange = (page) => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
-      onPageChange(page); // Notify parent component of the page change
-    }
-  };
-
-  const handlePrevious = () => {
-    handlePageChange(currentPage - 1);
-  };
-
-  const handleNext = () => {
-    handlePageChange(currentPage + 1);
-  };
-
-  const renderPageNumbers = () => {
-    const pageNumbers = [];
-    for (let i = 1; i <= totalPages; i++) {
-      pageNumbers.push(
-        <a
-          key={i}
-          href="#"
-          className={`page-link ${i === currentPage ? "active" : ""}`}
-          onClick={(e) => {
-            e.preventDefault(); // Prevent default anchor behavior
-            handlePageChange(i);
-          }}
-        >
-          {i}
-        </a>,
-      );
-    }
-    return pageNumbers;
-  };
+  const goToPage = (page) => onPageChange(Math.min(totalPages, Math.max(1, page)));
+  const start = Math.max(1, currentPage - pageRange);
+  const end = Math.min(totalPages, currentPage + pageRange);
+  const pages = [];
+  for (let page = start; page <= end; page += 1) pages.push(page);
 
   return (
-    <div className="pagination">
-      <a
-        href="#"
-        className="page-link"
-        onClick={(e) => {
-          e.preventDefault();
-          handlePrevious();
-        }}
-        aria-disabled={currentPage === 1}
-      >
-        «
-      </a>
-      {renderPageNumbers()}
-      <a
-        href="#"
-        className="page-link"
-        onClick={(e) => {
-          e.preventDefault();
-          handleNext();
-        }}
-        aria-disabled={currentPage === totalPages}
-      >
-        »
-      </a>
-    </div>
+    <nav className="ds-pagination" aria-label="Product result pages">
+      <button type="button" disabled={currentPage === 1} onClick={() => goToPage(currentPage - 1)}>Previous</button>
+      {start > 1 && <button type="button" onClick={() => goToPage(1)}>1</button>}
+      {start > 2 && <span>…</span>}
+      {pages.map((page) => (
+        <button
+          type="button"
+          key={page}
+          className={page === currentPage ? "active" : ""}
+          aria-current={page === currentPage ? "page" : undefined}
+          onClick={() => goToPage(page)}
+        >
+          {page}
+        </button>
+      ))}
+      {end < totalPages - 1 && <span>…</span>}
+      {end < totalPages && <button type="button" onClick={() => goToPage(totalPages)}>{totalPages}</button>}
+      <button type="button" disabled={currentPage === totalPages} onClick={() => goToPage(currentPage + 1)}>Next</button>
+    </nav>
   );
 };
 

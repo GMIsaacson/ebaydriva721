@@ -1,0 +1,52 @@
+rules_version = '2';
+
+// Emulator-only acceptance rules for Run 004.
+// Do not deploy this file to the legacy DataScout project: its default deny
+// intentionally isolates G4 from products, activities, users, and all other data.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isG4Operator() {
+      return request.auth != null && request.auth.token.datascoutG4Operator == true;
+    }
+
+    function isRun004(runId) {
+      return runId == 'DS-S2M-004';
+    }
+
+    function authorityLocked(data) {
+      return data.run_id == 'DS-S2M-004'
+        && data.external_actions == 0
+        && data.spending_cents == 0;
+    }
+
+    match /g4Runs/{runId} {
+      allow read: if isG4Operator() && isRun004(runId);
+      allow create, update: if isG4Operator()
+        && isRun004(runId)
+        && request.resource.data.run_id == 'DS-S2M-004'
+        && request.resource.data.external_actions_enabled == false
+        && request.resource.data.spending_authority_cents == 0
+        && request.resource.data.mode in ['offline', 'firestore-emulator'];
+      allow delete: if false;
+
+      match /{bucket}/{recordId} {
+        allow read: if isG4Operator() && isRun004(runId);
+        allow create, update: if isG4Operator()
+          && isRun004(runId)
+          && bucket in ['attempts', 'results', 'deadLetters', 'reviews', 'checkpoints']
+          && authorityLocked(request.resource.data);
+        allow delete: if false;
+      }
+    }
+
+    match /g4Evidence/{evidenceId} {
+      allow read: if isG4Operator() && resource.data.run_id == 'DS-S2M-004';
+      allow create, update: if isG4Operator() && authorityLocked(request.resource.data);
+      allow delete: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

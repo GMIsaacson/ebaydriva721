@@ -1,0 +1,125 @@
+{
+  "id": "RUN004G5SHADOW",
+  "name": "Run 004 - DataScout G5 Bounded Shadow",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "5114d4dc-9c35-4e15-8189-8c04cd4ad95c",
+      "name": "Manual Trigger Only",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [-720, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { runId: 'DS-S2M-004', gate: 'G5', workflowId: 'WF-DS-S2M-004-G5-001', capturedAt: '2026-08-15T16:47:34.000Z', shadowExecutedAt: '2026-08-15T16:48:00.000Z', control: { mode: 'shadow', killSwitch: false, externalActionsEnabled: false, spendingAuthorityCents: 0, maxCandidates: 2, maxSourceRequests: 7, maxAiCalls: 0, credentialMode: 'none' }, candidates: [{ candidateId: 'H-596B', exactIdentity: true, soldCount: 53, evidenceRefs: ['https://www.uline.com/Product/Detail/H-596B/Hand-Held-Tape-Dispensers/Replacement-Blades-for-3-Uline-Side-Loader-Tape-Dispenser','https://www.ebay.com/itm/306760796219','https://www.ebay.com/itm/125670139794'], economics: { collectedRevenueCents: 1395, sourceCostCents: 480, inboundFreightCents: null, marketplaceFeesCents: null, outboundShippingCents: null, packagingCents: null, riskReserveCents: null } }, { candidateId: 'H-157WB', exactIdentity: true, soldCount: 19, evidenceRefs: ['https://www.uline.com/Product/Detail/H-157WB/Hand-Held-Tape-Dispensers/Wipe-Down-Blade-for-Uline-Top-Gun-Tape-Dispenser-2','https://www.ebay.com/itm/306680494176','https://www.ebay.com/itm/235812411636'], economics: { collectedRevenueCents: 1750, sourceCostCents: 600, inboundFreightCents: null, marketplaceFeesCents: null, outboundShippingCents: null, packagingCents: null, riskReserveCents: null } }], sharedEvidenceRefs: ['https://www.ebay.com/help/selling/fees-credits-invoices/selling-fees?id=4822'], traceId: 'TRACE-DS-S2M-004-G5-20260815' } }];"
+      },
+      "id": "6890abc5-ed97-4ceb-8cf5-07685ef0ab00",
+      "name": "Load Bounded Real Evidence",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-500, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const item=$json; const violations=[]; if(item.runId!=='DS-S2M-004'||item.gate!=='G5') violations.push('wrong run or gate'); if(item.control.mode!=='shadow') violations.push('not shadow'); if(item.control.killSwitch) violations.push('kill switch'); if(item.control.externalActionsEnabled!==false) violations.push('external actions'); if(item.control.spendingAuthorityCents!==0) violations.push('spending'); if(item.control.maxCandidates!==2||item.candidates.length!==2) violations.push('candidate scope'); const sourceCount=new Set([...item.sharedEvidenceRefs,...item.candidates.flatMap(c=>c.evidenceRefs)]).size; if(sourceCount>7) violations.push('request cap'); if(item.control.maxAiCalls!==0||item.control.credentialMode!=='none') violations.push('credentials or AI'); return [{json:{...item,sourceRequestCount:sourceCount,allowed:violations.length===0,violations,guardStatus:violations.length?'Rejected':'Accepted',externalActions:0,spendingCents:0}}];"
+      },
+      "id": "3f6ba14b-134e-475e-9fee-0eb628ecebf4",
+      "name": "Enforce Shadow Authority",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-260, 0]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 2 },
+          "conditions": [
+            {
+              "id": "b816c785-5097-49b0-97ef-2ef036b3b1bc",
+              "leftValue": "={{ $json.allowed }}",
+              "rightValue": true,
+              "operator": { "type": "boolean", "operation": "true", "singleValue": true }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "8c38366f-5ba8-425e-a2b6-f89d05e686b5",
+      "name": "Shadow Lock Passed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [-20, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const root=$json; const required=['collectedRevenueCents','sourceCostCents','inboundFreightCents','marketplaceFeesCents','outboundShippingCents','packagingCents','riskReserveCents']; return root.candidates.map(c=>{const missing=required.filter(k=>!Number.isSafeInteger(c.economics[k])||c.economics[k]<0); const status=!c.exactIdentity||c.soldCount<1||missing.length?'Incomplete':'Accepted'; return {json:{runId:root.runId,gate:root.gate,workflowId:root.workflowId,traceId:root.traceId,candidateId:c.candidateId,guardStatus:root.guardStatus,status,missingEconomics:missing,soldEvidenceCount:c.soldCount,evidenceRefs:c.evidenceRefs,externalActions:0,spendingCents:0}};});"
+      },
+      "id": "0f2ca81f-f39f-461a-9385-4d525150833c",
+      "name": "Evaluate Real Candidates",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [220, -100]
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item=>({json:{...item.json,telemetry:{runId:item.json.runId,gate:item.json.gate,workflowId:item.json.workflowId,traceId:item.json.traceId,candidateId:item.json.candidateId,status:item.json.status,humanReviewRequired:item.json.status!=='Accepted',estimatedCostCents:0,externalActions:0,spendingCents:0,finishedAt:'2026-08-15T16:48:00.000Z'}}}));"
+      },
+      "id": "3795a335-416c-4d8b-a905-a76aef64cce5",
+      "name": "Build Shadow Telemetry",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, -100]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{json:{runId:$json.runId,gate:$json.gate,workflowId:$json.workflowId,traceId:$json.traceId,guardStatus:$json.guardStatus,status:'Review',violations:$json.violations,humanReviewRequired:true,externalActions:0,spendingCents:0}}];"
+      },
+      "id": "f6dd7f1e-37dc-4183-9c3f-c45d1af0ba50",
+      "name": "Build Shadow Dead Letter",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [220, 120]
+    },
+    {
+      "parameters": {},
+      "id": "b5cd123d-eec5-471c-9d4e-d371484aef38",
+      "name": "Internal Shadow Results",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [700, 0]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual Trigger Only": { "main": [[{ "node": "Load Bounded Real Evidence", "type": "main", "index": 0 }]] },
+    "Load Bounded Real Evidence": { "main": [[{ "node": "Enforce Shadow Authority", "type": "main", "index": 0 }]] },
+    "Enforce Shadow Authority": { "main": [[{ "node": "Shadow Lock Passed?", "type": "main", "index": 0 }]] },
+    "Shadow Lock Passed?": {
+      "main": [
+        [{ "node": "Evaluate Real Candidates", "type": "main", "index": 0 }],
+        [{ "node": "Build Shadow Dead Letter", "type": "main", "index": 0 }]
+      ]
+    },
+    "Evaluate Real Candidates": { "main": [[{ "node": "Build Shadow Telemetry", "type": "main", "index": 0 }]] },
+    "Build Shadow Telemetry": { "main": [[{ "node": "Internal Shadow Results", "type": "main", "index": 0 }]] },
+    "Build Shadow Dead Letter": { "main": [[{ "node": "Internal Shadow Results", "type": "main", "index": 0 }]] }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "saveExecutionProgress": true,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all"
+  },
+  "versionId": "0795d7bb-833d-4f69-b657-d34543123afa",
+  "meta": {
+    "runId": "DS-S2M-004",
+    "workflowId": "WF-DS-S2M-004-G5-001",
+    "authority": "Observe",
+    "deploymentMode": "bounded-shadow"
+  },
+  "tags": []
+}
