@@ -68,6 +68,30 @@ test('renewal and cancellation windows are escalated for review', () => {
   assert.ok(result.exceptions.some((entry) => entry.category === 'CANCELLATION_DEADLINE'));
 });
 
+test('recently overdue renewal is escalated instead of disappearing after the date passes', () => {
+  const packet = copy();
+  packet.items[1].renewalDate = '2026-08-14';
+  const result = runBatch(packet);
+  const overdue = result.exceptions.find((entry) => entry.category === 'RENEWAL_OVERDUE');
+  assert.ok(overdue);
+  assert.equal(overdue.severity, 'High');
+  assert.equal(overdue.evidence, 1);
+  assert.equal(overdue.humanApprovalRequired, true);
+  assert.equal(result.externalActionsPerformed, 0);
+});
+
+test('recently passed cancellation deadline is escalated without vendor action', () => {
+  const packet = copy();
+  packet.items[1].cancellationDeadline = '2026-08-13';
+  const result = runBatch(packet);
+  const passed = result.exceptions.find((entry) => entry.category === 'CANCELLATION_DEADLINE_PASSED');
+  assert.ok(passed);
+  assert.equal(passed.severity, 'High');
+  assert.equal(passed.evidence, 2);
+  assert.match(passed.safestNextStep, /take no vendor action/i);
+  assert.equal(result.externalActionsPerformed, 0);
+});
+
 test('low usage is a recommendation exception and never an automatic cancellation', () => {
   const result = runBatch(copy());
   const lowUsage = result.exceptions.find((entry) => entry.category === 'LOW_USAGE');
