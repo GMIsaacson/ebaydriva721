@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Run 007 Discovery Candidate",
+  "type": "object",
+  "required": ["candidateId","signal","evidence","whyItMatters","affectedSystems","frequency","impact","proposedCapability","existingCapabilityCheck","priority","confidence","recommendedNextAction","status"],
+  "properties": {
+    "candidateId": {"type":"string"},
+    "signal": {"type":"string"},
+    "evidence": {"type":"array","items":{"type":"string"}},
+    "whyItMatters": {"type":"string"},
+    "affectedSystems": {"type":"array","items":{"type":"string"}},
+    "frequency": {"enum":["ONE_TIME","OCCASIONAL","RECURRING","CONTINUOUS"]},
+    "impact": {"enum":["LOW","MEDIUM","HIGH","CRITICAL"]},
+    "proposedCapability": {"type":"string"},
+    "existingCapabilityCheck": {"enum":["REUSE","EXTEND","NEW","UNKNOWN"]},
+    "priority": {"type":"integer","minimum":1,"maximum":5},
+    "confidence": {"enum":["LOW","MEDIUM","HIGH"]},
+    "recommendedNextAction": {"type":"string"},
+    "status": {"enum":["NEW","CHALLENGE","PLANNING","AWAITING_GATE","APPROVED","DEFERRED","REJECTED","BUILT","VERIFIED"]},
+    "authorityRequired": {"enum":["OBSERVE","PROPOSE","PLAN","INTERNAL_BUILD","EXTERNAL_ACTION"]},
+    "duplicateOf": {"type":["string","null"]}
+  },
+  "additionalProperties": false
+}
