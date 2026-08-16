@@ -1,0 +1,102 @@
+{
+  "runId": "MUNI-INTEL-009",
+  "fixtures": [
+    {
+      "id": "valid-actionable",
+      "description": "Current official multifamily development with strong electrical scope",
+      "expect": "ACTIONABLE",
+      "candidate": {
+        "municipality": "Bloomington",
+        "officialSource": true,
+        "projectType": "multifamily",
+        "forwardLooking": true,
+        "electricalScore": 86,
+        "evidenceConfidence": 92,
+        "opportunityConfidence": 88,
+        "materialClaimsAnchored": true,
+        "duplicateSignals": 0
+      }
+    },
+    {
+      "id": "duplicate",
+      "description": "Same project resurfacing through another municipal packet",
+      "expect": "HOLD_DUPLICATE_MERGE",
+      "candidate": {
+        "municipality": "Minneapolis",
+        "officialSource": true,
+        "projectType": "mixed_use",
+        "forwardLooking": true,
+        "electricalScore": 82,
+        "evidenceConfidence": 90,
+        "opportunityConfidence": 88,
+        "materialClaimsAnchored": true,
+        "duplicateSignals": 2
+      }
+    },
+    {
+      "id": "unsupported-high-confidence",
+      "description": "Agent tries to claim more confidence than evidence supports",
+      "expect": "REJECT_CONFIDENCE_VIOLATION",
+      "candidate": {
+        "municipality": "Saint Paul",
+        "officialSource": true,
+        "projectType": "commercial",
+        "forwardLooking": true,
+        "electricalScore": 78,
+        "evidenceConfidence": 62,
+        "opportunityConfidence": 91,
+        "materialClaimsAnchored": true,
+        "duplicateSignals": 0
+      }
+    },
+    {
+      "id": "routine-maintenance-noise",
+      "description": "Small routine maintenance permit that should not become a lead",
+      "expect": "REJECT_NOISE",
+      "candidate": {
+        "municipality": "Maple Grove",
+        "officialSource": true,
+        "projectType": "routine_maintenance",
+        "forwardLooking": true,
+        "electricalScore": 18,
+        "evidenceConfidence": 95,
+        "opportunityConfidence": 90,
+        "materialClaimsAnchored": true,
+        "duplicateSignals": 0
+      }
+    },
+    {
+      "id": "unofficial-unverified",
+      "description": "Third-party article with no official corroboration",
+      "expect": "REJECT_SOURCE",
+      "candidate": {
+        "municipality": "Minneapolis",
+        "officialSource": false,
+        "officialCorroboration": false,
+        "projectType": "commercial",
+        "forwardLooking": true,
+        "electricalScore": 75,
+        "evidenceConfidence": 55,
+        "opportunityConfidence": 55,
+        "materialClaimsAnchored": false,
+        "duplicateSignals": 0
+      }
+    },
+    {
+      "id": "outside-pilot",
+      "description": "Strong project but outside approved geography",
+      "expect": "REJECT_GEOGRAPHY",
+      "candidate": {
+        "municipality": "Rochester",
+        "officialSource": true,
+        "projectType": "institutional",
+        "forwardLooking": true,
+        "electricalScore": 91,
+        "evidenceConfidence": 94,
+        "opportunityConfidence": 90,
+        "materialClaimsAnchored": true,
+        "duplicateSignals": 0
+      }
+    }
+  ]
+}
