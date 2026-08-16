@@ -43,7 +43,8 @@
     "validate:run006": "node agent-factory/run-006/scripts/validate-package.cjs",
     "demo:run006": "node agent-factory/run-006/scripts/run-demo.cjs",
     "test:run008": "node --test agent-factory/run-008/tests/contracts-v0.1.test.cjs agent-factory/run-008/tests/runtime-v0.1.test.cjs agent-factory/run-008/tests/decision-notification.test.cjs agent-factory/run-008/tests/durable-decision-inbox.test.cjs agent-factory/run-008/tests/dependency-privacy.test.cjs agent-factory/run-008/tests/recovery-value.test.cjs",
-    "test:run009:g3": "node --test agent-factory/run-009/tests/g3-shadow.test.cjs"
+    "test:run009:g3": "node --test agent-factory/run-009/tests/g3-shadow.test.cjs",
+    "test:run009:g4": "node --test agent-factory/run-009/tests/g4-pipeline.test.cjs"
   },
   "browserslist": [
     ">0.2%",
