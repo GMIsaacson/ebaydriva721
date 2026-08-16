@@ -42,7 +42,7 @@
     "test:run006:g6": "node --test agent-factory/run-006/tests/g6-connectors.test.cjs agent-factory/run-006/tests/owner-briefing-policy.test.cjs agent-factory/run-006/tests/sms-alert-policy.test.cjs agent-factory/run-006/tests/account-coverage-registry.test.cjs",
     "validate:run006": "node agent-factory/run-006/scripts/validate-package.cjs",
     "demo:run006": "node agent-factory/run-006/scripts/run-demo.cjs",
-    "test:run008": "node --test agent-factory/run-008/tests/contracts-v0.1.test.cjs agent-factory/run-008/tests/runtime-v0.1.test.cjs agent-factory/run-008/tests/decision-notification.test.cjs agent-factory/run-008/tests/durable-decision-inbox.test.cjs"
+    "test:run008": "node --test agent-factory/run-008/tests/contracts-v0.1.test.cjs agent-factory/run-008/tests/runtime-v0.1.test.cjs agent-factory/run-008/tests/decision-notification.test.cjs agent-factory/run-008/tests/durable-decision-inbox.test.cjs agent-factory/run-008/tests/dependency-privacy.test.cjs"
   },
   "browserslist": [
     ">0.2%",
