@@ -22,3 +22,5 @@ jobs:
         run: npm run test:run009:g4
       - name: Test Run 009 G5 read-only collectors
         run: npm run test:run009:g5
+      - name: Run Run 009 G5 live read-only proof
+        run: node agent-factory/run-009/scripts/run-g5-live-proof.cjs
