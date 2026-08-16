@@ -1,0 +1,72 @@
+{
+  "schemaVersion": "0.1",
+  "required": [
+    "opportunityId",
+    "projectName",
+    "municipality",
+    "location",
+    "projectType",
+    "projectStage",
+    "electricalThesis",
+    "confidence",
+    "evidence"
+  ],
+  "fields": {
+    "opportunityId": "stable deterministic id",
+    "projectName": "best evidenced project/development name",
+    "municipality": "municipality/city",
+    "location": "site address or sufficiently specific location",
+    "projectType": "multifamily|industrial|retail|office|hospitality|institutional|mixed_use|other_commercial",
+    "projectStage": "concept|application|planning_review|approved|permit|preconstruction|construction|unknown",
+    "scale": {
+      "units": "optional residential unit count",
+      "squareFeet": "optional area",
+      "estimatedValue": "optional evidence-based value only"
+    },
+    "entities": {
+      "owner": "evidenced only",
+      "developer": "evidenced only",
+      "architect": "evidenced only",
+      "generalContractor": "evidenced only"
+    },
+    "electricalThesis": "why a commercial electrical contractor could care",
+    "likelyElectricalScopes": [
+      "service_and_distribution",
+      "lighting",
+      "fire_alarm",
+      "low_voltage",
+      "site_lighting",
+      "ev_charging",
+      "generator_backup",
+      "controls",
+      "other"
+    ],
+    "timingWindow": "evidence-based or clearly marked estimate",
+    "recommendedNextAction": "internal recommendation only at G0-G4",
+    "confidence": "0.00-1.00",
+    "evidence": [
+      {
+        "sourceType": "planning_agenda|staff_report|permit|zoning_application|council_packet|public_notice|other_public",
+        "sourceUrl": "public source URL",
+        "sourceDate": "ISO date where available",
+        "claimSupported": "specific claim this source supports"
+      }
+    ],
+    "freshness": {
+      "firstObservedAt": "ISO datetime",
+      "lastVerifiedAt": "ISO datetime"
+    },
+    "qa": {
+      "duplicateChecked": true,
+      "unsupportedClaims": [],
+      "status": "PASS|REJECT|REVIEW"
+    }
+  },
+  "rules": {
+    "minimumPassingConfidence": 0.75,
+    "authoritativeEvidenceRequired": true,
+    "fabricatedContactDataAllowed": false,
+    "externalActionAuthorized": false,
+    "estimatedFactsMustBeLabeled": true
+  }
+}
