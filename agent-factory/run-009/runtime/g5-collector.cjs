@@ -12,6 +12,7 @@ function assertReadOnlySource(source) {
   const u = new URL(source.baseUrl);
   if (u.protocol !== 'https:') throw new Error('https_required');
   if (!ALLOWED_HOSTS.has(u.hostname)) throw new Error('host_not_allowlisted');
+  if (source.linkPattern) new RegExp(source.linkPattern);
   return true;
 }
 
@@ -39,26 +40,61 @@ function detectProjectSignals(text) {
   return [...new Set(out)].slice(0, 25);
 }
 
-async function collectSource(source, fetchImpl = fetch) {
-  assertReadOnlySource(source);
-  const res = await fetchImpl(source.baseUrl, {
+function extractSameHostLinks(html, baseUrl, linkPattern) {
+  const base = new URL(baseUrl);
+  const pattern = linkPattern ? new RegExp(linkPattern, 'i') : null;
+  const links = [];
+  for (const m of String(html || '').matchAll(/href\s*=\s*["']([^"']+)["']/gi)) {
+    try {
+      const u = new URL(m[1], base);
+      if (u.protocol !== 'https:' || u.hostname !== base.hostname) continue;
+      if (!ALLOWED_HOSTS.has(u.hostname)) continue;
+      if (pattern && !pattern.test(u.pathname)) continue;
+      u.hash = '';
+      links.push(u.href);
+    } catch {}
+  }
+  return [...new Set(links)];
+}
+
+async function fetchPage(url, source, fetchImpl) {
+  const res = await fetchImpl(url, {
     method: 'GET',
     redirect: 'follow',
     headers: { 'user-agent': 'Aberdeen-Municipal-Intel-Shadow/0.1' },
   });
   if (!res || !res.ok) throw new Error(`source_fetch_failed:${source.sourceId}`);
-  const finalUrl = new URL(res.url || source.baseUrl);
-  if (!ALLOWED_HOSTS.has(finalUrl.hostname)) throw new Error('redirect_host_not_allowlisted');
+  const finalUrl = new URL(res.url || url);
+  if (finalUrl.protocol !== 'https:' || !ALLOWED_HOSTS.has(finalUrl.hostname)) throw new Error('redirect_host_not_allowlisted');
+  if (finalUrl.hostname !== new URL(source.baseUrl).hostname) throw new Error('redirect_cross_host_not_allowed');
   const body = await res.text();
   if (body.length > 2_000_000) throw new Error('source_response_too_large');
-  const text = stripHtml(body);
+  return { finalUrl: finalUrl.href, body, text: stripHtml(body) };
+}
+
+async function collectSource(source, fetchImpl = fetch, maxPages = 5) {
+  assertReadOnlySource(source);
+  const root = await fetchPage(source.baseUrl, source, fetchImpl);
+  const pages = [root];
+  if (source.followLinks === true && maxPages > 1) {
+    const links = extractSameHostLinks(root.body, root.finalUrl, source.linkPattern).slice(0, maxPages - 1);
+    for (const link of links) {
+      try { pages.push(await fetchPage(link, source, fetchImpl)); } catch (error) {
+        pages.push({ finalUrl: link, body: '', text: '', error: error.message });
+      }
+    }
+  }
+  const signals = [...new Set(pages.flatMap(p => detectProjectSignals(p.text || '')))].slice(0, 50);
   return {
     sourceId: source.sourceId,
     municipality: source.municipality,
-    source: finalUrl.href,
+    source: root.finalUrl,
     observedAt: new Date().toISOString(),
-    textLength: text.length,
-    signals: detectProjectSignals(text),
+    pagesAttempted: pages.length,
+    pagesSucceeded: pages.filter(p => !p.error).length,
+    pageUrls: pages.filter(p => !p.error).map(p => p.finalUrl),
+    textLength: pages.reduce((n, p) => n + (p.text || '').length, 0),
+    signals,
     authority: 'READ_ONLY',
   };
 }
@@ -68,8 +104,13 @@ async function collectRegistry(registry, fetchImpl = fetch) {
   if (registry.scheduleAuthorized !== false) throw new Error('schedule_must_be_disabled');
   const enabled = (registry.sources || []).filter(s => s.enabled);
   if (enabled.length > 10) throw new Error('source_count_limit_exceeded');
+  const maxPages = Math.max(1, Math.min(Number(registry.maxPagesPerSourcePerRun || 5), 5));
   const results = [];
-  for (const source of enabled) results.push(await collectSource(source, fetchImpl));
+  const failures = [];
+  for (const source of enabled) {
+    try { results.push(await collectSource(source, fetchImpl, maxPages)); }
+    catch (error) { failures.push({ sourceId: source.sourceId, error: error.message }); }
+  }
   return {
     runId: registry.runId,
     gate: 'G5',
@@ -78,6 +119,8 @@ async function collectRegistry(registry, fetchImpl = fetch) {
     scheduleAuthorized: false,
     sourcesAttempted: enabled.length,
     sourcesSucceeded: results.length,
+    sourcesFailed: failures.length,
+    failures,
     results,
   };
 }
@@ -105,4 +148,4 @@ function feedCollectedSignals(records) {
   return runShadowPipeline(collectorRecordsToPipelineCandidates(records));
 }
 
-module.exports = { assertReadOnlySource, stripHtml, detectProjectSignals, collectSource, collectRegistry, collectorRecordsToPipelineCandidates, feedCollectedSignals };
+module.exports = { assertReadOnlySource, stripHtml, detectProjectSignals, extractSameHostLinks, collectSource, collectRegistry, collectorRecordsToPipelineCandidates, feedCollectedSignals };
