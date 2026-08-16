@@ -193,11 +193,15 @@ function reconcile(items, asOfDate) {
       exceptions.push(exception(latest.usageState === 'Unused' ? 'High' : 'Medium', 'LOW_USAGE', key, latest.usageState, 'Review value before renewal; do not cancel automatically.'));
     }
     const renewalDays = daysBetween(asOfDate, latest.renewalDate);
-    if (renewalDays !== null && renewalDays >= 0 && renewalDays <= 30) {
+    if (renewalDays !== null && renewalDays < 0 && renewalDays >= -30) {
+      exceptions.push(exception('High', 'RENEWAL_OVERDUE', key, Math.abs(renewalDays), 'Verify whether the renewal charged, failed, or changed; reconcile the record before making any lifecycle recommendation.'));
+    } else if (renewalDays !== null && renewalDays <= 30) {
       exceptions.push(exception(renewalDays <= 7 ? 'High' : 'Medium', 'RENEWAL_DUE', key, renewalDays, 'Prepare a keep, change, or cancel recommendation for owner approval.'));
     }
     const cancellationDays = daysBetween(asOfDate, latest.cancellationDeadline);
-    if (cancellationDays !== null && cancellationDays >= 0 && cancellationDays <= 30) {
+    if (cancellationDays !== null && cancellationDays < 0 && cancellationDays >= -30) {
+      exceptions.push(exception('High', 'CANCELLATION_DEADLINE_PASSED', key, Math.abs(cancellationDays), 'Escalate that the cancellation window has passed; verify current vendor status and take no vendor action.'));
+    } else if (cancellationDays !== null && cancellationDays <= 30) {
       exceptions.push(exception(cancellationDays <= 7 ? 'High' : 'Medium', 'CANCELLATION_DEADLINE', key, cancellationDays, 'Escalate the decision window to the owner; take no vendor action.'));
     }
     const observedDate = latest.observedAt.slice(0, 10);
