@@ -1,0 +1,20 @@
+{
+  "registryId": "SUB-OPS-006-ACCOUNT-COVERAGE",
+  "version": "1.0.0",
+  "accounts": [
+    {
+      "accountId": "gmail-primary-1",
+      "sourceType": "Gmail",
+      "label": "Primary Gmail account",
+      "addressHint": "bluetopi5555@gmail.com",
+      "coverageStatus": "PENDING_CONNECTION",
+      "baselineStatus": "PLANNED",
+      "baselineLookbackDays": 1095,
+      "dailyMonitoringEligible": true,
+      "lastSuccessfulScanAt": null,
+      "lastEvidenceAt": null,
+      "credentialRef": null,
+      "notes": "Known evidence source for several current subscriptions. Bind read-only Gmail OAuth at runtime only."
+    }
+  ]
+}
