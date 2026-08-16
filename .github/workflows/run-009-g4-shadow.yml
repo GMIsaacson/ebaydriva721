@@ -1,0 +1,20 @@
+name: Run 009 G4 Shadow Pipeline
+
+on:
+  pull_request:
+    paths:
+      - 'agent-factory/run-009/**'
+      - 'package.json'
+      - '.github/workflows/run-009-g4-shadow.yml'
+  workflow_dispatch:
+
+jobs:
+  test-run-009-g4:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Test Run 009 G4 repeatable shadow pipeline
+        run: npm run test:run009:g4
