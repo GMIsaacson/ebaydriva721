@@ -39,7 +39,7 @@
     "validate:run005": "node agent-factory/run-005/scripts/validate-package.cjs",
     "preflight:run005": "node agent-factory/run-005/scripts/run-preflight.cjs",
     "test:run006": "node --test agent-factory/run-006/tests/runtime.test.cjs agent-factory/run-006/tests/firestore-rules.test.cjs",
-    "test:run006:g6": "node --test agent-factory/run-006/tests/g6-connectors.test.cjs agent-factory/run-006/tests/owner-briefing-policy.test.cjs",
+    "test:run006:g6": "node --test agent-factory/run-006/tests/g6-connectors.test.cjs agent-factory/run-006/tests/owner-briefing-policy.test.cjs agent-factory/run-006/tests/sms-alert-policy.test.cjs",
     "validate:run006": "node agent-factory/run-006/scripts/validate-package.cjs",
     "demo:run006": "node agent-factory/run-006/scripts/run-demo.cjs"
   },
@@ -47,6 +47,6 @@
     ">0.2%",
     "not dead",
     "not ie <= 11",
-    "not op_mini all"
+    "not_op_mini all"
   ]
 }
