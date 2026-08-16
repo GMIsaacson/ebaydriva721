@@ -2,6 +2,7 @@ const { runShadowPipeline } = require('./g4-pipeline.cjs');
 
 const ALLOWED_HOSTS = new Set([
   'lims.minneapolismn.gov',
+  'www.minneapolismn.gov',
   'www.bloomingtonmn.gov',
   'www.stpaul.gov',
   'www.maplegrovemn.gov',
