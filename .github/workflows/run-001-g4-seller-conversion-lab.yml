@@ -1,0 +1,48 @@
+name: Run 001 G4 Seller Conversion Lab
+
+on:
+  pull_request:
+    paths:
+      - 'agent-factory/run-001/**'
+      - '.github/workflows/run-001-g4-seller-conversion-lab.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  g4-acceptance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate workflow is inactive and manual-only
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const p='agent-factory/run-001/n8n/run-001-seller-conversion-lab-g4.workflow.json';
+          const w=JSON.parse(fs.readFileSync(p,'utf8'));
+          if(w.active!==false) throw new Error('workflow must be inactive');
+          if(w.meta?.scheduleAuthorized!==false) throw new Error('schedule must be unauthorized');
+          if(w.meta?.externalCommunicationAuthorized!==false) throw new Error('external messaging must be unauthorized');
+          if(w.meta?.paymentActionAuthorized!==false) throw new Error('payment action must be unauthorized');
+          if(w.meta?.clientDeliveryAuthorized!==false) throw new Error('client delivery must be unauthorized');
+          const types=w.nodes.map(n=>n.type);
+          if(!types.includes('n8n-nodes-base.manualTrigger')) throw new Error('manual trigger required');
+          const forbidden=types.filter(t=>/gmail|smtp|stripe|httpRequest|webhook|scheduleTrigger/i.test(t));
+          if(forbidden.length) throw new Error('forbidden external/automatic node: '+forbidden.join(','));
+          console.log('Workflow authority checks PASS');
+          NODE
+      - name: Run deterministic G4 acceptance tests
+        run: node agent-factory/run-001/tests/g4-acceptance.test.cjs
+      - name: Static contract checks
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const s=JSON.parse(fs.readFileSync('agent-factory/run-001/contracts/listing-opportunity.v1.json','utf8'));
+          if(s.$id!=='KIN-LISTING-OPPORTUNITY-1.0') throw new Error('wrong contract id');
+          if(s.properties.externalActionAuthorized.const!==false) throw new Error('authority contract must fail closed');
+          console.log('Contract checks PASS');
+          NODE
