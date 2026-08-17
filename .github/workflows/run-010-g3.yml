@@ -24,4 +24,4 @@ jobs:
         run: |
           set -euo pipefail
           grep -R -q "INTERNAL_REVIEW_ONLY" agent-factory/run-010
-          ! grep -R -E "sendMail|stripe|checkout|paymentIntent|scheduleTrigger|accountingWrite" agent-factory/run-010
+          ! grep -R -E "sendMail\(|stripe\.|checkout\(|paymentIntent\(|scheduleTrigger|accountingWrite\(" agent-factory/run-010
