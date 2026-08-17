@@ -1,0 +1,32 @@
+name: Run 001 G5 Seller Conversion Lab Shadow
+
+on:
+  pull_request:
+    paths:
+      - 'agent-factory/run-001/**'
+      - '.github/workflows/run-001-g5-shadow.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  g5-shadow:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Re-run G4 acceptance
+        run: node agent-factory/run-001/tests/g4-acceptance.test.cjs
+      - name: Process current public-evidence shadow batch
+        run: node agent-factory/run-001/scripts/run-g5-shadow.cjs
+      - name: Static no-external-authority checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q "INTERNAL_NONPROD_ONLY" agent-factory/run-001/g5/current-shadow-batch.v1.json
+          grep -q "recurringScheduleAuthorized: false" agent-factory/run-001/scripts/run-g5-shadow.cjs
+          ! grep -R -E "sendMail|gmail|stripe|checkout|webhook.*http|scheduleTrigger" agent-factory/run-001/g5 agent-factory/run-001/scripts/run-g5-shadow.cjs
