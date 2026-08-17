@@ -16,7 +16,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
       - name: Run deterministic G4 acceptance tests
         run: node agent-factory/run-010/tests/g4-acceptance.cjs
       - name: Verify internal-only authority
