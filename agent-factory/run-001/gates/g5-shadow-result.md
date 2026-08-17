@@ -48,6 +48,9 @@ Some August 7 hypotheses evolved by August 16. Current evidence was therefore re
 - Capability Readiness: **78/100 — CONTROLLED VALIDATION READY**
 - System / Business Readiness: **52/100 — PARTIAL**
 
+## Control-plane patch discovered during G5
+The Notion `Factory Runs.Current Gate` select initially only allowed G0–G7, so the new Factory v2 overlays could not be recorded as current gates. The schema was patched globally to add **A0, B0, D0, C0, P0, and R0** while retaining G0–G7.
+
 ## Next control point
 Proceed to **D0 Downstream Readiness** before any customer validation. Prove that a qualified internal audit package has a governed receiving path through the existing Kinetiq Pipeline/Delivery structure, with a versioned handoff, durable Notion record, reject/remediation path, provenance retention, idempotency, and no orphan work.
 
