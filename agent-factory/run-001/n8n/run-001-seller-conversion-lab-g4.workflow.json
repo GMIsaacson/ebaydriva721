@@ -1,0 +1,18 @@
+{
+  "name": "RUN001-G4-Seller-Conversion-Lab-INACTIVE",
+  "active": false,
+  "settings": {"executionOrder":"v1"},
+  "nodes": [
+    {"parameters":{},"id":"manual","name":"Manual Trigger Only","type":"n8n-nodes-base.manualTrigger","typeVersion":1,"position":[0,0]},
+    {"parameters":{"assignments":{"assignments":[{"id":"authority","name":"authority","value":"INTERNAL_NONPROD_ONLY","type":"string"},{"id":"externalActions","name":"externalActions","value":0,"type":"number"},{"id":"paymentActions","name":"paymentActions","value":0,"type":"number"},{"id":"clientDeliveries","name":"clientDeliveries","value":0,"type":"number"},{"id":"ownerApprovalRequired","name":"ownerApprovalRequired","value":true,"type":"boolean"}]}},"id":"lock","name":"Authority Lock","type":"n8n-nodes-base.set","typeVersion":3.4,"position":[240,0]},
+    {"parameters":{"jsCode":"const j=$json; if(j.authority!=='INTERNAL_NONPROD_ONLY') throw new Error('AUTHORITY_BLOCK'); if(j.externalActions!==0||j.paymentActions!==0||j.clientDeliveries!==0) throw new Error('EXTERNAL_ACTION_BLOCK'); return [{json:{...j,gate:'G4',runId:'KIN-FACTORY-001',status:'NONPROD_READY'}}];"},"id":"guard","name":"Fail Closed Guard","type":"n8n-nodes-base.code","typeVersion":2,"position":[480,0]},
+    {"parameters":{"assignments":{"assignments":[{"id":"result","name":"result","value":"={{$json}}","type":"object"}]}},"id":"telemetry","name":"Telemetry Output","type":"n8n-nodes-base.set","typeVersion":3.4,"position":[720,0]}
+  ],
+  "connections": {
+    "Manual Trigger Only":{"main":[[{"node":"Authority Lock","type":"main","index":0}]]},
+    "Authority Lock":{"main":[[{"node":"Fail Closed Guard","type":"main","index":0}]]},
+    "Fail Closed Guard":{"main":[[{"node":"Telemetry Output","type":"main","index":0}]]}
+  },
+  "pinData": {},
+  "meta": {"runId":"KIN-FACTORY-001","gate":"G4","scheduleAuthorized":false,"externalCommunicationAuthorized":false,"paymentActionAuthorized":false,"clientDeliveryAuthorized":false}
+}
