@@ -1,0 +1,27 @@
+name: Run 010 G3 AP Recovery Simulation
+
+on:
+  pull_request:
+    paths:
+      - 'agent-factory/run-010/**'
+      - '.github/workflows/run-010-g3.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  g3-simulation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Run supervised structural simulation
+        run: node agent-factory/run-010/tests/g3-supervised-simulation.cjs
+      - name: Verify no external authority in G0-G3 artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -R -q "INTERNAL_REVIEW_ONLY" agent-factory/run-010
+          ! grep -R -E "sendMail|stripe|checkout|paymentIntent|scheduleTrigger|accountingWrite" agent-factory/run-010
