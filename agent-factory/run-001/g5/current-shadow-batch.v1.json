@@ -1,0 +1,125 @@
+{
+  "runId": "KIN-FACTORY-001",
+  "gate": "G5_SHADOW",
+  "observedAt": "2026-08-16",
+  "authority": "INTERNAL_NONPROD_ONLY",
+  "notes": "Curated from current public listing/search and official brand evidence. No outreach or external action. Absence of a feature is never inferred unless directly verified; uncertain claims remain manual-review flags.",
+  "opportunities": [
+    {
+      "opportunityId": "KIN-G5-001",
+      "marketplace": "Amazon US",
+      "productId": "B0DHXMSX1M",
+      "brand": "Real Naturals",
+      "listingUrl": "https://www.amazon.com/dp/B0DHXMSX1M",
+      "observedAt": "2026-08-16",
+      "score": 78,
+      "evidence": [
+        {"type":"market-demand","source":"ASInsight July 2026 dried butterfly pea flowers report","url":"https://www.asinsight.com/report/US/dried-butterfly-pea-flowers","fact":"ASIN B0DHXMSX1M shown at about 3K monthly sales and 4.7 rating."}
+      ],
+      "reasons": ["Strong current demand signal makes conversion-quality analysis economically relevant.","Current public title emphasizes quantity/cups and category keywords; buyer-message hierarchy should be manually reviewed before any commercial claim."],
+      "manualReview": {"required":true,"reason":"Brand identity/contactability and current seller-created gallery/video/A+ require direct verification before qualification for contact."}
+    },
+    {
+      "opportunityId": "KIN-G5-002",
+      "marketplace": "Amazon US",
+      "productId": "B09L7P8832",
+      "brand": "TeeLux",
+      "listingUrl": "https://www.amazon.com/dp/B09L7P8832",
+      "observedAt": "2026-08-16",
+      "score": 76,
+      "evidence": [
+        {"type":"market-demand","source":"ASInsight July 2026 butterfly pea flower tea organic report","url":"https://www.asinsight.com/report/US/butterfly-pea-flower-tea-organic","fact":"ASIN B09L7P8832 identified as fastest-growing product with about 100% month-over-month growth."},
+        {"type":"listing-copy","source":"Current mirrored Amazon product data","url":"https://tiendamia.com.ar/p/amz/b09l7p8832/teelux-butterfly-pea-flower-tea-non-gmo-pure-natural-butterfly-pea","fact":"Current title stacks Non-GMO, pure/natural, premium dried flower, blue/purple drinks and food coloring in one line."}
+      ],
+      "reasons": ["High current demand/growth supports prioritizing the listing for a message-hierarchy audit.","Current title contains several overlapping promises/use cases; clarity opportunity is specific enough for an internal draft."],
+      "manualReview": {"required":true,"reason":"Official company-level contactability and exact current Amazon image/video/A+ state are not verified."}
+    },
+    {
+      "opportunityId": "KIN-G5-003",
+      "marketplace": "Amazon US",
+      "productId": "B082DXC92C",
+      "brand": "T'SMOMENT",
+      "listingUrl": "https://www.amazon.com/dp/B082DXC92C",
+      "observedAt": "2026-08-16",
+      "score": 72,
+      "evidence": [
+        {"type":"listing-copy","source":"Current mirrored Amazon product data","url":"https://www.tiendamia.cr/p/amz/b082dxc92c/butterfly-pea-flower-tea-pure-natural-butterfly-pea-tea-premium","fact":"Current copy combines pure/natural/premium, antioxidants/wellness/detox, color-changing mixology and versatile herbal-tea claims."},
+        {"type":"review-footprint","source":"Current mirrored product specifications","url":"https://cook.desertcart.com/products/174182238-butterfly-pea-flower-tea-premium-500-butterfly-pea-flowers-dried-100-pure-organic-non-gmo-100-cup-of-tea-fresh-harvest-air-sundried-no-sugar-gluten-caffeine-free-rich-in-antioxidan","fact":"Product snapshot shows a substantial review footprint (5K+ reviews)."}
+      ],
+      "reasons": ["Multiple benefit clusters compete in the current copy and warrant internal hierarchy review.","Health/wellness language creates compliance sensitivity and therefore requires stricter evidence review."],
+      "manualReview": {"required":true,"reason":"Score held below qualified threshold because current seller/contactability and compliance-safe commercial angle are not verified."}
+    },
+    {
+      "opportunityId": "KIN-G5-004",
+      "marketplace": "Amazon US",
+      "productId": "B0CWVJ23ZT",
+      "brand": "Yogi's Gift",
+      "listingUrl": "https://www.amazon.com/dp/B0CWVJ23ZT",
+      "observedAt": "2026-08-16",
+      "score": 82,
+      "evidence": [
+        {"type":"official-brand","source":"Yogi's Gift official product page","url":"https://www.yogisgift.com/products/loose-leaf-tea-set-upto-450-servings-set-of-8-teas-for-wellness-and-flavor-enthusiasts-experience-blissful-infusion-refreshing-aromatic-teas-100-natural-ingredients-by-yogis-gift%C2%AE-copy-1","fact":"Official page currently presents 15 herbs, up to 900 servings, tea/soups/smoothies and multiple wellness/use-case messages."},
+        {"type":"marketplace-copy","source":"Current mirrored Amazon product data","url":"https://www.tiendamia.cr/p/amz/b0cwvj23zt/assorted-loose-leaf-tea-15-delightful-herbs-upto","fact":"Amazon-linked copy presents 15 herbs and up to 900 servings with broad multi-use positioning."}
+      ],
+      "reasons": ["Current brand and marketplace messages expose a concrete information-architecture problem: assortment, quantity and use cases compete for priority.","Official brand presence makes identity verification more feasible than anonymous marketplace-only candidates."],
+      "manualReview": {"required":true,"reason":"Exact Amazon seller, price, Buy Box and current gallery/A+/video state still require verification before contact."}
+    },
+    {
+      "opportunityId": "KIN-G5-005",
+      "marketplace": "Amazon US",
+      "productId": "B07ZF425Z8",
+      "brand": "Chixotic",
+      "listingUrl": "https://www.amazon.com/dp/B07ZF425Z8",
+      "observedAt": "2026-08-16",
+      "score": 69,
+      "evidence": [
+        {"type":"official-brand","source":"Chixotic official Kenyan Purple Tea page","url":"https://chixotic.com/product/kenyan-purple-tea/","fact":"Official page currently emphasizes Kenyan origin, whole-leaf quality, antioxidants, low caffeine, flavor profile and lemon-driven color change."}
+      ],
+      "reasons": ["Official brand story contains several valuable differentiators that could support an Amazon message audit.","Current Amazon-side demand and listing state were not independently verified in this shadow run."],
+      "manualReview": {"required":true,"reason":"Insufficient fresh Amazon-side evidence; keep WATCH rather than promote."}
+    },
+    {
+      "opportunityId": "KIN-G5-006",
+      "marketplace": "Amazon US",
+      "productId": "B07W9B5DGC",
+      "brand": "JusTea",
+      "listingUrl": "https://www.amazon.com/dp/B07W9B5DGC",
+      "observedAt": "2026-08-16",
+      "score": 67,
+      "evidence": [
+        {"type":"official-brand","source":"JusTea Purple Leaf Tea official page","url":"https://justea.com/products/purple-leaf-tea","fact":"Official page currently highlights Kenyan purple tea, flavor notes, caffeine level, color change with citrus and justly-made positioning."}
+      ],
+      "reasons": ["Brand has a strong multi-part story suitable for hierarchy analysis.","Current Amazon-side demand and exact listing content were not independently revalidated in this shadow run."],
+      "manualReview": {"required":true,"reason":"Insufficient current marketplace evidence; remain WATCH."}
+    },
+    {
+      "opportunityId": "KIN-G5-007",
+      "marketplace": "Amazon US",
+      "productId": "B0D5NJGG2Q",
+      "brand": "Plum Deluxe",
+      "listingUrl": "https://www.amazon.com/dp/B0D5NJGG2Q",
+      "observedAt": "2026-08-16",
+      "score": 80,
+      "evidence": [
+        {"type":"marketplace-copy","source":"Current mirrored Amazon product data","url":"https://www.tiendamia.cr/p/amz/b0d5njgg2q/loose-leaf-tea-sampler-top-5-herbal-blends","fact":"Current Amazon-linked title positions five caffeine-free blends around sleep/relaxation, fruity/dessert flavors, 75-100 cups and USA handcrafting."},
+        {"type":"official-brand","source":"Plum Deluxe Best Sellers Sampler official page","url":"https://www.plumdeluxe.com/products/best-sellers-sampler-set","fact":"Official brand page presents a different sampler structure with choice by caffeine preference, 7 samples plus a full-size bag, and a gifting/discovery story."}
+      ],
+      "reasons": ["Current marketplace and official-site narratives differ enough to justify an internal consistency and positioning audit.","Brand has clear official presence and a concrete product-story decision path."],
+      "manualReview": {"required":true,"reason":"Confirm that the official sampler and Amazon ASIN are intended as directly comparable offers before making any client-facing claim."}
+    },
+    {
+      "opportunityId": "KIN-G5-008",
+      "marketplace": "Amazon US",
+      "productId": "B09L7P8832",
+      "brand": "TeeLux",
+      "listingUrl": "https://www.amazon.com/dp/B09L7P8832",
+      "observedAt": "2026-08-16",
+      "score": 76,
+      "evidence": [
+        {"type":"duplicate-test","source":"Intentional duplicate fixture","url":"https://www.amazon.com/dp/B09L7P8832","fact":"Same marketplace/product/brand as KIN-G5-002 to verify cross-batch duplicate suppression."}
+      ],
+      "reasons": ["Intentional duplicate must not create a second opportunity or audit draft."],
+      "manualReview": {"required":false,"reason":"Adversarial duplicate fixture."}
+    }
+  ]
+}
