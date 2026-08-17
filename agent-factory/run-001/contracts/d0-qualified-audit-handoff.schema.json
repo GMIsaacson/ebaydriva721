@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "KIN-FACTORY-001-D0-HANDOFF-v1.0",
+  "title": "Run 001 D0 Qualified Audit Handoff",
+  "type": "object",
+  "required": ["handoffId","version","opportunityId","productId","brand","marketplace","listingUrl","status","sourceObservedAt","evidenceRefs","findings","recipientRole","recordDestination","owner","nextAction","authority"],
+  "properties": {
+    "handoffId": {"type":"string","minLength":1},
+    "version": {"const":"1.0"},
+    "opportunityId": {"type":"string","minLength":1},
+    "productId": {"type":"string","minLength":1},
+    "brand": {"type":"string","minLength":1},
+    "marketplace": {"const":"Amazon US"},
+    "listingUrl": {"type":"string","format":"uri"},
+    "status": {"enum":["INTERNAL_AUDIT_READY","REMEDIATION_REQUIRED"]},
+    "sourceObservedAt": {"type":"string","minLength":1},
+    "evidenceRefs": {"type":"array","minItems":1,"items":{"type":"string"}},
+    "findings": {"type":"array","minItems":1,"items":{"type":"string"}},
+    "recipientRole": {"enum":["Pipeline and Reply Coordinator","Client Delivery Coordinator"]},
+    "recordDestination": {"const":"Notion / Run 001 D0 Acceptance Record"},
+    "owner": {"type":"string","minLength":1},
+    "nextAction": {"type":"string","minLength":1},
+    "remediationReasons": {"type":"array","items":{"type":"string"}},
+    "authority": {"const":"INTERNAL_NONPROD_ONLY"},
+    "externalActionAuthorized": {"const":false},
+    "paymentActionAuthorized": {"const":false},
+    "clientDeliveryAuthorized": {"const":false}
+  },
+  "additionalProperties": false
+}

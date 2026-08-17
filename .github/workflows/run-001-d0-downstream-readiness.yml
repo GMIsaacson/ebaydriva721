@@ -1,0 +1,33 @@
+name: Run 001 D0 Downstream Readiness
+
+on:
+  pull_request:
+    paths:
+      - 'agent-factory/run-001/contracts/d0-qualified-audit-handoff.schema.json'
+      - 'agent-factory/run-001/runtime/d0-downstream-readiness.cjs'
+      - 'agent-factory/run-001/tests/d0-downstream-readiness.test.cjs'
+      - '.github/workflows/run-001-d0-downstream-readiness.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  d0-readiness:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Run D0 receiver, idempotency and remediation tests
+        run: node agent-factory/run-001/tests/d0-downstream-readiness.test.cjs
+      - name: Verify fail-closed authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'INTERNAL_NONPROD_ONLY' agent-factory/run-001/runtime/d0-downstream-readiness.cjs
+          grep -q 'externalActionAuthorized: false' agent-factory/run-001/runtime/d0-downstream-readiness.cjs
+          grep -q 'paymentActionAuthorized: false' agent-factory/run-001/runtime/d0-downstream-readiness.cjs
+          grep -q 'clientDeliveryAuthorized: false' agent-factory/run-001/runtime/d0-downstream-readiness.cjs
+          ! grep -R -E 'sendMail|gmail|stripe|checkout|scheduleTrigger' agent-factory/run-001/runtime/d0-downstream-readiness.cjs agent-factory/run-001/tests/d0-downstream-readiness.test.cjs

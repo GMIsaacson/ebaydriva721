@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "KIN-LISTING-OPPORTUNITY-1.0",
+  "title": "Kinetiq Listing Opportunity",
+  "type": "object",
+  "required": ["opportunityId","marketplace","productId","brand","listingUrl","observedAt","evidence","score","status"],
+  "properties": {
+    "opportunityId": {"type":"string","minLength":1},
+    "marketplace": {"const":"Amazon US"},
+    "productId": {"type":"string","minLength":1},
+    "brand": {"type":"string","minLength":1},
+    "listingUrl": {"type":"string","format":"uri"},
+    "observedAt": {"type":"string","format":"date-time"},
+    "evidence": {"type":"array","minItems":1,"items":{"type":"object","required":["claim","source","observedAt"],"properties":{"claim":{"type":"string"},"source":{"type":"string","format":"uri"},"observedAt":{"type":"string","format":"date-time"}}}},
+    "score": {"type":"integer","minimum":0,"maximum":100},
+    "status": {"enum":["WATCH","QUALIFIED","REJECTED"]},
+    "reasons": {"type":"array","items":{"type":"string"}},
+    "externalActionAuthorized": {"const":false}
+  },
+  "additionalProperties": false
+}
