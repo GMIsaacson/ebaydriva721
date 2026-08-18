@@ -1,0 +1,41 @@
+{
+  "runId": "GROWTH-ACQ-012",
+  "version": "1.0.0",
+  "handoffs": {
+    "market_signal": {
+      "required": ["id", "channel", "sourceUrl", "observedAt", "painSignal", "evidenceSummary"]
+    },
+    "content_candidate": {
+      "required": ["id", "sourceProofId", "channel", "angle", "draftStatus", "claimsEvidence"]
+    },
+    "engagement_opportunity": {
+      "required": ["id", "channel", "sourceUrl", "observedAt", "recommendedAction", "reason"]
+    },
+    "lead_candidate": {
+      "required": ["id", "channel", "sourceUrl", "observedAt", "leadDimensions", "score", "route"]
+    },
+    "approval_request": {
+      "required": ["actionId", "actionType", "exactPayload", "target", "reason", "riskClass", "expiresAt"]
+    },
+    "crm_event": {
+      "required": ["leadId", "eventType", "occurredAt", "nextAction", "provenance"]
+    },
+    "sale_outcome": {
+      "required": ["leadId", "outcome", "revenueUsd", "occurredAt", "channelAttribution"]
+    },
+    "case_study_seed": {
+      "required": ["customerOrInternalProofId", "problem", "intervention", "measuredOutcome", "evidenceRefs", "publicationPermission"]
+    },
+    "growth_metric": {
+      "required": ["period", "channel", "metric", "value", "source"]
+    }
+  },
+  "rules": [
+    "No handoff grants external authority.",
+    "External execution requires a separate exact approval permit for the actionId.",
+    "Claims used in public content must retain evidence references.",
+    "Customer or prospect sensitive data must be minimized before cross-agent handoff.",
+    "Duplicate source opportunities must share an idempotency key and be suppressed before review.",
+    "Revenue attribution must distinguish booked, collected and recurring revenue when available."
+  ]
+}
