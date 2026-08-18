@@ -1,0 +1,47 @@
+{
+  "contract": "retry-deadletter-cancellation.v0.1",
+  "owner": "OPS-CORE-008",
+  "principles": [
+    "Retries are bounded recovery attempts, never an infinite loop.",
+    "Cancellation suppresses all future retries immediately once requested.",
+    "A dead-letter item must have one accountable owner and retained evidence.",
+    "Unknown external outcomes fail closed to human review and are never automatically retried.",
+    "Dead-letter requeue requires explicit approval and the original idempotency boundary."
+  ],
+  "defaultRetryPolicy": {
+    "maximumRetryAttempts": 2,
+    "retryableFailureTypes": ["TRANSIENT_NETWORK", "RATE_LIMIT", "TEMPORARY_PROVIDER"],
+    "neverRetryFailureTypes": ["VALIDATION", "AUTHORITY", "AUTHENTICATION", "PERMISSION", "COST_CEILING", "POLICY"],
+    "exhaustedDestination": "DEAD_LETTER"
+  },
+  "deadLetterRequiredFields": [
+    "deadLetterId",
+    "owner",
+    "subjectId",
+    "idempotencyKey",
+    "failureType",
+    "attemptsUsed",
+    "createdAt",
+    "evidenceRef",
+    "resolutionState"
+  ],
+  "deadLetterStates": ["OPEN", "RESOLVED", "REJECTED"],
+  "openDeadLetterRules": [
+    "OPEN items require nextReviewAt.",
+    "OPEN items may not be silently deleted or auto-requeued.",
+    "Owner reassignment must be retained as evidence."
+  ],
+  "cancellationStates": ["NONE", "REQUESTED", "ACKNOWLEDGED", "CANCELLED"],
+  "cancellationRules": [
+    "REQUESTED, ACKNOWLEDGED and CANCELLED all block creation of new retry attempts.",
+    "Cancellation cannot claim an in-flight external action was reversed unless the external outcome is positively known.",
+    "An unknown in-flight external outcome becomes human review, not replay.",
+    "Cancellation evidence must identify requester, request time and cancellation reference."
+  ],
+  "requeueRules": [
+    "Only OPEN or RESOLVED dead-letter work may be considered for requeue according to policy; REJECTED work is terminal.",
+    "Requeue requires approvalRef, owner, idempotencyKey and evidenceRef.",
+    "A cancelled subject may not be requeued until a separate owner-authorized resume decision exists.",
+    "External work with unknown outcome may not be requeued automatically."
+  ]
+}
