@@ -23,7 +23,11 @@ const requiredFiles = [
   path.join(sharedRoot, 'fulfillment/runtime.cjs'),
   path.join(sharedRoot, 'fulfillment/fulfillment.test.cjs'),
   path.join(sharedRoot, 'fulfillment/fixtures/accepted-engagement.json'),
-  path.join(sharedRoot, 'fulfillment/README.md')
+  path.join(sharedRoot, 'fulfillment/README.md'),
+  path.join(sharedRoot, 'customer-success/customer-success-contract-v1.0.json'),
+  path.join(sharedRoot, 'customer-success/runtime.cjs'),
+  path.join(sharedRoot, 'customer-success/customer-success.test.cjs'),
+  path.join(sharedRoot, 'customer-success/README.md')
 ];
 
 for (const full of requiredFiles) {
@@ -36,6 +40,7 @@ const workflow = JSON.parse(fs.readFileSync(path.join(runRoot, 'n8n/run-012-grow
 const cclc = JSON.parse(fs.readFileSync(path.join(sharedRoot, 'commercial-lifecycle/cclc-v1.0.json'), 'utf8'));
 const conversion = JSON.parse(fs.readFileSync(path.join(sharedRoot, 'commercial-conversion/conversion-contract-v1.0.json'), 'utf8'));
 const fulfillment = JSON.parse(fs.readFileSync(path.join(sharedRoot, 'fulfillment/fulfillment-contract-v1.0.json'), 'utf8'));
+const customerSuccess = JSON.parse(fs.readFileSync(path.join(sharedRoot, 'customer-success/customer-success-contract-v1.0.json'), 'utf8'));
 
 if (team.runId !== 'GROWTH-ACQ-012') throw new Error('wrong runId');
 if (team.primaryKpi !== 'attributed_revenue_usd') throw new Error('revenue must remain primary KPI');
@@ -56,6 +61,13 @@ if (fulfillment.outputs?.delivered !== 'delivered_engagement_v1') throw new Erro
 if (fulfillment.authority.deliverExternally !== false || fulfillment.authority.moneyMovement !== false || fulfillment.authority.customerSuccessAction !== false) throw new Error('fulfillment authority boundary expanded');
 if (!fulfillment.rules.some(r => r.includes('No production before client_ready_v1'))) throw new Error('client readiness production gate missing');
 if (!fulfillment.rules.some(r => r.includes('QA PASS does not grant delivery authority'))) throw new Error('QA/delivery authority separation missing');
+if (customerSuccess.moduleId !== 'CUST-SUCCESS-001' || customerSuccess.version !== '1.0.0') throw new Error('customer success contract mismatch');
+if (customerSuccess.input !== 'delivered_engagement_v1') throw new Error('customer success input mismatch');
+if (customerSuccess.outputs?.successOutcome !== 'success_outcome_v1') throw new Error('success outcome output mismatch');
+if (customerSuccess.outputs?.renewalExpansion !== 'renewal_or_expansion_opportunity_v1') throw new Error('renewal/expansion output mismatch');
+if (customerSuccess.authority.sendExternal !== false || customerSuccess.authority.grantRefund !== false || customerSuccess.authority.moneyMovement !== false || customerSuccess.authority.publishCustomerProof !== false) throw new Error('customer success authority boundary expanded');
+if (!customerSuccess.rules.some(r => r.includes('No response from a customer is not acceptance'))) throw new Error('silence inference safeguard missing');
+if (!customerSuccess.rules.some(r => r.includes('require explicit permission evidence'))) throw new Error('customer proof permission safeguard missing');
 if (workflow.active !== false) throw new Error('G4 workflow must remain inactive');
 if (workflow.meta?.runId !== team.runId) throw new Error('workflow runId mismatch');
 if (workflow.meta?.deploymentMode !== 'inactive-nonproduction') throw new Error('wrong deployment mode');
@@ -68,9 +80,13 @@ console.log(JSON.stringify({
   cclc: `${cclc.contractId}-v${cclc.version}`,
   conversion: `${conversion.moduleId}-v${conversion.version}`,
   fulfillment: `${fulfillment.moduleId}-v${fulfillment.version}`,
+  customerSuccess: `${customerSuccess.moduleId}-v${customerSuccess.version}`,
   qualifiedOpportunityReceiver: handoff.handoffs.qualified_opportunity_v1.receiverContract,
   fulfillmentInput: fulfillment.input,
   fulfillmentOutput: fulfillment.outputs.delivered,
+  customerSuccessInput: customerSuccess.input,
+  customerSuccessOutcome: customerSuccess.outputs.successOutcome,
+  renewalExpansionOutput: customerSuccess.outputs.renewalExpansion,
   workflowId: workflow.meta.workflowId,
   workflowActive: workflow.active,
   externalActionsAllowedAtG3: team.externalActionsDuringG3,
