@@ -1,0 +1,86 @@
+{
+  "id": "RUN012G4GROWTH",
+  "name": "Run 012 - Growth Acquisition Nonproduction",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "1ab3a2f5-bdb1-4f0e-98d8-012000000001",
+      "name": "Manual Trigger Only",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [-820, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{json:{runId:'GROWTH-ACQ-012',gate:'G4',workflowId:'WF-GROWTH-ACQ-012-G4-001',workflowVersion:'1.0.0',eventId:'GROWTH-ACQ-012:G4:SYNTHETIC:001',traceId:'TRACE-GROWTH-ACQ-012-G4-001',control:{manualOnly:true,scheduleEnabled:false,webhookEnabled:false,maxExternalActions:0,maxCrmWrites:0,spendingAuthorityCents:0,maxAiCalls:0,retryOnUnknownOutcome:false},requestedActions:[],items:[{id:'UPW-G4-001',channel:'upwork',sourceUrl:'https://example.test/upwork/001',observedAt:'2026-08-18T09:00:00Z',leadDimensions:{buyerFit:5,painEvidence:5,buyingIntent:5,dealValue:4,accessibility:4,urgency:5},recommendedAction:'draft_proposal'},{id:'LI-G4-001',channel:'linkedin',sourceUrl:'https://example.test/linkedin/001',observedAt:'2026-08-18T09:03:00Z',leadDimensions:{buyerFit:4,painEvidence:4,buyingIntent:4,dealValue:4,accessibility:4,urgency:3},recommendedAction:'draft_comment'},{id:'X-G4-001',channel:'x',sourceUrl:'https://example.test/x/001',observedAt:'2026-08-18T09:05:00Z',leadDimensions:{buyerFit:4,painEvidence:4,buyingIntent:3,dealValue:4,accessibility:5,urgency:3},recommendedAction:'draft_reply'}]}}];"
+      },
+      "id": "1ab3a2f5-bdb1-4f0e-98d8-012000000002",
+      "name": "Load Synthetic Growth Signals",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-600, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const p=$json; const v=[]; if(p.runId!=='GROWTH-ACQ-012'||p.gate!=='G4')v.push('identity'); if(p.workflowId!=='WF-GROWTH-ACQ-012-G4-001'||p.workflowVersion!=='1.0.0')v.push('workflow'); const c=p.control||{}; if(!c.manualOnly||c.scheduleEnabled||c.webhookEnabled)v.push('trigger'); if(c.maxExternalActions!==0||c.maxCrmWrites!==0||c.spendingAuthorityCents!==0||c.maxAiCalls!==0||c.retryOnUnknownOutcome)v.push('authority'); if((p.requestedActions||[]).length)v.push('requested actions'); const raw=JSON.stringify(p); if(/(?:password|api key|access token|secret)\\s*[:=]\\s*\\S+/i.test(raw)||/(?:\\d[ -]*?){13,19}/.test(raw))v.push('sensitive data'); return [{json:{...p,guardStatus:v.length?'Rejected':'Accepted',violations:v}}];"
+      },
+      "id": "1ab3a2f5-bdb1-4f0e-98d8-012000000003",
+      "name": "Enforce G4 Zero Authority",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-360, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const p=$json; if(p.guardStatus!=='Accepted')return [{json:{runId:p.runId,gate:p.gate,status:'Review',guardStatus:p.guardStatus,violations:p.violations,queue:[],externalActionsPerformed:0,crmWritesPerformed:0,spendingCents:0,aiCalls:0}}]; const weights={buyerFit:25,painEvidence:20,buyingIntent:20,dealValue:15,accessibility:10,urgency:10}; const allowed=new Set(['x','linkedin','upwork','contra','reddit','youtube']); const seen=new Set(); const queue=[]; for(const x of p.items||[]){if(!allowed.has(String(x.channel||'').toLowerCase()))continue; const key=[x.channel,x.id,x.sourceUrl].join('|'); if(seen.has(key))continue; seen.add(key); let score=0; let bad=false; for(const [k,w] of Object.entries(weights)){const n=x.leadDimensions?.[k]; if(!Number.isFinite(n)||n<0||n>5){bad=true;break;} score+=(n/5)*w;} if(bad)continue; score=Math.round(score); const route=score>=80?'HOT_REVIEW':score>=60?'WARM_QUEUE':score>=40?'NURTURE':'IGNORE'; queue.push({opportunityId:x.id,channel:x.channel,sourceUrl:x.sourceUrl,observedAt:x.observedAt,score,route,recommendedAction:x.recommendedAction||'draft_response',externalExecution:'BLOCKED_PENDING_OWNER_APPROVAL',idempotencyKey:key});} queue.sort((a,b)=>b.score-a.score); return [{json:{runId:p.runId,gate:p.gate,workflowId:p.workflowId,traceId:p.traceId,status:'Pass',guardStatus:p.guardStatus,queue,summary:{candidateCount:queue.length,hotCount:queue.filter(x=>x.route==='HOT_REVIEW').length,warmCount:queue.filter(x=>x.route==='WARM_QUEUE').length},externalActionsPerformed:0,crmWritesPerformed:0,spendingCents:0,aiCalls:0}}];"
+      },
+      "id": "1ab3a2f5-bdb1-4f0e-98d8-012000000004",
+      "name": "Score Route and Deduplicate",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-100, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const ids=['GCA-LEAD-012','GCA-MI-012','GCA-CS-012','GCA-X-012','GCA-LI-012','GCA-MKT-012','GCA-RED-012','GCA-PROOF-012','GCA-LQ-012','GCA-CRM-012','GCA-GA-012']; return [{json:{...$json,performance:ids.map(unitId=>({unitId,status:'Pass',costCents:0,externalActions:0,crmWrites:0,aiCalls:0})),writeMode:'ReviewQueueOnly',approvalRequiredForExternalAction:true,retryAllowed:false}}];"
+      },
+      "id": "1ab3a2f5-bdb1-4f0e-98d8-012000000005",
+      "name": "Build Team Performance List",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [160, 0]
+    },
+    {
+      "parameters": {},
+      "id": "1ab3a2f5-bdb1-4f0e-98d8-012000000006",
+      "name": "Internal Growth Review Queue",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [420, 0]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual Trigger Only": {"main": [[{"node":"Load Synthetic Growth Signals","type":"main","index":0}]]},
+    "Load Synthetic Growth Signals": {"main": [[{"node":"Enforce G4 Zero Authority","type":"main","index":0}]]},
+    "Enforce G4 Zero Authority": {"main": [[{"node":"Score Route and Deduplicate","type":"main","index":0}]]},
+    "Score Route and Deduplicate": {"main": [[{"node":"Build Team Performance List","type":"main","index":0}]]},
+    "Build Team Performance List": {"main": [[{"node":"Internal Growth Review Queue","type":"main","index":0}]]}
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "saveExecutionProgress": true,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all"
+  },
+  "versionId": "12000000-0000-4000-8000-000000000001",
+  "meta": {
+    "runId": "GROWTH-ACQ-012",
+    "workflowId": "WF-GROWTH-ACQ-012-G4-001",
+    "authority": "Observe, Analyze, Score, Recommend and Draft",
+    "deploymentMode": "inactive-nonproduction"
+  },
+  "tags": []
+}

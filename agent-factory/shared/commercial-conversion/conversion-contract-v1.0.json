@@ -1,0 +1,98 @@
+{
+  "moduleId": "COMM-CONV-001",
+  "version": "1.0.0",
+  "cclcRef": "CCLC-001-v1.0",
+  "architectureRef": "A0-COMM-001-v1.0",
+  "status": "DESIGN_VALIDATION",
+  "authorityEffect": "NONE",
+  "purpose": "Reuse Pipeline & Reply Coordinator, Offer & Asset Builder and Proposal Builder as the portfolio-wide Commercial Conversion receiver for qualified_opportunity_v1.",
+  "components": [
+    {
+      "name": "Pipeline & Reply Coordinator",
+      "role": "receiver_state_owner_reply_classification_next_action",
+      "sourceRef": "notion:3b5e161e-ac8a-8182-a4ea-d422998795c9"
+    },
+    {
+      "name": "Offer & Asset Builder",
+      "role": "offer_scope_asset_drafting",
+      "sourceStableId": "AGT-OFFER-ASSET-BUILDER-001"
+    },
+    {
+      "name": "Proposal Builder",
+      "role": "proposal_versioning_and_approval_packet",
+      "sourceStableId": "KIN-PROP-01"
+    }
+  ],
+  "input": "qualified_opportunity_v1",
+  "acceptance": {
+    "acceptedRoutes": ["HOT_REVIEW", "WARM_QUEUE"],
+    "minimumLeadScore": 60,
+    "contactableCommunicationStates": ["CONTACTABLE", "REPLIED", "OWNER_APPROVED_CONTACT_ROUTE"],
+    "rejectCodes": [
+      "MISSING_REQUIRED_FIELD",
+      "INVALID_SCORE_OR_ROUTE",
+      "DO_NOT_CONTACT",
+      "MISSING_BUYER_IDENTITY",
+      "MISSING_NEED",
+      "MISSING_EVIDENCE",
+      "DUPLICATE_OR_REPLAY"
+    ]
+  },
+  "ownedCclcStates": [
+    "CONVERSION_ACTIVE",
+    "PROPOSAL_PENDING",
+    "COMMERCIAL_ACCEPTED",
+    "PAYMENT_PENDING",
+    "NURTURE",
+    "CLOSED_LOST"
+  ],
+  "canonicalRecordsWritten": [
+    "Opportunity",
+    "ProposalScope",
+    "CommercialAcceptance",
+    "LifecycleEvent"
+  ],
+  "outputs": {
+    "accepted": "conversion_acceptance_v1",
+    "rejected": "conversion_rejection_v1",
+    "proposalDraft": "proposal_draft_v1",
+    "approvedProposal": "approved_proposal_v1",
+    "commercialAcceptance": "commercial_acceptance_v1"
+  },
+  "authority": {
+    "readAndClassify": true,
+    "internalStateWrite": true,
+    "draftReplies": true,
+    "draftOffer": true,
+    "draftProposal": true,
+    "sendExternal": false,
+    "changeFinalPriceOrScope": false,
+    "contractCommitment": false,
+    "claimPayment": false,
+    "moneyMovement": false
+  },
+  "proposalApprovalPermit": {
+    "requiredFields": ["permitId", "status", "proposalId", "proposalVersion", "proposalHash", "approvedBy", "approvedAt", "expiresAt"],
+    "requiredStatus": "APPROVED",
+    "rule": "The permit must match the exact proposal ID, version and hash and must be unexpired. Silence or approval of another version is not approval."
+  },
+  "commercialAcceptance": {
+    "requiredFields": ["acceptanceId", "opportunityId", "proposalId", "acceptedVersion", "acceptedHash", "authoritativeContactId", "acceptanceEvidenceRef", "acceptedAt"],
+    "paymentStatusAtCreation": ["UNKNOWN", "PENDING", "NOT_REQUIRED_PRE_DELIVERY"],
+    "rule": "Acceptance never proves payment. Payment facts require an authoritative payment-verification source."
+  },
+  "rules": [
+    "A qualified_opportunity_v1 handoff must be explicitly accepted or rejected.",
+    "Rejection returns ownership to Demand & Acquisition with typed remediation reasons.",
+    "Acceptance moves the opportunity into CONVERSION_ACTIVE and creates or updates the canonical CCLC Opportunity record.",
+    "ProposalScope drafts must be versioned and hashed; creating a draft does not authorize sending it.",
+    "Price, scope, timing, guarantees, discounts, contract terms and consequential claims remain owner-approved.",
+    "No proposal can become APPROVED_FOR_SEND without an exact owner approval permit matching proposal ID, version and hash.",
+    "Commercial acceptance must reference the exact proposal version and hash plus authoritative acceptance evidence.",
+    "Payment verification is not performed by this module; payment status cannot be invented.",
+    "No handoff grants external, production, delivery or money authority.",
+    "Unknown external outcome fails closed and is not automatically retried.",
+    "Explicit opt-out routes to DO_NOT_CONTACT and blocks conversion outreach.",
+    "Duplicate or replayed handoffs must not create duplicate conversion state or duplicate external actions."
+  ]
+}

@@ -1,0 +1,114 @@
+{
+  "moduleId": "CUST-SUCCESS-001",
+  "version": "1.0.0",
+  "cclcRef": "CCLC-001-v1.0",
+  "architectureRef": "A0-COMM-001-v1.0",
+  "status": "DESIGN_VALIDATION",
+  "authorityEffect": "NONE",
+  "purpose": "Generalize the existing Customer Success capability as the portfolio-wide post-delivery owner from delivered_engagement_v1 through acceptance/support, measured success, retention, renewal/expansion and evidence-permitted proof feedback.",
+  "reusedComponent": {
+    "name": "Customer Success",
+    "sourceStableId": "KIN-CS-01",
+    "sourceRef": "notion:3b6e161e-ac8a-815d-9f36-dbf2fc17eed3"
+  },
+  "input": "delivered_engagement_v1",
+  "outputs": {
+    "acceptedHandoff": "customer_success_acceptance_v1",
+    "supportClassification": "support_case_v1",
+    "fulfillmentRemediation": "fulfillment_remediation_request_v1",
+    "successOutcome": "success_outcome_v1",
+    "renewalExpansion": "renewal_or_expansion_opportunity_v1",
+    "ownerEscalation": "customer_success_escalation_v1",
+    "rejected": "customer_success_rejection_v1"
+  },
+  "ownedCclcStates": [
+    "ACCEPTANCE_SUPPORT",
+    "SUCCESS_ACTIVE",
+    "RENEWAL_EXPANSION",
+    "CHURNED",
+    "CLOSED_SUCCESS"
+  ],
+  "canonicalRecordsWritten": [
+    "SuccessRecord",
+    "LifecycleEvent"
+  ],
+  "canonicalRecordsRead": [
+    "CustomerAccount",
+    "EngagementProject",
+    "QADeliveryRecord",
+    "CommercialAcceptance",
+    "ProposalScope",
+    "RevenueEvent"
+  ],
+  "supportClasses": [
+    "CLARIFICATION",
+    "CORRECTION",
+    "IN_SCOPE_REVISION",
+    "NEW_SCOPE_REQUEST",
+    "INCIDENT",
+    "REFUND_REQUEST",
+    "COMPLAINT",
+    "PRAISE_OR_SUCCESS_SIGNAL"
+  ],
+  "permissions": {
+    "testimonial": ["UNKNOWN", "DENIED", "GRANTED"],
+    "referral": ["UNKNOWN", "DENIED", "GRANTED"],
+    "caseStudy": ["UNKNOWN", "DENIED", "GRANTED"],
+    "rule": "No customer quote, logo, identity, testimonial, referral request or case-study material may be used externally unless the corresponding permission is GRANTED with evidence."
+  },
+  "successOutcomeRules": {
+    "measuredOutcome": "Must be evidence-backed or explicitly marked NOT_MEASURED; never inferred or fabricated.",
+    "satisfaction": "May be recorded only from authoritative customer evidence or a clearly labeled internal observation.",
+    "publicProof": "Growth/Proof eligibility requires applicable explicit permission and evidence references; otherwise analytics may receive only non-public/internal outcome data."
+  },
+  "renewalExpansionRules": {
+    "evidenceRequired": true,
+    "allowedSignals": [
+      "EXPLICIT_CUSTOMER_REQUEST",
+      "CONTRACTED_RENEWAL_WINDOW",
+      "EVIDENCE_BACKED_ONGOING_NEED",
+      "CUSTOMER_REQUESTED_NEW_SCOPE"
+    ],
+    "blockedWhen": [
+      "OPEN_COMPLAINT",
+      "OPEN_REFUND_REQUEST",
+      "UNRESOLVED_CRITICAL_OR_MAJOR_ISSUE",
+      "DO_NOT_CONTACT",
+      "NO_COMMERCIAL_PERMISSION"
+    ],
+    "rule": "Customer Success may identify and internally hand off an opportunity; Commercial Conversion owns scope, price, proposal and commercial commitment."
+  },
+  "authority": {
+    "internalStateWrite": true,
+    "classifySupport": true,
+    "draftCustomerResponse": true,
+    "recordAuthoritativeAcceptanceOrFeedback": true,
+    "prepareFulfillmentRemediationRequest": true,
+    "prepareRenewalExpansionOpportunity": true,
+    "preparePermissionRequestDraft": true,
+    "sendExternal": false,
+    "grantRefund": false,
+    "moneyMovement": false,
+    "changeCommercialScope": false,
+    "changePrice": false,
+    "promiseOutcome": false,
+    "publishCustomerProof": false,
+    "requestReferralExternally": false,
+    "requestTestimonialExternally": false
+  },
+  "rules": [
+    "delivered_engagement_v1 must contain exact delivery identity and a recorded delivery receipt before Customer Success accepts ownership.",
+    "Customer Success acceptance changes lifecycle ownership only; it grants no communication, refund, commercial or publishing authority.",
+    "No response from a customer is not acceptance, satisfaction, churn, testimonial permission or renewal intent.",
+    "Clarifications remain within Customer Success when no artifact change is required.",
+    "Corrections and in-scope revisions requiring artifact changes route to Fulfillment through fulfillment_remediation_request_v1 and preserve original delivery/version history.",
+    "New scope requests route to Commercial Conversion through renewal_or_expansion_opportunity_v1; Customer Success does not quote or commit scope/price.",
+    "Refund requests and material complaints are classified and escalated; Customer Success cannot approve or execute refunds.",
+    "Open complaints, refund requests or unresolved blocking defects suppress proactive upsell/referral/testimonial activity.",
+    "Success outcomes must separate measured facts, customer statements, internal interpretations and unknowns.",
+    "Customer claims, logos, testimonials and case-study details require explicit permission evidence before Growth/Proof use.",
+    "Churn requires explicit termination/non-renewal evidence or an authoritative lifecycle rule; silence alone cannot set CHURNED.",
+    "Unknown external outcomes fail closed and are never blindly retried.",
+    "P4 validation is simulation-only; externalActionsPerformed and moneyMovementPerformed remain zero."
+  ]
+}

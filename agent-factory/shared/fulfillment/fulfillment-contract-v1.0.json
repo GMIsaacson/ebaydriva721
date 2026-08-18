@@ -1,0 +1,123 @@
+{
+  "moduleId": "FULFILL-001",
+  "version": "1.0.0",
+  "cclcRef": "CCLC-001-v1.0",
+  "architectureRef": "A0-COMM-001-v1.0",
+  "status": "DESIGN_VALIDATION",
+  "authorityEffect": "NONE",
+  "purpose": "Reuse Client Readiness, Client Delivery/Job Control, independent QA and Delivery Control as the portfolio-wide fulfillment path from commercial_acceptance_v1 to delivered_engagement_v1.",
+  "components": [
+    {
+      "name": "Client Readiness",
+      "role": "verify_identity_authority_scope_payment_condition_intake_timing_and_owner_before_production",
+      "sourceRef": "notion:3b5e161e-ac8a-8104-b4c7-d520f367c627"
+    },
+    {
+      "name": "Client Delivery Coordinator",
+      "role": "engagement_project_owner_milestones_handoffs_and_delivery_preparation",
+      "sourceRef": "notion:3b5e161e-ac8a-81b3-b5b8-c97fd0287601"
+    },
+    {
+      "name": "Job Control",
+      "role": "deterministic_project_state_and_dependency_control",
+      "sourceStableId": "KIN-JOB-WF-01"
+    },
+    {
+      "name": "Evidence and Quality Agent",
+      "role": "independent_version_specific_qa_pass_fail_escalate",
+      "sourceRef": "notion:3b5e161e-ac8a-8160-b0a2-c6f23ebf8095"
+    },
+    {
+      "name": "Delivery Control",
+      "role": "exact_version_recipient_route_permit_and_delivery_receipt_control",
+      "sourceStableId": "KIN-DEL-WF-01"
+    },
+    {
+      "name": "Service-specific Production Adapter",
+      "role": "bounded_product_or_service_execution_behind_common_interface",
+      "implementationForP3": "SYNTHETIC-TEXT-DELIVERABLE-v1"
+    }
+  ],
+  "input": "commercial_acceptance_v1",
+  "outputs": {
+    "clientReady": "client_ready_v1",
+    "productionPacket": "production_packet_v1",
+    "qaEligible": "qa_eligible_delivery_v1",
+    "approvedDelivery": "approved_delivery_v1",
+    "delivered": "delivered_engagement_v1",
+    "rejected": "fulfillment_rejection_v1"
+  },
+  "ownedCclcStates": [
+    "PAYMENT_PENDING",
+    "CLIENT_READY",
+    "IN_DELIVERY",
+    "QA_REVIEW",
+    "DELIVERY_APPROVAL_PENDING",
+    "DELIVERED"
+  ],
+  "canonicalRecordsWritten": [
+    "CustomerAccount",
+    "EngagementProject",
+    "QADeliveryRecord",
+    "LifecycleEvent"
+  ],
+  "readiness": {
+    "required": [
+      "exact_commercial_acceptance",
+      "canonical_customer_identity",
+      "verified_authority",
+      "approved_transactional_or_delivery_route",
+      "applicable_payment_condition_verified",
+      "intake_complete",
+      "delivery_timing_recorded",
+      "internal_project_owner",
+      "approved_production_adapter"
+    ],
+    "paymentFactsAllowed": ["COLLECTED", "NOT_REQUIRED_PRE_DELIVERY"],
+    "rule": "Production may not begin until every readiness condition is evidenced and client_ready_v1 is accepted."
+  },
+  "productionAdapterInterface": {
+    "input": "production_packet_v1",
+    "requiredOutput": "qa_eligible_delivery_v1",
+    "mustReturn": ["engagementId", "artifactVersion", "artifactHash", "artifactManifest", "evidenceRefs", "producedBy", "producedAt"],
+    "rule": "A service-specific adapter may create the contracted output only within accepted scope; it may not self-approve QA or deliver externally."
+  },
+  "qa": {
+    "verdicts": ["PASS", "FAIL", "ESCALATE"],
+    "independenceRule": "qaReviewerId must differ from producedBy for the reviewed version.",
+    "passRule": "PASS requires exact artifact version/hash, scope match, required evidence and zero open Critical or Major findings. PASS means eligible for owner delivery approval only."
+  },
+  "deliveryApprovalPermit": {
+    "requiredFields": ["permitId", "status", "deliveryId", "artifactVersion", "artifactHash", "recipient", "route", "approvedBy", "approvedAt", "expiresAt"],
+    "requiredStatus": "APPROVED",
+    "rule": "Permit must match the exact delivery ID, artifact version/hash, recipient and route and must be unexpired."
+  },
+  "authority": {
+    "internalStateWrite": true,
+    "verifyReadinessEvidence": true,
+    "prepareProductionPacket": true,
+    "runSyntheticProductionAdapter": true,
+    "issueIndependentQaVerdict": true,
+    "prepareDeliveryApprovalPacket": true,
+    "deliverExternally": false,
+    "changeCommercialScope": false,
+    "claimPaymentWithoutEvidence": false,
+    "moneyMovement": false,
+    "refund": false,
+    "customerSuccessAction": false
+  },
+  "rules": [
+    "commercial_acceptance_v1 alone does not establish CLIENT_READY.",
+    "Payment verification is separate from money movement and must reference authoritative evidence.",
+    "No production before client_ready_v1.",
+    "Job Control and Client Delivery may coordinate work but may not self-issue independent QA PASS.",
+    "A Production Adapter may not QA or deliver its own output.",
+    "Post-QA artifact modification invalidates PASS and requires a new review.",
+    "QA PASS does not grant delivery authority.",
+    "External delivery requires an exact owner permit and a separate execution boundary.",
+    "Unknown delivery outcome fails closed and is never blindly retried.",
+    "P3 validation uses only a synthetic production adapter and simulation sink; externalActionsPerformed must remain zero.",
+    "delivered_engagement_v1 is emitted only after exact-version approval and a recorded delivery receipt.",
+    "Customer Success ownership begins downstream of delivered_engagement_v1."
+  ]
+}

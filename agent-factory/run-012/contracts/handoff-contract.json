@@ -1,0 +1,82 @@
+{
+  "runId": "GROWTH-ACQ-012",
+  "version": "1.2.0",
+  "architectureRef": "A0-COMM-001-v1.0",
+  "cclcRef": "CCLC-001-v1.0",
+  "handoffs": {
+    "market_signal": {
+      "direction": "internal",
+      "required": ["id", "channel", "sourceUrl", "observedAt", "painSignal", "evidenceSummary"]
+    },
+    "content_candidate": {
+      "direction": "internal",
+      "required": ["id", "sourceProofId", "channel", "angle", "draftStatus", "claimsEvidence"]
+    },
+    "engagement_opportunity": {
+      "direction": "internal",
+      "required": ["id", "channel", "sourceUrl", "observedAt", "recommendedAction", "reason"]
+    },
+    "lead_candidate": {
+      "direction": "internal",
+      "required": ["id", "channel", "sourceUrl", "observedAt", "leadDimensions", "score", "route"]
+    },
+    "approval_request": {
+      "direction": "internal_to_owner_gate",
+      "required": ["actionId", "actionType", "exactPayload", "target", "reason", "riskClass", "expiresAt"]
+    },
+    "acquisition_crm_event": {
+      "direction": "internal",
+      "required": ["leadId", "eventType", "occurredAt", "nextAction", "provenance"]
+    },
+    "qualified_opportunity_v1": {
+      "direction": "outbound_to_commercial_conversion",
+      "receiverContract": "COMM-CONV-001-v1.0",
+      "receiverOwner": "Pipeline & Reply Coordinator",
+      "required": [
+        "opportunityId",
+        "canonicalLeadId",
+        "channel",
+        "sourceRef",
+        "observedAt",
+        "buyerIdentity",
+        "buyerFitEvidence",
+        "painEvidence",
+        "buyingIntentEvidence",
+        "leadScore",
+        "route",
+        "requestedOrInferredNeed",
+        "expectedDealValueRange",
+        "communicationState",
+        "latestReplyOrSignalRef",
+        "nextRecommendedAction",
+        "provenance",
+        "idempotencyKey"
+      ],
+      "acceptanceRule": "COMM-CONV-001 must explicitly return conversion_acceptance_v1 or conversion_rejection_v1. Rejection returns ownership to Run 012 with typed remediation reasons and grants no authority."
+    },
+    "verified_revenue_outcome_v1": {
+      "direction": "feedback_from_downstream",
+      "required": ["opportunityId", "outcome", "bookedRevenueUsd", "collectedRevenueUsd", "occurredAt", "channelAttribution", "evidenceRef"]
+    },
+    "verified_success_outcome_v1": {
+      "direction": "feedback_from_downstream",
+      "required": ["opportunityId", "customerOrInternalProofId", "problem", "intervention", "measuredOutcome", "evidenceRefs", "publicationPermission"]
+    },
+    "growth_metric": {
+      "direction": "internal",
+      "required": ["period", "channel", "metric", "value", "source"]
+    }
+  },
+  "rules": [
+    "No handoff grants external authority.",
+    "Run 012 ends operational ownership at qualified_opportunity_v1 only after COMM-CONV-001 explicitly accepts it.",
+    "A rejected conversion handoff returns ownership to Run 012 for remediation or nurture.",
+    "Final commercial scope, payment, fulfillment, delivery and customer-success actions are downstream and out of scope for Run 012.",
+    "External first-touch execution requires a separate exact approval permit for the actionId.",
+    "Claims used in public content must retain evidence references.",
+    "Customer or prospect sensitive data must be minimized before cross-agent handoff.",
+    "Duplicate source opportunities must share an idempotency key and be suppressed before review.",
+    "Revenue attribution must distinguish booked and collected revenue; recurring revenue must be explicitly identified when available.",
+    "Case-study/proof inputs are feedback only and require verified evidence plus applicable publication permission."
+  ]
+}

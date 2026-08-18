@@ -1,0 +1,23 @@
+{
+  "opportunityId": "OPP-SIM-001",
+  "canonicalLeadId": "LEAD-SIM-001",
+  "channel": "upwork",
+  "sourceRef": "https://example.test/upwork/opportunity-001",
+  "observedAt": "2026-08-18T10:00:00Z",
+  "buyerIdentity": {
+    "organization": "Example Automation Co",
+    "contact": "Synthetic Buyer"
+  },
+  "buyerFitEvidence": ["EVID-FIT-001"],
+  "painEvidence": ["EVID-PAIN-001"],
+  "buyingIntentEvidence": ["EVID-INTENT-001"],
+  "leadScore": 95,
+  "route": "HOT_REVIEW",
+  "requestedOrInferredNeed": "Automate recurring operations with AI and n8n under approval controls.",
+  "expectedDealValueRange": {"minUsd": 1000, "maxUsd": 2000},
+  "communicationState": "CONTACTABLE",
+  "latestReplyOrSignalRef": "SIGNAL-SIM-001",
+  "nextRecommendedAction": "Prepare bounded discovery/proposal basis",
+  "provenance": ["SRC-SIM-001"],
+  "idempotencyKey": "SIM-UPWORK-OPP-001"
+}

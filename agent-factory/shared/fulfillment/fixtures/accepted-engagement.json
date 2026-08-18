@@ -1,0 +1,45 @@
+{
+  "commercialAcceptance": {
+    "type": "commercial_acceptance_v1",
+    "commercialAcceptanceRecord": {
+      "acceptance_id": "ACC-SIM-001",
+      "opportunity_id": "OPP-SIM-001",
+      "proposal_id": "PROP-SIM-001",
+      "accepted_version": "v1.0",
+      "accepted_hash": "6a4bff96ef5c2a0aa4ce31ba600b014ff8df8523a2d763132e8fb8d0c74b3860",
+      "authoritative_contact_id": "CONTACT-SIM-001",
+      "acceptance_evidence_ref": "EVID-ACC-SIM-001",
+      "exceptions": [],
+      "payment_requirement": "PREPAY_REQUIRED",
+      "payment_status": "PENDING",
+      "accepted_at": "2026-08-18T10:10:00Z"
+    }
+  },
+  "readinessEvidence": {
+    "engagementId": "ENG-SIM-001",
+    "customerId": "CUS-SIM-001",
+    "contactId": "CONTACT-SIM-001",
+    "identityStatus": "VERIFIED",
+    "authorityStatus": "VERIFIED",
+    "authorityEvidenceRef": "EVID-AUTH-SIM-001",
+    "routeStatus": "APPROVED",
+    "optOutStatus": "NOT_OPTED_OUT",
+    "route": "SIMULATION_SINK",
+    "recipient": "SIMULATED_CUSTOMER",
+    "paymentStatus": "COLLECTED",
+    "paymentEvidenceRef": "PAYMENT-VERIFICATION-SIM-001",
+    "intakeStatus": "COMPLETE",
+    "intakeEvidenceRefs": ["INTAKE-SIM-001"],
+    "deliveryDueAt": "2026-08-21T17:00:00-05:00",
+    "projectOwner": "Client Delivery Coordinator",
+    "productionAdapter": "SYNTHETIC-TEXT-DELIVERABLE-v1",
+    "acceptedScope": {
+      "proposalId": "PROP-SIM-001",
+      "version": "v1.0",
+      "hash": "6a4bff96ef5c2a0aa4ce31ba600b014ff8df8523a2d763132e8fb8d0c74b3860"
+    },
+    "recordMode": "SIMULATION",
+    "milestones": ["PRODUCTION", "QA", "DELIVERY_APPROVAL", "DELIVERY"],
+    "idempotencyKey": "FULFILL-SIM-001"
+  }
+}

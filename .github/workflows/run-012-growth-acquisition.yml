@@ -1,0 +1,35 @@
+name: Run 012 growth acquisition validation
+
+on:
+  pull_request:
+    paths:
+      - 'agent-factory/run-012/**'
+      - 'agent-factory/shared/commercial-lifecycle/**'
+      - 'agent-factory/shared/commercial-conversion/**'
+      - 'agent-factory/shared/fulfillment/**'
+      - 'agent-factory/shared/customer-success/**'
+      - 'package.json'
+      - '.github/workflows/run-012-growth-acquisition.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-run-012:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Validate CCLC, Conversion, Fulfillment, Customer Success, and Run 012 policies
+        run: npm run test:run012
+
+      - name: Validate Run 012 package and connected architecture
+        run: npm run validate:run012
