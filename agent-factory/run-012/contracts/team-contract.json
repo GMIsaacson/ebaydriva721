@@ -1,0 +1,71 @@
+{
+  "runId": "GROWTH-ACQ-012",
+  "name": "Growth & Client Acquisition Team",
+  "mission": "Generate measurable client revenue from X, LinkedIn, Upwork/Contra, Reddit and YouTube using evidence-backed content, prospecting and qualification while keeping consequential external actions owner-approved.",
+  "primaryKpi": "attributed_revenue_usd",
+  "secondaryKpis": [
+    "qualified_leads",
+    "pipeline_value_usd",
+    "proposals_approved",
+    "reply_rate",
+    "conversion_rate",
+    "customer_acquisition_cost_usd",
+    "channel_roi",
+    "profile_visits"
+  ],
+  "diagnosticOnlyKpis": ["followers", "impressions"],
+  "channels": ["x", "linkedin", "upwork", "contra", "reddit", "youtube"],
+  "agents": [
+    {"id":"GCA-LEAD-012","name":"Growth Lead / Orchestrator","role":"prioritization_handoffs_briefing"},
+    {"id":"GCA-MI-012","name":"Market Intelligence Agent","role":"market_pain_offer_and_conversation_intelligence"},
+    {"id":"GCA-CS-012","name":"Content Strategy Agent","role":"proof_to_platform_content_strategy"},
+    {"id":"GCA-X-012","name":"X Growth Agent","role":"x_targeting_drafts_and_analysis"},
+    {"id":"GCA-LI-012","name":"LinkedIn Acquisition Agent","role":"linkedin_prospecting_and_drafts"},
+    {"id":"GCA-MKT-012","name":"Marketplace Agent","role":"upwork_contra_scoring_and_proposal_drafts"},
+    {"id":"GCA-RED-012","name":"Reddit Opportunity Agent","role":"pain_thread_discovery_and_helpful_response_drafts"},
+    {"id":"GCA-PROOF-012","name":"Proof / Case-Study Agent","role":"case_study_demo_and_youtube_proof_assets"},
+    {"id":"GCA-LQ-012","name":"Lead Qualification Agent","role":"commercial_intent_fit_urgency_and_value_scoring"},
+    {"id":"GCA-CRM-012","name":"Follow-up / CRM Agent","role":"lead_state_next_action_and_followup_queue"},
+    {"id":"GCA-GA-012","name":"Growth Analyst","role":"revenue_attribution_channel_economics_and_scale_kill_recommendations"}
+  ],
+  "authority": {
+    "observePublicSources": true,
+    "analyze": true,
+    "score": true,
+    "recommend": true,
+    "draft": true,
+    "internalCrmWrite": true,
+    "publish": "owner_approval_required",
+    "commentOrReply": "owner_approval_required",
+    "sendDm": "owner_approval_required",
+    "sendEmail": "owner_approval_required",
+    "submitProposalOrBid": "owner_approval_required",
+    "changeProfile": "owner_approval_required",
+    "spendMoney": false,
+    "phoneOrSmsOutreach": false
+  },
+  "initialEffortAllocationPct": {
+    "marketplaces": 35,
+    "linkedin": 30,
+    "x": 20,
+    "reddit": 10,
+    "youtube": 5
+  },
+  "leadScoreWeights": {
+    "buyerFit": 25,
+    "painEvidence": 20,
+    "buyingIntent": 20,
+    "dealValue": 15,
+    "accessibility": 10,
+    "urgency": 10
+  },
+  "routes": [
+    {"min":80,"max":100,"route":"HOT_REVIEW"},
+    {"min":60,"max":79,"route":"WARM_QUEUE"},
+    {"min":40,"max":59,"route":"NURTURE"},
+    {"min":0,"max":39,"route":"IGNORE"}
+  ],
+  "gateTarget": "G3_SIMULATION",
+  "externalActionsDuringG3": 0,
+  "spendAuthorityUsd": 0
+}
