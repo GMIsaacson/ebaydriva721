@@ -90,10 +90,21 @@ jobs:
           exit 1
       - name: Import inactive workflow
         run: |
-          docker exec run006-n8n n8n import:workflow \
+          # Stop the long-running n8n server before invoking the CLI against the
+          # same SQLite volume. Running both concurrently can race on migrations
+          # and produce SQLITE_BUSY, which makes this acceptance check flaky.
+          docker stop run006-n8n
+          docker run --rm --name run006-n8n-import \
+            --volume run006_n8n_data:/home/node/.n8n \
+            --volume "$PWD:/repo:ro" \
+            --env N8N_DIAGNOSTICS_ENABLED=false \
+            --env N8N_VERSION_NOTIFICATIONS_ENABLED=false \
+            --env N8N_PUBLIC_API_DISABLED=true \
+            --env N8N_BLOCK_ENV_ACCESS_IN_NODE=true \
+            --env N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true \
+            n8nio/n8n:2.34.6 import:workflow \
             --input=/repo/agent-factory/run-006/n8n/run-006-subscription-baseline.workflow.json \
             --activeState=false
-          docker stop run006-n8n
       - name: Execute and validate internal result
         run: |
           docker run --rm --name run006-n8n-cli \
@@ -133,6 +144,6 @@ jobs:
       - name: Destroy isolated n8n environment
         if: always()
         run: |
-          docker rm --force run006-n8n-cli run006-n8n-export || true
+          docker rm --force run006-n8n-import run006-n8n-cli run006-n8n-export || true
           docker rm --force run006-n8n || true
           docker volume rm run006_n8n_data || true

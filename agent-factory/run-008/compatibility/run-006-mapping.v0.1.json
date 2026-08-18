@@ -1,0 +1,77 @@
+{
+  "run008":"OPS-CORE-008",
+  "consumerRun":"SUB-OPS-006",
+  "status":"DESIGN_COMPATIBILITY_PASS",
+  "principle":"Map existing Run 006 primitives onto Operations Core contracts before refactoring implementation.",
+  "mappings":[
+    {
+      "run006":"coverage/account-coverage-registry.json account",
+      "run008":"ops_core_sources",
+      "mapping":{
+        "accountId":"source_id",
+        "sourceType":"source_type",
+        "label":"metadata.label",
+        "coverageStatus":"connection_state",
+        "credentialRef":"credential_ref"
+      },
+      "notes":"Normalize PENDING_CONNECTION to PENDING; connected credentials remain runtime references only."
+    },
+    {
+      "run006":"run006_subscription_evidence_stage row",
+      "run008":"ops_core_events eventType=SUBSCRIPTION_EVIDENCE_OBSERVED",
+      "mapping":{
+        "evidence_id":"event_id",
+        "source_ref":"payload.sourceRef",
+        "message_id":"payload.messageId",
+        "observed_at":"occurred_at",
+        "connector_trust":"payload.connectorTrust",
+        "raw_body_retained":"payload.rawBodyRetained"
+      },
+      "idempotency":"producerId=gmail-connector + idempotencyKey=gmail:<account-source-id>:<message-id>",
+      "payloadClass":"MINIMAL"
+    },
+    {
+      "run006":"deterministic reconciliation result",
+      "run008":"ops_core_events eventType=SUBSCRIPTION_STATE_RECONCILED",
+      "idempotency":"subscription:<record-id>:<evidence-set-hash>",
+      "provenance":"DERIVED"
+    },
+    {
+      "run006":"run006_subscription_register_outbox",
+      "run008":"ops_core_action_ledger + internal write action",
+      "authorityRequired":"INTERNAL_WRITE",
+      "idempotency":"existing dedupe_key + validation_hash maps to action ledger idempotency_key/request_hash",
+      "notes":"Actual Notion mutation remains gated by validated envelope and fixed target."
+    },
+    {
+      "run006":"owner briefing / urgent alert incident",
+      "run008":"ops_core_notifications",
+      "mapping":{
+        "incidentKey":"incident_key",
+        "urgency":"severity",
+        "humanReviewNeeded":"human_review_needed"
+      },
+      "notes":"Run 006 SILENT/DAILY_BRIEF/IMMEDIATE maps to SILENT/BRIEF/IMMEDIATE channel class."
+    },
+    {
+      "run006":"future Twilio SMS live send",
+      "run008":"ops_core_action_ledger + ops_core_cost_events",
+      "authorityRequired":"EXTERNAL_ACTION_APPROVAL + COST_APPROVAL",
+      "idempotency":"sms:<incident-key>:<material-version>",
+      "costRule":"estimated SMS cost must be <= approved ceiling before sender executes"
+    },
+    {
+      "run006":"Gmail/staging/runtime/Notion watcher health",
+      "run008":"ops_core_heartbeats",
+      "watchers":["run006-gmail-ingest","run006-reconciliation-runtime","run006-notion-commit","run006-owner-alerts"],
+      "notes":"A missing/stale heartbeat becomes an Operations Core exception; existence of a workflow is not proof of health."
+    }
+  ],
+  "compatibilityConclusion":{
+    "breakingRefactorRequiredNow":false,
+    "canAdoptIncrementally":true,
+    "recommendedFirstAdoption":"Emit canonical event + heartbeat records alongside existing Run 006 staging during G6 pilot.",
+    "preserveRun006Gate":true,
+    "externalActionsAuthorizedByThisMapping":false
+  }
+}
