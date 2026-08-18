@@ -1,0 +1,43 @@
+{
+  "schemaVersion": "1.0.0",
+  "registryId": "DS-S2M-004-SOURCE-ACCESS",
+  "defaultDecision": "DENY",
+  "sources": [
+    {
+      "sourceId": "owner-authorized-upload",
+      "displayName": "Owner-authorized uploaded dataset",
+      "classification": "GREEN",
+      "killSwitch": false,
+      "machineFetchAllowed": false,
+      "allowedAccessModes": ["owner_upload"],
+      "rightsEvidence": { "type": "owner_attestation", "ref": "runtime-attestation-required", "reviewedBy": "OWNER-ABERDEEN" },
+      "lastReviewedAt": "2026-08-17T00:00:00Z",
+      "nextReviewAt": "2026-11-15T00:00:00Z",
+      "notes": "DataScout may parse and analyze a dataset only after the owner attests they are entitled to supply it. This entry does not authorize DataScout to fetch the underlying website."
+    },
+    {
+      "sourceId": "ebay-manual-verification",
+      "displayName": "eBay manual verification checkpoint",
+      "classification": "YELLOW",
+      "killSwitch": false,
+      "machineFetchAllowed": false,
+      "allowedAccessModes": ["manual_verification"],
+      "rightsEvidence": { "type": "terms_review", "ref": "manual-only-pending-approved-machine-data-path", "reviewedBy": "ABERDEEN-DATASCOUT" },
+      "lastReviewedAt": "2026-08-17T00:00:00Z",
+      "nextReviewAt": "2026-09-16T00:00:00Z",
+      "notes": "MVP route records user-entered verification facts and evidence. No logged-in browser automation or automated sold-data retrieval is authorized by this entry."
+    },
+    {
+      "sourceId": "unverified-machine-source-template",
+      "displayName": "Unverified machine-access source",
+      "classification": "RED",
+      "killSwitch": true,
+      "machineFetchAllowed": false,
+      "allowedAccessModes": [],
+      "rightsEvidence": { "type": "terms_review", "ref": "not-reviewed", "reviewedBy": "ABERDEEN-DATASCOUT" },
+      "lastReviewedAt": "2026-08-17T00:00:00Z",
+      "nextReviewAt": "2026-08-17T00:00:00Z",
+      "notes": "Template only. A real machine source remains blocked until the exact access method and data rights are reviewed and recorded."
+    }
+  ]
+}
