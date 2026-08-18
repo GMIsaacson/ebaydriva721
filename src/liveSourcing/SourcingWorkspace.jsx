@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { useAuth } from "../AuthProvider";
-import { ingestBrowserDataset, prescreenBrowserCandidates } from "./browser-core.mjs";
+import { ingestBrowserDataset } from "./browser-core.mjs";
+import { prescreenBrowserCandidates } from "./prescreen-v2.mjs";
 import { adaptSsActivewearDataset } from "./ss-activewear-adapter.mjs";
 import CandidateVerificationPanel from "./CandidateVerificationPanel";
 import "./sourcing-workspace.css";
@@ -15,6 +16,34 @@ const money = (cents) => {
   if (!Number.isFinite(cents)) return "—";
   return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(cents / 100);
 };
+
+const enrichSupplierEvidence = (records, adapted) => records.map((record) => {
+  if (!adapted?.detected) {
+    return { ...record, moqEvidence: "UNVERIFIED", moqEvidenceBasis: "generic upload did not provide a supplier-specific MOQ evidence contract" };
+  }
+  const metadata = adapted.metadataBySku?.[record.sourceSku];
+  if (!metadata) {
+    return { ...record, moqEvidence: "UNKNOWN", moqEvidenceBasis: "supplier metadata was not resolved for this SKU" };
+  }
+  return {
+    ...record,
+    moq: metadata.moq ?? record.moq,
+    moqEvidence: metadata.moqEvidence,
+    moqEvidenceBasis: metadata.moqEvidenceBasis,
+    supplierSignals: {
+      retailPriceCents: metadata.retailPriceCents,
+      mapPriceCents: metadata.mapPriceCents,
+      piecePriceCents: metadata.piecePriceCents,
+      casePriceCents: metadata.casePriceCents,
+      returnable: metadata.returnable,
+      boxRequired: metadata.boxRequired,
+      dropShipOnly: metadata.dropShipOnly,
+      fullCaseOnly: metadata.fullCaseOnly,
+      caseQty: metadata.caseQty,
+      supplierRowNumber: metadata.supplierRowNumber,
+    },
+  };
+});
 
 const SourcingWorkspace = () => {
   const { currentUser } = useAuth();
@@ -95,7 +124,8 @@ const SourcingWorkspace = () => {
         content,
         defaultSupplier: adapted.detected ? adapted.supplier : (defaultSupplier.trim() || null),
       });
-      const nextPrescreen = prescreenBrowserCandidates(nextIntake.records, {
+      const enrichedRecords = enrichSupplierEvidence(nextIntake.records, adapted);
+      const nextPrescreen = prescreenBrowserCandidates(enrichedRecords, {
         maxVerificationQueue,
         maxSourceCostCents: dollarsToCents(maxSourceCost, "Maximum source cost"),
         maxInitialOutlayCents: dollarsToCents(maxInitialOutlay, "Maximum initial outlay"),
@@ -121,7 +151,7 @@ const SourcingWorkspace = () => {
         <div>
           <p className="ds-sourcing-eyebrow">LIVE SOURCING MVP · OWNER-UPLOAD MODE</p>
           <h1>Find eBay opportunities without scraping suppliers or eBay</h1>
-          <p>Load product data you are authorized to use. DataScout normalizes it, applies supplier restrictions and source-side constraints, builds a bounded manual eBay verification queue, and calculates evidence-backed BUY / WATCH / REJECT decisions.</p>
+          <p>Load product data you are authorized to use. DataScout normalizes it, applies supplier restrictions and source-side constraints, ranks research priority, builds a bounded manual eBay verification queue, and calculates evidence-backed BUY / WATCH / REJECT decisions.</p>
         </div>
         <div className="ds-sourcing-safety">
           <strong>Permission-safe mode</strong>
@@ -183,14 +213,14 @@ const SourcingWorkspace = () => {
               <div><strong>0</strong><span>eBay fetches</span></div>
               <div><strong>0</strong><span>external actions</span></div>
             </div>
-            <p>Prescreen ranking is not a BUY recommendation. Select a candidate and manually enter current eBay Product Research, fee and shipping evidence before DataScout will calculate a final decision.</p>
+            <p><strong>Opportunity Score</strong> ranks how worthwhile a product is to research using supplier-side evidence only. <strong>Evidence Confidence</strong> separately measures how complete that evidence is. Supplier retail price is a research proxy only—not an assumed eBay selling price and not a BUY recommendation.</p>
           </section>
 
           <section className="ds-panel ds-sourcing-queue">
             <div className="ds-sourcing-section-head">
               <div>
                 <h2 className="ds-section-title">2. eBay verification queue</h2>
-                <p className="ds-section-copy">Ranked only from authorized source-side evidence. Verify exact marketplace facts manually, then run the deterministic landed-economics decision.</p>
+                <p className="ds-section-copy">Ranked only from authorized supplier-side evidence. Verify exact marketplace facts manually, then run the deterministic landed-economics decision.</p>
               </div>
               <span className="ds-sourcing-badge ds-sourcing-badge-yellow">YELLOW · manual verification</span>
             </div>
@@ -198,7 +228,7 @@ const SourcingWorkspace = () => {
             {queue.length === 0 ? <div className="ds-empty">No candidates qualified for the manual eBay verification queue.</div> : (
               <div className="ds-sourcing-table-wrap">
                 <table className="ds-sourcing-table">
-                  <thead><tr><th>Rank</th><th>Candidate</th><th>Supplier</th><th>Source cost</th><th>MOQ outlay</th><th>Identity</th><th>Prescreen</th><th>Source</th><th>Next</th></tr></thead>
+                  <thead><tr><th>Rank</th><th>Candidate</th><th>Supplier</th><th>Source cost</th><th>MOQ / outlay</th><th>Identity</th><th>Opportunity</th><th>Evidence</th><th>Supplier retail proxy</th><th>Source</th><th>Next</th></tr></thead>
                   <tbody>
                     {queue.map((item) => (
                       <tr key={item.candidateId} className={selectedCandidate?.candidateId === item.candidateId ? "selected" : ""}>
@@ -206,10 +236,12 @@ const SourcingWorkspace = () => {
                         <td><strong>{item.title}</strong><small>{item.candidateId}</small></td>
                         <td>{item.supplier}</td>
                         <td>{money(item.unitCostCents)}</td>
-                        <td>{money(item.initialOutlayCents)}</td>
-                        <td><span className={`ds-sourcing-confidence ${item.record.identityConfidence.toLowerCase()}`}>{item.record.identityConfidence}</span></td>
-                        <td><strong>{item.score}/100</strong><small>{item.warnings?.length ? item.warnings.join(" · ") : "source evidence complete"}</small></td>
-                        <td>{item.record.sourceUrl ? <a href={item.record.sourceUrl} target="_blank" rel="noopener noreferrer">Open source ↗</a> : <span className="ds-muted">No URL</span>}</td>
+                        <td><strong>MOQ {item.moq}</strong><small>{money(item.initialOutlayCents)} · {item.record.moqEvidence || "UNVERIFIED"}</small></td>
+                        <td><span className={`ds-sourcing-confidence ${item.record.identityConfidence.toLowerCase()}`}>{item.record.identityConfidence}</span><small>{item.identityBasis}</small></td>
+                        <td><strong>{item.opportunityScore}/100</strong><small>{item.warnings?.length ? item.warnings.join(" · ") : "strong supplier-side research priority"}</small></td>
+                        <td><strong>{item.evidenceConfidence}/100</strong><small>{item.evidenceWarnings?.length ? item.evidenceWarnings.slice(0, 2).join(" · ") : "source evidence complete"}</small></td>
+                        <td><strong>{money(item.supplierRetailPriceCents)}</strong><small>{Number.isFinite(item.supplierGrossSpreadCents) ? `gross proxy spread ${money(item.supplierGrossSpreadCents)}` : "not supplied"}</small></td>
+                        <td>{item.record.sourceUrl ? <a href={item.record.sourceUrl} target="_blank" rel="noopener noreferrer">Open source ↗</a> : <span className="ds-muted">Upload row {item.record.provenance?.rowNumber || "—"}</span>}</td>
                         <td><button className="ds-button ds-button-secondary ds-sourcing-verify-button" type="button" onClick={() => setSelectedCandidate(item.record)}>Verify</button></td>
                       </tr>
                     ))}
