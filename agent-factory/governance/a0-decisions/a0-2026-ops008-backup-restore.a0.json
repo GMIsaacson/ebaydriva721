@@ -1,0 +1,22 @@
+{
+  "decision_id": "A0-OPS008-BACKUPRESTORE-001",
+  "status": "PASS",
+  "verdict": "EXTEND",
+  "owner": "Aberdeen Technologies",
+  "decided_at": "2026-08-18",
+  "business_outcome": "Close the remaining Critical Pie Closure gap for access/retention/backup by extending existing Run 008 privacy/recovery controls with explicit backup/restore requirements and deterministic restore-evidence validation before the private-host drill.",
+  "existing_owner_scan": "Checked Capability Register CAP-36, Run 008 Operations Core privacy/retention and recovery primitives, the private n8n/PostgreSQL deployment guide, existing backup evidence, SAFE controls and Pie Closure Wave 1. Run 008 already owns this shared recovery boundary; no new team, service, database owner, control center or autonomous authority is required.",
+  "reuse_candidates_checked": [
+    "Run 008 — Operations Core v0.1 privacy/retention controls",
+    "Run 008 recovery/replay controls",
+    "Private n8n/PostgreSQL backup procedure",
+    "SAFE Execution Standard v1.0",
+    "Pie Closure CAP-36 Access retention and backup policy"
+  ],
+  "duplication_analysis": "A separate backup team or recovery service would duplicate Run 008 ownership. The bounded extension adds data-class backup rules, restore-drill evidence requirements and fail-closed validation inside existing Run 008.",
+  "residual_unowned_loop": "Backup creation is already proven, but restore requirements and a retained end-to-end restore drill are missing. The remaining loop is to define the restore contract now, then execute one disposable-target private-host restore after the >=2 GB resize without overwriting the source database or exposing secrets.",
+  "covers_paths": [
+    "agent-factory/run-008/"
+  ],
+  "evidence_ref": "https://app.notion.com/p/3b9e161eac8a811fbdf3d9678cc82f69"
+}

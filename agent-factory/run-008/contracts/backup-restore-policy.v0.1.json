@@ -1,0 +1,94 @@
+{
+  "contract": "backup-restore-policy.v0.1",
+  "owner": "OPS-CORE-008",
+  "principles": [
+    "Backups are recovery artifacts, not alternate production stores.",
+    "A restore drill must use a disposable isolated target and must never overwrite the source database.",
+    "Raw secrets are not normal durable data and must not be copied into application backup evidence.",
+    "Backup success is insufficient until restore and integrity verification have retained evidence.",
+    "Restore drills have zero external-action authority."
+  ],
+  "dataClasses": {
+    "PUBLIC": {
+      "backupRequired": false,
+      "maximumRpoHours": 24,
+      "maximumRtoHours": 24,
+      "encryptionRequired": false,
+      "rawSecretAllowed": false
+    },
+    "INTERNAL": {
+      "backupRequired": true,
+      "maximumRpoHours": 24,
+      "maximumRtoHours": 8,
+      "encryptionRequired": true,
+      "rawSecretAllowed": false
+    },
+    "SENSITIVE": {
+      "backupRequired": true,
+      "maximumRpoHours": 24,
+      "maximumRtoHours": 8,
+      "encryptionRequired": true,
+      "rawSecretAllowed": false
+    },
+    "SECRET": {
+      "backupRequired": false,
+      "maximumRpoHours": 0,
+      "maximumRtoHours": 0,
+      "encryptionRequired": true,
+      "rawSecretAllowed": false,
+      "handling": "Store runtime references only in Operations Core. Secret-provider recovery is governed separately; do not embed secret values in database dumps, logs, test fixtures, evidence or Notion."
+    }
+  },
+  "backupArtifactRequirements": [
+    "backupId",
+    "createdAt",
+    "sourceSystem",
+    "sourceVersion",
+    "sha256",
+    "sizeBytes",
+    "dataClass",
+    "encryptionAtRest",
+    "retentionUntil",
+    "operator"
+  ],
+  "restoreDrillRequirements": {
+    "targetMustBeDisposable": true,
+    "targetMustDifferFromSource": true,
+    "externalActionsAllowed": false,
+    "requiredEvidence": [
+      "drillId",
+      "backupId",
+      "backupSha256",
+      "sourceId",
+      "restoreTargetId",
+      "startedAt",
+      "completedAt",
+      "restoreSucceeded",
+      "integrityChecks",
+      "secretExposureDetected",
+      "externalActionsPerformed",
+      "operator",
+      "evidenceRef"
+    ],
+    "minimumIntegrityChecks": [
+      "SCHEMA_PRESENT",
+      "ROW_OR_OBJECT_COUNTS_RECONCILED",
+      "CRITICAL_READ_MODEL_QUERY_PASSED",
+      "APPLICATION_STATE_PRESENT"
+    ]
+  },
+  "n8nPostgresProfile": {
+    "source": "private non-production PostgreSQL backing n8n and Operations Core",
+    "backupFormat": "compressed PostgreSQL dump produced by the approved backup procedure",
+    "restoreTarget": "disposable isolated PostgreSQL database/container",
+    "mustVerify": [
+      "database restore completes",
+      "Run 008 schema/read models are queryable where present",
+      "n8n persistent application state is present where included in the source backup",
+      "backup checksum matches retained evidence",
+      "no outbound connectors, schedules or external actions are enabled during drill",
+      "no raw credential values are written to evidence"
+    ],
+    "encryptionKeyRule": "n8n encryption-key recovery must be proven by secure runtime reference/owner procedure; the key itself must not be stored in this contract, repository, Notion evidence or database dump metadata."
+  }
+}
