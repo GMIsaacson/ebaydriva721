@@ -52,6 +52,71 @@ test('heartbeat fails closed on invalid input', () => {
   assert.equal(result.status, 'FAILED');
 });
 
+test('connected source with fresh non-secret health metadata is healthy', () => {
+  const result = runtime.sourceHealthStatus({
+    sourceId:'github',
+    connectionState:'CONNECTED',
+    credentialRef:'secret-store://github/app',
+    metadata:{
+      healthCheckedAt:'2026-08-18T14:00:00.000Z',
+      credentialReviewAt:'2026-08-18T14:00:00.000Z',
+      credentialExpiresAt:'2026-10-18T14:00:00.000Z'
+    }
+  }, { asOf:'2026-08-18T15:00:00.000Z' });
+  assert.deepEqual(result, { status:'HEALTHY', reasons:[] });
+  assert.equal(JSON.stringify(result).includes('secret-store://github/app'), false);
+});
+
+test('degraded or stale source is attention without leaking credential reference', () => {
+  const result = runtime.sourceHealthStatus({
+    connectionState:'DEGRADED',
+    credentialRef:'secret-store://provider/token',
+    metadata:{ healthCheckedAt:'2026-08-16T12:00:00.000Z', credentialReviewAt:'2026-08-18T12:00:00.000Z' }
+  }, { asOf:'2026-08-18T15:00:00.000Z', maxHealthAgeHours:24 });
+  assert.equal(result.status, 'ATTENTION');
+  assert.ok(result.reasons.includes('SOURCE_DEGRADED'));
+  assert.ok(result.reasons.includes('HEALTH_CHECK_STALE'));
+  assert.equal(JSON.stringify(result).includes('secret-store://provider/token'), false);
+});
+
+test('credential reference without review metadata needs attention', () => {
+  const result = runtime.sourceHealthStatus({
+    connectionState:'CONNECTED',
+    credentialRef:'secret-store://provider/token',
+    metadata:{ healthCheckedAt:'2026-08-18T14:00:00.000Z' }
+  }, { asOf:'2026-08-18T15:00:00.000Z' });
+  assert.equal(result.status, 'ATTENTION');
+  assert.ok(result.reasons.includes('CREDENTIAL_REVIEW_MISSING_OR_INVALID'));
+});
+
+test('expired credential metadata is critical', () => {
+  const result = runtime.sourceHealthStatus({
+    connectionState:'CONNECTED',
+    credentialRef:'secret-store://provider/token',
+    metadata:{
+      healthCheckedAt:'2026-08-18T14:00:00.000Z',
+      credentialReviewAt:'2026-08-18T14:00:00.000Z',
+      credentialExpiresAt:'2026-08-18T14:30:00.000Z'
+    }
+  }, { asOf:'2026-08-18T15:00:00.000Z' });
+  assert.equal(result.status, 'CRITICAL');
+  assert.ok(result.reasons.includes('CREDENTIAL_EXPIRED'));
+});
+
+test('credential nearing expiry is attention', () => {
+  const result = runtime.sourceHealthStatus({
+    connectionState:'CONNECTED',
+    credentialRef:'secret-store://provider/token',
+    metadata:{
+      healthCheckedAt:'2026-08-18T14:00:00.000Z',
+      credentialReviewAt:'2026-08-18T14:00:00.000Z',
+      credentialExpiresAt:'2026-08-25T15:00:00.000Z'
+    }
+  }, { asOf:'2026-08-18T15:00:00.000Z', credentialWarningDays:14 });
+  assert.equal(result.status, 'ATTENTION');
+  assert.ok(result.reasons.includes('CREDENTIAL_EXPIRING_SOON'));
+});
+
 test('external action preflight denies missing approval', () => {
   const result = runtime.preflightAction({ actionId:'sms-1', idempotencyKey:'idem-1', estimatedCostCents:1, external:true, authorityContext:{ mode:'EXTERNAL_WRITE_GATED', externalActionAuthorized:false, approvalRef:null, costCeilingCents:5 } });
   assert.equal(result.allowed, false);
