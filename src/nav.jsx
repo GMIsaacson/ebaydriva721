@@ -12,9 +12,7 @@ const Nav = () => {
 
   useEffect(() => {
     const handleOutsideClick = (event) => {
-      if (accountRef.current && !accountRef.current.contains(event.target)) {
-        setAccountOpen(false);
-      }
+      if (accountRef.current && !accountRef.current.contains(event.target)) setAccountOpen(false);
     };
     document.addEventListener("mousedown", handleOutsideClick);
     return () => document.removeEventListener("mousedown", handleOutsideClick);
@@ -58,6 +56,7 @@ const Nav = () => {
           <div className="ds-nav-links">
             {currentUser && (
               <>
+                <NavLink className={navClass} to="/sourcing" onClick={closeMenus}>Sourcing</NavLink>
                 <NavLink className={navClass} to="/products" onClick={closeMenus}>Products</NavLink>
                 <NavLink className={navClass} to="/dashboard" onClick={closeMenus}>Dashboard</NavLink>
               </>
