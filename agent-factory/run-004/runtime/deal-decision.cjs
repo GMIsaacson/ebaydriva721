@@ -3,6 +3,7 @@
 const { calculateEconomics } = require('./economics.cjs');
 
 const DEFAULT_SHIPPING_MAX_AGE_HOURS = 72;
+const DEFAULT_MARKETPLACE_MAX_AGE_HOURS = 72;
 
 function requireSafeInteger(value, field, min = 0) {
   if (!Number.isSafeInteger(value) || value < min) throw new Error(`${field} must be a safe integer >= ${min}`);
@@ -67,8 +68,13 @@ function buildDealDecision({
   decisionPolicy,
   at = new Date().toISOString(),
   shippingMaxAgeHours = DEFAULT_SHIPPING_MAX_AGE_HOURS,
+  marketplaceMaxAgeHours = DEFAULT_MARKETPLACE_MAX_AGE_HOURS,
 } = {}) {
   if (!candidate || typeof candidate !== 'object') throw new Error('candidate is required');
+  if (!Number.isFinite(Date.parse(at))) throw new Error('evaluation time must be valid ISO date-time');
+  if (!Number.isFinite(marketplaceMaxAgeHours) || marketplaceMaxAgeHours <= 0 || marketplaceMaxAgeHours > 168) {
+    throw new Error('marketplaceMaxAgeHours must be > 0 and <= 168');
+  }
   if (!marketplaceVerification || marketplaceVerification.status !== 'VERIFIED') {
     return Object.freeze({
       status: 'BLOCKED',
@@ -80,6 +86,17 @@ function buildDealDecision({
     });
   }
   if (marketplaceVerification.candidateId !== candidate.candidateId) throw new Error('marketplace verification candidate does not match candidate');
+  const verification = marketplaceVerification.verification;
+  if (!verification || !Number.isFinite(Date.parse(verification.verifiedAt))) {
+    return Object.freeze({ status: 'INCOMPLETE', decision: null, reason: 'marketplace verification timestamp is missing', candidateId: candidate.candidateId, externalActions: 0, spendingCents: 0 });
+  }
+  const marketplaceAgeHours = (Date.parse(at) - Date.parse(verification.verifiedAt)) / 3600000;
+  if (marketplaceAgeHours < 0) {
+    return Object.freeze({ status: 'REVIEW', decision: null, reason: 'marketplace verification timestamp is in the future', candidateId: candidate.candidateId, marketplaceAgeHours, externalActions: 0, spendingCents: 0 });
+  }
+  if (marketplaceAgeHours > marketplaceMaxAgeHours) {
+    return Object.freeze({ status: 'REVIEW', decision: null, reason: 'marketplace verification is stale at decision time', candidateId: candidate.candidateId, marketplaceAgeHours, externalActions: 0, spendingCents: 0 });
+  }
 
   const policy = validateDecisionPolicy(decisionPolicy);
   const qty = requireSafeInteger(saleUnitQuantity, 'saleUnitQuantity', 1);
@@ -110,7 +127,6 @@ function buildDealDecision({
     });
   }
 
-  const verification = marketplaceVerification.verification;
   const itemSalePriceCents = requireSafeInteger(verification.avgSoldPriceCents, 'avgSoldPriceCents', 1);
   const buyerShippingCollectedCents = verification.avgShippingCents === null || verification.avgShippingCents === undefined
     ? 0
@@ -170,6 +186,7 @@ function buildDealDecision({
     shipping,
     economics,
     soldPer30Days: marketplaceVerification.soldPer30Days,
+    marketplaceAgeHours,
     decisionPolicy: policy,
     externalActions: 0,
     machineFetches: 0,
@@ -179,6 +196,7 @@ function buildDealDecision({
 }
 
 module.exports = {
+  DEFAULT_MARKETPLACE_MAX_AGE_HOURS,
   DEFAULT_SHIPPING_MAX_AGE_HOURS,
   buildDealDecision,
   conservativeShippingQuote,
