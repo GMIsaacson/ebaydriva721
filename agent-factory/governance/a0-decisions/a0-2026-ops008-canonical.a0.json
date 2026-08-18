@@ -1,0 +1,21 @@
+{
+  "decision_id": "A0-2026-OPS008-CANONICAL",
+  "status": "PASS",
+  "verdict": "EXTEND",
+  "owner": "Aberdeen Technologies",
+  "decided_at": "2026-08-18",
+  "business_outcome": "Canonicalize the already-registered Run 008 Operations Core implementation on master so Pie Closure can apply version-controlled migrations and prove shared operations controls without deploying from an unrelated draft branch.",
+  "existing_owner_scan": "Checked Aberdeen Master Operating System, Capability Register, Agent Team Factory, Run 008 Operations Core, Run 006 Subscription Operations, SAFE controls, Factory Agent & Workflow Registry, and current master source. Run 008 already owns the shared operations-core boundary; no new team, service, database owner, or control center is required.",
+  "reuse_candidates_checked": [
+    "Run 008 — Operations Core v0.1",
+    "Run 006 — Subscription Operations Team compatibility adapter",
+    "Aberdeen Master Operating System six-layer/48-capability architecture",
+    "SAFE execution and evidence controls"
+  ],
+  "duplication_analysis": "REUSE is the architectural decision: the existing Run 008 capability remains the owner. EXTEND is used only because the A0 repository guard treats adding the previously branch-only run-008 structural paths to master as a protected structural extension. The change copies the tested Run 008 implementation into canonical source and creates no duplicate operational capability.",
+  "residual_unowned_loop": "Canonical master currently lacks the source-controlled Run 008 implementation, leaving private-host migrations and future recovery/decision/heartbeat proofs dependent on a stacked draft branch. The bounded residual loop is canonical source promotion and subsequent private-host validation of that existing implementation.",
+  "covers_paths": [
+    "agent-factory/run-008/"
+  ],
+  "evidence_ref": "https://app.notion.com/p/3c0e161eac8a81f7b198d0aedf5eb60b"
+}
