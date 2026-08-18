@@ -1,0 +1,16 @@
+{
+  "firestore": {
+    "rules": "agent-factory/run-004/firestore/firestore.sourcing.emulator.rules",
+    "indexes": "agent-factory/run-004/firestore/firestore.g4.indexes.json"
+  },
+  "emulators": {
+    "firestore": {
+      "host": "127.0.0.1",
+      "port": 8087
+    },
+    "ui": {
+      "enabled": false
+    },
+    "singleProjectMode": true
+  }
+}
