@@ -16,6 +16,39 @@ function classifyRecovery({ failureType, external = false, outcomeKnown = true }
   return { mode:'HUMAN_REVIEW', reason:'UNCLASSIFIED_FAILURE' };
 }
 
+const RUN_CONTROL_STATES = new Set(['RUNNING', 'PAUSED', 'KILLED']);
+
+function evaluateRunControl(control) {
+  const reasons = [];
+  if (!control || typeof control !== 'object' || Array.isArray(control)) {
+    return { allowed:false, state:'UNKNOWN', reasons:['MISSING_RUNTIME_CONTROL'] };
+  }
+  if (!RUN_CONTROL_STATES.has(control.state)) reasons.push('INVALID_CONTROL_STATE');
+  if (!control.controlRef || typeof control.controlRef !== 'string') reasons.push('MISSING_CONTROL_REF');
+  if (control.state === 'PAUSED') reasons.push('RUNTIME_PAUSED');
+  if (control.state === 'KILLED') reasons.push('KILL_SWITCH_ACTIVE');
+  return { allowed: reasons.length === 0, state: RUN_CONTROL_STATES.has(control.state) ? control.state : 'UNKNOWN', reasons };
+}
+
+function planRollback(input) {
+  const reasons = [];
+  if (!input || typeof input !== 'object' || Array.isArray(input)) return { allowed:false, reasons:['INVALID_ROLLBACK_REQUEST'] };
+  const { currentVersion, targetVersion, lastKnownGoodVersion, reason, evidenceRef } = input;
+  if (!currentVersion) reasons.push('MISSING_CURRENT_VERSION');
+  if (!targetVersion) reasons.push('MISSING_TARGET_VERSION');
+  if (!lastKnownGoodVersion) reasons.push('MISSING_LAST_KNOWN_GOOD_VERSION');
+  if (!reason) reasons.push('MISSING_ROLLBACK_REASON');
+  if (!evidenceRef) reasons.push('MISSING_EVIDENCE_REF');
+  if (currentVersion && targetVersion && currentVersion === targetVersion) reasons.push('TARGET_EQUALS_CURRENT_VERSION');
+  if (targetVersion && lastKnownGoodVersion && targetVersion !== lastKnownGoodVersion) reasons.push('TARGET_NOT_LAST_KNOWN_GOOD');
+  return {
+    allowed: reasons.length === 0,
+    currentVersion: currentVersion || null,
+    targetVersion: targetVersion || null,
+    reasons
+  };
+}
+
 function automationValueReview(input) {
   const runs = Number(input?.runs || 0);
   const successfulRuns = Number(input?.successfulRuns || 0);
@@ -43,4 +76,4 @@ function automationValueReview(input) {
   return { runs, successRate, netMinutesSaved, netFinancialValueCents, falseAlertRate, decisionsResolved, recommendation, reasons };
 }
 
-module.exports = { canReplayAction, classifyRecovery, automationValueReview };
+module.exports = { canReplayAction, classifyRecovery, evaluateRunControl, planRollback, automationValueReview };
