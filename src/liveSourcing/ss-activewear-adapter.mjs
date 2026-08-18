@@ -60,10 +60,13 @@ function looksLikeSsActivewear(row) {
 
 /**
  * Converts supplier-provided S&S Product/Data Library rows into DataScout's generic
- * upload shape. It fails closed on the supplier's noeRetailing field:
+ * upload shape. It fails closed on the supplier's NoeRetailing field:
  * - true  => excluded from eBay sourcing
  * - false => eligible for the generic intake pipeline
  * - absent/unparseable => REVIEW, not eligible
+ *
+ * The adapter intentionally does not use S&S case-box dimensions as individual-item
+ * shipping dimensions. Products.xlsx exposes unitWeight, which is mapped as pounds.
  */
 export function adaptSsActivewearDataset({ content, fileName, format, defaultSupplier = "S&S Activewear" } = {}) {
   if (typeof content !== "string") throw new Error("dataset content is required");
@@ -81,10 +84,10 @@ export function adaptSsActivewearDataset({ content, fileName, format, defaultSup
     const rowNumber = index + 2;
     const map = lookupRow(row);
     const sourceSku = text(get(map, "sku"));
-    const restriction = boolean(get(map, "noeRetailing"));
+    const restriction = boolean(get(map, "NoeRetailing", "noeRetailing"));
 
     if (restriction === null) {
-      review.push({ rowNumber, sourceSku: sourceSku || null, reason: "S&S noeRetailing flag is missing or unparseable" });
+      review.push({ rowNumber, sourceSku: sourceSku || null, reason: "S&S NoeRetailing flag is missing or unparseable" });
       return;
     }
     if (restriction === true) {
@@ -98,8 +101,9 @@ export function adaptSsActivewearDataset({ content, fileName, format, defaultSup
     const sizeName = text(get(map, "sizeName"));
     const title = [brand, styleName, colorName, sizeName].filter(Boolean).join(" ") || text(get(map, "title", "name"));
     const customerPrice = get(map, "customerPrice", "customer_price", "salePrice", "sale_price", "piecePrice", "piece_price");
-    const caseQty = positiveInteger(get(map, "caseQty", "case_qty"));
-    const fullCaseOnly = boolean(get(map, "fullCaseOnly", "full_case_only"));
+    const caseQty = positiveInteger(get(map, "CaseQty", "caseQty", "case_qty"));
+    const fullCaseOnly = boolean(get(map, "fullCaseOnly_DS", "full_case_only_ds", "fullCaseOnly", "full_case_only"));
+    const unitWeightLb = get(map, "unitWeight", "unit_weight", "weightLb", "weight_lb");
 
     allowed.push({
       title,
@@ -108,8 +112,9 @@ export function adaptSsActivewearDataset({ content, fileName, format, defaultSup
       upc: text(get(map, "gtin", "upc")),
       brand,
       cost: customerPrice,
-      stock: get(map, "qty", "inventory", "stock"),
+      stock: get(map, "Qty", "qty", "inventory", "stock"),
       moq: fullCaseOnly === true && caseQty ? caseQty : 1,
+      weight_lb: unitWeightLb,
       condition: "New",
       noeRetailing: false,
     });
