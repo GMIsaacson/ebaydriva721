@@ -6,6 +6,7 @@ on:
       - 'agent-factory/run-012/**'
       - 'agent-factory/shared/commercial-lifecycle/**'
       - 'agent-factory/shared/commercial-conversion/**'
+      - 'agent-factory/shared/fulfillment/**'
       - 'package.json'
       - '.github/workflows/run-012-growth-acquisition.yml'
   workflow_dispatch:
@@ -26,8 +27,8 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Validate CCLC, Commercial Conversion, and Run 012 policies
+      - name: Validate CCLC, Conversion, Fulfillment, and Run 012 policies
         run: npm run test:run012
 
-      - name: Validate Run 012 package
+      - name: Validate Run 012 package and connected architecture
         run: npm run validate:run012
