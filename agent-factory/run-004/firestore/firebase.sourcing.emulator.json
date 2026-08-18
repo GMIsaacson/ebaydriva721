@@ -1,7 +1,7 @@
 {
   "firestore": {
-    "rules": "agent-factory/run-004/firestore/firestore.sourcing.emulator.rules",
-    "indexes": "agent-factory/run-004/firestore/firestore.g4.indexes.json"
+    "rules": "firestore.sourcing.emulator.rules",
+    "indexes": "firestore.g4.indexes.json"
   },
   "emulators": {
     "firestore": {
