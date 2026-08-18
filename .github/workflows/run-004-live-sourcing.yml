@@ -5,6 +5,7 @@ on:
     branches: [codex/run-004-live-sourcing-mvp]
     paths:
       - 'agent-factory/run-004/**'
+      - 'api/**'
       - 'src/**'
       - 'package.json'
       - 'package-lock.json'
@@ -12,6 +13,7 @@ on:
   pull_request:
     paths:
       - 'agent-factory/run-004/**'
+      - 'api/**'
       - 'src/**'
       - 'package.json'
       - 'package-lock.json'
@@ -34,6 +36,8 @@ jobs:
       - run: npm ci --ignore-scripts
       - name: Test source access and authorized intake
         run: npm run test:run004:sourcing
+      - name: Validate Vercel public-web endpoint syntax
+        run: node --check api/public-web-precheck.mjs
       - name: Preserve existing Run 004 G4 tests
         run: npm run test:g4
       - name: Build DataScout
