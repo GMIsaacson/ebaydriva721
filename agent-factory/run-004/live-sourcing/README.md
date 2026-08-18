@@ -1,4 +1,4 @@
-# DataScout Live Sourcing MVP — Slices 1–3
+# DataScout Live Sourcing MVP — Slices 1–4
 
 This directory contains the permission-first sourcing foundation for Run `DS-S2M-004`.
 
@@ -18,50 +18,46 @@ Approved modes: `owner_upload`, `manual_verification`, `official_api`, `licensed
 
 DataScout can parse owner-authorized UTF-8 CSV and JSON datasets into one canonical sourcing record without contacting the underlying supplier website.
 
-The intake runtime:
-
-- requires an explicit runtime owner attestation;
-- passes the Source Access Registry before parsing;
-- accepts field aliases for title, supplier, SKU, MPN, UPC/GTIN, brand, source cost, MOQ, availability, weight, dimensions, category, condition, currency, and source URL;
-- stores money as integer cents;
-- creates deterministic candidate IDs and product/offer identity keys;
-- preserves file, row, rights-evidence, uploader, and observed-time provenance;
-- suppresses exact duplicate offers;
-- routes conflicting duplicates to review instead of selecting a value;
-- isolates invalid rows rather than guessing missing economics;
-- is bounded to 5,000 records by default and has acceptance coverage above 500 records;
-- performs zero machine fetches, external actions, or spend.
+The intake runtime requires explicit owner attestation, normalizes common product/cost/stock/shipping fields, stores money as integer cents, creates deterministic IDs/hashes, preserves provenance, suppresses exact duplicates, routes conflicting duplicates to REVIEW, isolates invalid rows, and is bounded to 5,000 records by default. Acceptance coverage includes a 600-record batch.
 
 ## Slice 3 — Deterministic source-side prescreen
 
-Normalized candidates can now be reduced to a bounded marketplace-verification queue before any eBay research occurs.
+Normalized candidates can be reduced to a bounded marketplace-verification queue before any eBay research occurs.
 
-The prescreen:
+The prescreen applies owner cost/outlay caps, stock-vs-MOQ checks, excluded terms, identity-quality controls and source-side completeness scoring. It caps the human verification queue at 100 and defaults to 50. Eligible overflow is DEFERRED rather than falsely rejected. Marketplace demand remains explicitly unknown at this stage.
 
-- keeps the MVP at eBay US / USD;
-- applies owner-controlled source-cost and minimum-order-outlay caps;
-- rejects known stock below MOQ;
-- supports deterministic owner-excluded terms;
-- routes title-only identities to REVIEW rather than asking the operator to verify an ambiguous product;
-- ranks eligible candidates using only source-side completeness and constraints: identity quality, weight/dimensions, availability, cost/outlay headroom, and source evidence;
-- caps the human eBay verification queue at 100 and defaults to 50;
-- marks otherwise eligible overflow candidates DEFERRED rather than pretending they are bad products;
-- explicitly states that marketplace demand is still unknown at this stage;
-- performs zero eBay fetches, machine retrieval, external actions, or spend.
+The scale acceptance case proves 600 eligible normalized records can become 50 VERIFY candidates plus 550 DEFERRED records with zero marketplace retrieval.
 
-The scale acceptance case proves that 600 eligible normalized records can be deterministically bounded to 50 VERIFY candidates with 550 DEFERRED records and no loss disguised as rejection.
+## Slice 4 — Manual eBay verification contract
+
+The bounded queue now has a typed, deterministic path for current eBay evidence gathered by a human operator.
+
+The validator:
+
+- uses the registered `ebay-manual-verification` YELLOW route only;
+- accepts manual eBay Product Research or manual completed-listing observations;
+- requires the verification candidate ID to match the DataScout candidate exactly;
+- requires verifier identity, evidence reference, timestamp and observation window;
+- records units sold, average sold price and optional active-listing, sell-through and average-shipping facts;
+- routes uncertain identity, future timestamps and stale evidence to REVIEW;
+- rejects zero observed sold units rather than inferring demand;
+- marks sold evidence without a usable average sold price INCOMPLETE;
+- derives a deterministic 30-day sold-rate normalization for downstream ranking;
+- performs zero eBay fetches, browser automation, external actions or spend.
+
+The default verification freshness window is 72 hours and can be tightened by the caller. It cannot be expanded beyond seven days.
 
 ## Current architecture
 
-`authorized dataset → Source Access Registry → normalize/dedupe → source-side prescreen → bounded eBay verification queue → [next] verified marketplace facts → deterministic landed economics → BUY/WATCH/REJECT`
+`authorized dataset → Source Access Registry → normalize/dedupe → source-side prescreen → bounded eBay verification queue → manual verified marketplace facts → [next] shipping + landed economics → BUY/WATCH/REJECT`
 
-The existing dashboard bulk-upload UI is **not yet** wired to this governed pipeline. The backend contracts are being proven first so the UI does not become the source of business logic.
+The existing dashboard bulk-upload UI is **not yet** wired to this governed pipeline. Backend contracts are being proven first so UI behavior cannot silently redefine business rules.
 
 ## Safety boundary
 
-Slices 1–3 do not scrape supplier or marketplace sites, automate logged-in sessions, solve CAPTCHAs, rotate proxies, purchase inventory, place bids, publish listings, send messages, or spend money.
+Slices 1–4 do not scrape supplier or marketplace sites, automate logged-in sessions, solve CAPTCHAs, rotate proxies, purchase inventory, place bids, publish listings, send messages, or spend money.
 
-The initial registry contains an owner-authorized upload route, a manual eBay verification route, and a blocked template for unverified machine sources. A real machine source can be added only after the exact API/feed/download rights are reviewed and recorded.
+A real machine source can be added only after the exact API/feed/download rights are reviewed and recorded.
 
 ## Test
 
