@@ -43,7 +43,8 @@
     "demo:run006": "node agent-factory/run-006/scripts/run-demo.cjs",
     "test:cclc": "node --test agent-factory/shared/commercial-lifecycle/cclc.test.cjs",
     "test:conversion": "node --test agent-factory/shared/commercial-conversion/conversion.test.cjs",
-    "test:run012": "node --test agent-factory/shared/commercial-lifecycle/cclc.test.cjs agent-factory/shared/commercial-conversion/conversion.test.cjs agent-factory/run-012/tests/policy.test.cjs agent-factory/run-012/tests/g4-workflow.test.cjs",
+    "test:fulfillment": "node --test agent-factory/shared/fulfillment/fulfillment.test.cjs",
+    "test:run012": "node --test agent-factory/shared/commercial-lifecycle/cclc.test.cjs agent-factory/shared/commercial-conversion/conversion.test.cjs agent-factory/shared/fulfillment/fulfillment.test.cjs agent-factory/run-012/tests/policy.test.cjs agent-factory/run-012/tests/g4-workflow.test.cjs",
     "validate:run012": "node agent-factory/run-012/scripts/validate-package.cjs",
     "demo:run012": "node agent-factory/run-012/scripts/run-demo.cjs"
   },
