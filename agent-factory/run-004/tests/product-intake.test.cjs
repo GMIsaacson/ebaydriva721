@@ -47,9 +47,38 @@ test('normalizes JSON aliases into the canonical intake record', () => {
   assert.equal(result.records[0].weightOz, 24);
   assert.equal(result.records[0].moq, 2);
   assert.equal(result.records[0].identityConfidence, 'HIGH');
+  assert.equal(result.records[0].eRetailingProhibited, null);
   assert.match(result.records[0].candidateId, /^DSC-[a-f0-9]{20}$/);
   assert.equal(result.machineFetches, 0);
   assert.equal(result.externalActions, 0);
+});
+
+test('normalizes S&S-style product fields and captures the mill e-retailing restriction', () => {
+  const result = ingestAuthorizedDataset({
+    ...base,
+    fileName: 'ss-products.json',
+    format: 'json',
+    defaultSupplier: 'S&S Activewear',
+    content: JSON.stringify([{
+      sku: '00760-00001-00',
+      gtin: '00880723038404',
+      brandName: 'Gildan',
+      styleName: '2000 Ultra Cotton Tee',
+      colorName: 'Black',
+      sizeName: 'L',
+      customerPrice: '3.72',
+      qty: 238,
+      noeRetailing: true,
+    }]),
+  });
+  assert.equal(result.acceptedCount, 1);
+  assert.equal(result.records[0].supplier, 'S&S Activewear');
+  assert.equal(result.records[0].title, 'Gildan 2000 Ultra Cotton Tee Black L');
+  assert.equal(result.records[0].upc, '00880723038404');
+  assert.equal(result.records[0].unitCostCents, 372);
+  assert.equal(result.records[0].availableQuantity, 238);
+  assert.equal(result.records[0].identityConfidence, 'HIGH');
+  assert.equal(result.records[0].eRetailingProhibited, true);
 });
 
 test('parses CSV and uses a default supplier when supplied by intake metadata', () => {
