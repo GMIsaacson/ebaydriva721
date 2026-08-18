@@ -2,9 +2,15 @@ import React, { useMemo, useState } from "react";
 import { useAuth } from "../AuthProvider";
 import { ingestBrowserDataset } from "./browser-core.mjs";
 import { prescreenBrowserCandidates } from "./prescreen-v2.mjs";
+import { assessBrowserPublicWebCompetitivePrice } from "./public-web-precheck.mjs";
 import { adaptSsActivewearDataset } from "./ss-activewear-adapter.mjs";
 import CandidateVerificationPanel from "./CandidateVerificationPanel";
 import "./sourcing-workspace.css";
+
+const PUBLIC_WEB_PRECHECK_URL = "https://qxbstimgqkzqzzezwijw.supabase.co/functions/v1/datascout-public-web-precheck";
+const PUBLIC_WEB_BATCH_LIMIT = 10;
+const PUBLIC_WEB_BATCH_MAX_COST_USD = 0.05;
+const PUBLIC_WEB_MIN_PROFIT_CENTS = 1500;
 
 const dollarsToCents = (value, field) => {
   const number = Number(value);
@@ -45,6 +51,14 @@ const enrichSupplierEvidence = (records, adapted) => records.map((record) => {
   };
 });
 
+const webStatusLabel = (assessment) => {
+  if (!assessment) return "Not checked";
+  if (assessment.status === "GROSS_PROFIT_IMPOSSIBLE") return "DEFER WEB PRICE";
+  if (assessment.status === "PRICE_RISK") return "PRICE RISK";
+  if (assessment.status === "PLAUSIBLE") return "PLAUSIBLE";
+  return "NO EXACT PRICE";
+};
+
 const SourcingWorkspace = () => {
   const { currentUser } = useAuth();
   const [file, setFile] = useState(null);
@@ -60,8 +74,15 @@ const SourcingWorkspace = () => {
   const [prescreen, setPrescreen] = useState(null);
   const [supplierAdapter, setSupplierAdapter] = useState(null);
   const [selectedCandidate, setSelectedCandidate] = useState(null);
+  const [publicWebRunning, setPublicWebRunning] = useState(false);
+  const [publicWebError, setPublicWebError] = useState("");
+  const [publicWebResults, setPublicWebResults] = useState({});
+  const [publicWebMeta, setPublicWebMeta] = useState(null);
 
   const queue = prescreen?.verificationQueue || [];
+  const webDeferredCount = Object.values(publicWebResults).filter((result) => result?.action === "DEFER_WEB_PRICE").length;
+  const webCheckedCount = Object.keys(publicWebResults).length;
+
   const summary = useMemo(() => {
     if (!intake || !prescreen) return null;
     const supplierRestricted = supplierAdapter?.detected ? supplierAdapter.prohibitedCount : 0;
@@ -82,6 +103,9 @@ const SourcingWorkspace = () => {
     setPrescreen(null);
     setSupplierAdapter(null);
     setSelectedCandidate(null);
+    setPublicWebResults({});
+    setPublicWebMeta(null);
+    setPublicWebError("");
     setError("");
   };
 
@@ -94,6 +118,9 @@ const SourcingWorkspace = () => {
   const buildQueue = async () => {
     setError("");
     setSelectedCandidate(null);
+    setPublicWebResults({});
+    setPublicWebMeta(null);
+    setPublicWebError("");
     if (!file) {
       setError("Choose an owner-authorized CSV or JSON product dataset first.");
       return;
@@ -145,19 +172,66 @@ const SourcingWorkspace = () => {
     }
   };
 
+  const runPublicWebPrecheck = async () => {
+    setPublicWebError("");
+    setPublicWebRunning(true);
+    try {
+      if (!currentUser) throw new Error("Sign in to DataScout before running paid public-web checks.");
+      const exactCandidates = queue.filter((item) => item.record?.upc || item.record?.mpn).slice(0, PUBLIC_WEB_BATCH_LIMIT);
+      if (!exactCandidates.length) throw new Error("No queued candidates have a GTIN/UPC or MPN suitable for exact-match automated price checks.");
+      const token = await currentUser.getIdToken();
+      const response = await fetch(PUBLIC_WEB_PRECHECK_URL, {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          approvedMaxCostUsd: PUBLIC_WEB_BATCH_MAX_COST_USD,
+          candidates: exactCandidates.map((item) => ({
+            candidateId: item.candidateId,
+            title: item.record.title,
+            brand: item.record.brand,
+            mpn: item.record.mpn,
+            upc: item.record.upc,
+            packQuantity: item.record.packQuantity,
+            unitCostCents: item.record.unitCostCents,
+          })),
+        }),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.error || payload.status || `Public-web precheck failed (${response.status}).`);
+
+      const nextResults = {};
+      for (const check of payload.checks || []) {
+        const queued = queue.find((item) => item.candidateId === check.candidateId);
+        if (!queued) continue;
+        nextResults[check.candidateId] = assessBrowserPublicWebCompetitivePrice({
+          candidate: queued.record,
+          evidence: check.evidence || [],
+          minProfitCents: PUBLIC_WEB_MIN_PROFIT_CENTS,
+        });
+      }
+      setPublicWebResults(nextResults);
+      setPublicWebMeta({ estimatedCostUsd: payload.estimatedCostUsd, actualSearchRequests: payload.actualSearchRequests, provider: payload.provider });
+    } catch (runError) {
+      console.error("Public-web competitive-price precheck failed:", runError);
+      setPublicWebError(runError.message || "The public-web precheck could not be completed.");
+    } finally {
+      setPublicWebRunning(false);
+    }
+  };
+
   return (
     <main className="ds-page ds-sourcing-page">
       <header className="ds-sourcing-hero">
         <div>
           <p className="ds-sourcing-eyebrow">LIVE SOURCING MVP · OWNER-UPLOAD MODE</p>
           <h1>Find eBay opportunities without scraping suppliers or eBay</h1>
-          <p>Load product data you are authorized to use. DataScout normalizes it, applies supplier restrictions and source-side constraints, ranks research priority, builds a bounded manual eBay verification queue, and calculates evidence-backed BUY / WATCH / REJECT decisions.</p>
+          <p>Load product data you are authorized to use. DataScout normalizes it, applies supplier restrictions and source-side constraints, ranks research priority, optionally checks public-web competitive prices, builds a bounded manual eBay verification queue, and calculates evidence-backed BUY / WATCH / REJECT decisions.</p>
         </div>
         <div className="ds-sourcing-safety">
           <strong>Permission-safe mode</strong>
-          <span>0 automated marketplace fetches</span>
+          <span>0 automated eBay fetches</span>
           <span>0 purchases or listings</span>
-          <span>Local session only</span>
+          <span>Public-web search only when approved</span>
         </div>
       </header>
 
@@ -216,11 +290,27 @@ const SourcingWorkspace = () => {
             <p><strong>Opportunity Score</strong> ranks how worthwhile a product is to research using supplier-side evidence only. <strong>Evidence Confidence</strong> separately measures how complete that evidence is. Supplier retail price is a research proxy only—not an assumed eBay selling price and not a BUY recommendation.</p>
           </section>
 
+          <section className="ds-panel ds-sourcing-summary">
+            <div className="ds-sourcing-section-head">
+              <div>
+                <h2 className="ds-section-title">1.5 Public-web competitive-price precheck</h2>
+                <p className="ds-section-copy">Checks up to the top 10 exact-identity candidates through a search API. It does not scrape eBay or retailer pages and cannot establish sold demand.</p>
+              </div>
+              <span className="ds-sourcing-badge">GREEN · search API</span>
+            </div>
+            <p>One click authorizes up to <strong>$0.05</strong> for this batch (10 searches maximum). A candidate is auto-deferred only when at least two independent exact-match price sources agree closely enough and the gross spread is already below the working $15 minimum profit <em>before</em> fees, shipping, packaging and risk reserve.</p>
+            {publicWebError && <div className="ds-sourcing-alert ds-sourcing-alert-error">{publicWebError}</div>}
+            {publicWebMeta && <p><strong>{webCheckedCount}</strong> checked · <strong>{webDeferredCount}</strong> web-price defer(s) · estimated search cost ${Number(publicWebMeta.estimatedCostUsd || 0).toFixed(2)} · {publicWebMeta.provider}</p>}
+            <div className="ds-sourcing-actions">
+              <button className="ds-button ds-button-primary" type="button" disabled={publicWebRunning || !queue.length} onClick={runPublicWebPrecheck}>{publicWebRunning ? "Checking public prices…" : "Precheck top 10 · max $0.05"}</button>
+            </div>
+          </section>
+
           <section className="ds-panel ds-sourcing-queue">
             <div className="ds-sourcing-section-head">
               <div>
                 <h2 className="ds-section-title">2. eBay verification queue</h2>
-                <p className="ds-section-copy">Ranked only from authorized supplier-side evidence. Verify exact marketplace facts manually, then run the deterministic landed-economics decision.</p>
+                <p className="ds-section-copy">Ranked from authorized supplier-side evidence. Public-web price evidence can eliminate obvious margin failures; exact eBay demand still requires manual Product Research.</p>
               </div>
               <span className="ds-sourcing-badge ds-sourcing-badge-yellow">YELLOW · manual verification</span>
             </div>
@@ -228,23 +318,28 @@ const SourcingWorkspace = () => {
             {queue.length === 0 ? <div className="ds-empty">No candidates qualified for the manual eBay verification queue.</div> : (
               <div className="ds-sourcing-table-wrap">
                 <table className="ds-sourcing-table">
-                  <thead><tr><th>Rank</th><th>Candidate</th><th>Supplier</th><th>Source cost</th><th>MOQ / outlay</th><th>Identity</th><th>Opportunity</th><th>Evidence</th><th>Supplier retail proxy</th><th>Source</th><th>Next</th></tr></thead>
+                  <thead><tr><th>Rank</th><th>Candidate</th><th>Supplier</th><th>Source cost</th><th>MOQ / outlay</th><th>Identity</th><th>Opportunity</th><th>Evidence</th><th>Supplier retail proxy</th><th>Web precheck</th><th>Source</th><th>Next</th></tr></thead>
                   <tbody>
-                    {queue.map((item) => (
-                      <tr key={item.candidateId} className={selectedCandidate?.candidateId === item.candidateId ? "selected" : ""}>
-                        <td><strong>#{item.verificationRank}</strong></td>
-                        <td><strong>{item.title}</strong><small>{item.candidateId}</small></td>
-                        <td>{item.supplier}</td>
-                        <td>{money(item.unitCostCents)}</td>
-                        <td><strong>MOQ {item.moq}</strong><small>{money(item.initialOutlayCents)} · {item.record.moqEvidence || "UNVERIFIED"}</small></td>
-                        <td><span className={`ds-sourcing-confidence ${item.record.identityConfidence.toLowerCase()}`}>{item.record.identityConfidence}</span><small>{item.identityBasis}</small></td>
-                        <td><strong>{item.opportunityScore}/100</strong><small>{item.warnings?.length ? item.warnings.join(" · ") : "strong supplier-side research priority"}</small></td>
-                        <td><strong>{item.evidenceConfidence}/100</strong><small>{item.evidenceWarnings?.length ? item.evidenceWarnings.slice(0, 2).join(" · ") : "source evidence complete"}</small></td>
-                        <td><strong>{money(item.supplierRetailPriceCents)}</strong><small>{Number.isFinite(item.supplierGrossSpreadCents) ? `gross proxy spread ${money(item.supplierGrossSpreadCents)}` : "not supplied"}</small></td>
-                        <td>{item.record.sourceUrl ? <a href={item.record.sourceUrl} target="_blank" rel="noopener noreferrer">Open source ↗</a> : <span className="ds-muted">Upload row {item.record.provenance?.rowNumber || "—"}</span>}</td>
-                        <td><button className="ds-button ds-button-secondary ds-sourcing-verify-button" type="button" onClick={() => setSelectedCandidate(item.record)}>Verify</button></td>
-                      </tr>
-                    ))}
+                    {queue.map((item) => {
+                      const web = publicWebResults[item.candidateId];
+                      const blocked = web?.action === "DEFER_WEB_PRICE";
+                      return (
+                        <tr key={item.candidateId} className={selectedCandidate?.candidateId === item.candidateId ? "selected" : ""}>
+                          <td><strong>#{item.verificationRank}</strong></td>
+                          <td><strong>{item.title}</strong><small>{item.candidateId}</small></td>
+                          <td>{item.supplier}</td>
+                          <td>{money(item.unitCostCents)}</td>
+                          <td><strong>MOQ {item.moq}</strong><small>{money(item.initialOutlayCents)} · {item.record.moqEvidence || "UNVERIFIED"}</small></td>
+                          <td><span className={`ds-sourcing-confidence ${item.record.identityConfidence.toLowerCase()}`}>{item.record.identityConfidence}</span><small>{item.identityBasis}</small></td>
+                          <td><strong>{item.opportunityScore}/100</strong><small>{item.warnings?.length ? item.warnings.join(" · ") : "strong supplier-side research priority"}</small></td>
+                          <td><strong>{item.evidenceConfidence}/100</strong><small>{item.evidenceWarnings?.length ? item.evidenceWarnings.slice(0, 2).join(" · ") : "source evidence complete"}</small></td>
+                          <td><strong>{money(item.supplierRetailPriceCents)}</strong><small>{Number.isFinite(item.supplierGrossSpreadCents) ? `gross proxy spread ${money(item.supplierGrossSpreadCents)}` : "not supplied"}</small></td>
+                          <td><strong>{webStatusLabel(web)}</strong><small>{web ? `${money(web.competitivePriceCents)} observed · ceiling ${money(web.grossSpreadCeilingCents)}` : "optional before eBay research"}</small></td>
+                          <td>{item.record.sourceUrl ? <a href={item.record.sourceUrl} target="_blank" rel="noopener noreferrer">Open source ↗</a> : <span className="ds-muted">Upload row {item.record.provenance?.rowNumber || "—"}</span>}</td>
+                          <td><button className="ds-button ds-button-secondary ds-sourcing-verify-button" type="button" disabled={blocked} title={blocked ? web.reason : "Open manual eBay verification"} onClick={() => setSelectedCandidate(item.record)}>{blocked ? "Deferred" : "Verify"}</button></td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
