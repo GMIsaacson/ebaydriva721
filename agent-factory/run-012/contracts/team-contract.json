@@ -103,8 +103,10 @@
     {"min":40,"max":59,"route":"NURTURE"},
     {"min":0,"max":39,"route":"IGNORE"}
   ],
+  "gateTarget": "B0_ARCHITECTURE_RECONCILIATION",
   "currentGate": "B0_ARCHITECTURE_RECONCILIATION",
   "priorG3EvidencePreserved": true,
+  "externalActionsDuringG3": 0,
   "g4PromotionBlockedUntilRevalidation": true,
   "spendAuthorityUsd": 0
 }
