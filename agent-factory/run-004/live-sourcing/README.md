@@ -40,11 +40,11 @@ Actual `Products.xlsx` evidence:
 - Core identity/offer fields include `sku`, `gtin`, `brandName`, `styleName`, `colorName`, `sizeName`, `CaseQty`, `unitWeight`, `MAPPrice`, `RetailPrice`, `piecePrice`, `casePrice`, `salePrice`, `customerPrice`, `Qty`, warehouse activity/quantity fields, `fullCaseOnly_DS`, `Returnable`, `NoeRetailing`, case-box dimensions and drop-ship/quality flags.
 - `NoeRetailing=false`: 185,712 rows; `NoeRetailing=true`: 10,431 rows.
 - Positive aggregate `Qty`: 109,392 rows.
-- 92,687 rows are in stock, non-full-case, priced at $100 or less, and not blocked by the S&S `NoeRetailing` flag. This is a source-side pool only; it is not a claim that the products may be sold or will be profitable on eBay.
+- 92,687 rows are in stock, non-full-case, priced at $100 or less, and are not blocked by the S&S `NoeRetailing` flag. This is only a source-side candidate pool; it is **not** a claim that any item is permitted for sale on eBay or that any item is profitable.
 
 The S&S adapter is aligned to the actual workbook names. `fullCaseOnly_DS=true` uses `CaseQty` as MOQ; `unitWeight` is mapped as pounds; S&S case-box dimensions are deliberately not treated as individual-item shipping dimensions. `NoeRetailing=true` is blocked before marketplace verification. `false` means only that this particular supplier flag does not block the row; all other supplier/mill/marketplace/product restrictions still apply independently.
 
-A deterministic 5,000-row pilot sample has been prepared from the owner-supplied file: 4,500 active/not-flagged rows plus controlled samples of e-retailing-prohibited, out-of-stock and full-case rows so the real-data run exercises compliance and rejection controls as well as positive candidates.
+A deterministic 5,000-row pilot sample has been prepared from the owner-supplied file: 4,500 active/not-flagged rows plus controlled samples of e-retailing-prohibited, out-of-stock and full-case rows so the real-data run exercises compliance and rejection controls as well as positive candidates. The private supplier dataset and pilot sample are not committed to GitHub.
 
 ## Current architecture
 `authorized dataset → access/restriction gate → normalize/dedupe → prescreen → bounded manual eBay verification → fresh fees/shipping → authoritative economics → BUY/WATCH/REJECT`
