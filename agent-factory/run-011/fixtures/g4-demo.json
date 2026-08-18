@@ -1,0 +1,56 @@
+{
+  "runId": "OPP-INTEL-011",
+  "gate": "G4",
+  "workflowId": "WF-OIT-011-G4-001",
+  "workflowVersion": "1.0.0",
+  "boundaryContract": "B0-OIT-011-v1.0",
+  "control": {
+    "manualOnly": true,
+    "scheduleEnabled": false,
+    "webhookEnabled": false,
+    "maxExternalActions": 0,
+    "maxCanonicalPortfolioWrites": 0,
+    "maxPaidToolCostUsd": 0,
+    "maxAiCalls": 0,
+    "retryOnUnknownOutcome": false
+  },
+  "requestedActions": [],
+  "candidates": [
+    {
+      "candidateId": "OIT-001",
+      "source": {"registryId": "SRC-KOERNER-YT", "status": "Active"},
+      "evidenceRefs": ["EV-OIT-001-A", "EV-OIT-001-B"],
+      "supportingSourceCount": 2,
+      "factsAssumptionsSeparated": true,
+      "ratings": {"speedToRevenue":5,"strategicFit":5,"automationPotential":5,"evidenceStrength":4,"revenuePotential":5,"executionEffort":2,"asyncOperability":3,"defensibility":4},
+      "claimedScore": 92,
+      "duplicateDisposition": "Unique",
+      "fatalRisk": false,
+      "nextTest": "Test paid async assessment with a narrow SMB ICP."
+    },
+    {
+      "candidateId": "OIT-006",
+      "source": {"registryId": "SRC-KOERNER-POD", "status": "Active"},
+      "evidenceRefs": ["EV-OIT-006-A"],
+      "supportingSourceCount": 1,
+      "factsAssumptionsSeparated": true,
+      "ratings": {"speedToRevenue":4,"strategicFit":5,"automationPotential":4,"evidenceStrength":4,"revenuePotential":4,"executionEffort":3,"asyncOperability":4,"defensibility":4},
+      "claimedScore": 81,
+      "duplicateDisposition": "Duplicate",
+      "fatalRisk": false,
+      "nextTest": "Use evidence in existing DataScout liquidation workstream."
+    },
+    {
+      "candidateId": "OIT-007",
+      "source": {"registryId": "SRC-KOERNER-POD", "status": "Active"},
+      "evidenceRefs": ["EV-OIT-007-A"],
+      "supportingSourceCount": 1,
+      "factsAssumptionsSeparated": true,
+      "ratings": {"speedToRevenue":3,"strategicFit":4,"automationPotential":4,"evidenceStrength":4,"revenuePotential":5,"executionEffort":3,"asyncOperability":4,"defensibility":4},
+      "claimedScore": 77,
+      "duplicateDisposition": "Unique",
+      "fatalRisk": false,
+      "nextTest": "Model one niche and city before building a rank-and-rent asset."
+    }
+  ]
+}
