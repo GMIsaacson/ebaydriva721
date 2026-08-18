@@ -38,6 +38,13 @@ jobs:
         run: npm run test:g4
       - name: Build DataScout
         run: npm run build
+      - name: Retain tested preview build
+        uses: actions/upload-artifact@v4
+        with:
+          name: datascout-live-sourcing-preview-dist
+          path: dist/
+          if-no-files-found: error
+          retention-days: 7
 
   sourcing-firestore-emulator:
     name: Sourcing Firestore security rules
