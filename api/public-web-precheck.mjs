@@ -7,6 +7,7 @@ const AI_GATEWAY_URL = 'https://ai-gateway.vercel.sh/v1/responses';
 const MODEL = 'openai/gpt-5.6-luna';
 const MAX_CANDIDATES = 10;
 const SEARCH_TOOL_COST_USD = 0.01;
+const CONSERVATIVE_PER_CANDIDATE_CEILING_USD = 0.015;
 const MAX_BATCH_APPROVAL_USD = 0.15;
 const MAX_OUTPUT_TOKENS = 900;
 
@@ -201,27 +202,38 @@ export default async function handler(req, res) {
     const candidates = (Array.isArray(body.candidates) ? body.candidates : []).map(normalizeCandidate);
     if (!candidates.length || candidates.length > MAX_CANDIDATES) return send(res, 400, { error: `candidates must contain 1-${MAX_CANDIDATES} items` });
     const approvedMaxCostUsd = Number(body.approvedMaxCostUsd || 0);
-    const conservativeBatchCeilingUsd = Number((candidates.length * 0.015).toFixed(3));
-    if (!Number.isFinite(approvedMaxCostUsd) || approvedMaxCostUsd < conservativeBatchCeilingUsd || approvedMaxCostUsd > MAX_BATCH_APPROVAL_USD) {
+    if (!Number.isFinite(approvedMaxCostUsd) || approvedMaxCostUsd <= 0 || approvedMaxCostUsd > MAX_BATCH_APPROVAL_USD) {
       return send(res, 402, {
         status: 'COST_APPROVAL_REQUIRED',
-        conservativeBatchCeilingUsd,
         maxAllowedApprovalUsd: MAX_BATCH_APPROVAL_USD,
-        searchToolFloorUsd: Number((candidates.length * SEARCH_TOOL_COST_USD).toFixed(2)),
-        note: 'Ceiling includes a small token-cost allowance; actual AI Gateway usage is metered by Vercel.'
+        conservativePerCandidateCeilingUsd: CONSERVATIVE_PER_CANDIDATE_CEILING_USD
       });
     }
+    const affordableCount = Math.min(candidates.length, Math.floor((approvedMaxCostUsd + 1e-9) / CONSERVATIVE_PER_CANDIDATE_CEILING_USD));
+    if (affordableCount < 1) {
+      return send(res, 402, {
+        status: 'COST_APPROVAL_REQUIRED',
+        approvedMaxCostUsd,
+        minimumApprovalUsd: CONSERVATIVE_PER_CANDIDATE_CEILING_USD
+      });
+    }
+    const candidatesToSearch = candidates.slice(0, affordableCount);
+    const conservativeBatchCeilingUsd = Number((candidatesToSearch.length * CONSERVATIVE_PER_CANDIDATE_CEILING_USD).toFixed(3));
     const oidcToken = process.env.VERCEL_OIDC_TOKEN;
     if (!oidcToken) return send(res, 503, { error: 'Vercel OIDC token is unavailable; deploy this endpoint through a Vercel project with OIDC enabled.' });
 
     const checks = [];
-    for (const candidate of candidates) checks.push(await searchCandidate(candidate, oidcToken));
+    for (const candidate of candidatesToSearch) checks.push(await searchCandidate(candidate, oidcToken));
     return send(res, 200, {
       schemaVersion: '2.0.0',
       provider: 'vercel-ai-gateway/openai-web-search',
       authenticatedUid: user.sub,
+      approvedMaxCostUsd,
+      estimatedCostUsd: conservativeBatchCeilingUsd,
       conservativeBatchCeilingUsd,
+      requestedCandidates: candidates.length,
       actualSearchRequests: checks.length,
+      remainingUnsearchedCandidates: candidates.length - checks.length,
       checks,
       directPublisherFetches: 0,
       ebayAutomatedFetches: 0,
