@@ -61,9 +61,12 @@ function looksLikeSsActivewear(row) {
 /**
  * Converts supplier-provided S&S Product/Data Library rows into DataScout's generic
  * upload shape. It fails closed on the supplier's NoeRetailing field:
- * - true  => excluded from eBay sourcing
- * - false => eligible for the generic intake pipeline
+ * - true  => excluded from the eBay research queue
+ * - false => not blocked by this supplier flag; continue through other controls
  * - absent/unparseable => REVIEW, not eligible
+ *
+ * A false NoeRetailing value is not treated as blanket permission to sell; other
+ * supplier, mill, marketplace, product and account restrictions remain independently applicable.
  *
  * The adapter intentionally does not use S&S case-box dimensions as individual-item
  * shipping dimensions. Products.xlsx exposes unitWeight, which is mapped as pounds.
