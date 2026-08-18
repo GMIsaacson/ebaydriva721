@@ -1,0 +1,31 @@
+name: Run 010 G5 AP Recovery Shadow
+
+on:
+  pull_request:
+    paths:
+      - 'agent-factory/run-010/**'
+      - '.github/workflows/run-010-g5.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  g5-shadow:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Run heterogeneous shadow benchmark
+        run: node agent-factory/run-010/tests/g5-shadow.cjs
+      - name: Run D0 downstream readiness acceptance
+        run: |
+          node -e "JSON.parse(require('fs').readFileSync('agent-factory/run-010/contracts/d0-recovery-review-handoff.schema.json','utf8')); console.log('D0 schema: PASS')"
+          node agent-factory/run-010/tests/d0-downstream-readiness.test.cjs
+      - name: Verify shadow authority ceiling
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -R -q "INTERNAL_REVIEW_ONLY" agent-factory/run-010/runtime
+          ! grep -R -E "sendMail\(|createPaymentIntent\(|checkout\.sessions\.create\(|accounting\.write\(|scheduleTrigger\(" agent-factory/run-010/runtime agent-factory/run-010/tests

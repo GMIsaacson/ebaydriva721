@@ -1,0 +1,27 @@
+name: Run 010 G4 AP Recovery Implementation
+
+on:
+  pull_request:
+    paths:
+      - 'agent-factory/run-010/**'
+      - '.github/workflows/run-010-g4.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  g4-implementation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Run deterministic G4 acceptance tests
+        run: node agent-factory/run-010/tests/g4-acceptance.cjs
+      - name: Verify internal-only authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -R -q "INTERNAL_REVIEW_ONLY" agent-factory/run-010/runtime agent-factory/run-010/tests
+          ! grep -R -E "sendMail\(|createPaymentIntent\(|checkout\.sessions\.create\(|accounting\.write\(|scheduleTrigger\(" agent-factory/run-010/runtime agent-factory/run-010/tests
