@@ -38,3 +38,28 @@ jobs:
         run: npm run test:g4
       - name: Build DataScout
         run: npm run build
+
+  sourcing-firestore-emulator:
+    name: Sourcing Firestore security rules
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - run: npm ci --ignore-scripts
+      - name: Install emulator test tooling without changing the lockfile
+        run: npm install --no-save --ignore-scripts @firebase/rules-unit-testing@3.0.3
+      - name: Execute sourcing data-plane allow and deny cases
+        run: |
+          npx --yes firebase-tools@13.29.2 emulators:exec \
+            --config agent-factory/run-004/firestore/firebase.sourcing.emulator.json \
+            --project demo-datascout-sourcing \
+            --only firestore \
+            "node --test agent-factory/run-004/tests/sourcing-firestore-rules.test.cjs"
