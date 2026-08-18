@@ -5,9 +5,11 @@ on:
   pull_request:
     paths:
       - "agent-factory/run-006/connectors/**"
+      - "agent-factory/run-006/coverage/**"
+      - "agent-factory/run-006/alerts/**"
       - "agent-factory/run-006/postgres/**"
       - "agent-factory/run-006/n8n/run-006-g6-*.workflow.json"
-      - "agent-factory/run-006/tests/g6-connectors.test.cjs"
+      - "agent-factory/run-006/tests/**"
       - "package.json"
       - ".github/workflows/run-006-g6-connectors.yml"
 
