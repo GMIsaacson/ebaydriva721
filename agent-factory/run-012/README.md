@@ -8,14 +8,21 @@ Run 012 builds a governed multi-channel demand and client-acquisition component 
 
 Run 012 is **Demand & Acquisition only**. It does not own final commercial scope, payment verification, onboarding, production, QA, client delivery, support, refunds, retention or customer-success obligations.
 
-The required downstream endpoint is the typed `qualified_opportunity_v1` handoff into the reusable Commercial Conversion capability.
+The required downstream endpoint is the typed `qualified_opportunity_v1` handoff into `COMM-CONV-001-v1.0`, the reusable Commercial Conversion capability. `Pipeline & Reply Coordinator` is the receiver owner.
 
-Prior G3/G4-artifact evidence is preserved, but G4 promotion is blocked until the B0 amendment and affected G2/G3 revalidation are complete.
+## P1/P2 status
+
+- **P1 CCLC-001 v1.0:** COMPLETE at contract/package level.
+- **P2 COMM-CONV-001 v1.0:** COMPLETE at contract/runtime/simulation-validation level.
+- Run 012 handoff contract v1.2 explicitly binds `qualified_opportunity_v1` to `COMM-CONV-001-v1.0`.
+- GitHub Actions Run 012 validation #4 passed the combined CCLC + Commercial Conversion + Run 012 policy suite and package validation.
+- Run 012 returns to **G3 revalidated**. G4 is eligible for later reconsideration but is not promoted by this change.
+- Whole-commercial-system next step is **P3 Fulfillment reuse**.
 
 ## Contract
 
 - Run ID: GROWTH-ACQ-012
-- Current gate: B0 architecture reconciliation
+- Current gate: G3 revalidated after architecture correction
 - Primary KPI: revenue attributable to acquisition, measured from verified downstream feedback
 - Direct operating KPIs: qualified opportunities, pipeline value, reply rate, handoff acceptance rate, CAC, profile visits and channel ROI
 - Vanity metrics: followers and impressions are diagnostic only
@@ -44,7 +51,12 @@ Prior G3/G4-artifact evidence is preserved, but G4 promotion is blocked until th
 
 ## Canonical flow
 
-Research -> Content/Prospecting -> Engagement Opportunity -> Lead Detection -> Qualification -> Draft First-Touch Action -> Owner Approval -> External First Touch -> Reply/Pre-Conversion Qualification -> `qualified_opportunity_v1` -> Commercial Conversion
+Research -> Content/Prospecting -> Engagement Opportunity -> Lead Detection -> Qualification -> Draft First-Touch Action -> Owner Approval -> External First Touch -> Reply/Pre-Conversion Qualification -> `qualified_opportunity_v1` -> `COMM-CONV-001-v1.0`
+
+Commercial Conversion must explicitly return either:
+
+- `conversion_acceptance_v1` — ownership moves to Pipeline & Reply Coordinator at CCLC state `CONVERSION_ACTIVE`.
+- `conversion_rejection_v1` — ownership returns to Run 012 with typed remediation reasons.
 
 Downstream verified feedback returns separately:
 
@@ -81,6 +93,14 @@ Routes:
 
 A high score never grants sending authority. It only changes review priority.
 
+## Commercial Conversion receiver rule
+
+`COMM-CONV-001-v1.0` accepts only valid HOT_REVIEW/WARM_QUEUE handoffs with required buyer identity, need, evidence, communication state, provenance and idempotency data. Low-score/NURTURE, opt-out, missing-evidence and duplicate/replay inputs fail closed.
+
+ProposalScope drafts are versioned and cryptographically hashed. A proposal can become eligible for separate external execution only when an exact owner permit matches proposal ID, version and hash and is unexpired. The module itself still sends nothing.
+
+Commercial acceptance must match the exact proposal ID/version/hash and authoritative acceptance evidence. Acceptance never proves payment and cannot mark money collected.
+
 ## Initial operating priority
 
 For first revenue, the team's default effort allocation is:
@@ -93,14 +113,23 @@ For first revenue, the team's default effort allocation is:
 
 This is a starting allocation, not a permanent rule. Growth Analyst may recommend changes only from measured channel economics.
 
-## B0 amendment requirements before G4 reconsideration
+## G3 revalidation evidence
 
-1. Version `qualified_opportunity_v1` and its reject/remediation path.
-2. Define canonical Lead and Opportunity ownership fields.
-3. Prove the downstream Commercial Conversion receiver can accept the handoff without ambiguity.
-4. Remove any code/test assumption that Run 012 owns sale, payment, fulfillment or customer success.
-5. Re-run affected G2/G3 structural, boundary, duplicate, stale-state and failure tests.
-6. Keep all external actions fail-closed throughout revalidation.
+GitHub Actions **Run 012 growth acquisition validation #4** passed:
+
+1. CCLC shared-contract tests.
+2. COMM-CONV-001 receiver, rejection, replay, proposal-hash, permit, and commercial-acceptance tests.
+3. Run 012 scoring/authority policy tests.
+4. Historical inactive G4 workflow zero-authority boundary tests.
+5. Run 012 package validation including CCLC and Commercial Conversion bindings.
+
+The immediately preceding run had 29/30 passing and failed only because an older CCLC assertion searched for the literal phrase `accept or reject`; the upgraded contract used typed `conversion_acceptance_v1` / `conversion_rejection_v1` outputs. The test was corrected to validate the stronger typed receiver semantics, then CI passed.
+
+## Next architecture step
+
+**P3 Fulfillment reuse:** adapt Client Readiness + Client Delivery / Job Control + independent QA + Delivery Control to accept `commercial_acceptance_v1` and produce `delivered_engagement_v1`, using one synthetic service-specific Production Adapter.
+
+Run 012 G4 may be reconsidered separately, but is not promoted by P2.
 
 ## Not authorized
 
