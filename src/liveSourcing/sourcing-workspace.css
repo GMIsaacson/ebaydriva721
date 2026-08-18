@@ -1,0 +1,107 @@
+.ds-sourcing-page { display: grid; gap: 18px; }
+
+.ds-sourcing-hero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 28px;
+  padding: 8px 2px 4px;
+}
+.ds-sourcing-hero h1 {
+  max-width: 850px;
+  margin: 6px 0 10px;
+  color: var(--ds-navy-950);
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  line-height: 1.04;
+  letter-spacing: -.045em;
+}
+.ds-sourcing-hero p { max-width: 850px; margin: 0; color: var(--ds-text-muted); line-height: 1.65; }
+.ds-sourcing-eyebrow { color: var(--ds-blue-600) !important; font-size: .76rem; font-weight: 800; letter-spacing: .08em; }
+.ds-sourcing-safety {
+  min-width: 240px;
+  display: grid;
+  gap: 7px;
+  padding: 16px;
+  border: 1px solid #b9e1d0;
+  border-radius: var(--ds-radius-md);
+  background: #f2fbf7;
+  color: #176646;
+  font-size: .82rem;
+}
+.ds-sourcing-safety strong { font-size: .95rem; color: #10573b; }
+
+.ds-sourcing-intake, .ds-sourcing-queue, .ds-sourcing-summary { padding: 20px; }
+.ds-sourcing-section-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 18px; }
+.ds-sourcing-badge {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  padding: 6px 9px;
+  border-radius: 999px;
+  background: #eaf8f1;
+  color: var(--ds-success);
+  font-size: .7rem;
+  font-weight: 800;
+  letter-spacing: .04em;
+}
+.ds-sourcing-badge-yellow { background: #fff7df; color: #8d6515; }
+.ds-sourcing-form-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 15px; }
+.ds-sourcing-form-grid label { min-width: 0; }
+.ds-sourcing-file-field input[type="file"] {
+  width: 100%;
+  min-height: 42px;
+  padding: 8px;
+  border: 1px dashed #bfc7d8;
+  border-radius: var(--ds-radius-sm);
+  background: var(--ds-surface-subtle);
+}
+.ds-sourcing-file-field small { display: block; margin-top: 5px; color: var(--ds-text-muted); }
+.ds-sourcing-attestation { display: flex; align-items: flex-start; gap: 9px; margin-top: 18px; color: var(--ds-text); font-size: .9rem; }
+.ds-sourcing-attestation input { margin-top: 3px; }
+.ds-sourcing-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+.ds-sourcing-actions .ds-button:disabled { opacity: .6; cursor: wait; transform: none; }
+.ds-sourcing-alert { margin-top: 16px; padding: 12px 14px; border-radius: var(--ds-radius-sm); font-size: .88rem; }
+.ds-sourcing-alert-error { background: #fff3f3; border: 1px solid #f0c9cc; color: var(--ds-danger); }
+.ds-sourcing-kpis { margin-top: 2px; }
+
+.ds-sourcing-summary-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.ds-sourcing-summary-row > div { padding: 12px; border-radius: var(--ds-radius-sm); background: var(--ds-surface-subtle); }
+.ds-sourcing-summary-row strong { display: block; color: var(--ds-navy-950); font-size: 1.25rem; }
+.ds-sourcing-summary-row span { display: block; margin-top: 3px; color: var(--ds-text-muted); font-size: .78rem; }
+.ds-sourcing-summary p { margin: 14px 0 0; color: var(--ds-text-muted); font-size: .88rem; line-height: 1.55; }
+
+.ds-sourcing-table-wrap { width: 100%; overflow-x: auto; }
+.ds-sourcing-table { width: 100%; border-collapse: collapse; min-width: 980px; }
+.ds-sourcing-table th {
+  padding: 10px 9px;
+  border-bottom: 1px solid var(--ds-border);
+  color: var(--ds-text-muted);
+  font-size: .72rem;
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: .045em;
+}
+.ds-sourcing-table td { padding: 13px 9px; border-bottom: 1px solid #edf0f5; font-size: .84rem; vertical-align: top; }
+.ds-sourcing-table tr:last-child td { border-bottom: 0; }
+.ds-sourcing-table td small { display: block; max-width: 260px; margin-top: 4px; color: var(--ds-text-muted); font-size: .7rem; line-height: 1.4; }
+.ds-sourcing-table a { color: var(--ds-blue-600); font-weight: 700; text-decoration: none; }
+.ds-sourcing-table a:hover { text-decoration: underline; }
+.ds-sourcing-confidence { display: inline-flex; padding: 4px 7px; border-radius: 999px; font-size: .68rem; font-weight: 800; }
+.ds-sourcing-confidence.high { color: var(--ds-success); background: #eaf8f1; }
+.ds-sourcing-confidence.medium { color: var(--ds-warning); background: #fff7df; }
+.ds-sourcing-confidence.low { color: var(--ds-danger); background: #fff3f3; }
+
+@media (max-width: 900px) {
+  .ds-sourcing-hero { display: grid; }
+  .ds-sourcing-safety { min-width: 0; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .ds-sourcing-safety strong { grid-column: 1 / -1; }
+  .ds-sourcing-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 640px) {
+  .ds-sourcing-hero h1 { font-size: 2rem; }
+  .ds-sourcing-safety, .ds-sourcing-form-grid, .ds-sourcing-summary-row { grid-template-columns: 1fr; }
+  .ds-sourcing-section-head { display: grid; }
+  .ds-sourcing-badge { justify-self: start; }
+  .ds-sourcing-intake, .ds-sourcing-queue, .ds-sourcing-summary { padding: 15px; }
+}
