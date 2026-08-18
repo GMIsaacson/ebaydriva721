@@ -86,6 +86,7 @@ function scoreCandidate(record, policy) {
 function evaluateCandidate(record, policy) {
   if (!record || typeof record !== 'object') return { disposition: 'REJECT', reason: 'record is invalid' };
   if (record.schemaVersion !== '1.0.0') return { disposition: 'REJECT', reason: 'unsupported intake schema' };
+  if (record.eRetailingProhibited === true) return { disposition: 'REJECT', reason: 'supplier/mill prohibits e-retailing on marketplaces including eBay' };
   if (record.currency !== policy.currency) return { disposition: 'REJECT', reason: `currency ${record.currency || 'unknown'} is outside the USD MVP` };
   if (!Number.isSafeInteger(record.unitCostCents) || record.unitCostCents < 0) return { disposition: 'REJECT', reason: 'source cost is invalid' };
   if (!Number.isSafeInteger(record.moq) || record.moq < 1) return { disposition: 'REJECT', reason: 'MOQ is invalid' };
