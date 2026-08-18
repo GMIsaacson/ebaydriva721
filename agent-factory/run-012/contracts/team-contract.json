@@ -2,6 +2,7 @@
   "runId": "GROWTH-ACQ-012",
   "name": "Growth & Client Acquisition Team",
   "architectureRef": "A0-COMM-001-v1.0",
+  "cclcRef": "CCLC-001-v1.0",
   "mission": "Generate qualified commercial opportunities from X, LinkedIn, Upwork/Contra, Reddit and YouTube using evidence-backed content, prospecting and qualification while keeping consequential external actions owner-approved.",
   "primaryKpi": "attributed_revenue_usd",
   "secondaryKpis": [
@@ -46,7 +47,8 @@
     ]
   },
   "downstreamHandoff": "qualified_opportunity_v1",
-  "downstreamOwner": "Commercial Conversion capability",
+  "downstreamReceiverContract": "COMM-CONV-001-v1.0",
+  "downstreamOwner": "Pipeline & Reply Coordinator",
   "feedbackInputs": ["verified_revenue_outcome_v1", "verified_success_outcome_v1"],
   "agents": [
     {"id":"GCA-LEAD-012","name":"Growth Lead / Orchestrator","role":"prioritization_handoffs_briefing"},
@@ -103,10 +105,11 @@
     {"min":40,"max":59,"route":"NURTURE"},
     {"min":0,"max":39,"route":"IGNORE"}
   ],
-  "gateTarget": "B0_ARCHITECTURE_RECONCILIATION",
-  "currentGate": "B0_ARCHITECTURE_RECONCILIATION",
+  "currentGate": "G3_REVALIDATED",
+  "gateTarget": "G4_NONPRODUCTION_RECONSIDERATION",
   "priorG3EvidencePreserved": true,
+  "p2CommercialConversionValidated": true,
   "externalActionsDuringG3": 0,
-  "g4PromotionBlockedUntilRevalidation": true,
+  "g4Promoted": false,
   "spendAuthorityUsd": 0
 }
