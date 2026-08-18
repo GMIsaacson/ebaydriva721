@@ -1,4 +1,4 @@
-# DataScout Live Sourcing MVP — Slices 1–4
+# DataScout Live Sourcing MVP — Slices 1–5
 
 This directory contains the permission-first sourcing foundation for Run `DS-S2M-004`.
 
@@ -30,32 +30,41 @@ The scale acceptance case proves 600 eligible normalized records can become 50 V
 
 ## Slice 4 — Manual eBay verification contract
 
-The bounded queue now has a typed, deterministic path for current eBay evidence gathered by a human operator.
+The bounded queue has a typed path for current eBay evidence gathered by a human operator. It accepts manual Product Research/completed-listing observations, enforces candidate identity and freshness, records sold-price/demand facts with evidence provenance, rejects zero sold evidence, and performs zero automated eBay retrieval.
 
-The validator:
+The default marketplace-evidence freshness window is 72 hours and cannot be expanded beyond seven days.
 
-- uses the registered `ebay-manual-verification` YELLOW route only;
-- accepts manual eBay Product Research or manual completed-listing observations;
-- requires the verification candidate ID to match the DataScout candidate exactly;
-- requires verifier identity, evidence reference, timestamp and observation window;
-- records units sold, average sold price and optional active-listing, sell-through and average-shipping facts;
-- routes uncertain identity, future timestamps and stale evidence to REVIEW;
-- rejects zero observed sold units rather than inferring demand;
-- marks sold evidence without a usable average sold price INCOMPLETE;
-- derives a deterministic 30-day sold-rate normalization for downstream ranking;
-- performs zero eBay fetches, browser automation, external actions or spend.
+## Slice 5 — Shipping, authoritative economics and deal decision
 
-The default verification freshness window is 72 hours and can be tightened by the caller. It cannot be expanded beyond seven days.
+A VERIFIED candidate can now be converted into a deterministic **BUY / WATCH / REJECT** decision without hard-coded marketplace assumptions.
+
+The deal decision:
+
+- rechecks marketplace-evidence freshness at decision time so a previously VERIFIED object cannot be reused after it becomes stale;
+- allocates source-pack cost to the exact quantity sold on eBay;
+- requires explicit current inbound freight and packaging inputs;
+- requires marketplace fee percentage, fixed fee and an evidence reference instead of relying on the legacy hard-coded eBay/PayPal calculator;
+- accepts one or more shipping quotes with timestamp/evidence and uses the conservative maximum as modeled outbound postage;
+- rejects stale/future shipping evidence and caps shipping-evidence freshness at seven days;
+- treats observed buyer shipping charges as collected revenue when present, while actual outbound postage remains a separate cost;
+- applies an explicit risk-reserve rate;
+- delegates authoritative profit, margin, ROI and break-even to `datascout-landed-economics/1.0.0`;
+- requires owner-defined BUY thresholds for profit, ROI, margin and normalized 30-day sales rate;
+- returns **BUY** only when every threshold passes, **WATCH** for positive economics below one or more BUY thresholds, and **REJECT** for non-positive landed economics;
+- returns BLOCKED / REVIEW / INCOMPLETE rather than guessing when required evidence is missing or stale;
+- performs zero marketplace fetches, machine retrieval, purchases, listings, external actions or spend.
+
+The acceptance fixture proves pack-cost allocation, conservative shipping, BUY/WATCH/REJECT branching, fee-provenance requirements, stale-market/stale-shipping controls and preservation of the existing deterministic economics engine.
 
 ## Current architecture
 
-`authorized dataset → Source Access Registry → normalize/dedupe → source-side prescreen → bounded eBay verification queue → manual verified marketplace facts → [next] shipping + landed economics → BUY/WATCH/REJECT`
+`authorized dataset → Source Access Registry → normalize/dedupe → source-side prescreen → bounded eBay verification queue → manual verified marketplace facts → shipping + authoritative landed economics → BUY/WATCH/REJECT`
 
-The existing dashboard bulk-upload UI is **not yet** wired to this governed pipeline. Backend contracts are being proven first so UI behavior cannot silently redefine business rules.
+The backend decision path is now complete. The next slice is application/data-plane integration: expose this governed workflow through DataScout without duplicating business logic in the React client, then persist the sourcing run/queue/results under reviewed Firestore rules and perform a real authorized 500+ record end-to-end acceptance.
 
 ## Safety boundary
 
-Slices 1–4 do not scrape supplier or marketplace sites, automate logged-in sessions, solve CAPTCHAs, rotate proxies, purchase inventory, place bids, publish listings, send messages, or spend money.
+Slices 1–5 do not scrape supplier or marketplace sites, automate logged-in sessions, solve CAPTCHAs, rotate proxies, purchase inventory, place bids, publish listings, send messages, or spend money.
 
 A real machine source can be added only after the exact API/feed/download rights are reviewed and recorded.
 
