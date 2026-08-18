@@ -22,7 +22,7 @@ permissions:
   contents: read
 
 jobs:
-  source-access-slice:
+  sourcing-mvp:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -32,8 +32,8 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci --ignore-scripts
-      - name: Test Source Access Registry
-        run: node --test agent-factory/run-004/tests/source-access.test.cjs
+      - name: Test source access and authorized intake
+        run: npm run test:run004:sourcing
       - name: Preserve existing Run 004 G4 tests
         run: npm run test:g4
       - name: Build DataScout
