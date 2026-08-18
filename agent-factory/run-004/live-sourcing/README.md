@@ -1,6 +1,6 @@
-# DataScout Live Sourcing MVP — Slices 1–2
+# DataScout Live Sourcing MVP — Slices 1–3
 
-This directory contains the permission-first foundation for Run `DS-S2M-004`.
+This directory contains the permission-first sourcing foundation for Run `DS-S2M-004`.
 
 ## Slice 1 — Source Access Registry
 
@@ -16,7 +16,7 @@ Approved modes: `owner_upload`, `manual_verification`, `official_api`, `licensed
 
 ## Slice 2 — Authorized product-data intake
 
-DataScout can now parse owner-authorized UTF-8 CSV and JSON datasets into one canonical sourcing record without contacting the underlying supplier website.
+DataScout can parse owner-authorized UTF-8 CSV and JSON datasets into one canonical sourcing record without contacting the underlying supplier website.
 
 The intake runtime:
 
@@ -32,11 +32,34 @@ The intake runtime:
 - is bounded to 5,000 records by default and has acceptance coverage above 500 records;
 - performs zero machine fetches, external actions, or spend.
 
-This is the backend intake contract. The existing dashboard bulk-upload UI is **not yet** promoted to this new governed pipeline; wiring the UI to this runtime is a later slice after the backend contract is green.
+## Slice 3 — Deterministic source-side prescreen
+
+Normalized candidates can now be reduced to a bounded marketplace-verification queue before any eBay research occurs.
+
+The prescreen:
+
+- keeps the MVP at eBay US / USD;
+- applies owner-controlled source-cost and minimum-order-outlay caps;
+- rejects known stock below MOQ;
+- supports deterministic owner-excluded terms;
+- routes title-only identities to REVIEW rather than asking the operator to verify an ambiguous product;
+- ranks eligible candidates using only source-side completeness and constraints: identity quality, weight/dimensions, availability, cost/outlay headroom, and source evidence;
+- caps the human eBay verification queue at 100 and defaults to 50;
+- marks otherwise eligible overflow candidates DEFERRED rather than pretending they are bad products;
+- explicitly states that marketplace demand is still unknown at this stage;
+- performs zero eBay fetches, machine retrieval, external actions, or spend.
+
+The scale acceptance case proves that 600 eligible normalized records can be deterministically bounded to 50 VERIFY candidates with 550 DEFERRED records and no loss disguised as rejection.
+
+## Current architecture
+
+`authorized dataset → Source Access Registry → normalize/dedupe → source-side prescreen → bounded eBay verification queue → [next] verified marketplace facts → deterministic landed economics → BUY/WATCH/REJECT`
+
+The existing dashboard bulk-upload UI is **not yet** wired to this governed pipeline. The backend contracts are being proven first so the UI does not become the source of business logic.
 
 ## Safety boundary
 
-Slices 1–2 do not scrape supplier or marketplace sites, automate logged-in sessions, solve CAPTCHAs, rotate proxies, purchase inventory, place bids, publish listings, send messages, or spend money.
+Slices 1–3 do not scrape supplier or marketplace sites, automate logged-in sessions, solve CAPTCHAs, rotate proxies, purchase inventory, place bids, publish listings, send messages, or spend money.
 
 The initial registry contains an owner-authorized upload route, a manual eBay verification route, and a blocked template for unverified machine sources. A real machine source can be added only after the exact API/feed/download rights are reviewed and recorded.
 
