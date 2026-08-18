@@ -37,7 +37,12 @@
     "run:g5": "node agent-factory/run-004/scripts/run-g5-shadow.cjs",
     "test:run005": "node --test agent-factory/run-005/tests/pilot.test.cjs",
     "validate:run005": "node agent-factory/run-005/scripts/validate-package.cjs",
-    "preflight:run005": "node agent-factory/run-005/scripts/run-preflight.cjs"
+    "preflight:run005": "node agent-factory/run-005/scripts/run-preflight.cjs",
+    "test:run006": "node --test agent-factory/run-006/tests/runtime.test.cjs agent-factory/run-006/tests/firestore-rules.test.cjs",
+    "test:run006:g6": "node --test agent-factory/run-006/tests/g6-connectors.test.cjs agent-factory/run-006/tests/owner-briefing-policy.test.cjs agent-factory/run-006/tests/sms-alert-policy.test.cjs agent-factory/run-006/tests/account-coverage-registry.test.cjs",
+    "validate:run006": "node agent-factory/run-006/scripts/validate-package.cjs",
+    "demo:run006": "node agent-factory/run-006/scripts/run-demo.cjs",
+    "test:run008": "node --test agent-factory/run-008/tests/contracts-v0.1.test.cjs agent-factory/run-008/tests/runtime-v0.1.test.cjs agent-factory/run-008/tests/decision-notification.test.cjs agent-factory/run-008/tests/durable-decision-inbox.test.cjs agent-factory/run-008/tests/dependency-privacy.test.cjs agent-factory/run-008/tests/recovery-value.test.cjs"
   },
   "browserslist": [
     ">0.2%",

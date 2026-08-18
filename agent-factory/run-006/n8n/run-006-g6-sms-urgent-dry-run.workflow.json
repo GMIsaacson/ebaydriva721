@@ -1,0 +1,50 @@
+{
+  "name": "Run 006 - G6 SMS Urgent Alert Dry Run",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger",
+      "name": "Manual Trigger Only",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [260, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const allowed = new Set(['PAYMENT_FAILED','ACCOUNT_SECURITY_ANOMALY','CANCELLATION_DEADLINE_3D','RENEWAL_3D_HIGH_RISK','UNEXPECTED_HIGH_CHARGE']);\nreturn items.map((item) => {\n  const e = item.json || {};\n  if (!allowed.has(e.ruleId)) throw new Error('SMS alert rule not allowed');\n  if (e.severity !== 'URGENT') throw new Error('SMS requires URGENT severity');\n  const vendor = String(e.vendor || e.service || 'Subscription').slice(0,80);\n  const reason = String(e.summary || e.reason || e.ruleId).slice(0,130);\n  const detail = String(e.deadline || e.amount || '').slice(0,45);\n  let message = `Subscription Ops: ${vendor} — ${reason}${detail ? ` (${detail})` : ''}. Review required. No action was taken.`;\n  if (message.length > 320) message = message.slice(0,298) + ' No action was taken.';\n  return { json: { mode:'DRY_RUN', ruleId:e.ruleId, severity:'URGENT', recipient:'FIXED_OWNER_NUMBER_RUNTIME_ONLY', message, sendAuthorized:false, externalActions:0 } };\n});"
+      },
+      "id": "validate-format",
+      "name": "Validate And Format Urgent SMS",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [520, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(i => ({json:{...i.json, result:'DRY_RUN_ONLY', provider:'Twilio', sent:false, costCents:0}}));"
+      },
+      "id": "dry-run-result",
+      "name": "Dry Run Result - No Twilio Call",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [780, 300]
+    }
+  ],
+  "connections": {
+    "Manual Trigger Only": {"main":[[{"node":"Validate And Format Urgent SMS","type":"main","index":0}]]},
+    "Validate And Format Urgent SMS": {"main":[[{"node":"Dry Run Result - No Twilio Call","type":"main","index":0}]]}
+  },
+  "settings": {"executionOrder":"v1"},
+  "meta": {
+    "runId":"SUB-OPS-006",
+    "gate":"G6-SMS-PREP",
+    "dryRunOnly":true,
+    "scheduleEnabled":false,
+    "webhookEnabled":false,
+    "twilioNodePresent":false,
+    "credentialsBound":false,
+    "externalActions":0,
+    "spendCents":0
+  }
+}

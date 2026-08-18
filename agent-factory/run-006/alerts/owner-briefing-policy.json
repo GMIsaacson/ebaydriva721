@@ -1,0 +1,150 @@
+{
+  "policyId": "SUB-OPS-006-OWNER-BRIEFING-V1",
+  "version": "1.1.0",
+  "purpose": "Minimize owner interruption while ensuring time-sensitive subscription, billing, account, and renewal risks are surfaced early enough for a human decision.",
+  "defaultBehavior": "SILENT",
+  "authority": {
+    "mayNotifyOwner": true,
+    "mayRecommend": true,
+    "mayTakeVendorAction": false,
+    "mayChangeSubscription": false,
+    "mayChangePaymentMethod": false,
+    "maySpend": false
+  },
+  "channels": {
+    "immediate": "CHATGPT_NOTIFICATION",
+    "dailyBrief": "CHATGPT_NOTIFICATION",
+    "noFinding": "NO_MESSAGE",
+    "activationState": "DEFINED_NOT_SCHEDULED",
+    "activationGate": "G6 owner approval required before recurring ChatGPT tasks are created or enabled"
+  },
+  "chatgptDelivery": {
+    "urgentMode": "condition_watch",
+    "urgentCheckCadence": "hourly maximum supported frequency after G6 approval",
+    "dailyBriefMode": "flexible_schedule",
+    "dailyBriefPreferredDaypart": "morning",
+    "dailyBriefDefaultLocalTime": "08:00",
+    "timezone": "America/Chicago",
+    "urgentNotificationRule": "Notify only when an immediateAlerts rule is newly true or materially worsens; otherwise produce no notification.",
+    "dailyNotificationRule": "Send one compact brief only when one or more dailyBriefRules or unresolved owner decisions exist; otherwise produce no notification.",
+    "activationRequires": [
+      "G6 manual end-to-end connector acceptance passed",
+      "explicit owner approval to enable recurring ChatGPT notifications",
+      "source of truth query path verified",
+      "duplicate suppression verified"
+    ]
+  },
+  "deduplication": {
+    "sameEventWindowHours": 24,
+    "repeatImmediateOnlyWhen": [
+      "severity_increased",
+      "deadline_moved_closer",
+      "new_payment_failure_after_prior_alert",
+      "new_authoritative_evidence_changes_status"
+    ]
+  },
+  "immediateAlerts": [
+    {
+      "ruleId": "PAYMENT_FAILED",
+      "when": "authoritative evidence indicates payment failed, card declined, service suspension for nonpayment, or payment method action required",
+      "severity": "URGENT",
+      "ownerAction": "Review payment status and decide whether to repair billing. No automatic payment change."
+    },
+    {
+      "ruleId": "ACCOUNT_SECURITY_ANOMALY",
+      "when": "evidence indicates suspicious login, credential compromise, account takeover warning, unexpected account-change notice, or security lockout",
+      "severity": "URGENT",
+      "ownerAction": "Review the account directly. The team does not change credentials or contact the vendor."
+    },
+    {
+      "ruleId": "CANCELLATION_DEADLINE_3D",
+      "when": "verified cancellation deadline is within 3 calendar days or has passed within the last 30 days",
+      "severity": "URGENT",
+      "ownerAction": "Make or review the keep/change/cancel decision. No cancellation is automatic."
+    },
+    {
+      "ruleId": "RENEWAL_3D_HIGH_RISK",
+      "when": "verified renewal is within 3 calendar days AND record is low/unused, price-changed, unverified, disputed, or otherwise marked human-review-needed",
+      "severity": "URGENT",
+      "ownerAction": "Review value and billing evidence before renewal."
+    },
+    {
+      "ruleId": "UNEXPECTED_HIGH_CHARGE",
+      "when": "a new or materially unexpected single charge is at least 10000 cents and is not reconciled to an approved known subscription",
+      "severity": "URGENT",
+      "ownerAction": "Verify the charge and account context. No dispute or refund action is automatic."
+    }
+  ],
+  "dailyBriefRules": [
+    {
+      "ruleId": "RENEWAL_7D",
+      "when": "verified renewal is within 7 calendar days and no immediate-alert rule applies",
+      "section": "Upcoming decisions"
+    },
+    {
+      "ruleId": "RENEWAL_30D_REVIEW",
+      "when": "renewal is within 30 calendar days AND usage is Low or Unused, confidence is Low/Medium, or Human Review Needed is true",
+      "section": "Upcoming decisions"
+    },
+    {
+      "ruleId": "PRICE_CHANGE",
+      "when": "authoritative evidence shows a subscription price changed",
+      "section": "Cost changes"
+    },
+    {
+      "ruleId": "NEW_SUBSCRIPTION_CANDIDATE",
+      "when": "new recurring service or subscription candidate is discovered and not yet verified",
+      "section": "Needs verification"
+    },
+    {
+      "ruleId": "UNKNOWN_OR_MISSING_DATA",
+      "when": "billing cycle, renewal date, account email, plan, or status is materially unknown",
+      "section": "Needs verification"
+    },
+    {
+      "ruleId": "LOW_OR_UNUSED",
+      "when": "usage state is Low or Unused",
+      "section": "Possible savings"
+    },
+    {
+      "ruleId": "PAUSED_CANCELLED_OR_EXPIRED",
+      "when": "new evidence changes lifecycle to Paused, Cancelled, expired, or parked",
+      "section": "Lifecycle changes"
+    },
+    {
+      "ruleId": "CONTRADICTORY_EVIDENCE",
+      "when": "two authoritative or near-authoritative records disagree on payment status, renewal, plan, or lifecycle state",
+      "section": "Needs reconciliation"
+    }
+  ],
+  "silentRules": [
+    {
+      "ruleId": "NORMAL_SUCCESSFUL_RENEWAL",
+      "when": "known subscription renews successfully at expected price and cadence with no exception",
+      "action": "update register only"
+    },
+    {
+      "ruleId": "DUPLICATE_RECEIPT",
+      "when": "evidence duplicates an already-recorded event without changing facts",
+      "action": "suppress duplicate and retain provenance"
+    },
+    {
+      "ruleId": "NO_MEANINGFUL_CHANGE",
+      "when": "daily scan finds no new exception, material change, deadline, or unresolved owner decision",
+      "action": "send nothing"
+    }
+  ],
+  "dailyBriefFormat": {
+    "maxItems": 10,
+    "sortOrder": ["URGENT", "deadline_soonest", "largest_cost_impact", "lowest_confidence"],
+    "requiredHeader": ["scan_date", "subscriptions_checked", "new_evidence_count", "items_needing_owner_attention"],
+    "itemFields": ["vendor", "plan", "what_changed", "amount_or_cost_impact", "deadline", "confidence", "recommended_owner_decision", "evidence_link"],
+    "footer": "No vendor, subscription, payment, credential, or spending action was taken."
+  },
+  "briefSuppression": {
+    "sendDailyBriefOnlyWhenItemsExist": true,
+    "carryForwardUnresolvedItems": true,
+    "carryForwardCadence": "once per daily brief until resolved or materially changed",
+    "resolvedItemsDisappearFromBrief": true
+  }
+}

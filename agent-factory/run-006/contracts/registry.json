@@ -1,0 +1,82 @@
+{
+  "run_id": "SUB-OPS-006",
+  "version": "1.0.0",
+  "business_owner": "Aberdeen Technologies",
+  "system_owner": "Aberdeen / Agent Team Factory",
+  "lifecycle_status": "Testing",
+  "units": [
+    {
+      "stable_id": "SUB-OPS-LEAD-006",
+      "name": "Subscription Operations Lead",
+      "type": "Manager Agent",
+      "business_outcome": "Coordinate evidence review, exceptions, owner decisions, and the portfolio subscription briefing.",
+      "authority_level": "Recommend",
+      "review_frequency": "Weekly"
+    },
+    {
+      "stable_id": "SUB-OPS-DISCOVERY-006",
+      "name": "Evidence Discovery Agent",
+      "type": "Agent",
+      "business_outcome": "Identify candidate subscription evidence from authorized sources without changing those sources.",
+      "authority_level": "Observe",
+      "review_frequency": "Per supervised run"
+    },
+    {
+      "stable_id": "SUB-OPS-RECON-006",
+      "name": "Subscription Reconciliation Agent",
+      "type": "Agent",
+      "business_outcome": "Normalize, deduplicate, reconcile, and confidence-label subscription evidence.",
+      "authority_level": "Recommend",
+      "review_frequency": "Per supervised run"
+    },
+    {
+      "stable_id": "SUB-OPS-WATCH-006",
+      "name": "Renewal and Spend Watcher",
+      "type": "Decision Support",
+      "business_outcome": "Flag renewals, trials, price changes, duplicate tools, low usage, and missing evidence.",
+      "authority_level": "Recommend",
+      "review_frequency": "Weekly"
+    },
+    {
+      "stable_id": "SUB-OPS-QA-006",
+      "name": "Subscription Evidence and QA Agent",
+      "type": "Agent",
+      "business_outcome": "Prevent unsupported verification, secret retention, wrong-account merges, and unapproved authority expansion.",
+      "authority_level": "Observe",
+      "review_frequency": "Every package"
+    },
+    {
+      "stable_id": "WF-SUB-OPS-006-G4-001",
+      "name": "Subscription Baseline Workflow",
+      "type": "Workflow",
+      "business_outcome": "Produce a draft Subscription Register batch, exception queue, and performance list from one manual evidence packet.",
+      "authority_level": "Draft",
+      "review_frequency": "Every execution"
+    },
+    {
+      "stable_id": "SOFT-SUB-OPS-006-001",
+      "name": "Subscription Policy and Metrics Engine",
+      "type": "Software",
+      "business_outcome": "Enforce deterministic policy, idempotency, calculations, and telemetry.",
+      "authority_level": "Observe",
+      "review_frequency": "Every release"
+    }
+  ],
+  "approval_gates": {
+    "g4": "Build and inactive non-production execution only.",
+    "g5": "Owner approval required before real authorized inbox evidence is processed.",
+    "g6": "Owner approval required for any live write or external action.",
+    "always_human": [
+      "purchase",
+      "cancel",
+      "upgrade",
+      "downgrade",
+      "payment change",
+      "credential change",
+      "refund",
+      "dispute",
+      "vendor contact",
+      "recurring activation"
+    ]
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "OPS-CORE-008/event-envelope.v0.1",
+  "title": "Operations Core Event Envelope v0.1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId",
+    "eventType",
+    "producerId",
+    "subjectId",
+    "occurredAt",
+    "observedAt",
+    "provenance",
+    "payloadClass",
+    "integrityKey",
+    "idempotencyKey",
+    "payload"
+  ],
+  "properties": {
+    "eventId": {"type":"string","minLength":1},
+    "eventType": {"type":"string","minLength":1},
+    "producerId": {"type":"string","minLength":1},
+    "subjectId": {"type":"string","minLength":1},
+    "sourceId": {"type":["string","null"]},
+    "occurredAt": {"type":"string","format":"date-time"},
+    "observedAt": {"type":"string","format":"date-time"},
+    "provenance": {"enum":["DIRECT","DERIVED","HUMAN_SUPPLIED"]},
+    "payloadClass": {"enum":["MINIMAL","STANDARD","SENSITIVE"]},
+    "integrityKey": {"type":"string","minLength":1},
+    "idempotencyKey": {"type":"string","minLength":1},
+    "correlationId": {"type":["string","null"]},
+    "causationId": {"type":["string","null"]},
+    "authorityContext": {
+      "type":"object",
+      "additionalProperties":false,
+      "required":["mode","externalActionAuthorized","costCeilingCents"],
+      "properties": {
+        "mode":{"enum":["OBSERVE","INTERNAL_WRITE","EXTERNAL_WRITE_GATED"]},
+        "externalActionAuthorized":{"type":"boolean"},
+        "approvalRef":{"type":["string","null"]},
+        "costCeilingCents":{"type":"integer","minimum":0}
+      }
+    },
+    "payload": {"type":"object"}
+  }
+}

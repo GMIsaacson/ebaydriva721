@@ -1,0 +1,145 @@
+{
+  "runId": "SYS-INTEL-007",
+  "passId": "BLIND-SPOT-001",
+  "date": "2026-08-16",
+  "method": "Thinker proposes missing capabilities; Challenger checks duplication, necessity, scope, and whether the need belongs in shared infrastructure or a downstream module.",
+  "findings": [
+    {
+      "id": "R007-B001",
+      "capability": "Global Source & Identity Registry",
+      "type": "SHARED_CORE",
+      "signal": "Run 006 already exposed multiple email identities and future systems will need account, vendor, payment-source, device, cloud, and connector identities.",
+      "riskIfMissing": "Coverage claims become unreliable and the same account/source is represented differently across teams.",
+      "challenger": "Do not build a full identity platform; start with sourceId, owner, sourceType, account hint, connection state, authority scope, last verified, and coverage state.",
+      "priority": 1,
+      "confidence": "HIGH"
+    },
+    {
+      "id": "R007-B002",
+      "capability": "Unified Evidence Envelope & Provenance Standard",
+      "type": "SHARED_CORE",
+      "signal": "Subscription, inbox, bills, documents, security, warranties, and follow-up all consume evidence from heterogeneous systems.",
+      "riskIfMissing": "Every team invents its own evidence format; reconciliation and audit become brittle.",
+      "challenger": "Extend the Run 006 evidence model rather than inventing a new event bus.",
+      "priority": 1,
+      "confidence": "HIGH"
+    },
+    {
+      "id": "R007-B003",
+      "capability": "Decision & Approval Inbox",
+      "type": "SHARED_CORE",
+      "signal": "Multiple systems can detect issues but owner approvals currently live inside individual projects or chats.",
+      "riskIfMissing": "Important decisions become scattered; alerts tell the owner something is wrong without a single place to resolve it.",
+      "challenger": "This should not duplicate the Master Work Calendar; it stores decision state and approval authority, while calendar stores time commitments.",
+      "priority": 1,
+      "confidence": "HIGH"
+    },
+    {
+      "id": "R007-B004",
+      "capability": "Global Notification & Escalation Service",
+      "type": "SHARED_CORE",
+      "signal": "ChatGPT, SMS, email, and calendar escalation are already appearing in Run 006 and will recur everywhere.",
+      "riskIfMissing": "Duplicate alerts, inconsistent severity, channel sprawl, notification fatigue, and uncontrolled messaging cost.",
+      "challenger": "Extract only after Run 006 G6 validates the policy pattern; reuse severity, dedupe, cooldown, channel routing, and cost caps.",
+      "priority": 1,
+      "confidence": "HIGH"
+    },
+    {
+      "id": "R007-B005",
+      "capability": "Waiting-On & Follow-Up State Machine",
+      "type": "EARLY_MODULE",
+      "signal": "Projects repeatedly contain deferred actions, pending replies, prerequisites, approvals, and later-to-do items.",
+      "riskIfMissing": "Silent stalls and cognitive load persist even with good project records.",
+      "challenger": "Keep it small: waitingFor, owner, expectedBy, lastTouch, escalation rule, resolvedAt. Do not make another general task manager.",
+      "priority": 2,
+      "confidence": "HIGH"
+    },
+    {
+      "id": "R007-B006",
+      "capability": "Dependency & Blocker Graph",
+      "type": "SHARED_CORE",
+      "signal": "Work increasingly depends on infrastructure, credentials, gates, subscriptions, external accounts, and prior Factory runs.",
+      "riskIfMissing": "The system can prioritize tasks but cannot explain what unlocks the most downstream work.",
+      "challenger": "Represent dependencies as lightweight relations between projects/capabilities/actions; avoid a complex project-management engine.",
+      "priority": 2,
+      "confidence": "HIGH"
+    },
+    {
+      "id": "R007-B007",
+      "capability": "System Health, Heartbeat & Staleness Monitor",
+      "type": "SHARED_CORE",
+      "signal": "A system may appear configured while credentials expire, workflows stop running, registers stop updating, or evidence goes stale.",
+      "riskIfMissing": "False confidence: the owner assumes coverage exists when the watcher itself is broken.",
+      "challenger": "Monitor last-success time, expected cadence, connector health, queue backlog, failure count, and coverage freshness; do not duplicate provider observability tools.",
+      "priority": 2,
+      "confidence": "HIGH"
+    },
+    {
+      "id": "R007-B008",
+      "capability": "Global Cost & Resource Ledger",
+      "type": "SHARED_CORE",
+      "signal": "Agent systems consume SaaS subscriptions, API calls, hosting, SMS, credits, and infrastructure capacity across projects.",
+      "riskIfMissing": "Automation can be locally cheap but globally expensive; ROI and cost caps are hard to enforce.",
+      "challenger": "Do not build accounting software. Track expected cost, actual/estimated variable cost, owner-approved caps, and project attribution.",
+      "priority": 2,
+      "confidence": "HIGH"
+    },
+    {
+      "id": "R007-B009",
+      "capability": "Data Retention & Sensitivity Policy",
+      "type": "GOVERNANCE_CORE",
+      "signal": "More systems will inspect email, financial evidence, documents, account metadata, and potentially personal administration records.",
+      "riskIfMissing": "The system may retain unnecessary sensitive material merely because ingestion is technically possible.",
+      "challenger": "Adopt minimal durable fields, retention classes, redaction rules, and source-specific prohibitions; reuse Run 006 raw-body minimization.",
+      "priority": 2,
+      "confidence": "HIGH"
+    },
+    {
+      "id": "R007-B010",
+      "capability": "Recovery, Replay & Idempotency Standard",
+      "type": "GOVERNANCE_CORE",
+      "signal": "As workflows become persistent and multi-step, retries and partial failures will become normal operational events.",
+      "riskIfMissing": "Duplicate external actions, lost state, inconsistent registers, and manual cleanup after outages.",
+      "challenger": "Generalize SAFE execution contracts: idempotency keys, outbox, retry cap, replay boundary, recovery log.",
+      "priority": 2,
+      "confidence": "HIGH"
+    },
+    {
+      "id": "R007-B011",
+      "capability": "Inbox & Obligation Manager",
+      "type": "EARLY_MODULE",
+      "signal": "Email contains obligations that are broader than subscriptions: deadlines, replies, invoices, approvals, appointments, documents, and account warnings.",
+      "riskIfMissing": "Run 006 solves only one class of inbox-derived obligation while the larger cognitive burden remains.",
+      "challenger": "Reuse the source registry and evidence envelope; do not create another inbox connector architecture.",
+      "priority": 3,
+      "confidence": "HIGH"
+    },
+    {
+      "id": "R007-B012",
+      "capability": "Outcome & Automation Value Review",
+      "type": "GOVERNANCE_CORE",
+      "signal": "It is easy to build more agents than are economically or cognitively useful.",
+      "riskIfMissing": "Automation accumulation: systems remain alive despite low value, unnecessary cost, or duplicated function.",
+      "challenger": "Measure exceptions caught, owner minutes saved, prevented loss, cost, false alerts, and usage; retire low-value capabilities.",
+      "priority": 3,
+      "confidence": "HIGH"
+    }
+  ],
+  "challengedOutOrDeferred": [
+    {
+      "idea": "Separate manager for every administrative category immediately",
+      "decision": "REJECT_AS_ARCHITECTURE",
+      "reason": "Would duplicate ingestion, evidence, alerts, approvals, and auditing. Build shared core first."
+    },
+    {
+      "idea": "One omnipotent autonomous personal agent",
+      "decision": "REJECT",
+      "reason": "Combines discovery and authority in one boundary, increases blast radius, and conflicts with SAFE/governed execution."
+    },
+    {
+      "idea": "Replace Notion, Calendar, n8n, and project systems with a new all-in-one platform",
+      "decision": "DEFER_INDEFINITELY",
+      "reason": "Current systems already provide useful canonical surfaces; integration and control-plane consistency have higher ROI than platform replacement."
+    }
+  ]
+}

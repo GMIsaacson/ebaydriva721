@@ -1,0 +1,75 @@
+{
+  "roadmapId": "SYS-INTEL-007-ROADMAP-V1",
+  "date": "2026-08-16",
+  "principle": "Build shared control-plane capabilities once, then add narrow domain modules on top. Preserve human approval for external, costly, destructive, credential, payment, and vendor actions.",
+  "phases": [
+    {
+      "phase": 0,
+      "name": "Finish current proving ground",
+      "objective": "Use Run 006 G6 to validate the reusable evidence, reconciliation, approval, alert, and connector patterns before extracting them globally.",
+      "items": ["Complete Run 006 manual G6 E2E after host resize", "Validate multi-account source coverage approach", "Validate ChatGPT/SMS alert policy without premature scheduling"]
+    },
+    {
+      "phase": 1,
+      "name": "Personal & Business Operations Core",
+      "objective": "Create the minimum shared substrate all later managers reuse.",
+      "items": [
+        "Global Source & Identity Registry",
+        "Unified Evidence Envelope & Provenance Standard",
+        "Decision & Approval Inbox",
+        "Global Notification & Escalation Service",
+        "Dependency & Blocker Graph",
+        "System Health / Heartbeat / Staleness Monitor",
+        "Global Cost & Resource Ledger",
+        "Data Retention & Sensitivity Policy",
+        "Recovery / Replay / Idempotency Standard"
+      ],
+      "exitCriteria": "A new operating module can register sources, ingest normalized evidence, create an exception/decision, route a governed notification, expose health/cost, and recover safely without inventing new shared infrastructure."
+    },
+    {
+      "phase": 2,
+      "name": "Cognitive-load reducers",
+      "objective": "Attack the highest-frequency owner burden first.",
+      "items": [
+        "Waiting-On & Follow-Up Manager",
+        "Inbox & Obligation Manager",
+        "Bills / Payments / Renewal Manager"
+      ],
+      "exitCriteria": "Pending replies, obligations, due items, and billing exceptions surface from one exception/decision layer with low alert noise."
+    },
+    {
+      "phase": 3,
+      "name": "Risk and asset administration",
+      "objective": "Prevent expiration, security, document, and ownership failures.",
+      "items": [
+        "Document & Expiration Manager",
+        "Account & Security Watch",
+        "Purchase / Warranty Manager",
+        "Vendor / Contract Watch"
+      ]
+    },
+    {
+      "phase": 4,
+      "name": "Broader life/business operations",
+      "objective": "Extend the same architecture only where measured value justifies it.",
+      "items": [
+        "Vehicle / Property Maintenance",
+        "Travel Administration",
+        "Tax Evidence Collector",
+        "Cloud / API Operations Watch",
+        "Opportunity Pipeline Intelligence"
+      ]
+    },
+    {
+      "phase": 5,
+      "name": "Continuous value review",
+      "objective": "Prevent agent and automation sprawl.",
+      "items": ["Measure alerts, exceptions caught, prevented losses, owner time saved, cost, false positives, and actual use", "Merge or retire low-value or overlapping modules", "Feed recurring failure patterns back into Run 007 Thinker"]
+    }
+  ],
+  "nextRecommendedBuild": {
+    "name": "Operations Core v0.1",
+    "scope": ["source registry", "evidence envelope", "decision/approval record", "notification contract", "health heartbeat", "cost attribution", "retention classification", "idempotency/recovery contract"],
+    "explicitlyOutOfScope": ["new all-in-one UI", "autonomous vendor actions", "general accounting", "full identity provider", "replacement of Notion/Calendar/n8n"]
+  }
+}

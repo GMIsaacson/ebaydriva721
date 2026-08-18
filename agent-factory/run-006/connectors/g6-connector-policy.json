@@ -1,0 +1,58 @@
+{
+  "runId": "SUB-OPS-006",
+  "gate": "G6-CONNECTOR-PREP",
+  "lifecycle": "Testing",
+  "activation": {
+    "manualOnly": true,
+    "scheduleEnabled": false,
+    "webhookEnabled": false,
+    "productionPublished": false
+  },
+  "gmail": {
+    "mode": "read-only",
+    "allowedResource": "message",
+    "allowedOperations": ["getAll", "get"],
+    "maxMessagesPerRun": 50,
+    "includeSpamTrash": false,
+    "allowedSearch": "newer_than:45d -in:spam -in:trash (subscription OR renewal OR receipt OR invoice OR trial OR payment OR charged OR billing OR cancelled OR canceled OR price)",
+    "forbiddenOperations": ["send", "reply", "delete", "trash", "markAsRead", "markAsUnread", "addLabel", "removeLabel"],
+    "rawBodyRetention": "transient-only",
+    "durableFields": [
+      "messageId",
+      "threadId",
+      "receivedAt",
+      "from",
+      "subject",
+      "snippet",
+      "evidenceLink"
+    ]
+  },
+  "staging": {
+    "store": "postgresql",
+    "table": "run006_subscription_evidence_stage",
+    "purpose": "Sanitized connector evidence awaiting deterministic Run 006 reconciliation",
+    "idempotencyKey": "gmail:messageId",
+    "rawEmailBodyAllowed": false
+  },
+  "notion": {
+    "mode": "controlled-internal-write",
+    "targetDatabase": "Subscription Register",
+    "targetDataSourceId": "e9378d94-d13b-428d-b875-cdec14efddfc",
+    "allowedOperations": ["query", "create-page", "update-page"],
+    "maxWritesPerRun": 25,
+    "requiresValidatedEnvelope": true,
+    "forbiddenTargets": ["any database other than Subscription Register"],
+    "forbiddenOperations": ["delete-page", "archive-page", "schema-change", "permission-change"]
+  },
+  "authority": {
+    "externalVendorActions": 0,
+    "spendingAuthorityCents": 0,
+    "subscriptionChanges": false,
+    "paymentChanges": false,
+    "credentialChanges": false,
+    "vendorContact": false,
+    "cancellation": false,
+    "purchase": false
+  },
+  "promotionRequirement": "One manual end-to-end Gmail-read -> staged evidence -> deterministic reconciliation -> bounded Notion write acceptance run must pass before scheduling is separately considered."
+}

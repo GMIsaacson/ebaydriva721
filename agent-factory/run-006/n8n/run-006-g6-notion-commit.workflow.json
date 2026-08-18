@@ -1,0 +1,98 @@
+{
+  "name": "Run 006 - G6 Controlled Notion Register Commit",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "run006-g6-notion-manual",
+      "name": "Manual Trigger Only",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [-820, 0]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT outbox_id,dedupe_key,action,notion_page_id,subscription_title,vendor,product_plan,account_email,status,amount_cents,currency,billing_cycle,monthly_equivalent_cents,renewal_date,cancellation_deadline,auto_renew,payment_source_label,usage_state,confidence,human_review_needed,evidence_link,validated_by,validation_hash FROM run006_subscription_register_outbox WHERE state='READY' ORDER BY created_at ASC LIMIT 25;"
+      },
+      "id": "run006-g6-read-outbox",
+      "name": "Read Validated Register Outbox",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [-590, 0],
+      "notes": "Read-only against the validated Run 006 outbox. Bind the existing private PostgreSQL credential on-host."
+    },
+    {
+      "parameters": {
+        "jsCode": "const out=[]; for(const item of $input.all()){const x=item.json||{}; const violations=[]; if(x.validated_by!=='SUB-OPS-RUNTIME-006') violations.push('validator'); if(!x.validation_hash) violations.push('validation_hash'); if(!['CREATE','UPDATE'].includes(x.action)) violations.push('action'); if(x.action==='UPDATE'&&!x.notion_page_id) violations.push('notion_page_id'); if(!x.subscription_title||!x.vendor||!x.product_plan) violations.push('identity'); if(!['High','Medium','Low'].includes(x.confidence)) violations.push('confidence'); if(violations.length){out.push({json:{...x,commitStatus:'Rejected',violations}}); continue;} const props={Subscription:x.subscription_title,Vendor:x.vendor,'Product / Plan':x.product_plan,Status:x.status,Currency:x.currency,'Billing Cycle':x.billing_cycle,Confidence:x.confidence,'Human Review Needed':x.human_review_needed?'__YES__':'__NO__','Auto Renew':x.auto_renew?'__YES__':'__NO__','Usage State':x.usage_state,'Evidence Link':x.evidence_link||null,'Payment Source Label':x.payment_source_label||'', 'Account Email':x.account_email||null}; if(Number.isInteger(x.amount_cents)) props.Amount=x.amount_cents/100; if(Number.isInteger(x.monthly_equivalent_cents)) props['Monthly Equivalent']=x.monthly_equivalent_cents/100; if(x.renewal_date){props['date:Renewal Date:start']=String(x.renewal_date).slice(0,10);props['date:Renewal Date:is_datetime']=0;} if(x.cancellation_deadline){props['date:Cancellation Deadline:start']=String(x.cancellation_deadline).slice(0,10);props['date:Cancellation Deadline:is_datetime']=0;} props['date:Last Verified:start']=new Date().toISOString().slice(0,10); props['date:Last Verified:is_datetime']=0; out.push({json:{outboxId:x.outbox_id,dedupeKey:x.dedupe_key,action:x.action,notionPageId:x.notion_page_id,validationHash:x.validation_hash,commitStatus:'Accepted',properties:props}});} return out;"
+      },
+      "id": "run006-g6-validate-outbox",
+      "name": "Enforce Validated Envelope",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-350, 0],
+      "notes": "Deterministic mapping and authority validation only. Does not decide subscription lifecycle actions."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {"caseSensitive": true,"leftValue": "","typeValidation": "strict","version": 2},
+          "conditions": [{"id":"run006-g6-accepted","leftValue":"={{ $json.commitStatus }}","rightValue":"Accepted","operator":{"type":"string","operation":"equals"}}],
+          "combinator": "and"
+        }
+      },
+      "id": "run006-g6-if-accepted",
+      "name": "Validated Only",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [-110, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(i=>({json:{...i.json,writeTarget:'Subscription Register',dataSourceId:'e9378d94-d13b-428d-b875-cdec14efddfc',maxWritesPerRun:25}}));"
+      },
+      "id": "run006-g6-bind-target",
+      "name": "Bind Fixed Subscription Register Target",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [130, -90]
+    },
+    {
+      "parameters": {},
+      "id": "run006-g6-notion-placeholder",
+      "name": "Notion Commit Placeholder - Bind On Host",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [370, -90],
+      "notes": "On-host only: replace this placeholder with bounded Notion create/update nodes scoped to data source e9378d94-d13b-428d-b875-cdec14efddfc. No credential binding belongs in source control."
+    },
+    {
+      "parameters": {},
+      "id": "run006-g6-rejected",
+      "name": "Rejected - No Write",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [130, 110]
+    }
+  ],
+  "connections": {
+    "Manual Trigger Only": {"main": [[{"node":"Read Validated Register Outbox","type":"main","index":0}]]},
+    "Read Validated Register Outbox": {"main": [[{"node":"Enforce Validated Envelope","type":"main","index":0}]]},
+    "Enforce Validated Envelope": {"main": [[{"node":"Validated Only","type":"main","index":0}]]},
+    "Validated Only": {"main": [[{"node":"Bind Fixed Subscription Register Target","type":"main","index":0}],[{"node":"Rejected - No Write","type":"main","index":0}]]},
+    "Bind Fixed Subscription Register Target": {"main": [[{"node":"Notion Commit Placeholder - Bind On Host","type":"main","index":0}]]}
+  },
+  "active": false,
+  "settings": {"executionOrder":"v1","saveManualExecutions":true,"saveExecutionProgress":true,"saveDataErrorExecution":"all","saveDataSuccessExecution":"all"},
+  "meta": {
+    "runId":"SUB-OPS-006",
+    "gate":"G6-CONNECTOR-PREP",
+    "authority":"Commit runtime-validated internal Subscription Register records only",
+    "targetDataSourceId":"e9378d94-d13b-428d-b875-cdec14efddfc",
+    "scheduleEnabled":false,
+    "webhookEnabled":false,
+    "maxWritesPerRun":25,
+    "externalVendorActions":0,
+    "spendingAuthorityCents":0
+  },
+  "tags": []
+}

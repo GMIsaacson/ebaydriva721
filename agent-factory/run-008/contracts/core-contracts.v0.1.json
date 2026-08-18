@@ -1,0 +1,53 @@
+{
+  "runId": "OPS-CORE-008",
+  "version": "0.1.0",
+  "status": "DESIGN_DRAFT",
+  "contracts": {
+    "source": {
+      "required": ["sourceId", "sourceType", "ownerScope", "connectionState", "authorityMode"],
+      "connectionStates": ["PENDING", "CONNECTED", "DEGRADED", "DISCONNECTED", "RETIRED"],
+      "authorityModes": ["READ_ONLY", "INTERNAL_WRITE", "EXTERNAL_WRITE_GATED"],
+      "secretHandling": "RUNTIME_REFERENCE_ONLY"
+    },
+    "evidence": {
+      "required": ["evidenceId", "sourceId", "observedAt", "provenance", "payloadClass", "integrityKey"],
+      "provenance": ["DIRECT", "DERIVED", "HUMAN_SUPPLIED"],
+      "payloadClasses": ["MINIMAL", "STANDARD", "SENSITIVE"],
+      "rawSensitiveRetentionDefault": false
+    },
+    "decision": {
+      "required": ["decisionId", "subject", "reason", "authorityRequired", "status"],
+      "statuses": ["OPEN", "APPROVED", "REJECTED", "EXPIRED", "RESOLVED"],
+      "authorityRequired": ["NONE", "INTERNAL_WRITE", "OWNER_APPROVAL", "COST_APPROVAL", "EXTERNAL_ACTION_APPROVAL"]
+    },
+    "notification": {
+      "required": ["incidentKey", "severity", "channelClass", "cooldownKey", "humanReviewNeeded"],
+      "severity": ["INFO", "ATTENTION", "URGENT"],
+      "channelClass": ["SILENT", "BRIEF", "IMMEDIATE"],
+      "mustDedupe": true,
+      "mustCostBoundExternalChannels": true
+    },
+    "heartbeat": {
+      "required": ["watcherId", "emittedAt", "expectedCadenceSeconds", "status"],
+      "status": ["HEALTHY", "STALE", "DEGRADED", "FAILED"],
+      "staleRule": "STALE_WHEN_MISSED_EXPECTED_CADENCE_PLUS_TOLERANCE"
+    },
+    "cost": {
+      "required": ["costEventId", "service", "estimatedCents", "approvedCeilingCents", "approvalState"],
+      "approvalState": ["NOT_REQUIRED", "PENDING", "APPROVED", "REJECTED"],
+      "failClosedIfEstimateExceedsCeiling": true
+    },
+    "dependency": {
+      "required": ["dependencyId", "subjectId", "dependsOnId", "state"],
+      "states": ["OPEN", "BLOCKED", "SATISFIED", "WAIVED"]
+    }
+  },
+  "globalRules": {
+    "externalActionsDefault": 0,
+    "productionScheduleAuthorized": false,
+    "credentialsInSourceControl": false,
+    "idempotencyRequiredForExternalActions": true,
+    "auditTrailRequired": true,
+    "failClosedOnMissingAuthority": true
+  }
+}

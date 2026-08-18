@@ -1,0 +1,96 @@
+{
+  "id": "RUN006G4SUBOPS",
+  "name": "Run 006 - Subscription Baseline Nonproduction",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "2e464142-cfa7-4cf5-8883-c1f01e35ff97",
+      "name": "Manual Trigger Only",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [-760, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{json:{runId:'SUB-OPS-006',gate:'G4',workflowId:'WF-SUB-OPS-006-G4-001',workflowVersion:'1.0.0',eventId:'SUB-OPS-006:G4:N8N-SYNTHETIC:2026-08-15',traceId:'TRACE-SUB-OPS-006-G4-N8N',asOfDate:'2026-08-15',control:{manualOnly:true,scheduleEnabled:false,webhookEnabled:false,maxExternalActions:0,maxNotionWrites:0,spendingAuthorityCents:0,maxAiCalls:0,retryOnUnknownOutcome:false},requestedActions:[],items:[{evidenceId:'EV-N8N-001',sourceType:'Vendor receipt',sourceRef:'evidence://synthetic/n8n/video',observedAt:'2026-08-14T15:00:00.000Z',trustLevel:'verified',claimedStatus:'Active',vendor:'VideoStudio Demo',productPlan:'Creator',accountEmail:'owner+fixture@example.test',amountCents:2900,currency:'USD',billingCycle:'Monthly',renewalDate:'2026-09-14',cancellationDeadline:'2026-09-13',autoRenew:true,paymentSourceLabel:'Card ending 4242',usageState:'Active',evidenceLink:'https://example.test/evidence/n8n-video'},{evidenceId:'EV-N8N-002',sourceType:'Gmail',sourceRef:'evidence://synthetic/n8n/model',observedAt:'2026-08-10T10:00:00.000Z',trustLevel:'candidate',claimedStatus:'Unknown',vendor:'ModelLab Demo',productPlan:'Usage',accountEmail:'owner+fixture@example.test',amountCents:2000,currency:'USD',billingCycle:'Usage-based',renewalDate:null,cancellationDeadline:null,autoRenew:false,paymentSourceLabel:'Card ending 4242',usageState:'Low',evidenceLink:'https://example.test/evidence/n8n-model'}]}}];"
+      },
+      "id": "bc367208-ec4f-4a19-8c8b-8e3fe84d0121",
+      "name": "Load Synthetic Evidence",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-540, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const p=$json; const v=[]; if(p.runId!=='SUB-OPS-006'||p.gate!=='G4')v.push('identity'); if(p.workflowId!=='WF-SUB-OPS-006-G4-001'||p.workflowVersion!=='1.0.0')v.push('workflow'); const c=p.control||{}; if(!c.manualOnly||c.scheduleEnabled||c.webhookEnabled)v.push('trigger'); if(c.maxExternalActions!==0||c.maxNotionWrites!==0||c.spendingAuthorityCents!==0||c.maxAiCalls!==0||c.retryOnUnknownOutcome)v.push('authority'); if((p.requestedActions||[]).length)v.push('requested actions'); const raw=JSON.stringify(p); if(/(?:password|api key|access token)\\s*[:=]\\s*\\S+/i.test(raw)||/(?:\\d[ -]*?){13,19}/.test(raw))v.push('sensitive data'); return [{json:{...p,guardStatus:v.length?'Rejected':'Accepted',violations:v}}];"
+      },
+      "id": "4151f752-9c2e-4185-b26d-d315501e791e",
+      "name": "Enforce G4 Policy",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-300, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const p=$json; if(p.guardStatus!=='Accepted')return [{json:{runId:p.runId,gate:p.gate,status:'Review',guardStatus:p.guardStatus,violations:p.violations,records:[],exceptions:[],externalActionsPerformed:0,notionWritesPerformed:0,spendingCents:0,aiCalls:0}}]; const groups=new Map(); for(const x of p.items){const email=String(x.accountEmail||'').trim().toLowerCase(); const key=[String(x.vendor).trim().toLowerCase(),email||'unknown-email',String(x.productPlan).trim().toLowerCase()].join('|'); if(!groups.has(key))groups.set(key,[]); groups.get(key).push(x);} const records=[]; const exceptions=[]; let dup=0; for(const [key,list] of groups){list.sort((a,b)=>a.observedAt.localeCompare(b.observedAt)); const x=list[list.length-1]; dup+=Math.max(0,list.length-1); const monthly=x.billingCycle==='Annual'?Math.round(x.amountCents/12):(['Monthly','Usage-based'].includes(x.billingCycle)?x.amountCents:null); const confidence=x.trustLevel==='verified'&&x.accountEmail&&x.renewalDate?'High':(x.accountEmail||Number.isInteger(x.amountCents)?'Medium':'Low'); if(list.length>1)exceptions.push({severity:'Info',category:'DUPLICATE_EVIDENCE',dedupeKey:key}); if(x.trustLevel!=='verified')exceptions.push({severity:'Medium',category:'UNVERIFIED_EVIDENCE',dedupeKey:key}); if(['Low','Unused'].includes(x.usageState))exceptions.push({severity:'Medium',category:'LOW_USAGE',dedupeKey:key}); records.push({dedupeKey:key,vendor:x.vendor,productPlan:x.productPlan,accountEmail:x.accountEmail,status:x.trustLevel==='verified'&&x.claimedStatus==='Active'?'Verified Active':'Candidate',billingCycle:x.billingCycle,amountCents:x.amountCents,currency:x.currency,monthlyEquivalentCents:monthly,renewalDate:x.renewalDate,cancellationDeadline:x.cancellationDeadline,confidence,sourceEvidence:list.map(e=>({evidenceId:e.evidenceId,sourceType:e.sourceType,sourceRef:e.sourceRef,observedAt:e.observedAt}))});} return [{json:{runId:p.runId,gate:p.gate,workflowId:p.workflowId,traceId:p.traceId,status:'Pass',guardStatus:p.guardStatus,records,exceptions,duplicatesSuppressed:dup,summary:{proposedSubscriptionCount:records.length,monthlyEquivalentCents:records.reduce((s,r)=>s+(r.monthlyEquivalentCents||0),0),exceptionCount:exceptions.length},externalActionsPerformed:0,notionWritesPerformed:0,spendingCents:0,aiCalls:0}}];"
+      },
+      "id": "d196915d-6da0-4a0d-ad49-2fc0ed9f2314",
+      "name": "Reconcile and Flag",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-60, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const ids=['SUB-OPS-LEAD-006','SUB-OPS-DISCOVERY-006','SUB-OPS-RECON-006','SUB-OPS-WATCH-006','SUB-OPS-QA-006','WF-SUB-OPS-006-G4-001','SOFT-SUB-OPS-006-001']; return [{json:{...$json,performance:ids.map(unitId=>({unitId,status:'Pass',costCents:0,externalActions:0,notionWrites:0,aiCalls:0})),writeMode:'DraftOnly',retryAllowed:false,humanReviewRequired:$json.exceptions.length>0}}];"
+      },
+      "id": "17a11046-1755-4bba-a99b-e5ca7aac716a",
+      "name": "Build Performance List",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [180, 0]
+    },
+    {
+      "parameters": {},
+      "id": "b88e91e6-c733-42cf-8cfa-429718932fb4",
+      "name": "Internal Subscription Result",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [420, 0]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual Trigger Only": {
+      "main": [[{ "node": "Load Synthetic Evidence", "type": "main", "index": 0 }]]
+    },
+    "Load Synthetic Evidence": {
+      "main": [[{ "node": "Enforce G4 Policy", "type": "main", "index": 0 }]]
+    },
+    "Enforce G4 Policy": {
+      "main": [[{ "node": "Reconcile and Flag", "type": "main", "index": 0 }]]
+    },
+    "Reconcile and Flag": {
+      "main": [[{ "node": "Build Performance List", "type": "main", "index": 0 }]]
+    },
+    "Build Performance List": {
+      "main": [[{ "node": "Internal Subscription Result", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "saveExecutionProgress": true,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all"
+  },
+  "versionId": "f1dc4d10-50b4-47f2-aaaf-829b4295e114",
+  "meta": {
+    "runId": "SUB-OPS-006",
+    "workflowId": "WF-SUB-OPS-006-G4-001",
+    "authority": "Observe, Recommend and Draft",
+    "deploymentMode": "inactive-nonproduction"
+  },
+  "tags": []
+}

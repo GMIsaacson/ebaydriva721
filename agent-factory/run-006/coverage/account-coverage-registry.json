@@ -1,0 +1,62 @@
+{
+  "registryId": "SUB-OPS-006-ACCOUNT-COVERAGE",
+  "version": "1.0.1",
+  "accounts": [
+    {
+      "accountId": "gmail-primary-1",
+      "sourceType": "Gmail",
+      "label": "Primary Gmail account",
+      "addressHint": "bluetopi5555@gmail.com",
+      "coverageStatus": "PENDING_CONNECTION",
+      "baselineStatus": "PLANNED",
+      "baselineLookbackDays": 1095,
+      "dailyMonitoringEligible": true,
+      "lastSuccessfulScanAt": null,
+      "lastEvidenceAt": null,
+      "credentialRef": null,
+      "notes": "Known evidence source for several current subscriptions. Bind read-only Gmail OAuth at runtime only."
+    },
+    {
+      "accountId": "yahoo-iceark5-1",
+      "sourceType": "Yahoo Mail",
+      "label": "Yahoo account",
+      "addressHint": "Iceark5@yahoo.com",
+      "coverageStatus": "PENDING_CONNECTION",
+      "baselineStatus": "PLANNED",
+      "baselineLookbackDays": 1095,
+      "dailyMonitoringEligible": true,
+      "lastSuccessfulScanAt": null,
+      "lastEvidenceAt": null,
+      "credentialRef": null,
+      "notes": "User-identified subscription evidence source. Connection method to be determined; no secret material stored here."
+    },
+    {
+      "accountId": "gmail-diplomatnc-1",
+      "sourceType": "Gmail",
+      "label": "DiplomatNC Gmail account",
+      "addressHint": "diplomatnc@gmail.com",
+      "coverageStatus": "PENDING_CONNECTION",
+      "baselineStatus": "PLANNED",
+      "baselineLookbackDays": 1095,
+      "dailyMonitoringEligible": true,
+      "lastSuccessfulScanAt": null,
+      "lastEvidenceAt": null,
+      "credentialRef": null,
+      "notes": "User-identified subscription evidence source. Bind read-only Gmail OAuth at runtime only."
+    },
+    {
+      "accountId": "gmail-enterprisesdmm-1",
+      "sourceType": "Gmail",
+      "label": "EnterprisesDMM Gmail account",
+      "addressHint": "enterprisesdmm@gmail.com",
+      "coverageStatus": "PENDING_CONNECTION",
+      "baselineStatus": "PLANNED",
+      "baselineLookbackDays": 1095,
+      "dailyMonitoringEligible": true,
+      "lastSuccessfulScanAt": null,
+      "lastEvidenceAt": null,
+      "credentialRef": null,
+      "notes": "User-identified subscription evidence source. Bind read-only Gmail OAuth at runtime only."
+    }
+  ]
+}

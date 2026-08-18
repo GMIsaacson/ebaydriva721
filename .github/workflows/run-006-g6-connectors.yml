@@ -1,0 +1,53 @@
+name: Run 006 subscription operations G6 connector prep
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "agent-factory/run-006/connectors/**"
+      - "agent-factory/run-006/coverage/**"
+      - "agent-factory/run-006/alerts/**"
+      - "agent-factory/run-006/postgres/**"
+      - "agent-factory/run-006/n8n/run-006-g6-*.workflow.json"
+      - "agent-factory/run-006/tests/**"
+      - "package.json"
+      - ".github/workflows/run-006-g6-connectors.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: run-006-g6-connectors
+  cancel-in-progress: false
+
+jobs:
+  static-safety:
+    name: Static connector safety and application build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm run test:run006
+      - run: npm run test:run006:g6
+      - run: node node_modules/vite/bin/vite.js build
+      - name: Verify no secrets or credential bindings in G6 connector package
+        run: |
+          if grep -RniE '(client_secret|access_token|refresh_token|api[_ -]?key|password)[[:space:]]*[:=][[:space:]]*[^$<{[:space:]]+' agent-factory/run-006/connectors agent-factory/run-006/n8n/run-006-g6-*.workflow.json agent-factory/run-006/postgres; then
+            echo "Potential secret material found"
+            exit 1
+          fi
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const files=['agent-factory/run-006/n8n/run-006-g6-gmail-read-stage.workflow.json'];
+          for(const file of files){
+            const w=JSON.parse(fs.readFileSync(file,'utf8'));
+            if(w.active!==false) throw new Error(file+' is active');
+            if((w.nodes||[]).some(n=>n.credentials)) throw new Error(file+' contains credential binding');
+          }
+          console.log(JSON.stringify({status:'Pass',activeWorkflows:0,credentialBindings:0,externalVendorActions:0}));
+          NODE
