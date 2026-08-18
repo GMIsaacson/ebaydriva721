@@ -1,0 +1,47 @@
+{
+  "runId": "MUNI-INTEL-009",
+  "gate": "G5",
+  "mode": "READ_ONLY_MANUAL",
+  "scheduleAuthorized": false,
+  "maxPagesPerSourcePerRun": 5,
+  "sources": [
+    {
+      "sourceId": "MPLS-CPC",
+      "municipality": "Minneapolis",
+      "baseUrl": "https://www.minneapolismn.gov/government/boards-and-commissions/planning-commission/",
+      "sourceType": "planning_commission",
+      "tier": 1,
+      "enabled": true,
+      "followLinks": false
+    },
+    {
+      "sourceId": "BLOOM-PLAN-NOTICES",
+      "municipality": "Bloomington",
+      "baseUrl": "https://www.bloomingtonmn.gov/atty/public-hearing-notices",
+      "sourceType": "public_hearing_notices",
+      "tier": 1,
+      "enabled": true,
+      "followLinks": true,
+      "linkPattern": "/plan/news/notice-public-hearing"
+    },
+    {
+      "sourceId": "STP-PED",
+      "municipality": "Saint Paul",
+      "baseUrl": "https://www.stpaul.gov/departments/planning-and-economic-development/planning/current-activities",
+      "sourceType": "planning_current_activities",
+      "tier": 1,
+      "enabled": true,
+      "followLinks": false
+    },
+    {
+      "sourceId": "MAPLEGROVE-PLANNING",
+      "municipality": "Maple Grove",
+      "baseUrl": "https://www.maplegrovemn.gov/AgendaCenter/Planning-Commission-6",
+      "sourceType": "planning_commission_agenda_center",
+      "tier": 1,
+      "enabled": true,
+      "followLinks": true,
+      "linkPattern": "/AgendaCenter/ViewFile/Agenda/"
+    }
+  ]
+}

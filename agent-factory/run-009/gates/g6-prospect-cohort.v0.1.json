@@ -1,0 +1,41 @@
+{
+  "runId": "MUNI-INTEL-009",
+  "gate": "G6",
+  "authority": "DRAFT_ONLY_NO_CONTACT",
+  "purpose": "Initial Twin Cities commercial-electrical validation cohort. Research candidates only; verify company fit and public company-level contact channels before any separately approved outreach.",
+  "selectionRules": {
+    "include": [
+      "Twin Cities service area",
+      "commercial or commercial/industrial electrical work",
+      "plausible need for project-development intelligence",
+      "public business identity"
+    ],
+    "excludeUntilVerified": [
+      "residential-only firms",
+      "businesses with unclear active status",
+      "personal/private contact records",
+      "companies outside pilot geography"
+    ]
+  },
+  "prospects": [
+    {"rank":1,"company":"Fraser-Morris Electric Co","location":"Minneapolis","fit":"commercial/light industrial; tenant improvement and building service","cohortRole":"primary"},
+    {"rank":2,"company":"Collins Electrical Construction Co","location":"Saint Paul","fit":"commercial, industrial, institutional, multi-unit housing and new construction","cohortRole":"primary"},
+    {"rank":3,"company":"Gephart Electric Co Inc.","location":"Saint Paul","fit":"commercial electrical plus low-voltage/security/communications; preconstruction orientation","cohortRole":"primary"},
+    {"rank":4,"company":"Cap Electric","location":"Twin Cities / Saint Paul area","fit":"commercial new construction, tenant improvements and design/build","cohortRole":"primary"},
+    {"rank":5,"company":"Holton Electric Contractors","location":"Twin Cities","fit":"commercial and light-industrial contractor","cohortRole":"primary"},
+    {"rank":6,"company":"Custom Electrical Services","location":"North Saint Paul","fit":"commercial/industrial plus fire, security and controls","cohortRole":"primary"},
+    {"rank":7,"company":"Tim Kunkel Electric L.L.C.","location":"Saint Paul","fit":"commercial work including apartment buildings, build-outs and service upgrades","cohortRole":"primary"},
+    {"rank":8,"company":"Presidential Electric","location":"Inver Grove Heights","fit":"commercial electrical and energy-efficiency work","cohortRole":"secondary"},
+    {"rank":9,"company":"Signature Electric Co","location":"Plymouth","fit":"commercial projects plus service work","cohortRole":"secondary"},
+    {"rank":10,"company":"O'Neill Electric Inc.","location":"Stillwater","fit":"commercial/partner work and broad electrical contracting","cohortRole":"secondary"},
+    {"rank":11,"company":"Norske Electric","location":"Savage","fit":"commercial electrical across Twin Cities metro","cohortRole":"secondary"},
+    {"rank":12,"company":"University Electric Inc","location":"Minneapolis","fit":"full-service residential/commercial; useful smaller-firm validation point","cohortRole":"secondary"},
+    {"rank":13,"company":"ArchKey Parsons Electric","location":"Minneapolis","fit":"large commercial/industrial/institutional electrical contractor","cohortRole":"enterprise-control"}
+  ],
+  "notes": [
+    "Do not infer buyer names or individual emails from this cohort.",
+    "Before outreach, verify each company is active, serves the pilot geography, and has a public company-level contact channel appropriate for business inquiries.",
+    "Use a mix of smaller/midsize firms and one large-enterprise control to test whether value perception differs by company scale.",
+    "No outreach has been authorized or performed."
+  ]
+}

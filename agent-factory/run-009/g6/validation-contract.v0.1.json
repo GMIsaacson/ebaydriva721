@@ -1,0 +1,61 @@
+{
+  "runId": "MUNI-INTEL-009",
+  "gate": "G6_DESIGN",
+  "status": "DESIGN_PASS",
+  "authority": {
+    "mode": "DRAFT_ONLY_NO_CONTACT",
+    "externalActionsAuthorized": false,
+    "spendAuthorized": false,
+    "recurringDeliveryAuthorized": false,
+    "outreachRequiresOwnerApproval": true
+  },
+  "market": {
+    "geography": "Twin Cities",
+    "trade": "commercial electrical",
+    "cohortSizeMin": 10,
+    "cohortSizeMax": 15
+  },
+  "sampleProduct": {
+    "opportunityCountMin": 3,
+    "opportunityCountMax": 5,
+    "requiredFields": [
+      "projectName",
+      "municipality",
+      "location",
+      "projectTypeScale",
+      "stageTimingSignal",
+      "electricalOpportunityThesis",
+      "confidence",
+      "authoritativeEvidence",
+      "recommendedNextAction"
+    ]
+  },
+  "pricingHypothesesUsdMonthly": [149, 349, 499],
+  "commercialPromise": "Early Twin Cities development signals translated into commercial electrical opportunities so estimating and business-development teams spend less time searching city records.",
+  "successCriteria": {
+    "meaningfulResponsesMin": 5,
+    "explicitUsefulRatingsMin": 3,
+    "repeatInterestSignalsMin": 2,
+    "willingnessToPaySignalsMin": 1,
+    "willingnessToPayFloorUsdMonthly": 149,
+    "strongPassPaidPilotsMin": 2
+  },
+  "iterateIf": {
+    "meaningfulEngagementRateBelow": 0.2,
+    "commonFailureSignals": [
+      "projects_too_late",
+      "projects_too_generic",
+      "not_actionable",
+      "equivalent_intelligence_already_easy_or_cheap",
+      "decision_maker_unreachable"
+    ]
+  },
+  "beforeFirstOutreachMustApprove": [
+    "channel",
+    "prospectCount",
+    "messageTemplateOrBounds",
+    "pricingLanguage",
+    "senderIdentityAndAccount",
+    "followupCountAndCadence"
+  ]
+}

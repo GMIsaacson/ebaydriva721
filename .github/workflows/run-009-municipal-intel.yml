@@ -1,0 +1,26 @@
+name: Run 009 Municipal Development Intelligence
+
+on:
+  pull_request:
+    paths:
+      - 'agent-factory/run-009/**'
+      - 'package.json'
+      - '.github/workflows/run-009-municipal-intel.yml'
+  workflow_dispatch:
+
+jobs:
+  test-run-009:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Test Run 009 G3 shadow acceptance
+        run: npm run test:run009:g3
+      - name: Test Run 009 G4 repeatable shadow pipeline
+        run: npm run test:run009:g4
+      - name: Test Run 009 G5 read-only collectors
+        run: npm run test:run009:g5
+      - name: Run Run 009 G5 live read-only proof
+        run: node agent-factory/run-009/scripts/run-g5-live-proof.cjs
