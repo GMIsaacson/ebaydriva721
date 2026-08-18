@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { useAuth } from "../AuthProvider";
 import { ingestBrowserDataset, prescreenBrowserCandidates } from "./browser-core.mjs";
+import CandidateVerificationPanel from "./CandidateVerificationPanel";
 import "./sourcing-workspace.css";
 
 const dollarsToCents = (value, field) => {
@@ -27,6 +28,7 @@ const SourcingWorkspace = () => {
   const [error, setError] = useState("");
   const [intake, setIntake] = useState(null);
   const [prescreen, setPrescreen] = useState(null);
+  const [selectedCandidate, setSelectedCandidate] = useState(null);
 
   const queue = prescreen?.verificationQueue || [];
   const summary = useMemo(() => {
@@ -44,6 +46,7 @@ const SourcingWorkspace = () => {
   const resetResults = () => {
     setIntake(null);
     setPrescreen(null);
+    setSelectedCandidate(null);
     setError("");
   };
 
@@ -55,6 +58,7 @@ const SourcingWorkspace = () => {
 
   const buildQueue = async () => {
     setError("");
+    setSelectedCandidate(null);
     if (!file) {
       setError("Choose an owner-authorized CSV or JSON product dataset first.");
       return;
@@ -67,9 +71,7 @@ const SourcingWorkspace = () => {
     setRunning(true);
     try {
       const maxVerificationQueue = Number(queueSize);
-      if (!Number.isSafeInteger(maxVerificationQueue) || maxVerificationQueue < 1 || maxVerificationQueue > 100) {
-        throw new Error("Verification queue size must be an integer from 1 to 100.");
-      }
+      if (!Number.isSafeInteger(maxVerificationQueue) || maxVerificationQueue < 1 || maxVerificationQueue > 100) throw new Error("Verification queue size must be an integer from 1 to 100.");
       const content = await file.text();
       const observedAt = new Date().toISOString();
       const nextIntake = await ingestBrowserDataset({
@@ -104,10 +106,7 @@ const SourcingWorkspace = () => {
         <div>
           <p className="ds-sourcing-eyebrow">LIVE SOURCING MVP · OWNER-UPLOAD MODE</p>
           <h1>Find eBay opportunities without scraping suppliers or eBay</h1>
-          <p>
-            Load product data you are authorized to use. DataScout normalizes it, applies source-side constraints,
-            and gives you a bounded queue for manual eBay verification. No site is fetched by this workspace.
-          </p>
+          <p>Load product data you are authorized to use. DataScout normalizes it, applies source-side constraints, builds a bounded manual eBay verification queue, and calculates evidence-backed BUY / WATCH / REJECT decisions.</p>
         </div>
         <div className="ds-sourcing-safety">
           <strong>Permission-safe mode</strong>
@@ -132,39 +131,17 @@ const SourcingWorkspace = () => {
             <input type="file" accept=".csv,.json,text/csv,application/json" onChange={handleFile} />
             <small>{file ? `${file.name} · ${(file.size / 1024).toFixed(1)} KB` : "Choose a CSV or JSON file"}</small>
           </label>
-          <label>
-            <span className="ds-label">Default supplier</span>
-            <input value={defaultSupplier} onChange={(event) => setDefaultSupplier(event.target.value)} placeholder="Used only if supplier is absent in rows" />
-          </label>
-          <label>
-            <span className="ds-label">Max source cost / source unit</span>
-            <input type="number" min="0.01" step="0.01" value={maxSourceCost} onChange={(event) => setMaxSourceCost(event.target.value)} />
-          </label>
-          <label>
-            <span className="ds-label">Max minimum-order outlay</span>
-            <input type="number" min="0.01" step="0.01" value={maxInitialOutlay} onChange={(event) => setMaxInitialOutlay(event.target.value)} />
-          </label>
-          <label>
-            <span className="ds-label">Max eBay verification queue</span>
-            <input type="number" min="1" max="100" step="1" value={queueSize} onChange={(event) => setQueueSize(event.target.value)} />
-          </label>
-          <label>
-            <span className="ds-label">Excluded terms</span>
-            <input value={excludedTerms} onChange={(event) => setExcludedTerms(event.target.value)} placeholder="e.g. hazmat, lithium battery" />
-          </label>
+          <label><span className="ds-label">Default supplier</span><input value={defaultSupplier} onChange={(event) => setDefaultSupplier(event.target.value)} placeholder="Used only if supplier is absent in rows" /></label>
+          <label><span className="ds-label">Max source cost / source unit</span><input type="number" min="0.01" step="0.01" value={maxSourceCost} onChange={(event) => setMaxSourceCost(event.target.value)} /></label>
+          <label><span className="ds-label">Max minimum-order outlay</span><input type="number" min="0.01" step="0.01" value={maxInitialOutlay} onChange={(event) => setMaxInitialOutlay(event.target.value)} /></label>
+          <label><span className="ds-label">Max eBay verification queue</span><input type="number" min="1" max="100" step="1" value={queueSize} onChange={(event) => setQueueSize(event.target.value)} /></label>
+          <label><span className="ds-label">Excluded terms</span><input value={excludedTerms} onChange={(event) => setExcludedTerms(event.target.value)} placeholder="e.g. hazmat, lithium battery" /></label>
         </div>
 
-        <label className="ds-sourcing-attestation">
-          <input type="checkbox" checked={ownerAttestation} onChange={(event) => setOwnerAttestation(event.target.checked)} />
-          <span>I confirm I am authorized to use and privately analyze this uploaded product data.</span>
-        </label>
-
+        <label className="ds-sourcing-attestation"><input type="checkbox" checked={ownerAttestation} onChange={(event) => setOwnerAttestation(event.target.checked)} /><span>I confirm I am authorized to use and privately analyze this uploaded product data.</span></label>
         {error && <div className="ds-sourcing-alert ds-sourcing-alert-error">{error}</div>}
-
         <div className="ds-sourcing-actions">
-          <button className="ds-button ds-button-primary" type="button" disabled={running} onClick={buildQueue}>
-            {running ? "Analyzing…" : "Build verification queue"}
-          </button>
+          <button className="ds-button ds-button-primary" type="button" disabled={running} onClick={buildQueue}>{running ? "Analyzing…" : "Build verification queue"}</button>
           {(intake || prescreen) && <button className="ds-button ds-button-secondary" type="button" onClick={resetResults}>Clear results</button>}
         </div>
       </section>
@@ -185,31 +162,25 @@ const SourcingWorkspace = () => {
               <div><strong>0</strong><span>eBay fetches</span></div>
               <div><strong>0</strong><span>external actions</span></div>
             </div>
-            <p>
-              These are <strong>prescreen results, not BUY recommendations.</strong> Marketplace demand and realized price remain unknown until each queued product is manually verified on eBay.
-            </p>
+            <p>Prescreen ranking is not a BUY recommendation. Select a candidate and manually enter current eBay Product Research, fee and shipping evidence before DataScout will calculate a final decision.</p>
           </section>
 
           <section className="ds-panel ds-sourcing-queue">
             <div className="ds-sourcing-section-head">
               <div>
                 <h2 className="ds-section-title">2. eBay verification queue</h2>
-                <p className="ds-section-copy">Ranked only from authorized source-side evidence. The next UI slice will capture Product Research evidence and calculate BUY / WATCH / REJECT.</p>
+                <p className="ds-section-copy">Ranked only from authorized source-side evidence. Verify exact marketplace facts manually, then run the deterministic landed-economics decision.</p>
               </div>
               <span className="ds-sourcing-badge ds-sourcing-badge-yellow">YELLOW · manual verification</span>
             </div>
 
-            {queue.length === 0 ? (
-              <div className="ds-empty">No candidates qualified for the manual eBay verification queue.</div>
-            ) : (
+            {queue.length === 0 ? <div className="ds-empty">No candidates qualified for the manual eBay verification queue.</div> : (
               <div className="ds-sourcing-table-wrap">
                 <table className="ds-sourcing-table">
-                  <thead>
-                    <tr><th>Rank</th><th>Candidate</th><th>Supplier</th><th>Source cost</th><th>MOQ outlay</th><th>Identity</th><th>Prescreen</th><th>Source</th></tr>
-                  </thead>
+                  <thead><tr><th>Rank</th><th>Candidate</th><th>Supplier</th><th>Source cost</th><th>MOQ outlay</th><th>Identity</th><th>Prescreen</th><th>Source</th><th>Next</th></tr></thead>
                   <tbody>
                     {queue.map((item) => (
-                      <tr key={item.candidateId}>
+                      <tr key={item.candidateId} className={selectedCandidate?.candidateId === item.candidateId ? "selected" : ""}>
                         <td><strong>#{item.verificationRank}</strong></td>
                         <td><strong>{item.title}</strong><small>{item.candidateId}</small></td>
                         <td>{item.supplier}</td>
@@ -218,6 +189,7 @@ const SourcingWorkspace = () => {
                         <td><span className={`ds-sourcing-confidence ${item.record.identityConfidence.toLowerCase()}`}>{item.record.identityConfidence}</span></td>
                         <td><strong>{item.score}/100</strong><small>{item.warnings?.length ? item.warnings.join(" · ") : "source evidence complete"}</small></td>
                         <td>{item.record.sourceUrl ? <a href={item.record.sourceUrl} target="_blank" rel="noopener noreferrer">Open source ↗</a> : <span className="ds-muted">No URL</span>}</td>
+                        <td><button className="ds-button ds-button-secondary ds-sourcing-verify-button" type="button" onClick={() => setSelectedCandidate(item.record)}>Verify</button></td>
                       </tr>
                     ))}
                   </tbody>
@@ -225,6 +197,8 @@ const SourcingWorkspace = () => {
               </div>
             )}
           </section>
+
+          {selectedCandidate && <CandidateVerificationPanel candidate={selectedCandidate} verifier={currentUser?.email || currentUser?.uid} onClose={() => setSelectedCandidate(null)} />}
         </>
       )}
     </main>
