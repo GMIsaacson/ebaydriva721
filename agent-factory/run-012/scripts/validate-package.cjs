@@ -1,27 +1,35 @@
 const fs = require('node:fs');
 const path = require('node:path');
 
-const root = path.join(__dirname, '..');
+const runRoot = path.join(__dirname, '..');
+const sharedRoot = path.join(runRoot, '..', 'shared');
 const requiredFiles = [
-  'README.md',
-  'contracts/team-contract.json',
-  'contracts/handoff-contract.json',
-  'runtime/policy.cjs',
-  'fixtures/demo-opportunities.json',
-  'tests/policy.test.cjs',
-  'tests/g4-workflow.test.cjs',
-  'n8n/run-012-growth-acquisition-g4.workflow.json',
-  'scripts/run-demo.cjs'
+  path.join(runRoot, 'README.md'),
+  path.join(runRoot, 'contracts/team-contract.json'),
+  path.join(runRoot, 'contracts/handoff-contract.json'),
+  path.join(runRoot, 'runtime/policy.cjs'),
+  path.join(runRoot, 'fixtures/demo-opportunities.json'),
+  path.join(runRoot, 'tests/policy.test.cjs'),
+  path.join(runRoot, 'tests/g4-workflow.test.cjs'),
+  path.join(runRoot, 'n8n/run-012-growth-acquisition-g4.workflow.json'),
+  path.join(runRoot, 'scripts/run-demo.cjs'),
+  path.join(sharedRoot, 'commercial-lifecycle/cclc-v1.0.json'),
+  path.join(sharedRoot, 'commercial-lifecycle/cclc.test.cjs'),
+  path.join(sharedRoot, 'commercial-conversion/conversion-contract-v1.0.json'),
+  path.join(sharedRoot, 'commercial-conversion/runtime.cjs'),
+  path.join(sharedRoot, 'commercial-conversion/conversion.test.cjs'),
+  path.join(sharedRoot, 'commercial-conversion/fixtures/qualified-opportunity.json')
 ];
 
-for (const rel of requiredFiles) {
-  const full = path.join(root, rel);
-  if (!fs.existsSync(full)) throw new Error(`missing required file: ${rel}`);
+for (const full of requiredFiles) {
+  if (!fs.existsSync(full)) throw new Error(`missing required file: ${full}`);
 }
 
-const team = JSON.parse(fs.readFileSync(path.join(root, 'contracts/team-contract.json'), 'utf8'));
-const handoff = JSON.parse(fs.readFileSync(path.join(root, 'contracts/handoff-contract.json'), 'utf8'));
-const workflow = JSON.parse(fs.readFileSync(path.join(root, 'n8n/run-012-growth-acquisition-g4.workflow.json'), 'utf8'));
+const team = JSON.parse(fs.readFileSync(path.join(runRoot, 'contracts/team-contract.json'), 'utf8'));
+const handoff = JSON.parse(fs.readFileSync(path.join(runRoot, 'contracts/handoff-contract.json'), 'utf8'));
+const workflow = JSON.parse(fs.readFileSync(path.join(runRoot, 'n8n/run-012-growth-acquisition-g4.workflow.json'), 'utf8'));
+const cclc = JSON.parse(fs.readFileSync(path.join(sharedRoot, 'commercial-lifecycle/cclc-v1.0.json'), 'utf8'));
+const conversion = JSON.parse(fs.readFileSync(path.join(sharedRoot, 'commercial-conversion/conversion-contract-v1.0.json'), 'utf8'));
 
 if (team.runId !== 'GROWTH-ACQ-012') throw new Error('wrong runId');
 if (team.primaryKpi !== 'attributed_revenue_usd') throw new Error('revenue must remain primary KPI');
@@ -30,6 +38,12 @@ if (team.authority.spendMoney !== false) throw new Error('spending authority mus
 if (team.authority.phoneOrSmsOutreach !== false) throw new Error('phone/SMS outreach must remain disabled');
 if (team.externalActionsDuringG3 !== 0) throw new Error('G3 external actions must be zero');
 if (handoff.runId !== team.runId) throw new Error('handoff contract runId mismatch');
+if (handoff.cclcRef !== 'CCLC-001-v1.0') throw new Error('handoff must bind CCLC v1');
+if (handoff.handoffs?.qualified_opportunity_v1?.receiverContract !== 'COMM-CONV-001-v1.0') throw new Error('qualified opportunity receiver contract missing');
+if (cclc.contractId !== 'CCLC-001' || cclc.version !== '1.0.0') throw new Error('CCLC contract mismatch');
+if (conversion.moduleId !== 'COMM-CONV-001' || conversion.version !== '1.0.0') throw new Error('conversion contract mismatch');
+if (conversion.input !== 'qualified_opportunity_v1') throw new Error('conversion input mismatch');
+if (conversion.authority.sendExternal !== false || conversion.authority.moneyMovement !== false) throw new Error('conversion authority boundary expanded');
 if (workflow.active !== false) throw new Error('G4 workflow must remain inactive');
 if (workflow.meta?.runId !== team.runId) throw new Error('workflow runId mismatch');
 if (workflow.meta?.deploymentMode !== 'inactive-nonproduction') throw new Error('wrong deployment mode');
@@ -39,6 +53,9 @@ console.log(JSON.stringify({
   status: 'PASS',
   agents: team.agents.length,
   primaryKpi: team.primaryKpi,
+  cclc: `${cclc.contractId}-v${cclc.version}`,
+  conversion: `${conversion.moduleId}-v${conversion.version}`,
+  qualifiedOpportunityReceiver: handoff.handoffs.qualified_opportunity_v1.receiverContract,
   workflowId: workflow.meta.workflowId,
   workflowActive: workflow.active,
   externalActionsAllowedAtG3: team.externalActionsDuringG3,
