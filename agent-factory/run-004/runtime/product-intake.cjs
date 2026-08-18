@@ -9,24 +9,28 @@ const SCHEMA_VERSION = '1.0.0';
 
 const FIELD_ALIASES = Object.freeze({
   title: ['title', 'name', 'product', 'productname', 'product_title'],
+  styleName: ['stylename', 'style_name'],
+  colorName: ['colorname', 'color_name'],
+  sizeName: ['sizename', 'size_name'],
   supplier: ['supplier', 'vendor', 'source', 'sourcename', 'suppliername'],
   sourceSku: ['sourcesku', 'source_sku', 'sku', 'itemnumber', 'item_number', 'supplier_sku'],
   mpn: ['mpn', 'manufacturerpartnumber', 'manufacturer_part_number', 'partnumber', 'part_number'],
   upc: ['upc', 'gtin', 'barcode', 'ean'],
-  brand: ['brand', 'manufacturer'],
+  brand: ['brand', 'brandname', 'manufacturer'],
   category: ['category', 'department'],
   condition: ['condition', 'itemcondition'],
   packQuantity: ['packquantity', 'pack_quantity', 'packqty', 'pack_qty', 'unitsperpack', 'units_per_pack'],
-  unitCost: ['unitcost', 'unit_cost', 'cost', 'price', 'sourcecost', 'source_cost'],
+  unitCost: ['unitcost', 'unit_cost', 'cost', 'price', 'sourcecost', 'source_cost', 'customerprice', 'customer_price', 'saleprice', 'sale_price', 'pieceprice', 'piece_price'],
   currency: ['currency', 'currencycode', 'currency_code'],
   moq: ['moq', 'minimumorderquantity', 'minimum_order_quantity', 'minqty', 'min_qty'],
-  availableQuantity: ['availablequantity', 'available_quantity', 'stock', 'inventory', 'qtyavailable', 'qty_available'],
+  availableQuantity: ['availablequantity', 'available_quantity', 'stock', 'inventory', 'qtyavailable', 'qty_available', 'qty'],
   weightOz: ['weightoz', 'weight_oz', 'ounces', 'shippingweightoz', 'shipping_weight_oz'],
   weightLb: ['weightlb', 'weight_lb', 'pounds', 'shippingweightlb', 'shipping_weight_lb'],
   lengthIn: ['lengthin', 'length_in', 'length'],
   widthIn: ['widthin', 'width_in', 'width'],
   heightIn: ['heightin', 'height_in', 'height'],
   sourceUrl: ['sourceurl', 'source_url', 'buyurl', 'buy_url', 'url', 'producturl', 'product_url'],
+  eRetailingProhibited: ['noeretailing', 'no_e_retailing', 'eretailingprohibited', 'e_retailing_prohibited'],
 });
 
 function canonicalKey(value) {
@@ -74,6 +78,15 @@ function parseOptionalPositiveNumber(value, field) {
   return parsed;
 }
 
+function parseOptionalBoolean(value, field) {
+  if (value === undefined || value === null || String(value).trim() === '') return null;
+  if (value === true || value === false) return value;
+  const normalized = String(value).trim().toLowerCase();
+  if (['true', '1', 'yes', 'y'].includes(normalized)) return true;
+  if (['false', '0', 'no', 'n'].includes(normalized)) return false;
+  throw new Error(`${field} must be true or false`);
+}
+
 function parseMoneyToCents(value) {
   if (value === undefined || value === null || String(value).trim() === '') throw new Error('unitCost is required');
   const cleaned = String(value).trim().replace(/[$,]/g, '');
@@ -108,22 +121,27 @@ function stableRecordFingerprint(record) {
     record.title, record.supplier, record.sourceSku, record.mpn, record.upc, record.brand,
     record.category, record.condition, record.packQuantity, record.unitCostCents, record.currency,
     record.moq, record.availableQuantity, record.weightOz, record.lengthIn, record.widthIn,
-    record.heightIn, record.sourceUrl,
+    record.heightIn, record.sourceUrl, record.eRetailingProhibited,
   ];
   return hash(JSON.stringify(fields), 32);
 }
 
 function normalizeRow(row, rowNumber, context) {
   const lookup = buildLookup(row);
-  const title = normalizeText(pick(lookup, FIELD_ALIASES.title));
   const supplier = normalizeText(pick(lookup, FIELD_ALIASES.supplier)) || normalizeText(context.defaultSupplier);
-  if (!title) throw new Error('title is required');
   if (!supplier) throw new Error('supplier is required');
 
   const sourceSku = normalizeText(pick(lookup, FIELD_ALIASES.sourceSku));
   const mpn = normalizeText(pick(lookup, FIELD_ALIASES.mpn));
   const upc = normalizeUpc(pick(lookup, FIELD_ALIASES.upc));
   const brand = normalizeText(pick(lookup, FIELD_ALIASES.brand));
+  const styleName = normalizeText(pick(lookup, FIELD_ALIASES.styleName));
+  const colorName = normalizeText(pick(lookup, FIELD_ALIASES.colorName));
+  const sizeName = normalizeText(pick(lookup, FIELD_ALIASES.sizeName));
+  const explicitTitle = normalizeText(pick(lookup, FIELD_ALIASES.title));
+  const title = explicitTitle || [brand, styleName, colorName, sizeName].filter(Boolean).join(' ') || null;
+  if (!title) throw new Error('title is required');
+
   const category = normalizeText(pick(lookup, FIELD_ALIASES.category));
   const condition = normalizeText(pick(lookup, FIELD_ALIASES.condition));
   const packQuantity = parsePositiveInteger(pick(lookup, FIELD_ALIASES.packQuantity), 1, 'packQuantity');
@@ -132,6 +150,7 @@ function normalizeRow(row, rowNumber, context) {
   if (!/^[A-Z]{3}$/.test(currency)) throw new Error('currency must be a three-letter code');
   const moq = parsePositiveInteger(pick(lookup, FIELD_ALIASES.moq), 1, 'moq');
   const availableQuantity = parseOptionalNonNegativeInteger(pick(lookup, FIELD_ALIASES.availableQuantity), 'availableQuantity');
+  const eRetailingProhibited = parseOptionalBoolean(pick(lookup, FIELD_ALIASES.eRetailingProhibited), 'eRetailingProhibited');
 
   let weightOz = parseOptionalPositiveNumber(pick(lookup, FIELD_ALIASES.weightOz), 'weightOz');
   if (weightOz === null) {
@@ -172,6 +191,7 @@ function normalizeRow(row, rowNumber, context) {
     widthIn,
     heightIn,
     sourceUrl,
+    eRetailingProhibited,
     provenance: {
       accessSourceId: context.sourceId,
       accessMode: context.accessMode,
