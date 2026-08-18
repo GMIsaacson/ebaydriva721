@@ -1,0 +1,18 @@
+{
+  "decision_id": "A0-YYYY-NNN",
+  "status": "PASS",
+  "verdict": "NEW",
+  "owner": "Aberdeen Technologies",
+  "decided_at": "YYYY-MM-DD",
+  "business_outcome": "What measurable outcome or ownership gap requires consideration?",
+  "existing_owner_scan": "Which existing teams, agents, workflows, services, databases, and control centers were checked?",
+  "reuse_candidates_checked": [
+    "existing-capability-id-or-name"
+  ],
+  "duplication_analysis": "Why REUSE alone is insufficient and what overlap was ruled out.",
+  "residual_unowned_loop": "The exact bounded loop that remains unowned after the reuse scan.",
+  "covers_paths": [
+    "agent-factory/run-XYZ/"
+  ],
+  "evidence_ref": "Canonical Notion A0 record or system-map reference"
+}
