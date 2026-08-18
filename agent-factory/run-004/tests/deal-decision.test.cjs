@@ -133,17 +133,29 @@ test('missing shipping evidence is incomplete', () => {
   assert.match(result.reason, /shipping quote/);
 });
 
-test('stale shipping evidence routes to review', () => {
+test('stale shipping evidence routes to review while marketplace evidence remains fresh', () => {
   const result = decision({
-    at: '2026-08-22T03:30:00Z',
     shippingQuote: {
-      capturedAt: '2026-08-18T03:20:00Z',
+      capturedAt: '2026-08-14T03:20:00Z',
       evidenceRef: 'shipping-quote://stale',
       quotesCents: [1000],
     },
   });
   assert.equal(result.status, 'REVIEW');
-  assert.match(result.reason, /stale/);
+  assert.match(result.reason, /shipping quote is stale/);
+});
+
+test('previously VERIFIED marketplace evidence expires again at deal-decision time', () => {
+  const result = decision({
+    at: '2026-08-22T03:30:00Z',
+    shippingQuote: {
+      capturedAt: '2026-08-22T03:20:00Z',
+      evidenceRef: 'shipping-quote://fresh-on-22',
+      quotesCents: [1000],
+    },
+  });
+  assert.equal(result.status, 'REVIEW');
+  assert.match(result.reason, /marketplace verification is stale/);
 });
 
 test('unverified marketplace evidence blocks the deal decision', () => {
