@@ -1,18 +1,28 @@
 # Run 012 — Growth & Client Acquisition Team
 
-Run 012 builds a governed multi-channel growth and client-acquisition team for Aberdeen. Its purpose is to turn public market signals, our real proof assets, and inbound/outbound opportunities across X, LinkedIn, Upwork/Contra, Reddit and YouTube into qualified leads and measurable revenue while keeping consequential external actions owner-approved.
+Run 012 builds a governed multi-channel demand and client-acquisition component for Aberdeen. Its purpose is to turn public market signals, real proof assets, and inbound/outbound opportunities across X, LinkedIn, Upwork/Contra, Reddit and YouTube into qualified commercial opportunities while keeping consequential external actions owner-approved.
+
+## Architecture correction
+
+`A0-COMM-001 v1.0 — Revenue → Customer → Delivery → Retention System Map` supersedes the earlier implied end-to-end Run 012 scope.
+
+Run 012 is **Demand & Acquisition only**. It does not own final commercial scope, payment verification, onboarding, production, QA, client delivery, support, refunds, retention or customer-success obligations.
+
+The required downstream endpoint is the typed `qualified_opportunity_v1` handoff into the reusable Commercial Conversion capability.
+
+Prior G3/G4-artifact evidence is preserved, but G4 promotion is blocked until the B0 amendment and affected G2/G3 revalidation are complete.
 
 ## Contract
 
 - Run ID: GROWTH-ACQ-012
-- Current target: G3 simulation package, then G4 non-production deployment
-- Primary KPI: revenue attributable to the team
-- Secondary KPIs: qualified leads, proposals, reply rate, conversion rate, pipeline value, CAC, profile visits and channel ROI
+- Current gate: B0 architecture reconciliation
+- Primary KPI: revenue attributable to acquisition, measured from verified downstream feedback
+- Direct operating KPIs: qualified opportunities, pipeline value, reply rate, handoff acceptance rate, CAC, profile visits and channel ROI
 - Vanity metrics: followers and impressions are diagnostic only
 - Channels: X, LinkedIn, Upwork, Contra, Reddit, YouTube
-- Trigger during G3/G4: manual only
 - Authority: Observe, Analyze, Score, Recommend and Draft
-- External posting/messages/proposals: approval-gated
+- External first-touch posts/messages/proposals: approval-gated
+- Final pricing/scope/contract/payment/delivery authority: out of scope
 - Paid ads and spending authority: $0
 - Phone/SMS acquisition: prohibited
 - Schedules/webhooks: disabled until later gate approval
@@ -20,28 +30,35 @@ Run 012 builds a governed multi-channel growth and client-acquisition team for A
 
 ## Team
 
-1. Growth Lead / Orchestrator — owns priorities, handoffs, conflicts and daily/weekly briefing.
+1. Growth Lead / Orchestrator — owns acquisition priorities, handoffs, conflicts and briefing.
 2. Market Intelligence Agent — finds niches, buyer pain, competitors, offers and high-value conversations.
-3. Content Strategy Agent — converts real builds/results into channel-specific content plans.
+3. Content Strategy Agent — converts verified proof into channel-specific content plans.
 4. X Growth Agent — finds reply targets, drafts posts/replies and analyzes X performance.
 5. LinkedIn Acquisition Agent — identifies decision-makers, content/comment opportunities and Service Page demand.
-6. Marketplace Agent — monitors Upwork/Contra opportunities, scores jobs and drafts proposals.
+6. Marketplace Agent — monitors Upwork/Contra opportunities, scores jobs and drafts first-touch marketplace responses/proposals.
 7. Reddit Opportunity Agent — finds relevant pain-point threads and drafts useful, non-spam responses.
-8. Proof / Case-Study Agent — converts completed work into proof assets, demos and YouTube-ready case studies.
+8. Proof / Case-Study Agent — converts verified downstream outcome packets with applicable permission into proof assets and content seeds.
 9. Lead Qualification Agent — scores commercial intent, fit, urgency, accessibility and expected deal value.
-10. Follow-up / CRM Agent — maintains lead state, next action, proposal state and follow-up queue.
-11. Growth Analyst — attributes revenue, measures channel economics and recommends scale/kill decisions.
+10. Follow-up / CRM Agent — maintains acquisition-stage lead state, next action and pre-conversion follow-up queue.
+11. Growth Analyst — attributes downstream revenue feedback to acquisition channels and recommends scale/kill decisions.
 
 ## Canonical flow
 
-Research -> Content/Prospecting -> Engagement Opportunity -> Lead Detection -> Qualification -> Draft Action -> Owner Approval -> External Action -> CRM -> Sale -> Case Study -> More Content
+Research -> Content/Prospecting -> Engagement Opportunity -> Lead Detection -> Qualification -> Draft First-Touch Action -> Owner Approval -> External First Touch -> Reply/Pre-Conversion Qualification -> `qualified_opportunity_v1` -> Commercial Conversion
+
+Downstream verified feedback returns separately:
+
+Commercial Conversion / Fulfillment / Customer Success -> verified outcome and revenue feedback -> Growth Analyst / Proof Agent -> Content Strategy
+
+Run 012 never acquires downstream authority from receiving feedback.
 
 ## Execution split
 
 - Deterministic software performs schema checks, scoring arithmetic, routing thresholds, idempotency, duplicate suppression, authorization checks, action limits and KPI calculations.
 - Fixed workflows move typed records between agents and the approval queue.
-- Agents perform bounded interpretation: pain analysis, fit assessment, content transformation, proposal/reply drafting and explanation.
-- External sends, posts, comments, bids, proposals, profile changes and spending require an exact owner-approved permit until a later gate explicitly changes authority.
+- Agents perform bounded interpretation: pain analysis, fit assessment, content transformation, first-touch drafting and explanation.
+- External first-touch sends, posts, comments, bids/proposals and profile changes require an exact owner-approved permit until a later gate explicitly changes authority.
+- Final commercial commitments, payment, delivery and customer-success actions are outside this run.
 - n8n may execute only pre-authorized deterministic steps; it does not decide policy or grant itself authority.
 
 ## Lead score — 100 points
@@ -76,17 +93,15 @@ For first revenue, the team's default effort allocation is:
 
 This is a starting allocation, not a permanent rule. Growth Analyst may recommend changes only from measured channel economics.
 
-## G3/G4 pass criteria
+## B0 amendment requirements before G4 reconsideration
 
-1. All structural, authority, scoring, deduplication and failure-path tests pass.
-2. Every external action remains blocked without a matching, unexpired approval permit.
-3. Duplicate opportunities are suppressed deterministically.
-4. Unsupported channels and malformed evidence are rejected.
-5. Lead scoring is reproducible and arithmetic is not delegated to an LLM.
-6. Every queued item retains source, observation time, route, score and idempotency key.
-7. Demo produces prioritized opportunities with zero external actions.
-8. No paid ads, purchases, publishing, messages, bids, proposals or phone/SMS actions occur during G3/G4.
+1. Version `qualified_opportunity_v1` and its reject/remediation path.
+2. Define canonical Lead and Opportunity ownership fields.
+3. Prove the downstream Commercial Conversion receiver can accept the handoff without ambiguity.
+4. Remove any code/test assumption that Run 012 owns sale, payment, fulfillment or customer success.
+5. Re-run affected G2/G3 structural, boundary, duplicate, stale-state and failure tests.
+6. Keep all external actions fail-closed throughout revalidation.
 
-## Not authorized yet
+## Not authorized
 
-Autonomous publishing, autonomous replies/comments, DMs, email outreach, Upwork/Contra bids, proposal submission, paid ads, profile changes, customer promises, pricing exceptions, discounts, payment actions, phone/SMS outreach and recurring activation.
+Autonomous publishing, autonomous replies/comments, DMs, email outreach, Upwork/Contra first-touch submission without approval, paid ads, profile changes, customer promises, final pricing/scope, discounts, contracts, payment verification/actions, onboarding, production, QA, client delivery, refunds, customer-success actions, phone/SMS outreach and recurring activation.
