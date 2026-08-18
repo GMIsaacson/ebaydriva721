@@ -1,7 +1,7 @@
 'use strict';
 
 const FIXED = Object.freeze({
-  runId: 'OPP-INTEL-011', gate: 'G4', workflowId: 'WF-OIT-011-G4-001', workflowVersion: '1.1.0',
+  runId: 'OPP-INTEL-011', allowedGates: ['G4','G5'], workflowId: 'WF-OIT-011-G4-001', workflowVersion: '1.1.0',
   boundaryContract: 'B0-OIT-011-v1.0', maxCandidates: 10, maxSupportingSources: 3,
   escalationScore: 80, watchScore: 65, minEvidenceStrength: 3,
 });
@@ -30,15 +30,15 @@ function validateCandidate(candidate) {
 }
 function validateEnvelope(packet) {
   const v=[]; if(!packet||typeof packet!=='object')return ['packet must be an object'];
-  if(packet.runId!==FIXED.runId||packet.gate!==FIXED.gate)v.push('wrong run or gate');
+  if(packet.runId!==FIXED.runId||!FIXED.allowedGates.includes(packet.gate))v.push('wrong run or gate');
   if(packet.workflowId!==FIXED.workflowId||packet.workflowVersion!==FIXED.workflowVersion)v.push('wrong workflow contract');
   if(packet.boundaryContract!==FIXED.boundaryContract)v.push('wrong boundary contract');
   const c=packet.control||{}; if(c.manualOnly!==true)v.push('manual-only control removed');
   if(c.scheduleEnabled!==false||c.webhookEnabled!==false)v.push('trigger expansion');
   if(c.maxExternalActions!==0)v.push('external actions enabled'); if(c.maxCanonicalPortfolioWrites!==0)v.push('canonical portfolio writes enabled');
-  if(c.maxPaidToolCostUsd!==0)v.push('paid-tool cost enabled'); if(c.maxAiCalls!==0)v.push('AI calls enabled at G4'); if(c.retryOnUnknownOutcome!==false)v.push('unsafe blind retry enabled');
+  if(c.maxPaidToolCostUsd!==0)v.push('paid-tool cost enabled'); if(c.maxAiCalls!==0)v.push('AI calls enabled in bounded G4/G5 control run'); if(c.retryOnUnknownOutcome!==false)v.push('unsafe blind retry enabled');
   if(!Array.isArray(packet.candidates))v.push('candidates must be an array'); else { if(packet.candidates.length>FIXED.maxCandidates)v.push('candidate limit exceeded'); packet.candidates.forEach((candidate,index)=>validateCandidate(candidate).forEach((x)=>v.push(`candidate ${index}: ${x}`))); }
-  for(const action of Array.isArray(packet.requestedActions)?packet.requestedActions:[]){const n=String(action).toLowerCase();v.push(PROHIBITED_ACTIONS.has(n)?'prohibited action requested: '+action:'G4 requestedActions must be empty');}
+  for(const action of Array.isArray(packet.requestedActions)?packet.requestedActions:[]){const n=String(action).toLowerCase();v.push(PROHIBITED_ACTIONS.has(n)?'prohibited action requested: '+action:'G4/G5 requestedActions must be empty');}
   return [...new Set(v)];
 }
 function evaluateRoute(candidate, score) {
