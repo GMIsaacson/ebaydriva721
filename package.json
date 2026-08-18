@@ -41,7 +41,7 @@
     "test:run006": "node --test agent-factory/run-006/tests/runtime.test.cjs agent-factory/run-006/tests/firestore-rules.test.cjs",
     "validate:run006": "node agent-factory/run-006/scripts/validate-package.cjs",
     "demo:run006": "node agent-factory/run-006/scripts/run-demo.cjs",
-    "test:run012": "node --test agent-factory/run-012/tests/policy.test.cjs",
+    "test:run012": "node --test agent-factory/run-012/tests/policy.test.cjs agent-factory/run-012/tests/g4-workflow.test.cjs",
     "validate:run012": "node agent-factory/run-012/scripts/validate-package.cjs",
     "demo:run012": "node agent-factory/run-012/scripts/run-demo.cjs"
   },
