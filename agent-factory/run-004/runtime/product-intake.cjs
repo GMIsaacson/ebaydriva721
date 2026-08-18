@@ -121,8 +121,14 @@ function stableRecordFingerprint(record) {
     record.title, record.supplier, record.sourceSku, record.mpn, record.upc, record.brand,
     record.category, record.condition, record.packQuantity, record.unitCostCents, record.currency,
     record.moq, record.availableQuantity, record.weightOz, record.lengthIn, record.widthIn,
-    record.heightIn, record.sourceUrl, record.eRetailingProhibited,
+    record.heightIn, record.sourceUrl,
   ];
+  // Preserve the historical/generic dataset hash when no supplier restriction signal
+  // is present. If a supplier supplies an explicit restriction flag, include it in the
+  // fingerprint so changing that compliance fact changes the authoritative dataset hash.
+  if (record.eRetailingProhibited !== null && record.eRetailingProhibited !== undefined) {
+    fields.push(record.eRetailingProhibited);
+  }
   return hash(JSON.stringify(fields), 32);
 }
 
