@@ -31,6 +31,17 @@ A new emulator-only data plane defines `sourcingRuns` with controlled `candidate
 
 The sourcing Firestore rules passed their allow/deny suite in the disposable emulator. **They are not deployed to production and must not replace the existing production rules without a separate reviewed integration.**
 
+## First real-data pilot source — S&S Activewear
+S&S Activewear is the selected first pilot-source candidate because the supplier itself documents customer integrations and an on-demand Data Library containing product, inventory and pricing information. The first pilot remains **owner-download/upload**, not an automated API connector.
+
+DataScout includes S&S-compatible upload handling for `sku`, `gtin`, `brandName`, `styleName`, `colorName`, `sizeName`, `customerPrice`, `qty` and the supplier's `noeRetailing` control. That restriction is fail-closed:
+
+- `noeRetailing = true` → blocked before eBay verification;
+- `noeRetailing = false` → may continue through ordinary source-side prescreening;
+- missing or unparseable restriction → REVIEW, never eligible by assumption.
+
+The supplier-specific adapter is tested separately, and the authoritative prescreen also hard-rejects records explicitly carrying `eRetailingProhibited = true`. A future S&S API connector would require a separate GREEN machine-access registry entry and private credential binding; it is not authorized by the upload pilot.
+
 ## Current architecture
 `authorized dataset → access gate → normalize/dedupe → prescreen → bounded manual eBay verification → fresh fees/shipping → authoritative economics → BUY/WATCH/REJECT`
 
