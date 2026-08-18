@@ -1,0 +1,26 @@
+[
+  {
+    "id": "UPW-001",
+    "channel": "upwork",
+    "sourceUrl": "https://example.com/upwork/ai-automation-001",
+    "observedAt": "2026-08-18T09:00:00Z",
+    "leadDimensions": {"buyerFit":5,"painEvidence":5,"buyingIntent":5,"dealValue":4,"accessibility":4,"urgency":5},
+    "recommendedAction": "draft_proposal"
+  },
+  {
+    "id": "X-001",
+    "channel": "x",
+    "sourceUrl": "https://example.com/x/post-001",
+    "observedAt": "2026-08-18T09:05:00Z",
+    "leadDimensions": {"buyerFit":4,"painEvidence":4,"buyingIntent":3,"dealValue":4,"accessibility":5,"urgency":3},
+    "recommendedAction": "draft_reply"
+  },
+  {
+    "id": "RED-001",
+    "channel": "reddit",
+    "sourceUrl": "https://example.com/reddit/thread-001",
+    "observedAt": "2026-08-18T09:10:00Z",
+    "leadDimensions": {"buyerFit":3,"painEvidence":4,"buyingIntent":2,"dealValue":2,"accessibility":4,"urgency":2},
+    "recommendedAction": "draft_helpful_response"
+  }
+]
