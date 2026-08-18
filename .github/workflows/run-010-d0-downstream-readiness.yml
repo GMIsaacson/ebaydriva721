@@ -1,0 +1,45 @@
+name: Run 010 D0 downstream readiness
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "agent-factory/run-010/contracts/d0-recovery-review-handoff.schema.json"
+      - "agent-factory/run-010/runtime/d0-downstream-readiness.cjs"
+      - "agent-factory/run-010/tests/d0-downstream-readiness.test.cjs"
+      - ".github/workflows/run-010-d0-downstream-readiness.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: run-010-d0-downstream-readiness
+  cancel-in-progress: false
+
+jobs:
+  d0-acceptance:
+    name: D0 durable handoff and authority acceptance
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Parse D0 handoff schema
+        run: node -e "JSON.parse(require('fs').readFileSync('agent-factory/run-010/contracts/d0-recovery-review-handoff.schema.json','utf8')); console.log('schema: PASS')"
+      - name: Run D0 deterministic acceptance tests
+        run: node agent-factory/run-010/tests/d0-downstream-readiness.test.cjs
+      - name: Verify authority stays internal-only
+        run: |
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const schema = JSON.parse(fs.readFileSync('agent-factory/run-010/contracts/d0-recovery-review-handoff.schema.json','utf8'));
+          const requiredFalse = ['externalActionAuthorized','accountingWriteAuthorized','paymentActionAuthorized','moneyMovementAuthorized'];
+          for (const key of requiredFalse) {
+            if (schema.properties?.[key]?.const !== false) throw new Error(`${key} must be const false`);
+          }
+          if (schema.properties?.authority?.const !== 'INTERNAL_REVIEW_ONLY') throw new Error('authority ceiling changed');
+          if (schema.properties?.recipientRole?.const !== 'Aberdeen Owner Review Queue') throw new Error('unexpected D0 receiver');
+          console.log(JSON.stringify({status:'Pass',authority:'INTERNAL_REVIEW_ONLY',externalActions:0,accountingWrites:0,paymentActions:0,moneyMovementActions:0}));
+          NODE
