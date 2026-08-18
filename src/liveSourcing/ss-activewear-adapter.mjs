@@ -34,6 +34,13 @@ function positiveInteger(value) {
   return Number.isSafeInteger(parsed) && parsed > 0 ? parsed : null;
 }
 
+function moneyCents(value) {
+  if (value === undefined || value === null || text(value) === "") return null;
+  const parsed = Number(String(value).replace(/[$,]/g, ""));
+  if (!Number.isFinite(parsed) || parsed < 0) return null;
+  return Math.round(parsed * 100);
+}
+
 function resolveFormat(fileName, explicitFormat) {
   if (explicitFormat) return String(explicitFormat).toLowerCase();
   const extension = String(fileName || "").toLowerCase().split(".").pop();
@@ -65,23 +72,36 @@ function looksLikeSsActivewear(row) {
  * - false => not blocked by this supplier flag; continue through other controls
  * - absent/unparseable => REVIEW, not eligible
  *
- * A false NoeRetailing value is not treated as blanket permission to sell; other
- * supplier, mill, marketplace, product and account restrictions remain independently applicable.
+ * Supplier retail/MAP values are retained only as source-side research-priority
+ * signals. They are never substituted for observed eBay sold prices.
  *
- * The adapter intentionally does not use S&S case-box dimensions as individual-item
- * shipping dimensions. Products.xlsx exposes unitWeight, which is mapped as pounds.
+ * S&S documents fullCaseOnly=true as requiring full-case quantities. When false,
+ * DataScout records MOQ 1 as SUPPLIER_SUPPORTED rather than fully confirmed, so the
+ * ordering policy remains visible before any final BUY decision.
  */
 export function adaptSsActivewearDataset({ content, fileName, format, defaultSupplier = "S&S Activewear" } = {}) {
   if (typeof content !== "string") throw new Error("dataset content is required");
   const resolvedFormat = resolveFormat(fileName, format);
   const rows = parse(content, resolvedFormat);
   if (!rows.length || !looksLikeSsActivewear(rows[0])) {
-    return { detected: false, format: resolvedFormat, content, inputCount: rows.length, allowedCount: rows.length, prohibitedCount: 0, reviewCount: 0, prohibited: [], review: [] };
+    return {
+      detected: false,
+      format: resolvedFormat,
+      content,
+      inputCount: rows.length,
+      allowedCount: rows.length,
+      prohibitedCount: 0,
+      reviewCount: 0,
+      prohibited: [],
+      review: [],
+      metadataBySku: {},
+    };
   }
 
   const allowed = [];
   const prohibited = [];
   const review = [];
+  const metadataBySku = {};
 
   rows.forEach((row, index) => {
     const rowNumber = index + 2;
@@ -107,6 +127,40 @@ export function adaptSsActivewearDataset({ content, fileName, format, defaultSup
     const caseQty = positiveInteger(get(map, "CaseQty", "caseQty", "case_qty"));
     const fullCaseOnly = boolean(get(map, "fullCaseOnly_DS", "full_case_only_ds", "fullCaseOnly", "full_case_only"));
     const unitWeightLb = get(map, "unitWeight", "unit_weight", "weightLb", "weight_lb");
+    const returnable = boolean(get(map, "Returnable", "returnable"));
+    const boxRequired = boolean(get(map, "BoxRequired", "boxRequired", "box_required"));
+    const dropShipOnly = boolean(get(map, "DropShipOnly", "dropShipOnly", "drop_ship_only"));
+
+    let moq = 1;
+    let moqEvidence = "UNKNOWN";
+    let moqEvidenceBasis = "S&S fullCaseOnly flag unavailable";
+    if (fullCaseOnly === true && caseQty) {
+      moq = caseQty;
+      moqEvidence = "SUPPLIER_CONFIRMED";
+      moqEvidenceBasis = "S&S fullCaseOnly=true; CaseQty is required quantity";
+    } else if (fullCaseOnly === false) {
+      moq = 1;
+      moqEvidence = "SUPPLIER_SUPPORTED";
+      moqEvidenceBasis = "S&S fullCaseOnly=false; full-case ordering is not required";
+    }
+
+    if (sourceSku) {
+      metadataBySku[sourceSku] = {
+        moq,
+        moqEvidence,
+        moqEvidenceBasis,
+        fullCaseOnly,
+        caseQty,
+        retailPriceCents: moneyCents(get(map, "RetailPrice", "retailPrice", "retail_price")),
+        mapPriceCents: moneyCents(get(map, "MAPPrice", "mapPrice", "map_price")),
+        piecePriceCents: moneyCents(get(map, "piecePrice", "piece_price")),
+        casePriceCents: moneyCents(get(map, "casePrice", "case_price")),
+        returnable,
+        boxRequired,
+        dropShipOnly,
+        supplierRowNumber: rowNumber,
+      };
+    }
 
     allowed.push({
       title,
@@ -116,7 +170,7 @@ export function adaptSsActivewearDataset({ content, fileName, format, defaultSup
       brand,
       cost: customerPrice,
       stock: get(map, "Qty", "qty", "inventory", "stock"),
-      moq: fullCaseOnly === true && caseQty ? caseQty : 1,
+      moq,
       weight_lb: unitWeightLb,
       condition: "New",
       noeRetailing: false,
@@ -135,5 +189,6 @@ export function adaptSsActivewearDataset({ content, fileName, format, defaultSup
     reviewCount: review.length,
     prohibited,
     review,
+    metadataBySku,
   };
 }
