@@ -16,6 +16,7 @@
     "unitCostCents",
     "currency",
     "moq",
+    "eRetailingProhibited",
     "provenance"
   ],
   "properties": {
@@ -42,6 +43,7 @@
     "widthIn": { "type": ["number", "null"], "exclusiveMinimum": 0 },
     "heightIn": { "type": ["number", "null"], "exclusiveMinimum": 0 },
     "sourceUrl": { "type": ["string", "null"] },
+    "eRetailingProhibited": { "type": ["boolean", "null"] },
     "provenance": {
       "type": "object",
       "additionalProperties": false,
