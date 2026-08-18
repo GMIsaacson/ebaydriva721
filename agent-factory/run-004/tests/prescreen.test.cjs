@@ -45,6 +45,16 @@ test('bounds a 600-record eligible batch to a 50-item verification queue', () =>
   assert.equal(result.externalActions, 0);
 });
 
+test('hard rejects supplier/mill e-retailing prohibitions before marketplace verification', () => {
+  const [record] = intake([{
+    title: 'Restricted Mill Product', supplier: 'S&S Activewear', sku: 'R-1', gtin: '00880723038404', customerPrice: '3.72', qty: 100, noeRetailing: true,
+  }]);
+  const result = prescreenCandidates([record], { maxSourceCostCents: 5000, maxInitialOutlayCents: 25000 });
+  assert.equal(result.rejectedCount, 1);
+  assert.equal(result.verificationCount, 0);
+  assert.match(result.rejected[0].reason, /prohibits e-retailing/);
+});
+
 test('rejects source cost above the owner cap', () => {
   const [record] = intake([{ title: 'High Cost', supplier: 'S', sku: 'HC', cost: '125.00' }]);
   const result = prescreenCandidates([record], { maxSourceCostCents: 10000, maxInitialOutlayCents: 20000 });
