@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const test = require('node:test');
 const registry = require('../live-sourcing/source-access-registry.json');
 const { ingestAuthorizedDataset } = require('../runtime/product-intake.cjs');
-const { prescreenCandidates } = require('../runtime/prescreen.cjs');
+const { prescreenCandidatesV2 } = require('../runtime/prescreen-v2.cjs');
 
 const observedAt = '2026-08-18T03:10:00Z';
 const csv = [
@@ -17,6 +17,10 @@ const csv = [
 
 async function browserCore() {
   return import('../../../src/liveSourcing/browser-core.mjs');
+}
+
+async function browserPrescreen() {
+  return import('../../../src/liveSourcing/prescreen-v2.mjs');
 }
 
 test('browser intake produces the same canonical IDs and normalized records as authoritative CJS intake', async () => {
@@ -65,8 +69,9 @@ test('browser intake produces the same canonical IDs and normalized records as a
   );
 });
 
-test('browser prescreen queue and dispositions match authoritative CJS prescreen', async () => {
+test('browser prescreen v2 queue, scores and dispositions match authoritative CJS prescreen v2', async () => {
   const browser = await browserCore();
+  const browserRanker = await browserPrescreen();
   const authoritativeIntake = ingestAuthorizedDataset({
     registry,
     ownerAttestation: true,
@@ -88,10 +93,12 @@ test('browser prescreen queue and dispositions match authoritative CJS prescreen
     maxInitialOutlayCents: 10000,
     excludedTerms: [],
   };
-  const authoritative = prescreenCandidates(authoritativeIntake.records, policy);
-  const client = browser.prescreenBrowserCandidates(clientIntake.records, policy);
+  const authoritative = prescreenCandidatesV2(authoritativeIntake.records, policy);
+  const client = browserRanker.prescreenBrowserCandidates(clientIntake.records, policy);
 
   assert.deepEqual(client.verificationQueue.map((item) => item.candidateId), authoritative.verificationQueue.map((item) => item.candidateId));
+  assert.deepEqual(client.verificationQueue.map((item) => item.opportunityScore), authoritative.verificationQueue.map((item) => item.opportunityScore));
+  assert.deepEqual(client.verificationQueue.map((item) => item.evidenceConfidence), authoritative.verificationQueue.map((item) => item.evidenceConfidence));
   assert.deepEqual(client.deferred.map((item) => item.candidateId), authoritative.deferred.map((item) => item.candidateId));
   assert.deepEqual(client.review.map((item) => item.candidateId), authoritative.review.map((item) => item.candidateId));
   assert.deepEqual(client.rejected.map((item) => item.candidateId), authoritative.rejected.map((item) => item.candidateId));
