@@ -1,0 +1,22 @@
+{
+  "decision_id": "A0-OPS008-RETRYDLQ-001",
+  "status": "PASS",
+  "verdict": "EXTEND",
+  "owner": "Aberdeen Technologies",
+  "decided_at": "2026-08-18",
+  "business_outcome": "Close the Run 008 retry/dead-letter/cancellation control gap so transient failures have bounded retry attempts, exhausted or deterministic failures have an accountable owner, cancellations suppress future retries, and dead-letter requeue requires explicit authority.",
+  "existing_owner_scan": "Checked CAP-27 Retries dead-letter and cancellation, Run 008 recovery/replay/idempotency runtime, Run 004 transient/auth/cancellation evidence, SAFE controls and Pie Closure Wave 1. Run 008 already owns recovery/replay; no new team, queue service, database owner, control center or autonomous authority is required.",
+  "reuse_candidates_checked": [
+    "Run 008 recovery/replay/idempotency controls",
+    "Run 004 transient failure and authentication failure evidence",
+    "Run 004 cancellation evidence",
+    "SAFE Execution Standard v1.0",
+    "CAP-27 Retries dead-letter and cancellation"
+  ],
+  "duplication_analysis": "A separate retry manager or dead-letter team would duplicate Run 008. The bounded extension adds explicit retry budgets, dead-letter ownership and cancellation/requeue rules to the existing recovery boundary.",
+  "residual_unowned_loop": "Current recovery logic classifies retryability and blocks unsafe replay but does not require owned dead-letter records, enforce a retry-attempt ceiling at the decision point, prove cancellation suppresses future retries, or require explicit authority to requeue dead-lettered work.",
+  "covers_paths": [
+    "agent-factory/run-008/"
+  ],
+  "evidence_ref": "https://app.notion.com/p/3b9e161eac8a816c8b39e4a731151e85"
+}
