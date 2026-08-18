@@ -18,7 +18,12 @@ const requiredFiles = [
   path.join(sharedRoot, 'commercial-conversion/conversion-contract-v1.0.json'),
   path.join(sharedRoot, 'commercial-conversion/runtime.cjs'),
   path.join(sharedRoot, 'commercial-conversion/conversion.test.cjs'),
-  path.join(sharedRoot, 'commercial-conversion/fixtures/qualified-opportunity.json')
+  path.join(sharedRoot, 'commercial-conversion/fixtures/qualified-opportunity.json'),
+  path.join(sharedRoot, 'fulfillment/fulfillment-contract-v1.0.json'),
+  path.join(sharedRoot, 'fulfillment/runtime.cjs'),
+  path.join(sharedRoot, 'fulfillment/fulfillment.test.cjs'),
+  path.join(sharedRoot, 'fulfillment/fixtures/accepted-engagement.json'),
+  path.join(sharedRoot, 'fulfillment/README.md')
 ];
 
 for (const full of requiredFiles) {
@@ -30,6 +35,7 @@ const handoff = JSON.parse(fs.readFileSync(path.join(runRoot, 'contracts/handoff
 const workflow = JSON.parse(fs.readFileSync(path.join(runRoot, 'n8n/run-012-growth-acquisition-g4.workflow.json'), 'utf8'));
 const cclc = JSON.parse(fs.readFileSync(path.join(sharedRoot, 'commercial-lifecycle/cclc-v1.0.json'), 'utf8'));
 const conversion = JSON.parse(fs.readFileSync(path.join(sharedRoot, 'commercial-conversion/conversion-contract-v1.0.json'), 'utf8'));
+const fulfillment = JSON.parse(fs.readFileSync(path.join(sharedRoot, 'fulfillment/fulfillment-contract-v1.0.json'), 'utf8'));
 
 if (team.runId !== 'GROWTH-ACQ-012') throw new Error('wrong runId');
 if (team.primaryKpi !== 'attributed_revenue_usd') throw new Error('revenue must remain primary KPI');
@@ -44,6 +50,12 @@ if (cclc.contractId !== 'CCLC-001' || cclc.version !== '1.0.0') throw new Error(
 if (conversion.moduleId !== 'COMM-CONV-001' || conversion.version !== '1.0.0') throw new Error('conversion contract mismatch');
 if (conversion.input !== 'qualified_opportunity_v1') throw new Error('conversion input mismatch');
 if (conversion.authority.sendExternal !== false || conversion.authority.moneyMovement !== false) throw new Error('conversion authority boundary expanded');
+if (fulfillment.moduleId !== 'FULFILL-001' || fulfillment.version !== '1.0.0') throw new Error('fulfillment contract mismatch');
+if (fulfillment.input !== 'commercial_acceptance_v1') throw new Error('fulfillment input mismatch');
+if (fulfillment.outputs?.delivered !== 'delivered_engagement_v1') throw new Error('fulfillment delivered output mismatch');
+if (fulfillment.authority.deliverExternally !== false || fulfillment.authority.moneyMovement !== false || fulfillment.authority.customerSuccessAction !== false) throw new Error('fulfillment authority boundary expanded');
+if (!fulfillment.rules.some(r => r.includes('No production before client_ready_v1'))) throw new Error('client readiness production gate missing');
+if (!fulfillment.rules.some(r => r.includes('QA PASS does not grant delivery authority'))) throw new Error('QA/delivery authority separation missing');
 if (workflow.active !== false) throw new Error('G4 workflow must remain inactive');
 if (workflow.meta?.runId !== team.runId) throw new Error('workflow runId mismatch');
 if (workflow.meta?.deploymentMode !== 'inactive-nonproduction') throw new Error('wrong deployment mode');
@@ -55,7 +67,10 @@ console.log(JSON.stringify({
   primaryKpi: team.primaryKpi,
   cclc: `${cclc.contractId}-v${cclc.version}`,
   conversion: `${conversion.moduleId}-v${conversion.version}`,
+  fulfillment: `${fulfillment.moduleId}-v${fulfillment.version}`,
   qualifiedOpportunityReceiver: handoff.handoffs.qualified_opportunity_v1.receiverContract,
+  fulfillmentInput: fulfillment.input,
+  fulfillmentOutput: fulfillment.outputs.delivered,
   workflowId: workflow.meta.workflowId,
   workflowActive: workflow.active,
   externalActionsAllowedAtG3: team.externalActionsDuringG3,
