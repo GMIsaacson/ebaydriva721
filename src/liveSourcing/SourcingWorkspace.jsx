@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { useAuth } from "../AuthProvider";
 import { ingestBrowserDataset, prescreenBrowserCandidates } from "./browser-core.mjs";
+import { adaptSsActivewearDataset } from "./ss-activewear-adapter.mjs";
 import CandidateVerificationPanel from "./CandidateVerificationPanel";
 import "./sourcing-workspace.css";
 
@@ -28,24 +29,29 @@ const SourcingWorkspace = () => {
   const [error, setError] = useState("");
   const [intake, setIntake] = useState(null);
   const [prescreen, setPrescreen] = useState(null);
+  const [supplierAdapter, setSupplierAdapter] = useState(null);
   const [selectedCandidate, setSelectedCandidate] = useState(null);
 
   const queue = prescreen?.verificationQueue || [];
   const summary = useMemo(() => {
     if (!intake || !prescreen) return null;
+    const supplierRestricted = supplierAdapter?.detected ? supplierAdapter.prohibitedCount : 0;
+    const supplierReview = supplierAdapter?.detected ? supplierAdapter.reviewCount : 0;
     return {
-      input: intake.inputCount,
+      input: supplierAdapter?.detected ? supplierAdapter.inputCount : intake.inputCount,
       accepted: intake.acceptedCount,
       verify: prescreen.verificationCount,
       deferred: prescreen.deferredCount,
-      review: intake.reviewCount + prescreen.reviewCount + intake.invalidCount,
-      rejected: prescreen.rejectedCount,
+      review: supplierReview + intake.reviewCount + prescreen.reviewCount + intake.invalidCount,
+      rejected: supplierRestricted + prescreen.rejectedCount,
+      supplierRestricted,
     };
-  }, [intake, prescreen]);
+  }, [intake, prescreen, supplierAdapter]);
 
   const resetResults = () => {
     setIntake(null);
     setPrescreen(null);
+    setSupplierAdapter(null);
     setSelectedCandidate(null);
     setError("");
   };
@@ -72,15 +78,22 @@ const SourcingWorkspace = () => {
     try {
       const maxVerificationQueue = Number(queueSize);
       if (!Number.isSafeInteger(maxVerificationQueue) || maxVerificationQueue < 1 || maxVerificationQueue > 100) throw new Error("Verification queue size must be an integer from 1 to 100.");
-      const content = await file.text();
+      const rawContent = await file.text();
+      const adapted = adaptSsActivewearDataset({
+        content: rawContent,
+        fileName: file.name,
+        defaultSupplier: defaultSupplier.trim() || "S&S Activewear",
+      });
+      const content = adapted.detected ? adapted.content : rawContent;
       const observedAt = new Date().toISOString();
       const nextIntake = await ingestBrowserDataset({
         ownerAttestation: true,
         uploadedBy: currentUser?.email || currentUser?.uid || "authenticated-owner",
         observedAt,
-        fileName: file.name,
+        fileName: adapted.detected ? `${file.name}.datascout.json` : file.name,
+        format: adapted.detected ? "json" : undefined,
         content,
-        defaultSupplier: defaultSupplier.trim() || null,
+        defaultSupplier: adapted.detected ? adapted.supplier : (defaultSupplier.trim() || null),
       });
       const nextPrescreen = prescreenBrowserCandidates(nextIntake.records, {
         maxVerificationQueue,
@@ -88,11 +101,13 @@ const SourcingWorkspace = () => {
         maxInitialOutlayCents: dollarsToCents(maxInitialOutlay, "Maximum initial outlay"),
         excludedTerms: excludedTerms.split(",").map((term) => term.trim()).filter(Boolean),
       });
+      setSupplierAdapter(adapted);
       setIntake(nextIntake);
       setPrescreen(nextPrescreen);
     } catch (runError) {
       console.error("Live sourcing prescreen failed:", runError);
       setError(runError.message || "The sourcing scan could not be completed.");
+      setSupplierAdapter(null);
       setIntake(null);
       setPrescreen(null);
     } finally {
@@ -106,7 +121,7 @@ const SourcingWorkspace = () => {
         <div>
           <p className="ds-sourcing-eyebrow">LIVE SOURCING MVP · OWNER-UPLOAD MODE</p>
           <h1>Find eBay opportunities without scraping suppliers or eBay</h1>
-          <p>Load product data you are authorized to use. DataScout normalizes it, applies source-side constraints, builds a bounded manual eBay verification queue, and calculates evidence-backed BUY / WATCH / REJECT decisions.</p>
+          <p>Load product data you are authorized to use. DataScout normalizes it, applies supplier restrictions and source-side constraints, builds a bounded manual eBay verification queue, and calculates evidence-backed BUY / WATCH / REJECT decisions.</p>
         </div>
         <div className="ds-sourcing-safety">
           <strong>Permission-safe mode</strong>
@@ -120,7 +135,7 @@ const SourcingWorkspace = () => {
         <div className="ds-sourcing-section-head">
           <div>
             <h2 className="ds-section-title">1. Authorized product universe</h2>
-            <p className="ds-section-copy">CSV or JSON, up to 5,000 records in this MVP. Nothing is written to Firestore yet.</p>
+            <p className="ds-section-copy">CSV or JSON, up to 5,000 records in this MVP. Nothing is written to production Firestore.</p>
           </div>
           <span className="ds-sourcing-badge">GREEN · owner upload</span>
         </div>
@@ -148,6 +163,12 @@ const SourcingWorkspace = () => {
 
       {summary && (
         <>
+          {supplierAdapter?.detected && (
+            <section className="ds-sourcing-alert ds-sourcing-alert-supplier">
+              <strong>S&S Activewear format detected.</strong> DataScout applied the supplier's `noeRetailing` restriction before prescreening: {supplierAdapter.prohibitedCount} prohibited row(s) blocked and {supplierAdapter.reviewCount} row(s) held because the restriction flag was missing or unclear.
+            </section>
+          )}
+
           <section className="ds-kpi-grid ds-sourcing-kpis" aria-label="Sourcing scan summary">
             <div className="ds-kpi"><span className="ds-kpi-label">Input rows</span><div className="ds-kpi-value">{summary.input}</div></div>
             <div className="ds-kpi"><span className="ds-kpi-label">Normalized</span><div className="ds-kpi-value">{summary.accepted}</div></div>
@@ -158,7 +179,7 @@ const SourcingWorkspace = () => {
           <section className="ds-panel ds-sourcing-summary">
             <div className="ds-sourcing-summary-row">
               <div><strong>{summary.review}</strong><span>need data review</span></div>
-              <div><strong>{summary.rejected}</strong><span>source-side rejects</span></div>
+              <div><strong>{summary.rejected}</strong><span>source/restriction rejects</span></div>
               <div><strong>0</strong><span>eBay fetches</span></div>
               <div><strong>0</strong><span>external actions</span></div>
             </div>
