@@ -1,0 +1,82 @@
+{
+  "contract": "customer-deployment-profile.v0.1",
+  "owner": "OPS-CORE-008",
+  "purpose": "Bind a Factory-approved release to one isolated customer deployment without storing raw credentials or granting implicit external authority.",
+  "requiredFields": [
+    "deploymentId",
+    "customerId",
+    "tenantId",
+    "releaseRef",
+    "environment",
+    "activationState",
+    "namespace",
+    "integrations",
+    "rollbackRef",
+    "killSwitchRef",
+    "authority"
+  ],
+  "environment": ["STAGING", "PRODUCTION"],
+  "activationStates": [
+    "DRAFT",
+    "CONNECTED_SHADOW",
+    "APPROVAL_GATED",
+    "BOUNDED_LIVE",
+    "PAUSED",
+    "RETIRED"
+  ],
+  "allowedTransitions": {
+    "DRAFT": ["CONNECTED_SHADOW", "RETIRED"],
+    "CONNECTED_SHADOW": ["APPROVAL_GATED", "PAUSED"],
+    "APPROVAL_GATED": ["BOUNDED_LIVE", "PAUSED"],
+    "BOUNDED_LIVE": ["PAUSED"],
+    "PAUSED": ["CONNECTED_SHADOW", "RETIRED"],
+    "RETIRED": []
+  },
+  "isolationRules": [
+    "Every action must carry the same customerId and tenantId as the deployment profile.",
+    "The namespace must be customer-scoped and may not be shared across customers.",
+    "An integration may execute only actions explicitly present in its allowedActions list.",
+    "Cross-tenant reads or writes fail closed."
+  ],
+  "credentialRules": [
+    "Raw passwords, API keys, OAuth tokens, private keys and client secrets are prohibited from the profile.",
+    "Integrations store credentialRef only; secret material remains in the approved runtime secret store/provider.",
+    "Credential connection does not grant action authority."
+  ],
+  "authorityRules": [
+    "CONNECTED_SHADOW may process real inputs but external actions are prohibited.",
+    "APPROVAL_GATED may prepare protected actions but execution remains blocked until the action carries its required approval/permit evidence.",
+    "BOUNDED_LIVE permits only explicitly allowlisted actions and does not bypass SAFE preflight.",
+    "No deployment inherits permissions, approvals, credentials or budget from another customer or Factory Run.",
+    "Permission changes, destructive actions and deployment-scope expansion require separate explicit authorization."
+  ],
+  "activationEvidence": {
+    "CONNECTED_SHADOW": ["connectionChecksPassed"],
+    "APPROVAL_GATED": ["shadowEvidencePassed"],
+    "BOUNDED_LIVE": ["controlledPilotApproved", "approvalRef"]
+  },
+  "exampleProfile": {
+    "deploymentId": "deploy:cust-0047:hvac-leads:v1",
+    "customerId": "CUST-0047",
+    "tenantId": "tenant:CUST-0047",
+    "releaseRef": "release:HVAC-LEAD-TEAM:1.0.0",
+    "environment": "PRODUCTION",
+    "activationState": "CONNECTED_SHADOW",
+    "namespace": "cust:CUST-0047:hvac-leads",
+    "integrations": [
+      {
+        "integrationId": "jobber-primary",
+        "system": "JOBBER",
+        "credentialRef": "oauth:customer:CUST-0047:jobber",
+        "allowedActions": ["READ_SCHEDULE", "CREATE_WORK_ORDER"]
+      }
+    ],
+    "rollbackRef": "runbook:hvac-leads:rollback-v1",
+    "killSwitchRef": "switch:deploy:cust-0047:hvac-leads",
+    "authority": {
+      "externalActionsApproved": false,
+      "approvalRef": null,
+      "costCeilingCents": 0
+    }
+  }
+}

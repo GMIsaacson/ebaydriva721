@@ -1,0 +1,23 @@
+{
+  "decision_id": "A0-OPS008-CUSTDEPLOY-001",
+  "status": "PASS",
+  "verdict": "EXTEND",
+  "owner": "Aberdeen Technologies",
+  "decided_at": "2026-08-18",
+  "business_outcome": "Extend the existing Run 008 Operations Core so Factory-approved customer solutions can be provisioned into isolated customer deployments, connected by credential references, advanced through shadow and approval-gated activation, monitored, stopped and rolled back without creating a duplicate team or bypassing SAFE.",
+  "existing_owner_scan": "Checked Run 008 Operations Core, SAFE Execution Standard, Agent Team Factory G4-G7, existing customer delivery/customer-success capabilities, credential/access controls, reliability/incident controls and the Pie Closure program. Run 008 already owns the shared operations boundary; no new team, control center, database owner or autonomous execution service is required.",
+  "reuse_candidates_checked": [
+    "Run 008 — Operations Core v0.1",
+    "SAFE Execution Standard v1.0",
+    "Agent Team Factory G4 Deployment / G5 Shadow / G6 Controlled Live Pilot / G7 Review",
+    "Existing Customer Delivery and Customer Success capabilities",
+    "Pie Closure — Infrastructure Closure Audit v1.0"
+  ],
+  "duplication_analysis": "Creating a standalone Customer Deployment & Operations team or control center would duplicate Run 008 and existing delivery/operations ownership. The correct architecture is an extension/profile within Run 008 plus typed handoffs to existing delivery and customer-success functions.",
+  "residual_unowned_loop": "The missing bounded loop is a typed customer deployment profile covering tenant identity/isolation, release binding, credential references, integration/action allowlists, activation state, rollback/kill-switch references and cross-tenant external-action preflight.",
+  "covers_paths": [
+    "agent-factory/run-008/",
+    "package.json"
+  ],
+  "evidence_ref": "https://app.notion.com/p/3c0e161eac8a81588defffc44c87b3aa"
+}
