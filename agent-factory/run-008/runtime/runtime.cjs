@@ -4,6 +4,7 @@ const ISO_DATE_TIME = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z$/;
 const PROVENANCE = new Set(['DIRECT', 'DERIVED', 'HUMAN_SUPPLIED']);
 const PAYLOAD_CLASSES = new Set(['MINIMAL', 'STANDARD', 'SENSITIVE']);
 const AUTHORITY_MODES = new Set(['OBSERVE', 'INTERNAL_WRITE', 'EXTERNAL_WRITE_GATED']);
+const SOURCE_CONNECTION_STATES = new Set(['PENDING', 'CONNECTED', 'DEGRADED', 'DISCONNECTED', 'RETIRED']);
 
 function stableStringify(value) {
   if (value === null || typeof value !== 'object') return JSON.stringify(value);
@@ -66,6 +67,43 @@ function heartbeatStatus({ emittedAt, expectedCadenceSeconds, toleranceSeconds =
     : { status: 'HEALTHY', ageSeconds, staleAfterSeconds, reason: 'WITHIN_EXPECTED_CADENCE' };
 }
 
+function sourceHealthStatus(source, { asOf = new Date().toISOString(), maxHealthAgeHours = 24, credentialWarningDays = 14 } = {}) {
+  const reasons = [];
+  if (!source || typeof source !== 'object' || Array.isArray(source)) return { status:'CRITICAL', reasons:['INVALID_SOURCE'] };
+  const connectionState = source.connectionState || source.connection_state;
+  if (!SOURCE_CONNECTION_STATES.has(connectionState)) reasons.push('INVALID_CONNECTION_STATE');
+  if (!ISO_DATE_TIME.test(asOf || '') || !Number.isFinite(maxHealthAgeHours) || maxHealthAgeHours <= 0 || !Number.isFinite(credentialWarningDays) || credentialWarningDays < 0) reasons.push('INVALID_HEALTH_POLICY');
+
+  if (connectionState === 'DISCONNECTED') reasons.push('SOURCE_DISCONNECTED');
+  if (connectionState === 'DEGRADED') reasons.push('SOURCE_DEGRADED');
+  if (connectionState === 'PENDING') reasons.push('SOURCE_PENDING');
+  if (connectionState === 'RETIRED') return { status:'RETIRED', reasons:[] };
+
+  const metadata = source.metadata && typeof source.metadata === 'object' && !Array.isArray(source.metadata) ? source.metadata : {};
+  const healthCheckedAt = metadata.healthCheckedAt;
+  if (!healthCheckedAt || !ISO_DATE_TIME.test(healthCheckedAt) || Number.isNaN(Date.parse(healthCheckedAt))) reasons.push('HEALTH_CHECK_MISSING_OR_INVALID');
+  else if (ISO_DATE_TIME.test(asOf || '') && (Date.parse(asOf) - Date.parse(healthCheckedAt)) > maxHealthAgeHours * 3600000) reasons.push('HEALTH_CHECK_STALE');
+
+  if (source.credentialRef || source.credential_ref) {
+    const credentialReviewAt = metadata.credentialReviewAt;
+    if (!credentialReviewAt || !ISO_DATE_TIME.test(credentialReviewAt) || Number.isNaN(Date.parse(credentialReviewAt))) reasons.push('CREDENTIAL_REVIEW_MISSING_OR_INVALID');
+  }
+
+  const credentialExpiresAt = metadata.credentialExpiresAt;
+  if (credentialExpiresAt !== undefined && credentialExpiresAt !== null && credentialExpiresAt !== '') {
+    if (!ISO_DATE_TIME.test(credentialExpiresAt) || Number.isNaN(Date.parse(credentialExpiresAt))) reasons.push('CREDENTIAL_EXPIRY_INVALID');
+    else if (ISO_DATE_TIME.test(asOf || '')) {
+      const remainingMs = Date.parse(credentialExpiresAt) - Date.parse(asOf);
+      if (remainingMs <= 0) reasons.push('CREDENTIAL_EXPIRED');
+      else if (remainingMs <= credentialWarningDays * 86400000) reasons.push('CREDENTIAL_EXPIRING_SOON');
+    }
+  }
+
+  const criticalReasons = new Set(['INVALID_CONNECTION_STATE','INVALID_HEALTH_POLICY','SOURCE_DISCONNECTED','CREDENTIAL_EXPIRED','CREDENTIAL_EXPIRY_INVALID']);
+  const status = reasons.some((reason) => criticalReasons.has(reason)) ? 'CRITICAL' : reasons.length ? 'ATTENTION' : 'HEALTHY';
+  return { status, reasons };
+}
+
 function preflightAction(action) {
   const reasons = [];
   if (!action || typeof action !== 'object') return { allowed: false, reasons: ['INVALID_ACTION'] };
@@ -123,4 +161,4 @@ function run006EvidenceToEvent(item, { producerId = 'SUB-OPS-006', sourceId = 'r
   };
 }
 
-module.exports = { stableStringify, sha256, deterministicIdempotencyKey, integrityKey, validateEventEnvelope, heartbeatStatus, preflightAction, run006EvidenceToEvent };
+module.exports = { stableStringify, sha256, deterministicIdempotencyKey, integrityKey, validateEventEnvelope, heartbeatStatus, sourceHealthStatus, preflightAction, run006EvidenceToEvent };
