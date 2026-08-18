@@ -31,21 +31,25 @@ A new emulator-only data plane defines `sourcingRuns` with controlled `candidate
 
 The sourcing Firestore rules passed their allow/deny suite in the disposable emulator. **They are not deployed to production and must not replace the existing production rules without a separate reviewed integration.**
 
-## First real-data pilot source — S&S Activewear
-S&S Activewear is the selected first pilot-source candidate because the supplier itself documents customer integrations and an on-demand Data Library containing product, inventory and pricing information. The first pilot remains **owner-download/upload**, not an automated API connector.
+## First real-data source — S&S Activewear Data Library
+The owner supplied the current S&S Data Library ZIP dated 2026-08-17. The archive contains `Products.xlsx`, `Styles.xlsx`, `Specs.xlsx`, `Categories.xlsx` and `DaysInTransit.xlsx`.
 
-DataScout includes S&S-compatible upload handling for `sku`, `gtin`, `brandName`, `styleName`, `colorName`, `sizeName`, `customerPrice`, `qty` and the supplier's `noeRetailing` control. That restriction is fail-closed:
+Actual `Products.xlsx` evidence:
 
-- `noeRetailing = true` → blocked before eBay verification;
-- `noeRetailing = false` → may continue through ordinary source-side prescreening;
-- missing or unparseable restriction → REVIEW, never eligible by assumption.
+- 196,143 product rows plus header; 96 columns through `CR`.
+- Core identity/offer fields include `sku`, `gtin`, `brandName`, `styleName`, `colorName`, `sizeName`, `CaseQty`, `unitWeight`, `MAPPrice`, `RetailPrice`, `piecePrice`, `casePrice`, `salePrice`, `customerPrice`, `Qty`, warehouse activity/quantity fields, `fullCaseOnly_DS`, `Returnable`, `NoeRetailing`, case-box dimensions and drop-ship/quality flags.
+- `NoeRetailing=false`: 185,712 rows; `NoeRetailing=true`: 10,431 rows.
+- Positive aggregate `Qty`: 109,392 rows.
+- 92,687 rows are in stock, non-full-case, priced at $100 or less, and not blocked by the S&S `NoeRetailing` flag. This is a source-side pool only; it is not a claim that the products may be sold or will be profitable on eBay.
 
-The supplier-specific adapter is tested separately, and the authoritative prescreen also hard-rejects records explicitly carrying `eRetailingProhibited = true`. A future S&S API connector would require a separate GREEN machine-access registry entry and private credential binding; it is not authorized by the upload pilot.
+The S&S adapter is aligned to the actual workbook names. `fullCaseOnly_DS=true` uses `CaseQty` as MOQ; `unitWeight` is mapped as pounds; S&S case-box dimensions are deliberately not treated as individual-item shipping dimensions. `NoeRetailing=true` is blocked before marketplace verification. `false` means only that this particular supplier flag does not block the row; all other supplier/mill/marketplace/product restrictions still apply independently.
+
+A deterministic 5,000-row pilot sample has been prepared from the owner-supplied file: 4,500 active/not-flagged rows plus controlled samples of e-retailing-prohibited, out-of-stock and full-case rows so the real-data run exercises compliance and rejection controls as well as positive candidates.
 
 ## Current architecture
-`authorized dataset → access gate → normalize/dedupe → prescreen → bounded manual eBay verification → fresh fees/shipping → authoritative economics → BUY/WATCH/REJECT`
+`authorized dataset → access/restriction gate → normalize/dedupe → prescreen → bounded manual eBay verification → fresh fees/shipping → authoritative economics → BUY/WATCH/REJECT`
 
-Application logic is usable in the authenticated browser workspace; persistence is proven only in the isolated Firestore emulator. The next decisive milestone is a **real owner-authorized 500+ product dataset** processed through the workspace, followed by manual verification of enough finalists to demonstrate useful complete decisions. Production persistence and any machine source connector remain separately gated.
+Application logic is usable in the authenticated browser workspace; persistence is proven only in the isolated Firestore emulator. The next decisive milestone is to process the 5,000-row real S&S pilot through the workspace and manually verify enough finalists to demonstrate useful complete decisions. Production persistence and any machine source connector remain separately gated.
 
 ## Safety boundary
 No restricted scraping, logged-in marketplace automation, CAPTCHA/proxy circumvention, purchases, bids, messages, listing publication or money movement is enabled. No special eBay API approval is required for the current architecture.
