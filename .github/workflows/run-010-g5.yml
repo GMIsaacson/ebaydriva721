@@ -19,6 +19,10 @@ jobs:
           node-version: 24
       - name: Run heterogeneous shadow benchmark
         run: node agent-factory/run-010/tests/g5-shadow.cjs
+      - name: Run D0 downstream readiness acceptance
+        run: |
+          node -e "JSON.parse(require('fs').readFileSync('agent-factory/run-010/contracts/d0-recovery-review-handoff.schema.json','utf8')); console.log('D0 schema: PASS')"
+          node agent-factory/run-010/tests/d0-downstream-readiness.test.cjs
       - name: Verify shadow authority ceiling
         shell: bash
         run: |
