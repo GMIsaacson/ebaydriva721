@@ -66,15 +66,19 @@ test('authority invariants protect readiness, QA, payment and delivery boundarie
   assert.match(text, /Unknown external outcome fails closed/);
 });
 
-test('Run 012 binds to CCLC at qualified_opportunity_v1 and ends acquisition ownership there', () => {
+test('Run 012 binds to CCLC and typed Commercial Conversion at qualified_opportunity_v1', () => {
   const q = run012.handoffs.qualified_opportunity_v1;
   assert.ok(q, 'Run 012 must expose qualified_opportunity_v1');
   assert.equal(q.direction, 'outbound_to_commercial_conversion');
+  assert.equal(q.receiverContract, 'COMM-CONV-001-v1.0');
+  assert.equal(q.receiverOwner, 'Pipeline & Reply Coordinator');
   assert.ok(q.required.includes('opportunityId'));
   assert.ok(q.required.includes('canonicalLeadId'));
   assert.ok(q.required.includes('idempotencyKey'));
-  assert.match(q.acceptanceRule, /accept or reject/i);
+  assert.match(q.acceptanceRule, /conversion_acceptance_v1/);
+  assert.match(q.acceptanceRule, /conversion_rejection_v1/);
   assert.ok(run012.rules.some(r => r.includes('ends operational ownership at qualified_opportunity_v1')));
+  assert.ok(run012.rules.some(r => /rejected conversion handoff returns ownership/i.test(r)));
 });
 
 test('transition chain enforces explicit downstream acceptance before fulfillment', () => {
