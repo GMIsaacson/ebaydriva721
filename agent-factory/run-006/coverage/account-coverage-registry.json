@@ -28,7 +28,7 @@
       "lastSuccessfulScanAt": null,
       "lastEvidenceAt": null,
       "credentialRef": null,
-      "notes": "User-identified subscription evidence source. Connection method to be determined; no password or secret stored here."
+      "notes": "User-identified subscription evidence source. Connection method to be determined; no secret material stored here."
     },
     {
       "accountId": "gmail-diplomatnc-1",
