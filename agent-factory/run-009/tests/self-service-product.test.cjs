@@ -1,0 +1,26 @@
+const fs=require('node:fs');const path=require('node:path');const assert=require('node:assert');
+const root=path.join(__dirname,'..');
+const site=path.join(root,'site');
+const index=fs.readFileSync(path.join(site,'index.html'),'utf8');
+const app=fs.readFileSync(path.join(site,'app.js'),'utf8');
+const data=JSON.parse(fs.readFileSync(path.join(site,'data','projects.json'),'utf8'));
+const a0=JSON.parse(fs.readFileSync(path.join(root,'..','governance','a0-decisions','a0-run009-self-serve-002.a0.json'),'utf8'));
+const combined=(index+'\n'+app).toLowerCase();
+assert.equal(a0.status,'PASS');
+assert.equal(a0.authority.outbound_sales,false);
+assert.equal(a0.authority.payment_actions,false);
+assert.equal(a0.authority.spend_cents,0);
+assert.ok(index.includes('No sales call required.'));
+assert.ok(index.includes('Browse projects'));
+assert.ok(index.includes('Save alert interest'));
+assert.ok(index.includes('Checkout is intentionally disabled'));
+assert.ok(app.includes("localStorage.setItem('run009_interest'"));
+assert.ok(!combined.includes('mailto:'));
+assert.ok(!combined.includes('tel:'));
+assert.ok(!combined.includes('stripe.com'));
+assert.ok(!combined.includes('sendgrid'));
+assert.ok(!combined.includes('hubspot'));
+assert.ok(!combined.includes('qualified_opportunity_v1'));
+assert.ok(Array.isArray(data.projects)&&data.projects.length>=5);
+for(const p of data.projects){assert.ok(p.id&&p.name&&p.municipality&&p.stage&&p.sourceUrl);assert.ok(/^https:\/\//.test(p.sourceUrl));assert.ok(['REVERIFY','CURRENT'].includes(p.freshness));}
+console.log(JSON.stringify({suite:'RUN009_SELF_SERVICE_MVP',status:'PASS',projects:data.projects.length,outboundSalesActions:0,paymentActions:0,spendCents:0}));
