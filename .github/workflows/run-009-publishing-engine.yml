@@ -1,0 +1,51 @@
+name: Run 009 Publishing Engine
+
+on:
+  pull_request:
+    branches: [master]
+    paths:
+      - 'agent-factory/run-009/**'
+      - 'agent-factory/governance/a0-decisions/**'
+      - '.github/workflows/run-009-publishing-engine.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-publishing-engine:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out PR head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Enforce A0 structural gate
+        run: node agent-factory/governance/a0-guard.cjs --base "origin/${{ github.base_ref || 'master' }}"
+
+      - name: Run publishing engine tests
+        run: node --test agent-factory/run-009/tests/publishing-engine.test.cjs
+
+      - name: Re-run self-service invariants
+        run: node agent-factory/run-009/tests/self-service-product.test.cjs
+
+      - name: Prove production-style generation with explicit origin
+        working-directory: agent-factory/run-009
+        env:
+          SITE_ORIGIN: https://radar.example
+          NODE_ENV: production
+        run: |
+          node runtime/publish-site.cjs
+          test -f site/projects/run009-2116-nicollet-minneapolis/index.html
+          test -f site/municipalities/minneapolis/index.html
+          test -f site/types/mixed-use/index.html
+          test -f site/stages/planning-review/index.html
+          test -f site/sitemap.xml
+          test -f site/robots.txt

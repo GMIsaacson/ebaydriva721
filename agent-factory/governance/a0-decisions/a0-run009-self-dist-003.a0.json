@@ -1,0 +1,28 @@
+{
+  "decision_id": "A0-RUN009-SELF-DIST-003",
+  "status": "PASS",
+  "verdict": "EXTEND",
+  "owner": "Aberdeen",
+  "decided_at": "2026-08-18T21:01:00-05:00",
+  "business_outcome": "Extend Project Radar into a self-distributing digital asset whose QA-approved municipal intelligence generates indexable search surfaces and measured organic-discovery feedback without outbound selling.",
+  "existing_owner_scan": "Run 009 owns municipal intelligence, evidence/QA, the self-service site and on-site product lifecycle; Run 012 already owns content strategy, organic public-channel capabilities and Growth Analyst logic; the Utility Website workstream already defines a no-selling search-validation pattern; Run 008 provides reusable telemetry/control primitives.",
+  "reuse_candidates_checked": [
+    "Run 009 Project Intelligence, Evidence/QA, site and municipal collectors",
+    "Run 012 Content Strategy, public-channel agents and Growth Analyst",
+    "Utility Website Search & Advertising Workstream validation pattern",
+    "Run 008 Operations Core telemetry and governed-event patterns"
+  ],
+  "duplication_analysis": "Do not create a new SEO, marketing, publishing or analytics team. Deterministic software should generate canonical URLs, metadata, landing pages, internal links and sitemaps; bounded judgment is reused from Run 009 and organic distribution/growth analysis is reused from Run 012.",
+  "residual_unowned_loop": "Implement the deterministic Run 009 Publishing Engine: permanent project pages, municipality/type/stage landing pages, metadata, structured data, sitemap, internal linking and update/removal behavior, then later attach read-only growth telemetry and Run 012 draft-only organic distribution.",
+  "covers_paths": [
+    "agent-factory/run-009"
+  ],
+  "evidence_ref": "Notion A0-RUN009-SELF-DIST-003 — Self-Distribution Capability Assessment",
+  "authority": {
+    "external_actions": false,
+    "recurring_schedule": false,
+    "spend_cents": 0,
+    "payment_actions": false,
+    "outbound_sales": false
+  }
+}
