@@ -2,6 +2,8 @@ const state={projects:[],filtered:[]};
 const $=s=>document.querySelector(s);
 const money=v=>v==null?'Value not published':new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(v);
 const pretty=s=>String(s||'').replaceAll('_',' ').replace(/\b\w/g,c=>c.toUpperCase());
+const slug=s=>String(s||'').normalize('NFKD').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')||'unknown';
+const projectPath=p=>`/projects/${slug(p.id||p.name)}/`;
 
 async function load(){
   const res=await fetch('./data/projects.json',{cache:'no-store'});
@@ -39,15 +41,16 @@ function render(){
   state.filtered.forEach(p=>{
     const card=document.createElement('article');
     card.className='project-card';card.tabIndex=0;
-    card.innerHTML=`<div class="project-meta"><span class="chip">${p.municipality}</span><span class="chip">${pretty(p.stage)}</span><span class="chip">${pretty(p.projectType)}</span></div><h3>${p.name}</h3><p>${p.location} · ${money(p.estimatedValue)}</p>`;
-    card.addEventListener('click',()=>showDetail(p));
-    card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')showDetail(p)});
+    card.innerHTML=`<div class="project-meta"><span class="chip">${p.municipality}</span><span class="chip">${pretty(p.stage)}</span><span class="chip">${pretty(p.projectType)}</span></div><h3><a href="${projectPath(p)}">${p.name}</a></h3><p>${p.location} · ${money(p.estimatedValue)}</p><button class="detail-trigger" type="button">Quick details</button>`;
+    card.addEventListener('click',e=>{if(!e.target.closest('a,button'))showDetail(p)});
+    card.querySelector('.detail-trigger').addEventListener('click',()=>showDetail(p));
+    card.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&!e.target.closest('a,button'))showDetail(p)});
     grid.appendChild(card);
   });
 }
 
 function showDetail(p){
-  $('#detailBody').innerHTML=`<p class="eyebrow">${p.municipality} · ${pretty(p.stage)}</p><h2>${p.name}</h2><p>${p.signal}</p><div class="detail-grid"><div class="detail-box"><strong>Location</strong><br>${p.location}</div><div class="detail-box"><strong>Type</strong><br>${pretty(p.projectType)}</div><div class="detail-box"><strong>Estimated value</strong><br>${money(p.estimatedValue)}</div><div class="detail-box"><strong>Confidence</strong><br>${Math.round(p.confidence*100)}%</div></div><p><strong>Freshness:</strong> ${p.freshness} · last Run 009 verification ${p.lastVerified}</p><p><strong>Authoritative source:</strong><br><a class="source-link" href="${p.sourceUrl}" target="_blank" rel="noopener noreferrer">${p.sourceLabel}</a></p><p class="fine">Verify current status at the authoritative source before acting.</p>`;
+  $('#detailBody').innerHTML=`<p class="eyebrow">${p.municipality} · ${pretty(p.stage)}</p><h2>${p.name}</h2><p>${p.signal}</p><div class="detail-grid"><div class="detail-box"><strong>Location</strong><br>${p.location}</div><div class="detail-box"><strong>Type</strong><br>${pretty(p.projectType)}</div><div class="detail-box"><strong>Estimated value</strong><br>${money(p.estimatedValue)}</div><div class="detail-box"><strong>Confidence</strong><br>${Math.round(p.confidence*100)}%</div></div><p><a href="${projectPath(p)}">Open permanent project page</a></p><p><strong>Freshness:</strong> ${p.freshness} · last Run 009 verification ${p.lastVerified}</p><p><strong>Authoritative source:</strong><br><a class="source-link" href="${p.sourceUrl}" target="_blank" rel="noopener noreferrer">${p.sourceLabel}</a></p><p class="fine">Verify current status at the authoritative source before acting.</p>`;
   $('#detailDialog').showModal();
 }
 
