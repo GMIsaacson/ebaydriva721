@@ -16,7 +16,7 @@
       "sourceUrl": "https://permits.bloomingtonmn.gov/prodportal/Planning/StatusReference?referenceNumber=PL202600061",
       "sourceLabel": "City of Bloomington CityView — PL202600061",
       "lastVerified": "2026-08-18",
-      "freshness": "CURRENT_VERIFIED",
+      "freshness": "CURRENT",
       "confidence": 0.92
     },
     {
@@ -25,13 +25,13 @@
       "municipality": "Bloomington",
       "location": "1525, 1601, 1603, 1605 E 86th St and 1604, 1606 E 87th St, Bloomington, MN",
       "projectType": "multifamily",
-      "stage": "complete_application",
+      "stage": "planning_review",
       "estimatedValue": null,
       "signal": "Bloomington CityView lists PL202600105 as a Complete Application for rezoning, final site/building plans and platting for a 33-unit townhome development; associated parcels also show demolition and utility preparation activity.",
       "sourceUrl": "https://www.bloomingtonmn.gov/plan/news/notice-public-hearing-rezoning-final-site-building-plans-and-platting-86th-and-87th",
       "sourceLabel": "City of Bloomington — PL2026-105 public hearing and CityView records",
       "lastVerified": "2026-08-18",
-      "freshness": "CURRENT_VERIFIED",
+      "freshness": "CURRENT",
       "confidence": 0.9
     },
     {
@@ -46,7 +46,7 @@
       "sourceUrl": "https://lims.minneapolismn.gov/board/MarkedAgenda/CPC/5834",
       "sourceLabel": "City of Minneapolis Planning Commission — PLAN20723",
       "lastVerified": "2026-08-18",
-      "freshness": "CURRENT_VERIFIED",
+      "freshness": "CURRENT",
       "confidence": 0.94
     },
     {
@@ -61,7 +61,7 @@
       "sourceUrl": "https://lims.minneapolismn.gov/board/MarkedAgenda/CPC/5834",
       "sourceLabel": "City of Minneapolis Planning Commission — PLAN20829",
       "lastVerified": "2026-08-18",
-      "freshness": "CURRENT_VERIFIED",
+      "freshness": "CURRENT",
       "confidence": 0.94
     },
     {
@@ -76,7 +76,7 @@
       "sourceUrl": "https://www.stpaul.gov/departments/planning-and-economic-development/planning/current-activities/heights",
       "sourceLabel": "City of Saint Paul — The Heights current project page",
       "lastVerified": "2026-08-18",
-      "freshness": "CURRENT_VERIFIED",
+      "freshness": "CURRENT",
       "confidence": 0.96
     }
   ]
