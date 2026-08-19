@@ -6,6 +6,7 @@
     "build:site": "NODE_ENV=production node runtime/publish-site.cjs",
     "build:preview": "node runtime/publish-site.cjs",
     "test:publishing": "node --test tests/publishing-engine.test.cjs",
-    "test:self-service": "node tests/self-service-product.test.cjs"
+    "test:self-service": "node tests/self-service-product.test.cjs",
+    "test:telemetry": "node --test tests/telemetry.test.cjs"
   }
 }

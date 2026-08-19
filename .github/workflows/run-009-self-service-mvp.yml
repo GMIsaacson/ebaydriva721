@@ -29,3 +29,5 @@ jobs:
         run: node agent-factory/governance/a0-guard.cjs --base "origin/${{ github.base_ref || 'master' }}"
       - name: Run no-selling MVP invariants
         run: node agent-factory/run-009/tests/self-service-product.test.cjs
+      - name: Run bounded telemetry privacy tests
+        run: node --test agent-factory/run-009/tests/telemetry.test.cjs
