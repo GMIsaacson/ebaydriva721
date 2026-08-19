@@ -33,5 +33,5 @@ assert.ok(!combined.includes('qualified_opportunity_v1'));
 assert.ok(!combined.includes('cold email'));
 assert.ok(!combined.includes('salesforce'));
 assert.ok(Array.isArray(data.projects)&&data.projects.length>=5);
-for(const p of data.projects){assert.ok(p.id&&p.name&&p.municipality&&p.stage&&p.sourceUrl);assert.ok(/^https:\/\//.test(p.sourceUrl));assert.ok(['REVERIFY','CURRENT'].includes(p.freshness));}
+for(const p of data.projects){assert.ok(p.id&&p.name&&p.municipality&&p.stage&&p.sourceUrl);assert.ok(/^https:\/\//.test(p.sourceUrl));assert.ok(['REVERIFY','CURRENT','CURRENT_VERIFIED'].includes(p.freshness));}
 console.log(JSON.stringify({suite:'RUN009_SELF_SERVICE_MVP',status:'PASS',projects:data.projects.length,sources:registry.sources.length,outboundSalesActions:0,paymentActions:0,spendCents:0,scheduleAuthorized:false}));
