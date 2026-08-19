@@ -2,21 +2,30 @@ name: Run 009 Self-Service Permit Intelligence MVP
 
 on:
   pull_request:
+    branches: [master]
     paths:
       - 'agent-factory/run-009/**'
       - 'agent-factory/governance/a0-decisions/**'
       - '.github/workflows/run-009-self-service-mvp.yml'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   validate-self-service-mvp:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Check out PR head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: A0 constitutional guard
-        run: node agent-factory/governance/a0-guard.cjs --base-ref origin/${{ github.base_ref || 'master' }} --head-ref HEAD
+      - name: Enforce A0 structural gate
+        run: node agent-factory/governance/a0-guard.cjs --base "origin/${{ github.base_ref || 'master' }}"
       - name: Run no-selling MVP invariants
         run: node agent-factory/run-009/tests/self-service-product.test.cjs
