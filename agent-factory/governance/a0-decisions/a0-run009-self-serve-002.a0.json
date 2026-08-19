@@ -14,7 +14,7 @@
   "duplication_analysis": "Do not create a new team, sales team, project database, control center, prospecting workflow or commercial conversion path. Reuse Run 009 and expose its output as a public self-service digital asset.",
   "residual_unowned_loop": "A public searchable product surface, indexable project detail views, alert-interest capture, premium boundary and no-selling invariant tests are required before the MVP is deployable.",
   "covers_paths": [
-    "agent-factory/run-009/**"
+    "agent-factory/run-009"
   ],
   "evidence_ref": "Notion A0-RUN009-SELF-SERVE-002 — No-Selling Product Correction",
   "authority": {
