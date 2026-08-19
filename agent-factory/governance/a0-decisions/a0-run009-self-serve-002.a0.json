@@ -1,0 +1,31 @@
+{
+  "decision_id": "A0-RUN009-SELF-SERVE-002",
+  "status": "PASS",
+  "verdict": "EXTEND",
+  "owner": "Aberdeen",
+  "decided_at": "2026-08-18T20:20:00-05:00",
+  "business_outcome": "Convert Run 009 into a self-distributing Twin Cities commercial permit and development intelligence asset acquired through search/direct discovery and monetized through later self-service checkout, with no outbound selling.",
+  "existing_owner_scan": [
+    "Run 009 owns municipal source collection, extraction, dedupe, project intelligence and QA.",
+    "Run 008 Operations Core owns shared provenance, idempotency, health, cost and recovery primitives.",
+    "Existing repository and CI own governed code validation."
+  ],
+  "reuse_candidates_checked": [
+    "Run 009 validated G0-G5 intelligence evidence",
+    "Run 009 read-only collectors and project scoring",
+    "Run 008 Operations Core provenance and idempotency patterns"
+  ],
+  "duplication_analysis": "Do not create a new team, sales team, project database, control center, prospecting workflow or commercial conversion path. Reuse Run 009 and expose its output as a public self-service digital asset.",
+  "residual_unowned_loop": "A public searchable product surface, indexable project detail views, alert-interest capture, premium boundary and no-selling invariant tests are required before the MVP is deployable.",
+  "covers_paths": [
+    "agent-factory/run-009/**"
+  ],
+  "evidence_ref": "Notion A0-RUN009-SELF-SERVE-002 — No-Selling Product Correction",
+  "authority": {
+    "external_actions": false,
+    "recurring_schedule": false,
+    "spend_cents": 0,
+    "payment_actions": false,
+    "outbound_sales": false
+  }
+}
