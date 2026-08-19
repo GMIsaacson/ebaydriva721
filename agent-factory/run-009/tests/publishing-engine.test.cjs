@@ -32,6 +32,7 @@ test('generates permanent project and taxonomy pages with canonical metadata', (
     assert.match(html, /application\/ld\+json/);
     assert.ok(html.includes(project.sourceUrl));
     assert.ok(html.includes(`/municipalities/${slugify(project.municipality)}/`));
+    assert.ok(fs.existsSync(path.join(out, 'stages', slugify(project.stage), 'index.html')), `missing stage taxonomy for ${project.stage}`);
   }
 
   assert.ok(fs.existsSync(path.join(out, 'municipalities', 'minneapolis', 'index.html')));
@@ -39,8 +40,8 @@ test('generates permanent project and taxonomy pages with canonical metadata', (
   assert.ok(fs.existsSync(path.join(out, 'municipalities', 'saint-paul', 'index.html')));
   assert.ok(fs.existsSync(path.join(out, 'types', 'mixed-use', 'index.html')));
   assert.ok(fs.existsSync(path.join(out, 'types', 'multifamily', 'index.html')));
-  assert.ok(fs.existsSync(path.join(out, 'stages', 'planning-review', 'index.html')));
   assert.ok(fs.existsSync(path.join(out, 'stages', 'approved', 'index.html')));
+  assert.ok(fs.existsSync(path.join(out, 'stages', 'under-construction', 'index.html')));
 
   const sitemap = read(out, 'sitemap.xml');
   assert.match(sitemap, /https:\/\/radar\.example\/projects\/run009-2116-nicollet-minneapolis\//);
