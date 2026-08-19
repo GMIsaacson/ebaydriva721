@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Aberdeen Portfolio Command</title>
+<style>
+:root{--bg:#0b1020;--panel:#121933;--panel2:#182042;--text:#eef2ff;--muted:#94a3b8;--line:#2a355f;--accent:#8b5cf6;--green:#22c55e;--amber:#f59e0b;--red:#ef4444;--blue:#38bdf8}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif;background:linear-gradient(180deg,#0a0f1d,#11172b 50%,#0a0f1d);color:var(--text)}
+button,input,select{font:inherit}button{cursor:pointer}.app{display:grid;grid-template-columns:240px 1fr;min-height:100vh}.side{border-right:1px solid var(--line);padding:24px 18px;background:#0b1020cc;position:sticky;top:0;height:100vh}.brand{font-weight:800;font-size:20px;margin-bottom:6px}.small{color:var(--muted);font-size:12px}.nav{display:grid;gap:8px;margin-top:28px}.nav button{background:transparent;border:1px solid transparent;color:var(--muted);text-align:left;padding:11px 12px;border-radius:10px}.nav button.active,.nav button:hover{background:var(--panel);color:var(--text);border-color:var(--line)}.main{padding:28px;max-width:1500px;width:100%;margin:auto}.banner{border:1px solid #3b4b7b;background:#111934;padding:12px 14px;border-radius:12px;color:#c7d2fe;margin-bottom:18px}.top{display:flex;justify-content:space-between;gap:16px;align-items:flex-end}.top h1{margin:0;font-size:30px}.badge{display:inline-flex;align-items:center;padding:5px 9px;border-radius:999px;border:1px solid #475569;color:#cbd5e1;font-size:12px}.stats{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:12px;margin:22px 0}.card{background:linear-gradient(180deg,var(--panel),#10162b);border:1px solid var(--line);border-radius:14px;padding:16px}.label{font-size:12px;color:var(--muted)}.value{font-weight:800;font-size:24px;margin-top:6px}.attention{border-color:#5f3b3b}.attention h3{margin-top:0}.chips{display:flex;gap:8px;flex-wrap:wrap}.chip{padding:5px 8px;border-radius:999px;font-size:12px;background:#1e293b;border:1px solid #334155}.green{color:#86efac}.amber{color:#fcd34d}.red{color:#fca5a5}.blue{color:#7dd3fc}
+.section{margin-top:22px}.section h2{font-size:18px;margin:0 0 10px}.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}.toolbar input,.toolbar select{background:#0d1429;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:9px 10px}.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:14px;background:var(--panel)}table{width:100%;border-collapse:collapse;min-width:880px}th,td{padding:12px 14px;border-bottom:1px solid var(--line);text-align:left;font-size:13px}th{color:#cbd5e1;background:#141c38;position:sticky;top:0}tr:hover td{background:#151d3a}.linkbtn{background:none;border:none;color:#93c5fd;padding:0}.grid2{display:grid;grid-template-columns:1.2fr .8fr;gap:16px}.drawer{position:fixed;inset:0;background:#020617aa;display:none;justify-content:flex-end;z-index:20}.drawer.open{display:flex}.drawerpanel{width:min(560px,94vw);height:100%;overflow:auto;background:#0f172a;border-left:1px solid var(--line);padding:24px}.drawerpanel h2{margin-top:0}.kv{margin:16px 0}.kv b{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}.close{float:right;background:#182042;color:#fff;border:1px solid var(--line);border-radius:8px;padding:7px 10px}.hidden{display:none}.empty{padding:28px;color:var(--muted);text-align:center}.footer{margin:30px 0 12px;color:var(--muted);font-size:12px}
+@media(max-width:1100px){.stats{grid-template-columns:repeat(3,1fr)}.grid2{grid-template-columns:1fr}}
+@media(max-width:760px){.app{display:block}.side{position:fixed;bottom:0;top:auto;height:auto;width:100%;z-index:10;border-right:0;border-top:1px solid var(--line);padding:8px;background:#0b1020}.brand,.small{display:none}.nav{margin:0;grid-template-columns:repeat(5,1fr);gap:4px}.nav button{text-align:center;font-size:11px;padding:8px 4px}.main{padding:18px 14px 82px}.stats{grid-template-columns:repeat(2,1fr)}.top{align-items:flex-start;flex-direction:column}.top h1{font-size:24px}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="side">
+  <div class="brand">Aberdeen Portfolio Command</div>
+  <div class="small">CAP-39 · Read-only UI</div>
+  <nav class="nav" id="nav">
+    <button data-view="overview" class="active">Overview</button>
+    <button data-view="projects">Projects</button>
+    <button data-view="kpis">KPIs</button>
+    <button data-view="risks">Risks</button>
+    <button data-view="commitments">Commitments</button>
+  </nav>
+</aside>
+<main class="main">
+  <div class="banner"><strong>Preview data — live Notion connection not enabled.</strong> Presentation layer only; canonical records remain in Notion.</div>
+  <div class="top"><div><h1 id="title">Portfolio Overview</h1><div class="small">Exception-first operating view</div></div><span class="badge">READ ONLY</span></div>
+  <section id="overview" class="view">
+    <div class="stats">
+      <div class="card"><div class="label">Active Projects</div><div class="value">3</div></div>
+      <div class="card"><div class="label">Needs Attention</div><div class="value amber">2</div></div>
+      <div class="card"><div class="label">Open Risks</div><div class="value red">2</div></div>
+      <div class="card"><div class="label">Open Commitments</div><div class="value">4</div></div>
+      <div class="card"><div class="label">Portfolio MRR</div><div class="value">—</div><div class="small">Not measured</div></div>
+      <div class="card"><div class="label">Monthly Cost</div><div class="value">—</div><div class="small">Not measured</div></div>
+      <div class="card"><div class="label">Net Monthly</div><div class="value">—</div><div class="small">Not measured</div></div>
+    </div>
+    <div class="grid2">
+      <div class="card attention"><h3>Needs your attention</h3><div class="chips"><span class="chip amber">Project Radar · deployment gate</span><span class="chip red">DataScout · KPI off track</span></div><p class="small">Only exceptions should compete for owner attention.</p></div>
+      <div class="card"><h3>Operating rule</h3><p class="small">Dashboard first → exceptions only → click into a project when detail is needed.</p></div>
+    </div>
+    <div class="section"><h2>Active Projects</h2><div id="overviewProjects"></div></div>
+    <div class="section"><h2>KPI Attention</h2><div id="overviewKpis"></div></div>
+  </section>
+  <section id="projects" class="view hidden">
+    <div class="toolbar"><input id="projectSearch" placeholder="Search projects"/><select id="priorityFilter"><option value="">All priorities</option><option>P0</option><option>P1</option><option>P2</option></select><select id="healthFilter"><option value="">All health</option><option>Green</option><option>Amber</option><option>Red</option></select></div>
+    <div id="projectsTable"></div>
+  </section>
+  <section id="kpis" class="view hidden">
+    <div class="toolbar"><select id="kpiStatus"><option value="">All statuses</option><option>On Track</option><option>Watch</option><option>Off Track</option><option>Not Measured</option></select><select id="kpiKind"><option value="">All kinds</option><option>Business Outcome</option><option>Customer Outcome</option><option>Operating KPI</option><option>Risk KPI</option><option>Quality KPI</option></select></div>
+    <div id="kpisTable"></div>
+  </section>
+  <section id="risks" class="view hidden">
+    <div class="toolbar"><select id="riskSeverity"><option value="">All severity</option><option>Critical</option><option>High</option><option>Medium</option><option>Low</option></select><select id="riskStatus"><option value="">All status</option><option>Open</option><option>Monitoring</option><option>Mitigating</option></select></div>
+    <div id="risksTable"></div>
+  </section>
+  <section id="commitments" class="view hidden">
+    <div class="grid2"><div class="card"><h3>Today</h3><div id="todayList"></div></div><div class="card"><h3>Next 7 days</h3><div id="weekList"></div></div></div>
+    <div class="section"><h2>All Open Commitments</h2><div id="commitmentsTable"></div></div>
+  </section>
+  <div class="footer">Future live canonical sources: Master Project Registry · Outcome & KPI Scorecard · Global Risk & Incident Register · Master Work Calendar</div>
+</main>
+</div>
+<div class="drawer" id="drawer"><div class="drawerpanel"><button class="close" onclick="closeDrawer()">Close</button><div id="drawerContent"></div></div></div>
+<script>
+const projects=[
+ {name:"Project Radar",priority:"P0",state:"Launch",health:"Green",milestone:"Dedicated deployment target",blocker:"Production deployment gate",next:"Deploy preview and run browser acceptance",review:"2026-08-19",summary:{what:"Self-service Twin Cities public-record intelligence product.",who:"Contractors, suppliers, developers, lenders and other commercial-project researchers.",how:"Municipal records → normalization/dedupe → QA → permanent project pages → organic discovery.",value:"Free discovery plus later self-service alerts/data subscriptions.",automation:"Source discovery, normalization, QA support and deterministic publishing.",gates:"Public deployment, payments and external distribution remain separately gated.",status:"Publishing engine built; public deployment pending.",distribution:"SEO/indexable project and taxonomy pages; later approved organic channels.",risks:"Data freshness, source changes, indexing quality, weak early demand signal.",nextMilestone:"Public preview + browser acceptance + read-only telemetry."}},
+ {name:"DataScout",priority:"P0",state:"Build",health:"Amber",milestone:"Sourcing workflow hardening",blocker:"Profitability evidence coverage",next:"Revalidate sourcing and landed-cost assumptions",review:"2026-08-20",summary:{what:"Marketplace sourcing and profitability intelligence system.",who:"Resellers and sourcing operators.",how:"Source data → demand checks → landed cost → profit/ROI → decision.",value:"Improves sourcing decisions and reduces bad inventory buys.",automation:"Data ingestion, filtering and calculations.",gates:"Purchases and paid actions remain approval-gated.",status:"Build/validation.",distribution:"Internal tool/product path under evaluation.",risks:"Stale marketplace data and shipping assumptions.",nextMilestone:"Validated repeatable sourcing evidence."}},
+ {name:"YouTube",priority:"P1",state:"Validate",health:"Amber",milestone:"Quality validation",blocker:"Voice/video quality consistency",next:"Pass preflight quality gate before spending credits",review:"2026-08-21",summary:{what:"Faceless YouTube channel production system.",who:"YouTube viewers in selected proven niches.",how:"Research → script → generation → QA → publish.",value:"Ad-supported channel portfolio.",automation:"Research, scripting, production assistance and QA.",gates:"Publishing and paid generation are governed.",status:"Validation.",distribution:"YouTube organic discovery.",risks:"Low retention, quality variance, wasted generation credits.",nextMilestone:"Repeatable quality pass before further production."}}
+];
+const kpis=[
+ {name:"Indexed eligible pages",kind:"Operating KPI",status:"Not Measured",current:"—",target:"500",unit:"pages",project:"Project Radar",next:"After deployment"},
+ {name:"Organic non-paid visits",kind:"Customer Outcome",status:"Not Measured",current:"—",target:"500",unit:"/90d",project:"Project Radar",next:"After deployment"},
+ {name:"Profitability evidence coverage",kind:"Quality KPI",status:"Off Track",current:"62",target:"90",unit:"%",project:"DataScout",next:"2026-08-20"},
+ {name:"Video quality gate pass rate",kind:"Quality KPI",status:"Watch",current:"70",target:"90",unit:"%",project:"YouTube",next:"2026-08-21"},
+ {name:"A0 protected-change compliance",kind:"Risk KPI",status:"On Track",current:"100",target:"100",unit:"%",project:"Portfolio",next:"Weekly"}
+];
+const risks=[
+ {name:"Project Radar data freshness",kind:"Risk",status:"Monitoring",severity:"Medium",likelihood:"Medium",project:"Project Radar",owner:"Aberdeen",response:"Reverify sources before production indexing."},
+ {name:"DataScout profitability confidence",kind:"Issue",status:"Open",severity:"High",likelihood:"Medium",project:"DataScout",owner:"Aberdeen",response:"Require landed-cost and demand evidence before promotion."}
+];
+const commitments=[
+ {name:"Portfolio weekly operating review",when:"2026-08-24",status:"Confirmed",priority:"P0",type:"Review",project:"Portfolio",owner:"Aberdeen"},
+ {name:"Project Radar browser acceptance",when:"2026-08-19",status:"Planned",priority:"P0",type:"Milestone",project:"Project Radar",owner:"Aberdeen"},
+ {name:"DataScout validation review",when:"2026-08-20",status:"Planned",priority:"P0",type:"Review",project:"DataScout",owner:"Aberdeen"},
+ {name:"YouTube quality gate review",when:"2026-08-21",status:"Planned",priority:"P1",type:"Review",project:"YouTube",owner:"Aberdeen"}
+];
+function pill(v){let c=v==="Green"||v==="On Track"?"green":v==="Amber"||v==="Watch"?"amber":v==="Red"||v==="Off Track"||v==="High"?"red":"blue";return `<span class="chip ${c}">${v}</span>`}
+function table(headers,rows){if(!rows.length)return '<div class="empty">No matching records</div>';return `<div class="tablewrap"><table><thead><tr>${headers.map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>${rows.join("")}</tbody></table></div>`}
+function projectRows(list){return list.map(p=>`<tr><td><button class="linkbtn" onclick="openProject('${p.name}')">${p.name}</button></td><td>${p.priority}</td><td>${p.state}</td><td>${pill(p.health)}</td><td>${p.milestone}</td><td>${p.blocker}</td><td>${p.next}</td><td>${p.review}</td></tr>`)}
+function renderProjects(target,list=projects){document.getElementById(target).innerHTML=table(["Project","Priority","State","Health","Milestone","Blocker","Next action","Review"],projectRows(list))}
+function renderKpis(target,list=kpis){document.getElementById(target).innerHTML=table(["KPI","Kind","Status","Current","Target","Unit","Project","Next review"],list.map(k=>`<tr><td><button class="linkbtn" onclick='openGeneric(${JSON.stringify(k)})'>${k.name}</button></td><td>${k.kind}</td><td>${pill(k.status)}</td><td>${k.current}</td><td>${k.target}</td><td>${k.unit}</td><td>${k.project}</td><td>${k.next}</td></tr>`))}
+function renderRisks(list=risks){document.getElementById("risksTable").innerHTML=table(["Risk / Incident","Kind","Status","Severity","Likelihood","Project","Owner","Response"],list.map(r=>`<tr><td><button class="linkbtn" onclick='openGeneric(${JSON.stringify(r)})'>${r.name}</button></td><td>${r.kind}</td><td>${r.status}</td><td>${pill(r.severity)}</td><td>${r.likelihood}</td><td>${r.project}</td><td>${r.owner}</td><td>${r.response}</td></tr>`))}
+function renderCommitments(){document.getElementById("commitmentsTable").innerHTML=table(["Commitment","When","Status","Priority","Type","Project","Owner"],commitments.map(c=>`<tr><td><button class="linkbtn" onclick='openGeneric(${JSON.stringify(c)})'>${c.name}</button></td><td>${c.when}</td><td>${c.status}</td><td>${c.priority}</td><td>${c.type}</td><td>${c.project}</td><td>${c.owner}</td></tr>`));document.getElementById("todayList").innerHTML='<div class="small">No commitments due today in preview data.</div>';document.getElementById("weekList").innerHTML=commitments.map(c=>`<div style="margin:8px 0"><b>${c.name}</b><div class="small">${c.when} · ${c.project}</div></div>`).join("")}
+function openProject(name){const p=projects.find(x=>x.name===name);const s=p.summary;document.getElementById("drawerContent").innerHTML=`<h2>${p.name}</h2>${[["What it is",s.what],["Who it serves",s.who],["How it works",s.how],["Value / revenue model",s.value],["Automation",s.automation],["Approval gates",s.gates],["Current status",s.status],["Distribution / acquisition",s.distribution],["Risks / dependencies",s.risks],["Next milestone",s.nextMilestone]].map(([k,v])=>`<div class="kv"><b>${k}</b><div>${v}</div></div>`).join("")}`;document.getElementById("drawer").classList.add("open")}
+function openGeneric(obj){document.getElementById("drawerContent").innerHTML=`<h2>Read-only detail</h2>${Object.entries(obj).map(([k,v])=>`<div class="kv"><b>${k}</b><div>${v}</div></div>`).join("")}`;document.getElementById("drawer").classList.add("open")}
+function closeDrawer(){document.getElementById("drawer").classList.remove("open")}
+document.getElementById("drawer").addEventListener("click",e=>{if(e.target.id==="drawer")closeDrawer()})
+document.querySelectorAll(".nav button").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));b.classList.add("active");document.querySelectorAll(".view").forEach(v=>v.classList.add("hidden"));document.getElementById(b.dataset.view).classList.remove("hidden");document.getElementById("title").textContent=({overview:"Portfolio Overview",projects:"Projects",kpis:"KPIs",risks:"Risks & Incidents",commitments:"Commitments"})[b.dataset.view]}))
+function filterProjects(){let q=document.getElementById("projectSearch").value.toLowerCase(),pr=document.getElementById("priorityFilter").value,h=document.getElementById("healthFilter").value;renderProjects("projectsTable",projects.filter(p=>(!q||JSON.stringify(p).toLowerCase().includes(q))&&(!pr||p.priority===pr)&&(!h||p.health===h)))}
+["projectSearch","priorityFilter","healthFilter"].forEach(id=>document.getElementById(id).addEventListener("input",filterProjects))
+function filterKpis(){let s=document.getElementById("kpiStatus").value,k=document.getElementById("kpiKind").value;renderKpis("kpisTable",kpis.filter(x=>(!s||x.status===s)&&(!k||x.kind===k)))}
+["kpiStatus","kpiKind"].forEach(id=>document.getElementById(id).addEventListener("input",filterKpis))
+function filterRisks(){let sev=document.getElementById("riskSeverity").value,st=document.getElementById("riskStatus").value;renderRisks(risks.filter(x=>(!sev||x.severity===sev)&&(!st||x.status===st)))}
+["riskSeverity","riskStatus"].forEach(id=>document.getElementById(id).addEventListener("input",filterRisks))
+renderProjects("overviewProjects");renderKpis("overviewKpis",kpis.filter(k=>k.status!=="On Track"));renderProjects("projectsTable");renderKpis("kpisTable");renderRisks();renderCommitments();
+</script>
+</body>
+</html>
