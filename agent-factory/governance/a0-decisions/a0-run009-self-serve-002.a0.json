@@ -5,11 +5,7 @@
   "owner": "Aberdeen",
   "decided_at": "2026-08-18T20:20:00-05:00",
   "business_outcome": "Convert Run 009 into a self-distributing Twin Cities commercial permit and development intelligence asset acquired through search/direct discovery and monetized through later self-service checkout, with no outbound selling.",
-  "existing_owner_scan": [
-    "Run 009 owns municipal source collection, extraction, dedupe, project intelligence and QA.",
-    "Run 008 Operations Core owns shared provenance, idempotency, health, cost and recovery primitives.",
-    "Existing repository and CI own governed code validation."
-  ],
+  "existing_owner_scan": "Run 009 owns municipal source collection, extraction, dedupe, project intelligence and QA; Run 008 Operations Core owns shared provenance, idempotency, health, cost and recovery primitives; the existing repository and CI own governed code validation.",
   "reuse_candidates_checked": [
     "Run 009 validated G0-G5 intelligence evidence",
     "Run 009 read-only collectors and project scoring",
