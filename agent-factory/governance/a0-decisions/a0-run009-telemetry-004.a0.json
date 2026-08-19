@@ -1,0 +1,32 @@
+{
+  "decision_id": "A0-RUN009-TELEMETRY-004",
+  "status": "PASS",
+  "verdict": "EXTEND",
+  "owner": "Aberdeen",
+  "decided_at": "2026-08-18T22:31:00-05:00",
+  "business_outcome": "Measure whether the deployed Project Radar preview attracts and engages users before authorizing indexing, paid features, email delivery, or broader distribution.",
+  "existing_owner_scan": "Run 009 owns the Project Radar product and on-site behavior. Run 008 owns reusable telemetry/control principles. Vercel owns deployment hosting. No separate analytics team or canonical database is needed for this bounded proof.",
+  "reuse_candidates_checked": [
+    "Run 009 existing public site interactions",
+    "Run 008 telemetry/control principles",
+    "Vercel project/runtime observability"
+  ],
+  "duplication_analysis": "Do not create a new analytics team, CRM, customer database, or parallel control center. Add only the smallest first-party telemetry boundary required to count non-sensitive demand events.",
+  "residual_unowned_loop": "Count whitelisted anonymous product events and public page identifiers so owner can evaluate demand without collecting emails, form values, payment data, cookies, or fingerprints.",
+  "covers_paths": [
+    "agent-factory/run-009"
+  ],
+  "evidence_ref": "Notion A0-RUN009-TELEMETRY-004 — Read-Only Demand Telemetry",
+  "authority": {
+    "external_actions": false,
+    "recurring_schedule": false,
+    "spend_cents": 0,
+    "payment_actions": false,
+    "outbound_sales": false
+  },
+  "data_policy": {
+    "allowed_events": ["PAGE_VIEW","PROJECT_DETAIL_OPEN","ALERT_INTEREST","PREMIUM_INTEREST"],
+    "allowed_dimensions": ["pathname","project_id"],
+    "forbidden": ["email","form_values","payment_data","cookies","fingerprints","raw_ip_storage"]
+  }
+}
