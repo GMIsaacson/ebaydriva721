@@ -1,0 +1,83 @@
+{
+  "schemaVersion": "0.1",
+  "datasetMode": "VALIDATED_PILOT_SAMPLE",
+  "generatedAt": "2026-08-18T20:20:00-05:00",
+  "notice": "Pilot sample derived from previously validated Run 009 municipal-development records. Freshness and procurement status must be reverified from the authoritative source before operational use.",
+  "projects": [
+    {
+      "id": "run009-gallery-apartments-bloomington",
+      "name": "Gallery Apartments",
+      "municipality": "Bloomington",
+      "location": "Bloomington, MN",
+      "projectType": "multifamily",
+      "stage": "planning_review",
+      "estimatedValue": null,
+      "signal": "Previously QA-passing Run 009 development signal retained as a pilot product sample.",
+      "sourceUrl": "https://www.bloomingtonmn.gov/atty/public-hearing-notices",
+      "sourceLabel": "City of Bloomington public hearing notices",
+      "lastVerified": "2026-08-16",
+      "freshness": "REVERIFY",
+      "confidence": 0.82
+    },
+    {
+      "id": "run009-86-87-townhomes-bloomington",
+      "name": "86th & 87th Townhome Redevelopment",
+      "municipality": "Bloomington",
+      "location": "Bloomington, MN",
+      "projectType": "multifamily",
+      "stage": "planning_review",
+      "estimatedValue": null,
+      "signal": "Previously QA-passing Run 009 redevelopment signal retained as a pilot product sample.",
+      "sourceUrl": "https://www.bloomingtonmn.gov/atty/public-hearing-notices",
+      "sourceLabel": "City of Bloomington public hearing notices",
+      "lastVerified": "2026-08-16",
+      "freshness": "REVERIFY",
+      "confidence": 0.8
+    },
+    {
+      "id": "run009-2116-nicollet-minneapolis",
+      "name": "2116 Nicollet",
+      "municipality": "Minneapolis",
+      "location": "2116 Nicollet Ave, Minneapolis, MN",
+      "projectType": "mixed_use",
+      "stage": "planning_review",
+      "estimatedValue": null,
+      "signal": "Previously QA-passing Run 009 Minneapolis development signal retained as a pilot product sample.",
+      "sourceUrl": "https://www.minneapolismn.gov/government/boards-and-commissions/planning-commission/",
+      "sourceLabel": "Minneapolis City Planning Commission",
+      "lastVerified": "2026-08-16",
+      "freshness": "REVERIFY",
+      "confidence": 0.84
+    },
+    {
+      "id": "run009-3800-3rd-minneapolis",
+      "name": "3800 3rd Ave S",
+      "municipality": "Minneapolis",
+      "location": "3800 3rd Ave S, Minneapolis, MN",
+      "projectType": "other_commercial",
+      "stage": "planning_review",
+      "estimatedValue": null,
+      "signal": "Previously QA-passing Run 009 Minneapolis development signal retained as a pilot product sample.",
+      "sourceUrl": "https://www.minneapolismn.gov/government/boards-and-commissions/planning-commission/",
+      "sourceLabel": "Minneapolis City Planning Commission",
+      "lastVerified": "2026-08-16",
+      "freshness": "REVERIFY",
+      "confidence": 0.81
+    },
+    {
+      "id": "run009-heights-saint-paul",
+      "name": "The Heights",
+      "municipality": "Saint Paul",
+      "location": "Saint Paul, MN",
+      "projectType": "mixed_use",
+      "stage": "approved",
+      "estimatedValue": null,
+      "signal": "Run 009 strategic WATCH example retained to demonstrate stage and confidence handling in the public product.",
+      "sourceUrl": "https://www.stpaul.gov/departments/planning-and-economic-development/planning/current-activities",
+      "sourceLabel": "Saint Paul Planning and Economic Development",
+      "lastVerified": "2026-08-16",
+      "freshness": "REVERIFY",
+      "confidence": 0.7
+    }
+  ]
+}

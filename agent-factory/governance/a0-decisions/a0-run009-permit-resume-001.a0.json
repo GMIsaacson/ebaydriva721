@@ -1,0 +1,30 @@
+{
+  "decision_id": "A0-RUN009-PERMIT-RESUME-001",
+  "status": "PASS",
+  "verdict": "EXTEND",
+  "owner": "Aberdeen",
+  "decided_at": "2026-08-18T19:21:00-05:00",
+  "business_outcome": "Resume the existing Twin Cities municipal-development intelligence capability as a commercial permit-intelligence product and prove a zero-paid-tool path from evidence-backed project signal to durable event storage and a typed commercial handoff.",
+  "existing_owner_scan": [
+    "Run 009 already owns municipal source collection, project intelligence, trade relevance and QA.",
+    "Run 008 Operations Core already owns durable canonical event storage, provenance, idempotency, health and governed actions.",
+    "CCLC-001 / COMM-CONV-001 already owns the downstream qualified_opportunity_v1 commercial conversion boundary."
+  ],
+  "reuse_candidates_checked": [
+    "Run 009 G0-G5 validated component evidence",
+    "Run 008 ops_core_events and runtime integrity/idempotency helpers",
+    "CCLC-001 qualified_opportunity_v1 and COMM-CONV-001 receiver"
+  ],
+  "duplication_analysis": "A new permit-intelligence run would duplicate Run 009; a new project database would overlap Run 008 for this validation phase; a new sales team would duplicate the canonical commercial lifecycle. Reuse all three existing owners.",
+  "residual_unowned_loop": "A bounded adapter is still required to convert a QA-passing Run 009 project package into an Operations Core event and a no-send/no-money qualified_opportunity_v1 handoff, with durable PostgreSQL persistence proof before D0 can pass.",
+  "covers_paths": [
+    "agent-factory/run-009/**"
+  ],
+  "evidence_ref": "Notion A0-RUN009-PERMIT-RESUME-001 — Permit Intelligence Bounded Resume",
+  "authority": {
+    "external_actions": false,
+    "recurring_schedule": false,
+    "spend_cents": 0,
+    "payment_actions": false
+  }
+}
