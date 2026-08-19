@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="description" content="Search recent Twin Cities commercial development signals and track projects without digging through municipal records." />
+  <title>Twin Cities Project Radar</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="shell hero">
+    <nav class="nav"><strong>Project Radar</strong><span class="badge">Twin Cities pilot</span></nav>
+    <div class="hero-grid">
+      <div>
+        <p class="eyebrow">Commercial development intelligence</p>
+        <h1>Find Twin Cities projects before the signal gets buried.</h1>
+        <p class="lede">Search public municipal development signals, filter by city and stage, and track the projects that matter to you. No sales call required.</p>
+        <a class="primary" href="#projects">Browse projects</a>
+      </div>
+      <aside class="stat-card">
+        <span>Current pilot</span><strong id="projectCount">0</strong><small>searchable project signals</small>
+      </aside>
+    </div>
+  </header>
+
+  <main class="shell">
+    <section class="search-panel" id="projects">
+      <div class="section-heading">
+        <div><p class="eyebrow">Search</p><h2>Recent project signals</h2></div>
+        <span id="resultCount"></span>
+      </div>
+      <div class="filters">
+        <input id="q" type="search" placeholder="Search project, address, type…" aria-label="Search projects" />
+        <select id="city" aria-label="Filter by municipality"><option value="">All municipalities</option></select>
+        <select id="stage" aria-label="Filter by stage"><option value="">All stages</option></select>
+      </div>
+      <div id="projectGrid" class="project-grid" aria-live="polite"></div>
+    </section>
+
+    <section class="split">
+      <div class="alert-card">
+        <p class="eyebrow">Free tracking</p>
+        <h2>Track projects like these</h2>
+        <p>Save an alert profile locally during this pilot. Email delivery is intentionally disabled until the production notification gate is approved.</p>
+        <form id="alertForm">
+          <label>Email <input id="email" type="email" required placeholder="you@company.com" /></label>
+          <label>Minimum project value <select id="minValue"><option value="0">Any value</option><option value="250000">$250K+</option><option value="500000">$500K+</option><option value="1000000">$1M+</option></select></label>
+          <button class="primary" type="submit">Save alert interest</button>
+          <p id="alertStatus" class="status" role="status"></p>
+        </form>
+      </div>
+      <div class="pricing-card">
+        <p class="eyebrow">Premium hypothesis</p>
+        <h2>$79/month</h2>
+        <p>Daily filtered alerts, full history, saved searches and exports.</p>
+        <ul><li>No call</li><li>No proposal</li><li>Self-service only</li></ul>
+        <button id="upgrade" class="secondary" type="button">Join paid-plan waitlist</button>
+        <p class="fine">Checkout is intentionally disabled in this MVP. Payment activation requires its own production gate.</p>
+      </div>
+    </section>
+
+    <section class="method">
+      <p class="eyebrow">How it works</p>
+      <div class="steps"><div><strong>1</strong><span>Official municipal sources</span></div><div><strong>2</strong><span>Normalize + dedupe</span></div><div><strong>3</strong><span>Project intelligence</span></div><div><strong>4</strong><span>Search + alerts</span></div></div>
+      <p class="fine">Project records should be treated as discovery signals, not permit/legal advice. Verify material facts at the linked authoritative source before acting.</p>
+    </section>
+  </main>
+
+  <dialog id="detailDialog"><button id="closeDialog" class="dialog-close" aria-label="Close">×</button><div id="detailBody"></div></dialog>
+  <footer class="shell footer">Project Radar · Twin Cities pilot · Public-source intelligence</footer>
+  <script src="./app.js" defer></script>
+</body>
+</html>
