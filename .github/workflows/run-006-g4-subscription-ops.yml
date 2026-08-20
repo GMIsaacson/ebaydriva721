@@ -61,29 +61,17 @@ jobs:
             --env N8N_BLOCK_ENV_ACCESS_IN_NODE=true \
             --env N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true \
             --env N8N_SECURE_COOKIE=false \
+            --env N8N_INSTANCE_OWNER_MANAGED_BY_ENV=true \
+            --env N8N_INSTANCE_OWNER_EMAIL=run006@example.invalid \
+            --env N8N_INSTANCE_OWNER_FIRST_NAME=Run \
+            --env N8N_INSTANCE_OWNER_LAST_NAME=006 \
+            --env 'N8N_INSTANCE_OWNER_PASSWORD_HASH=$2y$10$IZUEVTXFr.vIEyT1DnyEv.juURlE9bJlkjaQJUbx0CQpifycK7L6q' \
             n8nio/n8n:2.34.6
           for attempt in $(seq 1 60); do
-            if curl --fail --silent http://127.0.0.1:5678/healthz >/dev/null; then
+            if curl --fail --silent http://127.0.0.1:5678/healthz >/dev/null \
+              && docker logs run006-n8n 2>&1 | grep -q "Editor is now accessible via:"; then
               exit 0
             fi
-            sleep 2
-          done
-          docker logs run006-n8n
-          exit 1
-      - name: Create isolated local owner
-        run: |
-          local_owner_password=$(openssl rand -hex 24)
-          setup_payload=$(jq -nc --arg password "$local_owner_password" '{email:"run006@example.invalid",firstName:"Run",lastName:"006",password:$password}')
-          for attempt in $(seq 1 30); do
-            status=$(curl --silent --show-error \
-              --output /tmp/run-006-owner-setup-response.json \
-              --write-out "%{http_code}" \
-              --header "Content-Type: application/json" \
-              --data "$setup_payload" \
-              http://127.0.0.1:5678/rest/owner/setup || true)
-            case "$status" in
-              200|201|204|409) exit 0 ;;
-            esac
             sleep 2
           done
           docker logs run006-n8n
