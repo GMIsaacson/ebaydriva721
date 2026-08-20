@@ -15,6 +15,7 @@ import VerifyEmail from "./verifyemail";
 import Calculators from "./resources";
 import AccountPage from "./accountspage";
 import SourcingWorkspace from "./liveSourcing/SourcingWorkspace";
+import LocalArbitrageWorkspace from "./liveSourcing/LocalArbitrageWorkspace";
 
 const App = () => {
   return (
@@ -28,48 +29,12 @@ const App = () => {
             <Route path="/login" element={<ErrorBoundary><Login /></ErrorBoundary>} />
             <Route path="/signup" element={<ErrorBoundary><Signup /></ErrorBoundary>} />
             <Route path="/verifyemail" element={<ErrorBoundary><VerifyEmail /></ErrorBoundary>} />
-
-            <Route
-              path="/sourcing"
-              element={
-                <ProtectedRoute>
-                  <ErrorBoundary>
-                    <SourcingWorkspace />
-                  </ErrorBoundary>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <ErrorBoundary>
-                    <Dashboard />
-                  </ErrorBoundary>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/products"
-              element={
-                <ProtectedRoute>
-                  <ErrorBoundary>
-                    <ProductData />
-                  </ErrorBoundary>
-                </ProtectedRoute>
-              }
-            />
+            <Route path="/sourcing" element={<ProtectedRoute><ErrorBoundary><SourcingWorkspace /></ErrorBoundary></ProtectedRoute>} />
+            <Route path="/local-arbitrage" element={<ProtectedRoute><ErrorBoundary><LocalArbitrageWorkspace /></ErrorBoundary></ProtectedRoute>} />
+            <Route path="/dashboard" element={<ProtectedRoute><ErrorBoundary><Dashboard /></ErrorBoundary></ProtectedRoute>} />
+            <Route path="/products" element={<ProtectedRoute><ErrorBoundary><ProductData /></ErrorBoundary></ProtectedRoute>} />
             <Route path="/resources" element={<ErrorBoundary><Calculators /></ErrorBoundary>} />
-            <Route
-              path="/accounts/*"
-              element={
-                <ProtectedRoute>
-                  <ErrorBoundary>
-                    <AccountPage />
-                  </ErrorBoundary>
-                </ProtectedRoute>
-              }
-            />
+            <Route path="/accounts/*" element={<ProtectedRoute><ErrorBoundary><AccountPage /></ErrorBoundary></ProtectedRoute>} />
           </Routes>
           <Footer />
         </div>
