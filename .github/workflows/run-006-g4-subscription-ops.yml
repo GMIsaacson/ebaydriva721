@@ -65,7 +65,7 @@ jobs:
             --env N8N_INSTANCE_OWNER_EMAIL=run006@example.invalid \
             --env N8N_INSTANCE_OWNER_FIRST_NAME=Run \
             --env N8N_INSTANCE_OWNER_LAST_NAME=006 \
-            --env 'N8N_INSTANCE_OWNER_PASSWORD_HASH=$2b$10$m.kgOHbieLho9hw9LP1mvuUqYsrNZsXzeN/yiMFGPwwM.9p41sWM' \
+            --env 'N8N_INSTANCE_OWNER_PASSWORD_HASH=$2y$10$IZUEVTXFr.vIEyT1DnyEv.juURlE9bJlkjaQJUbx0CQpifycK7L6q' \
             n8nio/n8n:2.34.6
           for attempt in $(seq 1 60); do
             if curl --fail --silent http://127.0.0.1:5678/healthz >/dev/null \
