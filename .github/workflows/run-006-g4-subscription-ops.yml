@@ -63,7 +63,8 @@ jobs:
             --env N8N_SECURE_COOKIE=false \
             n8nio/n8n:2.34.6
           for attempt in $(seq 1 60); do
-            if curl --fail --silent http://127.0.0.1:5678/healthz >/dev/null; then
+            if curl --fail --silent http://127.0.0.1:5678/healthz >/dev/null \
+              && docker logs run006-n8n 2>&1 | grep -q "Editor is now accessible via:"; then
               exit 0
             fi
             sleep 2
