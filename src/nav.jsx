@@ -40,16 +40,8 @@ const Nav = () => {
           <span>DataScout</span>
         </Link>
 
-        <button
-          className="ds-menu-button"
-          type="button"
-          aria-label={isOpen ? "Close navigation" : "Open navigation"}
-          aria-expanded={isOpen}
-          onClick={() => setIsOpen((value) => !value)}
-        >
-          <span />
-          <span />
-          <span />
+        <button className="ds-menu-button" type="button" aria-label={isOpen ? "Close navigation" : "Open navigation"} aria-expanded={isOpen} onClick={() => setIsOpen((value) => !value)}>
+          <span /><span /><span />
         </button>
 
         <div className={`ds-nav-content ${isOpen ? "open" : ""}`}>
@@ -57,6 +49,7 @@ const Nav = () => {
             {currentUser && (
               <>
                 <NavLink className={navClass} to="/sourcing" onClick={closeMenus}>Sourcing</NavLink>
+                <NavLink className={navClass} to="/local-arbitrage" onClick={closeMenus}>Local Arbitrage</NavLink>
                 <NavLink className={navClass} to="/products" onClick={closeMenus}>Products</NavLink>
                 <NavLink className={navClass} to="/dashboard" onClick={closeMenus}>Dashboard</NavLink>
               </>
@@ -67,12 +60,7 @@ const Nav = () => {
           <div className="ds-nav-actions">
             {currentUser ? (
               <div className="ds-account" ref={accountRef}>
-                <button
-                  type="button"
-                  className="ds-account-trigger"
-                  aria-expanded={accountOpen}
-                  onClick={() => setAccountOpen((value) => !value)}
-                >
+                <button type="button" className="ds-account-trigger" aria-expanded={accountOpen} onClick={() => setAccountOpen((value) => !value)}>
                   <span className="ds-avatar">{initials}</span>
                   <span className="ds-account-label">Account</span>
                   <span aria-hidden="true">⌄</span>
