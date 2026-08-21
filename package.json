@@ -37,6 +37,7 @@
     "test:g5": "node --test agent-factory/run-004/tests/g5-shadow.test.cjs",
     "validate:g5": "node agent-factory/run-004/scripts/validate-g5-package.cjs",
     "run:g5": "node agent-factory/run-004/scripts/run-g5-shadow.cjs",
+    "test:run004:sourcing": "node --test agent-factory/run-004/tests/source-access.test.cjs agent-factory/run-004/tests/product-intake.test.cjs agent-factory/run-004/tests/prescreen.test.cjs agent-factory/run-004/tests/prescreen-v2.test.cjs agent-factory/run-004/tests/public-web-precheck.test.cjs agent-factory/run-004/tests/web-gated-queue.test.cjs agent-factory/run-004/tests/ebay-manual-verification.test.cjs agent-factory/run-004/tests/deal-decision.test.cjs agent-factory/run-004/tests/browser-core-parity.test.cjs agent-factory/run-004/tests/browser-decision-parity.test.cjs agent-factory/run-004/tests/ss-activewear-adapter.test.cjs agent-factory/run-004/tests/local-arbitrage.test.cjs",
     "test:run005": "node --test agent-factory/run-005/tests/pilot.test.cjs",
     "validate:run005": "node agent-factory/run-005/scripts/validate-package.cjs",
     "preflight:run005": "node agent-factory/run-005/scripts/run-preflight.cjs",

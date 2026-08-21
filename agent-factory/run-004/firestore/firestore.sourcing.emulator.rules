@@ -1,0 +1,116 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSourcingOperator() {
+      return request.auth != null && request.auth.token.datascoutSourcingOperator == true;
+    }
+
+    function isLockedWrite() {
+      return request.resource.data.run_id == 'DS-S2M-004'
+        && request.resource.data.external_actions == 0
+        && request.resource.data.spending_cents == 0;
+    }
+
+    function parentRun(runDocId) {
+      return get(/databases/$(database)/documents/sourcingRuns/$(runDocId)).data;
+    }
+
+    function ownsParentRun(runDocId) {
+      return isSourcingOperator()
+        && parentRun(runDocId).owner_uid == request.auth.uid
+        && parentRun(runDocId).run_id == 'DS-S2M-004';
+    }
+
+    match /sourcingRuns/{runDocId} {
+      allow create: if isSourcingOperator()
+        && isLockedWrite()
+        && request.resource.data.owner_uid == request.auth.uid
+        && request.resource.data.status in ['DRAFT', 'PRESCREENED', 'VERIFYING', 'COMPLETE', 'REVIEW']
+        && request.resource.data.keys().hasOnly([
+          'run_id', 'owner_uid', 'external_actions', 'spending_cents', 'status',
+          'dataset_hash', 'file_name', 'input_count', 'accepted_count',
+          'verification_count', 'deferred_count', 'review_count', 'rejected_count',
+          'created_at', 'updated_at'
+        ]);
+
+      allow read: if isSourcingOperator() && resource.data.owner_uid == request.auth.uid;
+
+      allow update: if isSourcingOperator()
+        && resource.data.owner_uid == request.auth.uid
+        && request.resource.data.owner_uid == resource.data.owner_uid
+        && request.resource.data.run_id == resource.data.run_id
+        && request.resource.data.dataset_hash == resource.data.dataset_hash
+        && request.resource.data.created_at == resource.data.created_at
+        && isLockedWrite()
+        && request.resource.data.status in ['DRAFT', 'PRESCREENED', 'VERIFYING', 'COMPLETE', 'REVIEW']
+        && request.resource.data.keys().hasOnly([
+          'run_id', 'owner_uid', 'external_actions', 'spending_cents', 'status',
+          'dataset_hash', 'file_name', 'input_count', 'accepted_count',
+          'verification_count', 'deferred_count', 'review_count', 'rejected_count',
+          'created_at', 'updated_at'
+        ]);
+
+      allow delete: if false;
+
+      match /candidates/{candidateId} {
+        allow create, update: if ownsParentRun(runDocId)
+          && isLockedWrite()
+          && request.resource.data.owner_uid == request.auth.uid
+          && request.resource.data.candidate_id == candidateId
+          && request.resource.data.stage in ['VERIFY', 'DEFER', 'REVIEW', 'REJECT']
+          && request.resource.data.identity_confidence in ['HIGH', 'MEDIUM', 'LOW']
+          && request.resource.data.source_access_class == 'GREEN'
+          && request.resource.data.keys().hasOnly([
+            'run_id', 'owner_uid', 'external_actions', 'spending_cents',
+            'candidate_id', 'stage', 'title', 'supplier', 'source_cost_cents',
+            'moq', 'identity_confidence', 'source_access_class', 'prescreen_score',
+            'updated_at'
+          ]);
+        allow read: if ownsParentRun(runDocId);
+        allow delete: if false;
+      }
+
+      match /verifications/{candidateId} {
+        allow create, update: if ownsParentRun(runDocId)
+          && isLockedWrite()
+          && request.resource.data.owner_uid == request.auth.uid
+          && request.resource.data.candidate_id == candidateId
+          && request.resource.data.marketplace == 'ebay-us'
+          && request.resource.data.manual_only == true
+          && request.resource.data.marketplace_fetches == 0
+          && request.resource.data.status in ['VERIFIED', 'REVIEW', 'REJECT', 'INCOMPLETE']
+          && request.resource.data.keys().hasOnly([
+            'run_id', 'owner_uid', 'external_actions', 'spending_cents',
+            'candidate_id', 'marketplace', 'manual_only', 'marketplace_fetches',
+            'status', 'evidence_ref', 'verified_at', 'units_sold',
+            'avg_sold_price_cents', 'sold_per_30_days', 'updated_at'
+          ]);
+        allow read: if ownsParentRun(runDocId);
+        allow delete: if false;
+      }
+
+      match /decisions/{candidateId} {
+        allow create, update: if ownsParentRun(runDocId)
+          && isLockedWrite()
+          && request.resource.data.owner_uid == request.auth.uid
+          && request.resource.data.candidate_id == candidateId
+          && request.resource.data.status == 'COMPLETE'
+          && request.resource.data.decision in ['BUY', 'WATCH', 'REJECT']
+          && request.resource.data.formula_version == 'datascout-landed-economics/1.0.0'
+          && request.resource.data.marketplace_fetches == 0
+          && request.resource.data.keys().hasOnly([
+            'run_id', 'owner_uid', 'external_actions', 'spending_cents',
+            'candidate_id', 'status', 'decision', 'formula_version', 'input_hash',
+            'net_profit_cents', 'roi_bps', 'margin_bps', 'sold_per_30_days',
+            'marketplace_fetches', 'updated_at'
+          ]);
+        allow read: if ownsParentRun(runDocId);
+        allow delete: if false;
+      }
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

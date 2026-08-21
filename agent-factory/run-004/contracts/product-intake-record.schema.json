@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "datascout://run-004/product-intake-record/1.0.0",
+  "title": "DataScout Authorized Product Intake Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "candidateId",
+    "productIdentityKey",
+    "identityConfidence",
+    "offerKey",
+    "title",
+    "supplier",
+    "packQuantity",
+    "unitCostCents",
+    "currency",
+    "moq",
+    "eRetailingProhibited",
+    "provenance"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "1.0.0" },
+    "candidateId": { "type": "string", "pattern": "^DSC-[a-f0-9]{20}$" },
+    "productIdentityKey": { "type": "string", "minLength": 3 },
+    "identityConfidence": { "enum": ["HIGH", "MEDIUM", "LOW"] },
+    "offerKey": { "type": "string", "minLength": 3 },
+    "title": { "type": "string", "minLength": 1 },
+    "supplier": { "type": "string", "minLength": 1 },
+    "sourceSku": { "type": ["string", "null"] },
+    "mpn": { "type": ["string", "null"] },
+    "upc": { "type": ["string", "null"] },
+    "brand": { "type": ["string", "null"] },
+    "category": { "type": ["string", "null"] },
+    "condition": { "type": ["string", "null"] },
+    "packQuantity": { "type": "integer", "minimum": 1 },
+    "unitCostCents": { "type": "integer", "minimum": 0 },
+    "currency": { "type": "string", "pattern": "^[A-Z]{3}$" },
+    "moq": { "type": "integer", "minimum": 1 },
+    "availableQuantity": { "type": ["integer", "null"], "minimum": 0 },
+    "weightOz": { "type": ["number", "null"], "exclusiveMinimum": 0 },
+    "lengthIn": { "type": ["number", "null"], "exclusiveMinimum": 0 },
+    "widthIn": { "type": ["number", "null"], "exclusiveMinimum": 0 },
+    "heightIn": { "type": ["number", "null"], "exclusiveMinimum": 0 },
+    "sourceUrl": { "type": ["string", "null"] },
+    "eRetailingProhibited": { "type": ["boolean", "null"] },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["accessSourceId", "accessMode", "rightsEvidenceRef", "fileName", "rowNumber", "observedAt", "uploadedBy"],
+      "properties": {
+        "accessSourceId": { "type": "string" },
+        "accessMode": { "const": "owner_upload" },
+        "rightsEvidenceRef": { "type": "string" },
+        "fileName": { "type": "string" },
+        "rowNumber": { "type": "integer", "minimum": 1 },
+        "observedAt": { "type": "string", "format": "date-time" },
+        "uploadedBy": { "type": "string" }
+      }
+    }
+  }
+}

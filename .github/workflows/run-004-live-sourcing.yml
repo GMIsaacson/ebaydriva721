@@ -1,0 +1,94 @@
+name: Run 004 Live Sourcing MVP
+
+on:
+  push:
+    branches: [codex/run-004-live-sourcing-mvp]
+    paths:
+      - 'agent-factory/run-004/**'
+      - 'api/**'
+      - 'src/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/run-004-live-sourcing.yml'
+  pull_request:
+    paths:
+      - 'agent-factory/run-004/**'
+      - 'api/**'
+      - 'src/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/run-004-live-sourcing.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sourcing-mvp:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Test source access and authorized intake
+        run: npm run test:run004:sourcing
+      - name: Validate Vercel public-web endpoint syntax
+        run: node --check api/public-web-precheck.mjs
+      - name: Preserve existing Run 004 G4 tests
+        run: npm run test:g4
+      - name: Build DataScout
+        run: npm run build
+      - name: Retain tested preview build
+        uses: actions/upload-artifact@v4
+        with:
+          name: datascout-live-sourcing-preview-dist
+          path: dist/
+          if-no-files-found: error
+          retention-days: 7
+      - name: Publish generated preview bundle
+        run: |
+          TARGET_BRANCH="${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}"
+          rm -rf /tmp/datascout-preview-dist
+          cp -R dist /tmp/datascout-preview-dist
+          git fetch origin "${TARGET_BRANCH}"
+          git checkout "${TARGET_BRANCH}"
+          rm -rf preview-dist
+          cp -R /tmp/datascout-preview-dist preview-dist
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f preview-dist
+          if git diff --cached --quiet; then
+            echo "Preview bundle unchanged."
+          else
+            git commit -m "chore: refresh DataScout preview bundle [skip ci]"
+            git push origin "HEAD:${TARGET_BRANCH}"
+          fi
+
+  sourcing-firestore-emulator:
+    name: Sourcing Firestore security rules
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - run: npm ci --ignore-scripts
+      - name: Install emulator test tooling without changing the lockfile
+        run: npm install --no-save --ignore-scripts @firebase/rules-unit-testing@3.0.3
+      - name: Execute sourcing data-plane allow and deny cases
+        run: |
+          npx --yes firebase-tools@13.29.2 emulators:exec \
+            --config agent-factory/run-004/firestore/firebase.sourcing.emulator.json \
+            --project demo-datascout-sourcing \
+            --only firestore \
+            "node --test agent-factory/run-004/tests/sourcing-firestore-rules.test.cjs"

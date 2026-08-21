@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://datascout.local/contracts/source-access-registry.schema.json",
+  "title": "DataScout Source Access Registry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "registryId", "defaultDecision", "sources"],
+  "properties": {
+    "schemaVersion": { "const": "1.0.0" },
+    "registryId": { "const": "DS-S2M-004-SOURCE-ACCESS" },
+    "defaultDecision": { "const": "DENY" },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["sourceId", "displayName", "classification", "killSwitch", "machineFetchAllowed", "allowedAccessModes", "rightsEvidence", "lastReviewedAt", "nextReviewAt", "notes"],
+        "properties": {
+          "sourceId": { "type": "string", "minLength": 1 },
+          "displayName": { "type": "string", "minLength": 1 },
+          "classification": { "enum": ["GREEN", "YELLOW", "RED"] },
+          "killSwitch": { "type": "boolean" },
+          "machineFetchAllowed": { "type": "boolean" },
+          "allowedAccessModes": { "type": "array", "uniqueItems": true, "items": { "enum": ["owner_upload", "manual_verification", "official_api", "licensed_feed", "public_download"] } },
+          "rightsEvidence": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["type", "ref", "reviewedBy"],
+            "properties": {
+              "type": { "enum": ["owner_attestation", "terms_review", "license", "contract", "api_terms"] },
+              "ref": { "type": "string", "minLength": 1 },
+              "reviewedBy": { "type": "string", "minLength": 1 }
+            }
+          },
+          "lastReviewedAt": { "type": "string", "format": "date-time" },
+          "nextReviewAt": { "type": "string", "format": "date-time" },
+          "notes": { "type": "string" }
+        }
+      }
+    }
+  }
+}
