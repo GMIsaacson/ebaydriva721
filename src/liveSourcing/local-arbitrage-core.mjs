@@ -12,6 +12,25 @@ const asFinite = (value, fallback = 0) => {
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
+export function hasExactSourceListingUrl(input) {
+  if (input?.sourceListingUrlVerified === true) return true;
+  const value = String(input?.listingUrl || '').trim();
+  if (!value) return false;
+  try {
+    const url = new URL(value);
+    if (!/^https?:$/.test(url.protocol)) return false;
+    const host = url.hostname.toLowerCase().replace(/^www\./, '');
+    const path = url.pathname.replace(/\/+$/, '') || '/';
+    if (path === '/') return false;
+    if (host.endsWith('craigslist.org')) return /\/\d+\.html$/i.test(path);
+    if (host.endsWith('facebook.com')) return /\/marketplace\/item\/\d+/i.test(path);
+    if (host.endsWith('offerup.com')) return /\/(item|items)\//i.test(path) || /\/item\/detail\//i.test(path);
+    return path.split('/').filter(Boolean).length >= 2;
+  } catch {
+    return false;
+  }
+}
+
 export function calculateLocalDealEconomics(input, policy = LOCAL_ARBITRAGE_POLICY) {
   const askPriceCents = Math.round(asFinite(input.askPriceCents));
   const expectedSaleCents = Math.round(asFinite(input.expectedSaleCents));
@@ -47,6 +66,7 @@ export function scoreLocalListing(input, policy = LOCAL_ARBITRAGE_POLICY) {
     : Infinity;
 
   const exactIdentity = Boolean(input.exactIdentity || input.exactSku);
+  const sourceListingVerified = hasExactSourceListingUrl(input) || Boolean(input.sourceSnapshotCaptured);
   const soldCompCount = Math.max(0, Math.floor(asFinite(input.soldCompCount)));
   const ambiguousCondition = Boolean(input.ambiguousCondition);
   const unresolvedItems = Math.max(0, Math.floor(asFinite(input.unresolvedItems)));
@@ -58,13 +78,14 @@ export function scoreLocalListing(input, policy = LOCAL_ARBITRAGE_POLICY) {
 
   if (duplicate) reasons.push('duplicate listing/evidence');
   if (stale) reasons.push('stale evidence');
+  if (!sourceListingVerified) reasons.push('exact source listing URL/snapshot missing');
   if (!exactIdentity) reasons.push('identity not exact');
   if (soldCompCount < 1) reasons.push('no verified sold comp');
   if (ambiguousCondition) reasons.push('condition requires human verification');
   if (unresolvedItems > 0) reasons.push(`${unresolvedItems} unresolved bundle item${unresolvedItems === 1 ? '' : 's'}`);
 
   const thresholdPass = economics.expectedNetProfitCents >= policy.minNetProfitCents && economics.roiPct >= policy.minRoiPct;
-  const evidencePass = exactIdentity && soldCompCount >= 1 && !stale && !duplicate && !ambiguousCondition && unresolvedItems === 0;
+  const evidencePass = sourceListingVerified && exactIdentity && soldCompCount >= 1 && !stale && !duplicate && !ambiguousCondition && unresolvedItems === 0;
 
   if (!thresholdPass) {
     decision = 'REJECT';
@@ -77,7 +98,7 @@ export function scoreLocalListing(input, policy = LOCAL_ARBITRAGE_POLICY) {
 
   const economicsScore = clamp(Math.round((economics.expectedNetProfitCents / Math.max(policy.minNetProfitCents, 1)) * 35), 0, 45);
   const roiScore = clamp(Math.round((economics.roiPct / Math.max(policy.minRoiPct, 1)) * 25), 0, 30);
-  const evidenceScore = (exactIdentity ? 10 : 0) + Math.min(10, soldCompCount * 2) + (!stale && !duplicate ? 5 : 0);
+  const evidenceScore = (sourceListingVerified ? 5 : 0) + (exactIdentity ? 10 : 0) + Math.min(10, soldCompCount * 2) + (!stale && !duplicate ? 5 : 0);
   const dealScore = clamp(economicsScore + roiScore + evidenceScore, 0, 100);
 
   return {
@@ -91,6 +112,7 @@ export function scoreLocalListing(input, policy = LOCAL_ARBITRAGE_POLICY) {
     evidenceAgeHours: Number.isFinite(evidenceAgeHours) ? Number(evidenceAgeHours.toFixed(1)) : null,
     soldCompCount,
     exactIdentity,
+    sourceListingVerified,
     economics,
     externalActions: 0,
     purchaseAuthorized: false,
