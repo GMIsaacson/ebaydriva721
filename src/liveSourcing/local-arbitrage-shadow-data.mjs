@@ -1,5 +1,11 @@
 const observedAt = new Date().toISOString();
 
+const discoveredOnly = {
+  sourceListingUrlVerified: false,
+  sourceVerificationStatus: 'DISCOVERED_UNVERIFIED',
+  sourceHttpStatus: null,
+};
+
 export const LIVE_SHADOW_CANDIDATES = [
   {
     id: 'CL-7937231238',
@@ -9,7 +15,7 @@ export const LIVE_SHADOW_CANDIDATES = [
     location: 'Champlin, MN',
     askPriceCents: 2000,
     listingUrl: 'https://minneapolis.craigslist.org/hnp/tls/d/champlin-used-dewalt-case-with-saws-and/7937231238.html',
-    sourceListingUrlVerified: true,
+    ...discoveredOnly,
     evidenceObservedAt: observedAt,
     economicsReady: false,
     expectedSaleCents: 0,
@@ -23,7 +29,7 @@ export const LIVE_SHADOW_CANDIDATES = [
     soldCompCount: 0,
     ambiguousCondition: true,
     visibleItems: ['DeWalt case', '2 saws', 'Flashlight', 'Charger'],
-    conditionNote: 'Live Craigslist listing captured. Exact models, batteries and working condition still require verification before comping.',
+    conditionNote: 'Discovered from search/index evidence. The detail page has not been HTTP-verified; exact models, batteries and condition still require verification before comping.',
     compEvidence: [],
     resaleChannels: [],
   },
@@ -35,7 +41,7 @@ export const LIVE_SHADOW_CANDIDATES = [
     location: 'Eagan, MN',
     askPriceCents: 5000,
     listingUrl: 'https://minneapolis.craigslist.org/dak/tls/d/saint-paul-snap-on-cordless-impact-tool/7939293646.html',
-    sourceListingUrlVerified: true,
+    ...discoveredOnly,
     evidenceObservedAt: observedAt,
     economicsReady: false,
     expectedSaleCents: 0,
@@ -49,7 +55,7 @@ export const LIVE_SHADOW_CANDIDATES = [
     soldCompCount: 0,
     ambiguousCondition: true,
     visibleItems: ['Snap-on cordless impact tool set'],
-    conditionNote: 'Live Craigslist listing captured. Model, battery platform, included accessories and condition still require verification.',
+    conditionNote: 'Discovered from search/index evidence. The detail page has not been HTTP-verified; model, battery platform, accessories and condition still require verification.',
     compEvidence: [],
     resaleChannels: [],
   },
@@ -61,7 +67,7 @@ export const LIVE_SHADOW_CANDIDATES = [
     location: 'Maple Grove, MN',
     askPriceCents: 10000,
     listingUrl: 'https://minneapolis.craigslist.org/hnp/tls/d/minneapolis-lot-of-dewalt-14v-and-18v/7934065077.html',
-    sourceListingUrlVerified: true,
+    ...discoveredOnly,
     evidenceObservedAt: observedAt,
     economicsReady: false,
     expectedSaleCents: 0,
@@ -75,7 +81,7 @@ export const LIVE_SHADOW_CANDIDATES = [
     soldCompCount: 0,
     ambiguousCondition: true,
     visibleItems: ['DeWalt 14V tools', 'DeWalt 18V tools', 'Batteries', 'Chargers'],
-    conditionNote: 'Live Craigslist listing captured. Bundle must be itemized to exact model and battery health before breakup economics are valid.',
+    conditionNote: 'Discovered from search/index evidence. The detail page has not been HTTP-verified; bundle itemization and battery health are unresolved.',
     compEvidence: [],
     resaleChannels: [],
   },
@@ -87,7 +93,7 @@ export const LIVE_SHADOW_CANDIDATES = [
     location: 'Maple Grove, MN',
     askPriceCents: 6500,
     listingUrl: 'https://minneapolis.craigslist.org/hnp/tls/d/minneapolis-craftsman-power-tool-bundle/7941452599.html',
-    sourceListingUrlVerified: true,
+    ...discoveredOnly,
     evidenceObservedAt: observedAt,
     economicsReady: false,
     expectedSaleCents: 0,
@@ -101,7 +107,7 @@ export const LIVE_SHADOW_CANDIDATES = [
     soldCompCount: 0,
     ambiguousCondition: false,
     visibleItems: ['Craftsman grinder', 'Craftsman drill', 'Craftsman jig saw'],
-    conditionNote: 'Live Craigslist listing captured and seller title says tested working. Exact model numbers still require verification before comping.',
+    conditionNote: 'Discovered from search/index evidence. The detail page has not been HTTP-verified; the seller-title condition claim cannot be treated as live evidence until verification succeeds.',
     compEvidence: [],
     resaleChannels: [],
   },
