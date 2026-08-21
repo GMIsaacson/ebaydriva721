@@ -13,31 +13,43 @@ const base = {
   pickupCents: 800, packagingCents: 200, refurbishmentCents: 300, riskReserveCents: 900,
   exactIdentity: true, soldCompCount: 3,
   listingUrl: 'https://minneapolis.craigslist.org/ram/tls/d/saint-paul-example-tool-bundle/7777777777.html',
+  sourceListingUrlVerified: true,
   evidenceObservedAt: '2026-08-20T16:00:00Z', now: '2026-08-20T17:00:00Z',
 };
 
-test('qualified verified listing becomes owner-review buy candidate', async () => {
+test('qualified HTTP-verified listing becomes owner-review buy candidate', async () => {
   const { scoreLocalListing } = await loadCore();
   const result = scoreLocalListing(base);
   assert.equal(result.decision, 'BUY_CANDIDATE');
   assert.equal(result.sourceListingVerified, true);
+  assert.equal(result.sourceVerificationStatus, 'HTTP_VERIFIED');
   assert.equal(result.purchaseAuthorized, false);
   assert.equal(result.externalActions, 0);
 });
 
-test('generic marketplace homepage cannot satisfy source listing evidence', async () => {
+test('permalink-shaped URL is not live evidence without explicit verification', async () => {
   const { scoreLocalListing } = await loadCore();
-  const result = scoreLocalListing({ ...base, listingUrl: 'https://minneapolis.craigslist.org/' });
+  const result = scoreLocalListing({ ...base, sourceListingUrlVerified: false });
   assert.equal(result.decision, 'WATCH');
   assert.equal(result.sourceListingVerified, false);
-  assert.match(result.reasons.join(' '), /source listing URL/);
+  assert.equal(result.sourceVerificationStatus, 'DISCOVERED_UNVERIFIED');
+  assert.match(result.reasons.join(' '), /live-verified/);
+});
+
+test('generic marketplace homepage cannot satisfy source listing evidence even if flagged', async () => {
+  const { scoreLocalListing } = await loadCore();
+  const result = scoreLocalListing({ ...base, listingUrl: 'https://minneapolis.craigslist.org/', sourceListingUrlVerified: true });
+  assert.equal(result.decision, 'WATCH');
+  assert.equal(result.sourceListingVerified, false);
+  assert.match(result.reasons.join(' '), /live-verified/);
 });
 
 test('captured listing snapshot can preserve source evidence after listing disappears', async () => {
   const { scoreLocalListing } = await loadCore();
-  const result = scoreLocalListing({ ...base, listingUrl: '', sourceSnapshotCaptured: true });
+  const result = scoreLocalListing({ ...base, listingUrl: '', sourceListingUrlVerified: false, sourceSnapshotCaptured: true });
   assert.equal(result.decision, 'BUY_CANDIDATE');
   assert.equal(result.sourceListingVerified, true);
+  assert.equal(result.sourceVerificationStatus, 'SNAPSHOT_CAPTURED');
 });
 
 test('exact source record remains watch while economics are pending', async () => {
