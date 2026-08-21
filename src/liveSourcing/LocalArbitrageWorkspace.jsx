@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { buildLocalArbitrageQueue } from "./local-arbitrage-core.mjs";
+import { useAuth } from "../AuthProvider";
 import "./local-arbitrage.css";
 
 const now = new Date().toISOString();
@@ -13,7 +14,13 @@ const DEMO = [
 const money = (cents) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format((cents || 0) / 100);
 
 export default function LocalArbitrageWorkspace() {
+  const { currentUser } = useAuth();
   const [listings, setListings] = useState(DEMO);
+  const [imageTitle, setImageTitle] = useState("Local marketplace bundle");
+  const [imageUrl, setImageUrl] = useState("");
+  const [imageData, setImageData] = useState("");
+  const [itemization, setItemization] = useState(null);
+  const [itemizeStatus, setItemizeStatus] = useState("");
   const result = useMemo(() => buildLocalArbitrageQueue(listings), [listings]);
 
   const addDemoListing = () => setListings((items) => [...items, {
@@ -33,11 +40,66 @@ export default function LocalArbitrageWorkspace() {
     evidenceObservedAt: new Date().toISOString(),
   }]);
 
+  const loadFile = (file) => {
+    if (!file) return;
+    if (!file.type?.startsWith("image/")) {
+      setItemizeStatus("Choose an image file.");
+      return;
+    }
+    if (file.size > 5_000_000) {
+      setItemizeStatus("Image must be 5 MB or smaller.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      setImageData(String(reader.result || ""));
+      setImageUrl("");
+      setItemizeStatus("Image loaded. Ready to itemize.");
+    };
+    reader.onerror = () => setItemizeStatus("Could not read image.");
+    reader.readAsDataURL(file);
+  };
+
+  const itemizeImage = async () => {
+    const image = imageData || imageUrl.trim();
+    if (!image) {
+      setItemizeStatus("Add an image URL or upload an image first.");
+      return;
+    }
+    if (!currentUser) {
+      setItemizeStatus("Log in to run bounded image itemization.");
+      return;
+    }
+    setItemization(null);
+    setItemizeStatus("Analyzing visible items…");
+    try {
+      const token = await currentUser.getIdToken();
+      const response = await fetch("/api/local-arbitrage-itemize", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          title: imageTitle,
+          images: [image],
+          approvedMaxCostUsd: 0.02,
+        }),
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload?.error || payload?.status || `Request failed (${response.status})`);
+      setItemization(payload.itemization || null);
+      setItemizeStatus(`Itemized with ${payload.itemization?.imageConfidence || 0}% image confidence · $${Number(payload.conservativeBatchCeilingUsd || 0).toFixed(2)} approved ceiling.`);
+    } catch (error) {
+      setItemizeStatus(error?.message || "Itemization failed.");
+    }
+  };
+
   return (
     <main className="ds-page la-page">
       <header className="la-hero">
         <div>
-          <p className="la-eyebrow">RUN 004 · LOCAL ARBITRAGE · G4 PREVIEW</p>
+          <p className="la-eyebrow">RUN 004 · LOCAL ARBITRAGE · G5 SHADOW</p>
           <h1>Twin Cities deal intelligence</h1>
           <p>Rank messy local listings by verified resale economics. BUY means candidate for owner review only—never an automatic purchase.</p>
         </div>
@@ -54,6 +116,35 @@ export default function LocalArbitrageWorkspace() {
       <section className="ds-panel la-control">
         <div><h2 className="ds-section-title">Pilot rules</h2><p className="ds-section-copy">Twin Cities · power tools · ≥ $50 expected net profit · ≥ 40% ROI · exact identity + sold comp required for BUY_CANDIDATE.</p></div>
         <button className="ds-button ds-button-secondary" type="button" onClick={addDemoListing}>Add manual candidate</button>
+      </section>
+
+      <section className="ds-panel la-itemizer">
+        <div>
+          <p className="la-eyebrow">IMAGE EVIDENCE · BOUNDED VISION</p>
+          <h2 className="ds-section-title">Itemize an information-poor listing</h2>
+          <p className="ds-section-copy">Use a public image URL or upload a screenshot/photo. Vision only identifies visible components; it does not price them, assume function, contact sellers, or purchase anything.</p>
+        </div>
+        <div className="la-itemizer-grid">
+          <label><span className="ds-label">Listing title</span><input value={imageTitle} onChange={(e) => setImageTitle(e.target.value)} /></label>
+          <label><span className="ds-label">Public image URL</span><input placeholder="https://…/listing-image.jpg" value={imageUrl} onChange={(e) => { setImageUrl(e.target.value); if (e.target.value) setImageData(""); }} /></label>
+          <label><span className="ds-label">Or upload image</span><input type="file" accept="image/*" onChange={(e) => loadFile(e.target.files?.[0])} /></label>
+          <div className="la-itemizer-action"><button className="ds-button ds-button-primary" type="button" onClick={itemizeImage}>Itemize visible tools</button><small>{itemizeStatus || "Per-image conservative approval ceiling: $0.02"}</small></div>
+        </div>
+        {itemization && (
+          <div className="la-itemization-result">
+            <p><strong>{itemization.summary || "Visible-item analysis"}</strong></p>
+            <div className="la-item-cards">
+              {(itemization.items || []).map((item, index) => (
+                <article key={`${item.label}-${index}`}>
+                  <strong>{item.quantity > 1 ? `${item.quantity}× ` : ""}{item.label}</strong>
+                  <span>{[item.brand, item.modelOrMpn].filter(Boolean).join(" · ") || "Model not legible"}</span>
+                  <small>{item.identityConfidence}% identity confidence · {item.requiresManualVerification ? "manual verification required" : "visible identity sufficient for comp lookup"}</small>
+                  <small>{item.visibleEvidence}</small>
+                </article>
+              ))}
+            </div>
+          </div>
+        )}
       </section>
 
       <section className="ds-panel la-table-wrap">
@@ -73,7 +164,7 @@ export default function LocalArbitrageWorkspace() {
 
       <section className="ds-panel la-flow">
         <h2 className="ds-section-title">Decision pipeline</h2>
-        <div className="la-flow-row"><span>Local listing</span><b>→</b><span>Item decomposition</span><b>→</b><span>Comp evidence</span><b>→</b><span>Landed economics</span><b>→</b><span>Deal score</span><b>→</b><span>Owner review</span></div>
+        <div className="la-flow-row"><span>Local listing</span><b>→</b><span>Image itemization</span><b>→</b><span>Comp evidence</span><b>→</b><span>Landed economics</span><b>→</b><span>Deal score</span><b>→</b><span>Owner review</span></div>
       </section>
     </main>
   );
