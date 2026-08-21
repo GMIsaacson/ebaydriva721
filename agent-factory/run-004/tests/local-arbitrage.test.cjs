@@ -12,6 +12,7 @@ const base = {
   askPriceCents: 5000, expectedSaleCents: 15000, sellingFeesCents: 1800,
   pickupCents: 800, packagingCents: 200, refurbishmentCents: 300, riskReserveCents: 900,
   exactIdentity: true, soldCompCount: 3,
+  listingUrl: 'https://minneapolis.craigslist.org/ram/tls/d/saint-paul-example-tool-bundle/7777777777.html',
   evidenceObservedAt: '2026-08-20T16:00:00Z', now: '2026-08-20T17:00:00Z',
 };
 
@@ -19,8 +20,24 @@ test('qualified verified listing becomes owner-review buy candidate', async () =
   const { scoreLocalListing } = await loadCore();
   const result = scoreLocalListing(base);
   assert.equal(result.decision, 'BUY_CANDIDATE');
+  assert.equal(result.sourceListingVerified, true);
   assert.equal(result.purchaseAuthorized, false);
   assert.equal(result.externalActions, 0);
+});
+
+test('generic marketplace homepage cannot satisfy source listing evidence', async () => {
+  const { scoreLocalListing } = await loadCore();
+  const result = scoreLocalListing({ ...base, listingUrl: 'https://minneapolis.craigslist.org/' });
+  assert.equal(result.decision, 'WATCH');
+  assert.equal(result.sourceListingVerified, false);
+  assert.match(result.reasons.join(' '), /source listing URL/);
+});
+
+test('captured listing snapshot can preserve source evidence after listing disappears', async () => {
+  const { scoreLocalListing } = await loadCore();
+  const result = scoreLocalListing({ ...base, listingUrl: '', sourceSnapshotCaptured: true });
+  assert.equal(result.decision, 'BUY_CANDIDATE');
+  assert.equal(result.sourceListingVerified, true);
 });
 
 test('profit below threshold rejects even with strong identity', async () => {
