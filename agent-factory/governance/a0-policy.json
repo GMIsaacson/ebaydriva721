@@ -1,0 +1,46 @@
+{
+  "policy_id": "A0-CONSTITUTIONAL-LOCK-v1.0",
+  "effective_date": "2026-08-18",
+  "fail_closed": true,
+  "decision_directory": "agent-factory/governance/a0-decisions",
+  "decision_suffix": ".a0.json",
+  "protected_run_root_regex": "^agent-factory/run-[0-9]{3}/",
+  "protected_segments": [
+    "agents",
+    "teams",
+    "units",
+    "workflows",
+    "n8n",
+    "contracts",
+    "registries",
+    "databases",
+    "services",
+    "control-centers",
+    "control-centres"
+  ],
+  "non_structural_segments": [
+    "tests",
+    "fixtures",
+    "examples"
+  ],
+  "protected_filename_regex": "(^|[-_.])(agent|team|workflow|registry|topology|boundary|contract|control[-_]?cent(er|re)|database|service)([-_.]|$)",
+  "exempt_prefixes": [
+    "agent-factory/governance/",
+    ".github/workflows/"
+  ],
+  "creation_verdicts": ["NEW", "EXTEND"],
+  "required_decision_fields": [
+    "decision_id",
+    "status",
+    "verdict",
+    "owner",
+    "decided_at",
+    "business_outcome",
+    "existing_owner_scan",
+    "reuse_candidates_checked",
+    "duplication_analysis",
+    "residual_unowned_loop",
+    "covers_paths",
+    "evidence_ref"
+  ]
+}
