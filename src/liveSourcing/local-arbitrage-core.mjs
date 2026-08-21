@@ -12,23 +12,26 @@ const asFinite = (value, fallback = 0) => {
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
-export function hasExactSourceListingUrl(input) {
-  if (input?.sourceListingUrlVerified === true) return true;
+export function isPlausibleSourceListingUrl(input) {
   const value = String(input?.listingUrl || '').trim();
   if (!value) return false;
   try {
     const url = new URL(value);
-    if (!/^https?:$/.test(url.protocol)) return false;
+    if (url.protocol !== 'https:') return false;
     const host = url.hostname.toLowerCase().replace(/^www\./, '');
     const path = url.pathname.replace(/\/+$/, '') || '/';
     if (path === '/') return false;
     if (host.endsWith('craigslist.org')) return /\/\d+\.html$/i.test(path);
     if (host.endsWith('facebook.com')) return /\/marketplace\/item\/\d+/i.test(path);
     if (host.endsWith('offerup.com')) return /\/(item|items)\//i.test(path) || /\/item\/detail\//i.test(path);
-    return path.split('/').filter(Boolean).length >= 2;
+    return false;
   } catch {
     return false;
   }
+}
+
+export function hasExactSourceListingUrl(input) {
+  return input?.sourceListingUrlVerified === true && isPlausibleSourceListingUrl(input);
 }
 
 export function calculateLocalDealEconomics(input, policy = LOCAL_ARBITRAGE_POLICY) {
@@ -79,7 +82,7 @@ export function scoreLocalListing(input, policy = LOCAL_ARBITRAGE_POLICY) {
 
   if (duplicate) reasons.push('duplicate listing/evidence');
   if (stale) reasons.push('stale evidence');
-  if (!sourceListingVerified) reasons.push('exact source listing URL/snapshot missing');
+  if (!sourceListingVerified) reasons.push('source listing not live-verified or snapshot missing');
   if (!exactIdentity) reasons.push('identity not exact');
   if (soldCompCount < 1) reasons.push('no verified sold comp');
   if (!economicsReady) reasons.push('economics not verified');
@@ -115,6 +118,7 @@ export function scoreLocalListing(input, policy = LOCAL_ARBITRAGE_POLICY) {
     soldCompCount,
     exactIdentity,
     sourceListingVerified,
+    sourceVerificationStatus: sourceListingVerified ? (input.sourceSnapshotCaptured ? 'SNAPSHOT_CAPTURED' : 'HTTP_VERIFIED') : (input.sourceVerificationStatus || 'DISCOVERED_UNVERIFIED'),
     economicsReady,
     economics,
     externalActions: 0,
