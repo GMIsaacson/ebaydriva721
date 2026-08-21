@@ -9,45 +9,66 @@ const DEMO = [
     id: "TC-001", title: "Mixed power-tool bundle", source: "OfferUp", location: "Plymouth, MN", askPriceCents: 9500,
     expectedSaleCents: 21000, sellingFeesCents: 2800, shippingCents: 0, pickupCents: 1200, packagingCents: 500,
     refurbishmentCents: 800, riskReserveCents: 1500, exactIdentity: true, soldCompCount: 5, evidenceObservedAt: now,
-    listingUrl: "https://offerup.com/", conditionNote: "Used mixed bundle; function of each component must be confirmed at pickup.",
+    listingUrl: "https://offerup.com/", listingUrlVerified: false,
+    conditionNote: "Used mixed bundle; function of each component must be confirmed at pickup.",
     visibleItems: ["4 power drills", "Scroll saw", "Blow torch", "Reaming tool"],
     compEvidence: [
       { source: "eBay sold", label: "Comparable drill lots", priceCents: 7200, status: "supporting" },
       { source: "eBay sold", label: "Scroll saw comps", priceCents: 6200, status: "supporting" },
       { source: "Public web", label: "Accessory breakup value", priceCents: 7600, status: "supporting" },
     ],
+    resaleChannels: [
+      { channel: "eBay", expectedPriceCents: 21000, recommended: true, mode: "Part out", reason: "Best price discovery when identifiable components are sold separately; shipping effort is higher." },
+      { channel: "Facebook Marketplace", expectedPriceCents: 17500, recommended: false, mode: "Local pickup", reason: "Lower friction and no parcel shipping, but mixed lots usually trade at a discount." },
+      { channel: "OfferUp", expectedPriceCents: 16500, recommended: false, mode: "Local pickup", reason: "Useful secondary local channel if the lot does not move quickly." },
+    ],
   },
   {
     id: "TC-002", title: "Miter saw + stand", source: "Craigslist", location: "St. Paul, MN", askPriceCents: 5000,
     expectedSaleCents: 14500, sellingFeesCents: 1700, shippingCents: 0, pickupCents: 900, packagingCents: 0,
     refurbishmentCents: 600, riskReserveCents: 1200, exactIdentity: true, soldCompCount: 4, evidenceObservedAt: now,
-    listingUrl: "https://minneapolis.craigslist.org/", conditionNote: "Used saw with stand; blade, fence, motor and stand locking points require inspection.",
+    listingUrl: "https://minneapolis.craigslist.org/", listingUrlVerified: false,
+    conditionNote: "Used saw with stand; blade, fence, motor and stand locking points require inspection.",
     visibleItems: ["Miter saw", "Portable stand"],
     compEvidence: [
       { source: "eBay sold", label: "Same-class used miter saw", priceCents: 9800, status: "exact-enough" },
       { source: "Local resale", label: "Used portable saw stand", priceCents: 4700, status: "supporting" },
+    ],
+    resaleChannels: [
+      { channel: "Facebook Marketplace", expectedPriceCents: 14500, recommended: true, mode: "Local pickup", reason: "Bulky saw + stand is expensive and awkward to ship; local pickup protects margin." },
+      { channel: "Craigslist", expectedPriceCents: 13500, recommended: false, mode: "Local pickup", reason: "Good fit for contractor/tool buyers, but usually a smaller buyer pool." },
+      { channel: "OfferUp", expectedPriceCents: 14000, recommended: false, mode: "Local pickup", reason: "Useful cross-listing channel for local tool demand." },
     ],
   },
   {
     id: "TC-003", title: "Milwaukee M18 Top-Off", source: "OfferUp", location: "Minneapolis, MN", askPriceCents: 7500,
     expectedSaleCents: 6900, sellingFeesCents: 900, shippingCents: 900, pickupCents: 700, packagingCents: 250,
     refurbishmentCents: 0, riskReserveCents: 500, exactIdentity: true, soldCompCount: 3, evidenceObservedAt: now,
-    listingUrl: "https://offerup.com/", conditionNote: "Identity is clear; economics fail even before additional risk allowance.",
+    listingUrl: "https://offerup.com/", listingUrlVerified: false,
+    conditionNote: "Identity is clear; economics fail even before additional risk allowance.",
     visibleItems: ["Milwaukee M18 Top-Off"],
     compEvidence: [
       { source: "eBay", label: "Current used/new offers", priceCents: 6000, status: "exact" },
       { source: "Retail", label: "Current new market reference", priceCents: 6900, status: "exact" },
+    ],
+    resaleChannels: [
+      { channel: "eBay", expectedPriceCents: 6900, recommended: true, mode: "Ship", reason: "Standardized SKU has a broad national buyer pool, but this acquisition price still fails economics." },
+      { channel: "Facebook Marketplace", expectedPriceCents: 6000, recommended: false, mode: "Local pickup", reason: "Avoids shipping, but expected local price is lower." },
     ],
   },
   {
     id: "TC-004", title: "Garage cleanout tool lot", source: "Facebook Marketplace", location: "Brooklyn Park, MN", askPriceCents: 8000,
     expectedSaleCents: 22000, sellingFeesCents: 3000, shippingCents: 0, pickupCents: 1100, packagingCents: 500,
     refurbishmentCents: 1000, riskReserveCents: 1800, exactIdentity: false, soldCompCount: 2, unresolvedItems: 3,
-    ambiguousCondition: true, evidenceObservedAt: now, listingUrl: "", conditionNote: "Information-poor bundle. Current value is provisional until image itemization resolves the unidentified tools.",
+    ambiguousCondition: true, evidenceObservedAt: now, listingUrl: "", listingUrlVerified: false,
+    conditionNote: "Information-poor bundle. Current value is provisional until image itemization resolves the unidentified tools.",
     visibleItems: ["Cordless drill", "Circular saw", "Battery/charger", "3 unresolved items"],
     compEvidence: [
       { source: "eBay sold", label: "Partial bundle components", priceCents: 12800, status: "partial" },
       { source: "Local resale", label: "Comparable mixed garage lots", priceCents: 9200, status: "partial" },
+    ],
+    resaleChannels: [
+      { channel: "Undetermined", expectedPriceCents: 0, recommended: true, mode: "Hold", reason: "Do not choose an exit channel until image itemization resolves the unidentified components." },
     ],
   },
 ];
@@ -68,6 +89,8 @@ function CandidateDrawer({ item, raw, onClose, ownerState, onOwnerState }) {
     ["Selling fees", raw.sellingFeesCents], ["Shipping", raw.shippingCents], ["Pickup", raw.pickupCents],
     ["Packaging", raw.packagingCents], ["Refurbishment", raw.refurbishmentCents], ["Risk reserve", raw.riskReserveCents],
   ];
+  const resaleChannels = raw.resaleChannels || [];
+  const preferredChannel = resaleChannels.find((channel) => channel.recommended) || resaleChannels[0] || null;
 
   return (
     <div className="la-drawer-layer" role="presentation" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
@@ -85,14 +108,36 @@ function CandidateDrawer({ item, raw, onClose, ownerState, onOwnerState }) {
         </div>
 
         <section className="la-drawer-section">
-          <div className="la-section-heading"><h3>Listing evidence</h3>{raw.listingUrl ? <a href={raw.listingUrl} target="_blank" rel="noreferrer">Open source ↗</a> : <span>Source link not attached</span>}</div>
+          <div className="la-section-heading">
+            <h3>Listing evidence</h3>
+            {raw.listingUrl && raw.listingUrlVerified
+              ? <a className="la-source-button" href={raw.listingUrl} target="_blank" rel="noreferrer">View live listing ↗</a>
+              : raw.listingUrl
+                ? <a href={raw.listingUrl} target="_blank" rel="noreferrer">Marketplace source ↗</a>
+                : <span>Exact listing link unavailable</span>}
+          </div>
           <div className="la-detail-grid">
             <div><small>Ask</small><strong>{money(econ.askPriceCents)}</strong></div>
             <div><small>Expected sale</small><strong>{money(econ.expectedSaleCents)}</strong></div>
             <div><small>Evidence age</small><strong>{item.evidenceAgeHours ?? "—"}h</strong></div>
             <div><small>Authority</small><strong>Research only</strong></div>
           </div>
+          {!raw.listingUrlVerified && <p className="la-callout warning">The exact live-sale URL has not been attached to this record yet. The system will only show “View live listing” after that exact URL is captured.</p>}
           <p className="la-detail-note">{raw.conditionNote || "No condition note recorded."}</p>
+        </section>
+
+        <section className="la-drawer-section">
+          <div className="la-section-heading"><h3>Where to sell</h3><span>{preferredChannel ? `Preferred: ${preferredChannel.channel}` : "Exit channel unresolved"}</span></div>
+          <div className="la-exit-list">
+            {resaleChannels.length ? resaleChannels.map((channel, idx) => (
+              <article className={channel.recommended ? "recommended" : ""} key={`${channel.channel}-${idx}`}>
+                <div className="la-exit-head"><div><strong>{channel.channel}</strong><small>{channel.mode}</small></div>{channel.recommended && <span>Recommended</span>}</div>
+                <div className="la-exit-price"><small>Expected sell</small><b>{channel.expectedPriceCents ? money(channel.expectedPriceCents) : "Hold"}</b></div>
+                <p>{channel.reason}</p>
+              </article>
+            )) : <p className="la-callout warning">No verified resale-channel recommendation is attached yet.</p>}
+          </div>
+          <p className="la-callout">Channel recommendations are decision support only. They do not create a listing or publish inventory.</p>
         </section>
 
         <section className="la-drawer-section">
@@ -157,7 +202,7 @@ export default function LocalArbitrageWorkspace() {
     id: `TC-${String(items.length + 1).padStart(3, "0")}`, title: "New local listing", source: "Manual intake", location: "Twin Cities, MN",
     askPriceCents: 6000, expectedSaleCents: 14000, sellingFeesCents: 1800, pickupCents: 900, packagingCents: 300,
     refurbishmentCents: 500, riskReserveCents: 1200, exactIdentity: false, soldCompCount: 0, evidenceObservedAt: new Date().toISOString(),
-    conditionNote: "Awaiting identity and evidence verification.", visibleItems: ["Unresolved listing"], compEvidence: [],
+    conditionNote: "Awaiting identity and evidence verification.", visibleItems: ["Unresolved listing"], compEvidence: [], resaleChannels: [], listingUrl: "", listingUrlVerified: false,
   }]);
 
   const loadFile = (file) => {
@@ -197,11 +242,11 @@ export default function LocalArbitrageWorkspace() {
       </section>
 
       <section className="ds-panel la-table-wrap">
-        <div className="la-table-intro"><div><h2 className="ds-section-title">Deal queue</h2><p className="ds-section-copy">Click any row to inspect the evidence and economics behind the decision.</p></div><span>Owner review workstation</span></div>
+        <div className="la-table-intro"><div><h2 className="ds-section-title">Deal queue</h2><p className="ds-section-copy">Click any row to inspect the source, exit channel, evidence and economics behind the decision.</p></div><span>Owner review workstation</span></div>
         <table className="la-table"><thead><tr><th>Candidate</th><th>Source</th><th>Ask</th><th>Expected sale</th><th>Net</th><th>ROI</th><th>Max buy</th><th>Score</th><th>Decision</th></tr></thead><tbody>{result.ranked.map((item) => <tr key={item.id} className="la-clickable-row" onClick={() => setSelectedId(item.id)} tabIndex={0} onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && setSelectedId(item.id)}><td><strong>{item.title}</strong><small>{item.location || "—"}</small></td><td>{item.source}</td><td>{money(item.economics.askPriceCents)}</td><td>{money(item.economics.expectedSaleCents)}</td><td>{money(item.economics.expectedNetProfitCents)}</td><td>{item.economics.roiPct}%</td><td>{money(item.economics.maxBuyPriceCents)}</td><td>{item.dealScore}</td><td><span className={`la-pill ${item.decision.toLowerCase()}`}>{decisionLabel(item.decision)}</span><small>{item.reasons[0]}</small></td></tr>)}</tbody></table>
       </section>
 
-      <section className="ds-panel la-flow"><h2 className="ds-section-title">Decision pipeline</h2><div className="la-flow-row"><span>Local listing</span><b>→</b><span>Image itemization</span><b>→</b><span>Comp evidence</span><b>→</b><span>Landed economics</span><b>→</b><span>Deal score</span><b>→</b><span>Owner review</span></div></section>
+      <section className="ds-panel la-flow"><h2 className="ds-section-title">Decision pipeline</h2><div className="la-flow-row"><span>Local listing</span><b>→</b><span>Image itemization</span><b>→</b><span>Comp evidence</span><b>→</b><span>Landed economics</span><b>→</b><span>Exit channel</span><b>→</b><span>Owner review</span></div></section>
 
       <CandidateDrawer item={selectedItem} raw={selectedRaw} onClose={() => setSelectedId(null)} ownerState={ownerStates[selectedId]} onOwnerState={(state) => setOwnerStates((prev) => ({ ...prev, [selectedId]: state }))} />
     </main>
