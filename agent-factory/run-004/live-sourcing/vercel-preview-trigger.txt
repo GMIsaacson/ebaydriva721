@@ -1,0 +1,3 @@
+Run 004 preview trigger
+2026-08-21T13:06:00-05:00
+Branch-only deployment trigger after GitHub↔Vercel binding. No production changes.
