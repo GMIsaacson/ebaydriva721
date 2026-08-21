@@ -40,6 +40,15 @@ test('captured listing snapshot can preserve source evidence after listing disap
   assert.equal(result.sourceListingVerified, true);
 });
 
+test('exact source record remains watch while economics are pending', async () => {
+  const { scoreLocalListing } = await loadCore();
+  const result = scoreLocalListing({ ...base, expectedSaleCents: 0, soldCompCount: 0, exactIdentity: false, economicsReady: false });
+  assert.equal(result.decision, 'WATCH');
+  assert.equal(result.sourceListingVerified, true);
+  assert.equal(result.economicsReady, false);
+  assert.match(result.reasons.join(' '), /economics not verified/);
+});
+
 test('profit below threshold rejects even with strong identity', async () => {
   const { scoreLocalListing } = await loadCore();
   const result = scoreLocalListing({ ...base, expectedSaleCents: 10000 });
