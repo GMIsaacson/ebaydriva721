@@ -59,6 +59,7 @@ export function calculateLocalDealEconomics(input, policy = LOCAL_ARBITRAGE_POLI
 
 export function scoreLocalListing(input, policy = LOCAL_ARBITRAGE_POLICY) {
   const economics = calculateLocalDealEconomics(input, policy);
+  const economicsReady = input.economicsReady !== false && economics.expectedSaleCents > 0;
   const nowMs = Date.parse(input.now || new Date().toISOString());
   const observedMs = Date.parse(input.evidenceObservedAt || '');
   const evidenceAgeHours = Number.isFinite(nowMs) && Number.isFinite(observedMs)
@@ -81,23 +82,24 @@ export function scoreLocalListing(input, policy = LOCAL_ARBITRAGE_POLICY) {
   if (!sourceListingVerified) reasons.push('exact source listing URL/snapshot missing');
   if (!exactIdentity) reasons.push('identity not exact');
   if (soldCompCount < 1) reasons.push('no verified sold comp');
+  if (!economicsReady) reasons.push('economics not verified');
   if (ambiguousCondition) reasons.push('condition requires human verification');
   if (unresolvedItems > 0) reasons.push(`${unresolvedItems} unresolved bundle item${unresolvedItems === 1 ? '' : 's'}`);
 
-  const thresholdPass = economics.expectedNetProfitCents >= policy.minNetProfitCents && economics.roiPct >= policy.minRoiPct;
+  const thresholdPass = economicsReady && economics.expectedNetProfitCents >= policy.minNetProfitCents && economics.roiPct >= policy.minRoiPct;
   const evidencePass = sourceListingVerified && exactIdentity && soldCompCount >= 1 && !stale && !duplicate && !ambiguousCondition && unresolvedItems === 0;
 
-  if (!thresholdPass) {
+  if (economicsReady && !thresholdPass) {
     decision = 'REJECT';
     if (economics.expectedNetProfitCents < policy.minNetProfitCents) reasons.push('net profit below $50 threshold');
     if (economics.roiPct < policy.minRoiPct) reasons.push('ROI below 40% threshold');
-  } else if (evidencePass) {
+  } else if (thresholdPass && evidencePass) {
     decision = 'BUY_CANDIDATE';
     reasons.push('passes economics and evidence gates; owner review required');
   }
 
-  const economicsScore = clamp(Math.round((economics.expectedNetProfitCents / Math.max(policy.minNetProfitCents, 1)) * 35), 0, 45);
-  const roiScore = clamp(Math.round((economics.roiPct / Math.max(policy.minRoiPct, 1)) * 25), 0, 30);
+  const economicsScore = economicsReady ? clamp(Math.round((economics.expectedNetProfitCents / Math.max(policy.minNetProfitCents, 1)) * 35), 0, 45) : 0;
+  const roiScore = economicsReady ? clamp(Math.round((economics.roiPct / Math.max(policy.minRoiPct, 1)) * 25), 0, 30) : 0;
   const evidenceScore = (sourceListingVerified ? 5 : 0) + (exactIdentity ? 10 : 0) + Math.min(10, soldCompCount * 2) + (!stale && !duplicate ? 5 : 0);
   const dealScore = clamp(economicsScore + roiScore + evidenceScore, 0, 100);
 
@@ -113,6 +115,7 @@ export function scoreLocalListing(input, policy = LOCAL_ARBITRAGE_POLICY) {
     soldCompCount,
     exactIdentity,
     sourceListingVerified,
+    economicsReady,
     economics,
     externalActions: 0,
     purchaseAuthorized: false,
@@ -125,7 +128,8 @@ export function buildLocalArbitrageQueue(listings, policy = LOCAL_ARBITRAGE_POLI
   const uniqueScreened = scored.filter((item) => !item.reasons.includes('duplicate listing/evidence'));
   const actionable = uniqueScreened.filter((item) => item.decision === 'BUY_CANDIDATE');
   const densityPct = uniqueScreened.length ? (actionable.length / uniqueScreened.length) * 100 : 0;
-  const laneVerdict = uniqueScreened.length >= 20 && densityPct < policy.minDensityPct ? 'KILL_OR_REDESIGN' : 'CONTINUE_TESTING';
+  const verifiedScreens = uniqueScreened.filter((item) => item.economicsReady && item.sourceListingVerified && item.soldCompCount >= 1);
+  const laneVerdict = verifiedScreens.length >= 20 && densityPct < policy.minDensityPct ? 'KILL_OR_REDESIGN' : 'CONTINUE_TESTING';
 
   return {
     policy,
