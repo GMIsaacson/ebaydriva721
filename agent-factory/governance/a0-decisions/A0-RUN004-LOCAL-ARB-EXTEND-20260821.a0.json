@@ -1,0 +1,21 @@
+{
+  "decision_id": "A0-RUN004-LOCAL-ARB-EXTEND-20260821",
+  "status": "PASS",
+  "verdict": "EXTEND",
+  "owner": "Aberdeen Technologies",
+  "decided_at": "2026-08-21",
+  "business_outcome": "Extend DataScout Run 004 with a bounded local-arbitrage intelligence lane that identifies and ranks local resale opportunities while preserving owner-gated execution.",
+  "existing_owner_scan": "Run 004/DataScout already owns source-to-marketplace resale intelligence, normalization, deterministic economics, verification, and owner review; no separate local-arbitrage team is required.",
+  "reuse_candidates_checked": [
+    "Run 004 DataScout live sourcing pipeline",
+    "Run 004 deterministic economics and decision engine",
+    "Run 004 owner verification queue",
+    "Run 004 source access and marketplace safety controls"
+  ],
+  "duplication_analysis": "Creating a separate Local Arbitrage team would duplicate Run 004 capabilities. The approved architecture therefore extends Run 004 with local listing intake, bundle decomposition, comp evidence, max-buy economics, and owner review rather than introducing a parallel team or execution authority.",
+  "residual_unowned_loop": "Run 004 did not yet own the bounded local-marketplace branch from local listing evidence through bundle/item decomposition, exact-comp validation, local cost modeling, deal-density measurement, and BUY_CANDIDATE/WATCH/REJECT owner review output.",
+  "covers_paths": [
+    "agent-factory/run-004/"
+  ],
+  "evidence_ref": "Run 004 canonical Factory record: local-arbitrage B0 amendment and G1-G3 revalidation; user-approved G4 implementation and preview deployment"
+}
