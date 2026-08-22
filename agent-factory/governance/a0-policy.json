@@ -1,7 +1,8 @@
 {
-  "policy_id": "A0-CONSTITUTIONAL-LOCK-v1.0",
-  "effective_date": "2026-08-18",
+  "policy_id": "A0-CONSTITUTIONAL-LOCK-v1.1",
+  "effective_date": "2026-08-22",
   "fail_closed": true,
+  "reserved_run_numbers": [13],
   "decision_directory": "agent-factory/governance/a0-decisions",
   "decision_suffix": ".a0.json",
   "protected_run_root_regex": "^agent-factory/run-[0-9]{3}/",
