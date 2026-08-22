@@ -22,9 +22,9 @@
   "devDependencies": {
     "@types/react": "18.2.38",
     "@types/react-dom": "18.2.15",
-    "@vitejs/plugin-react": "^4.2.1",
+    "@vitejs/plugin-react": "^6.1.0",
     "typescript": "4.4.4",
-    "vite": "^5.0.11"
+    "vite": "^8.2.2"
   },
   "scripts": {
     "dev": "vite",
