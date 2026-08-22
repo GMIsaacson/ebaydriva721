@@ -1,0 +1,20 @@
+{
+  "decision_id": "A0-FACTORY-CORE-002",
+  "status": "PASS",
+  "verdict": "EXTEND",
+  "owner": "Aberdeen Technologies",
+  "decided_at": "2026-08-22",
+  "business_outcome": "Prevent the generic Factory core from minting numbered Factory Runs before a current team-specific A0 decision while preserving a safe non-run Test ID path for acceptance exercises.",
+  "existing_owner_scan": "Reviewed A0 Constitutional Lock v1.1, Factory Core v1.0.0, Run 014 recovery controls, and the neutral-domain acceptance evidence. The gap is sequencing inside the new core, not a new business capability.",
+  "reuse_candidates_checked": [
+    "A0 Constitutional Lock v1.1",
+    "Factory Core v1.0.0",
+    "Run 014 — Software Product Engineering Team"
+  ],
+  "duplication_analysis": "The repository A0 guard protects structural commits but does not by itself prevent a staging compiler from allocating a numbered run before team-specific A0 evidence exists. Extending the core is the smallest correction; no new team or service is required.",
+  "residual_unowned_loop": "Build request -> governance mode check -> TEST path with Test ID only, or RUN path requiring current PASS/NEW|EXTEND A0 evidence -> run allocation -> bounded package.",
+  "covers_paths": [
+    "agent-factory/core/"
+  ],
+  "evidence_ref": "Factory 1 acceptance campaign finding T2-A0-SEQUENCE-001, 2026-08-22"
+}
