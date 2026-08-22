@@ -1,0 +1,29 @@
+name: Run 014 G3 Simulation
+
+on:
+  pull_request:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  run014-g3:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out PR head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run Run 014 G3 simulation tests
+        run: node --test agent-factory/run-014/tests/g3-simulation.test.cjs
+
+      - name: Generate G3 simulation receipt
+        run: node agent-factory/run-014/runtime/g3-simulator.cjs --scenarios agent-factory/run-014/fixtures/g3-scenarios.json --out /tmp/run014-g3-receipt.json
