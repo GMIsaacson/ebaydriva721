@@ -1,0 +1,5 @@
+'use strict';
+const test=require('node:test');const assert=require('node:assert/strict');const runner=require('../team-runner.cjs');
+const packet={acceptance:{candidates:[{id:'a',score:9},{id:'b',score:6},{id:'c',score:4},{id:'d',score:2},{id:'e',score:1}],selectedProspect:{id:'a'}}};
+test('array_min_length requires five candidates',()=>{assert.equal(runner.executeCheck({type:'array_min_length',path:'acceptance.candidates',min:5},packet).status,'PASS');const bad=structuredClone(packet);bad.acceptance.candidates.pop();assert.equal(runner.executeCheck({type:'array_min_length',path:'acceptance.candidates',min:5},bad).status,'FAIL');});
+test('selected_max_score verifies declared selection is highest score',()=>{const check={type:'selected_max_score',recordsPath:'acceptance.candidates',selectedIdPath:'acceptance.selectedProspect.id',idField:'id',scoreField:'score'};const ok=runner.executeCheck(check,packet);assert.equal(ok.status,'PASS');assert.equal(ok.observed.maxScore,9);const bad=structuredClone(packet);bad.acceptance.selectedProspect.id='b';assert.equal(runner.executeCheck(check,bad).status,'FAIL');});
