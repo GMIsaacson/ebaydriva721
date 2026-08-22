@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "1.0",
+  "decisionId": "A0-SOFT-014-G5-REPAIR-001",
+  "runId": "SW-PROD-014",
+  "status": "PASS",
+  "verdict": "EXTEND",
+  "purpose": "Repair Run 014 Vercel preview target enforcement after G5-VERCEL-PREVIEW-001 created a production-target deployment despite preview-only authority.",
+  "reuseEvidence": [
+    "Reuse canonical Run 014; do not create a new team.",
+    "Reuse the existing G4 release candidate and G3 fail-closed controls.",
+    "Add deterministic requested-target and returned-target verification before any future G5 promotion."
+  ],
+  "authority": {
+    "externalActions": 0,
+    "deployments": 0,
+    "spendCents": 0,
+    "productionAuthority": false
+  },
+  "constraints": [
+    "Run 013 remains permanently reserved.",
+    "This repair change grants no deployment authority.",
+    "G5 remains blocked until accidental production-target cleanup and a verified preview deployment both pass."
+  ]
+}
