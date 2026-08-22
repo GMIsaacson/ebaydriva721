@@ -1,0 +1,1 @@
+Factory 1 controlled recovery staging branch. Canonical source is being restored to the pre-corruption tree anchored at commit 6db4cdeb11d6399daf8ed7b93ee2d25c44a334e8. Displaced master state is preserved on forensics/factory1-pre-deep-recovery-20260822. Factory 2 is explicitly excluded from this recovery.
