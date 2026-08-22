@@ -23,7 +23,7 @@ jobs:
           node-version: '20'
 
       - name: Run Factory core acceptance suite
-        run: node --test agent-factory/core/tests/team-builder.test.cjs
+        run: node --test agent-factory/core/tests/*.test.cjs
 
       - name: Run reserved-run policy suite
         run: node --test agent-factory/governance/reserved-run-guard.test.cjs
