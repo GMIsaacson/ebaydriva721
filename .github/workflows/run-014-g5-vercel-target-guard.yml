@@ -1,0 +1,28 @@
+name: Run 014 G5 Vercel Target Guard
+
+on:
+  pull_request:
+    paths:
+      - 'agent-factory/run-014/runtime/vercel-preview-target-guard.cjs'
+      - 'agent-factory/run-014/tests/vercel-preview-target-guard.test.cjs'
+      - 'agent-factory/governance/a0-decisions/A0-SOFT-014-G5-REPAIR-001.a0.json'
+      - '.github/workflows/run-014-g5-vercel-target-guard.yml'
+
+jobs:
+  target-guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Run target guard regression tests
+        run: node --test agent-factory/run-014/tests/vercel-preview-target-guard.test.cjs
+      - name: Prove production mismatch fails closed
+        run: |
+          if node agent-factory/run-014/runtime/vercel-preview-target-guard.cjs '{"requestedTarget":"preview","actualTarget":"production","readyState":"READY"}'; then
+            echo 'ERROR: production mismatch was accepted'
+            exit 1
+          fi
+      - name: Prove verified preview passes
+        run: node agent-factory/run-014/runtime/vercel-preview-target-guard.cjs '{"requestedTarget":"preview","actualTarget":"preview","readyState":"READY"}'
