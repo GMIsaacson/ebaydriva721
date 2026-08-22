@@ -18,7 +18,7 @@ function decision(overrides = {}) {
     reuse_candidates_checked: ['existing-unit-1'],
     duplication_analysis: 'No existing unit owns the residual loop.',
     residual_unowned_loop: 'A bounded loop remains unowned.',
-    covers_paths: ['agent-factory/run-013/'],
+    covers_paths: ['agent-factory/run-015/'],
     evidence_ref: 'notion:A0-TEST-001',
     ...overrides,
   };
@@ -35,20 +35,20 @@ function wrapDecision(value, touchedInChange = true) {
 
 test('new run is blocked without an A0 decision', () => {
   const result = guard.evaluateChanges({
-    changes: [{ status: 'A', path: 'agent-factory/run-013/README.md' }],
+    changes: [{ status: 'A', path: 'agent-factory/run-015/README.md' }],
     decisions: [],
     policy,
-    baseRunExistence: new Map([['agent-factory/run-013', false]]),
+    baseRunExistence: new Map([['agent-factory/run-015', false]]),
   });
   assert.equal(result.violations.length, 1);
 });
 
-test('current PASS/NEW decision covers a new run', () => {
+test('current PASS/NEW decision covers a non-reserved new run', () => {
   const result = guard.evaluateChanges({
-    changes: [{ status: 'A', path: 'agent-factory/run-013/contracts/team-contract.json' }],
+    changes: [{ status: 'A', path: 'agent-factory/run-015/contracts/team-contract.json' }],
     decisions: [wrapDecision(decision())],
     policy,
-    baseRunExistence: new Map([['agent-factory/run-013', false]]),
+    baseRunExistence: new Map([['agent-factory/run-015', false]]),
   });
   assert.equal(result.violations.length, 0);
 });
@@ -56,10 +56,10 @@ test('current PASS/NEW decision covers a new run', () => {
 test('REUSE cannot authorize structural creation', () => {
   const d = decision({ verdict: 'REUSE' });
   const result = guard.evaluateChanges({
-    changes: [{ status: 'A', path: 'agent-factory/run-013/contracts/team-contract.json' }],
+    changes: [{ status: 'A', path: 'agent-factory/run-015/contracts/team-contract.json' }],
     decisions: [wrapDecision(d)],
     policy,
-    baseRunExistence: new Map([['agent-factory/run-013', false]]),
+    baseRunExistence: new Map([['agent-factory/run-015', false]]),
   });
   assert.equal(result.violations.length, 1);
   assert.match(result.violations[0].reason, /verdict must be/);
@@ -67,10 +67,10 @@ test('REUSE cannot authorize structural creation', () => {
 
 test('stale untouched A0 evidence cannot be inherited', () => {
   const result = guard.evaluateChanges({
-    changes: [{ status: 'A', path: 'agent-factory/run-013/contracts/team-contract.json' }],
+    changes: [{ status: 'A', path: 'agent-factory/run-015/contracts/team-contract.json' }],
     decisions: [wrapDecision(decision(), false)],
     policy,
-    baseRunExistence: new Map([['agent-factory/run-013', false]]),
+    baseRunExistence: new Map([['agent-factory/run-015', false]]),
   });
   assert.equal(result.violations.length, 1);
   assert.match(result.violations[0].reason, /no changed A0 decision/);
@@ -79,10 +79,10 @@ test('stale untouched A0 evidence cannot be inherited', () => {
 test('missing reuse evidence fails closed', () => {
   const d = decision({ reuse_candidates_checked: [] });
   const result = guard.evaluateChanges({
-    changes: [{ status: 'A', path: 'agent-factory/run-013/contracts/team-contract.json' }],
+    changes: [{ status: 'A', path: 'agent-factory/run-015/contracts/team-contract.json' }],
     decisions: [wrapDecision(d)],
     policy,
-    baseRunExistence: new Map([['agent-factory/run-013', false]]),
+    baseRunExistence: new Map([['agent-factory/run-015', false]]),
   });
   assert.equal(result.violations.length, 1);
   assert.match(result.violations[0].reason, /reuse_candidates_checked/);
