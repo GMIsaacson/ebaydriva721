@@ -1,0 +1,1 @@
+Factory 1 only. Factory 2 excluded. Restore code to 6db4cdeb11d6399daf8ed7b93ee2d25c44a334e8 plus recovery governance record. Preserve displaced state on forensics branch.
