@@ -1,0 +1,21 @@
+{
+  "decision_id": "A0-FACTORY-CORE-001",
+  "status": "PASS",
+  "verdict": "NEW",
+  "owner": "Aberdeen Technologies",
+  "decided_at": "2026-08-22",
+  "business_outcome": "Restore a domain-neutral, deterministic Factory 1 team-construction and synthetic execution path so the Factory can be acceptance-tested without reusing the corrupted eBay/Alibaba template.",
+  "existing_owner_scan": "Checked Run 007 Systems Intelligence & Development, Run 008 Operations Core, Run 014 Software Product Engineering, recovered governance controls, and the post-recovery n8n baseline. None provides a canonical executable generic team compiler/runner.",
+  "reuse_candidates_checked": [
+    "Run 007 — Systems Intelligence & Development Team",
+    "Run 008 — Operations Core v0.1",
+    "Run 014 — Software Product Engineering Team",
+    "A0 Constitutional Lock"
+  ],
+  "duplication_analysis": "Run 007 owns architecture/governance and Run 008 owns operational state patterns; Run 014 owns software-product engineering design. Reusing any one of them does not supply the missing bounded request-to-team-package compiler and synthetic role execution harness. The new core remains infrastructure-only and does not duplicate business-team ownership.",
+  "residual_unowned_loop": "Validated bounded team-build request -> reserved/duplicate run allocation check -> domain-neutral role compilation -> authority-bounded team package -> synthetic declarative execution -> evidence/QA receipt, with zero external actions.",
+  "covers_paths": [
+    "agent-factory/core/"
+  ],
+  "evidence_ref": "Factory 1 deep recovery acceptance campaign, 2026-08-22; Run 014 recovery record A0-SOFT-014-RECOVERY-001"
+}

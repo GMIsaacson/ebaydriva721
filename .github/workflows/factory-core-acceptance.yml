@@ -1,0 +1,29 @@
+name: Factory Core Acceptance
+
+on:
+  pull_request:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  factory-core-acceptance:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out PR head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run Factory core acceptance suite
+        run: node --test agent-factory/core/tests/team-builder.test.cjs
+
+      - name: Run reserved-run policy suite
+        run: node --test agent-factory/governance/reserved-run-guard.test.cjs

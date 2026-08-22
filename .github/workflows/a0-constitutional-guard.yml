@@ -25,5 +25,11 @@ jobs:
       - name: Run A0 guard tests
         run: node --test agent-factory/governance/a0-guard.test.cjs
 
+      - name: Run reserved-run guard tests
+        run: node --test agent-factory/governance/reserved-run-guard.test.cjs
+
       - name: Enforce A0 structural gate
         run: node agent-factory/governance/a0-guard.cjs --base "origin/${{ github.base_ref }}"
+
+      - name: Enforce reserved run numbers
+        run: node agent-factory/governance/reserved-run-guard.cjs --base "origin/${{ github.base_ref }}"
