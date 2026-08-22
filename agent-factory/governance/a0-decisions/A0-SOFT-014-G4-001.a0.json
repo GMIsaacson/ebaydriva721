@@ -1,0 +1,31 @@
+{
+  "decision_id": "A0-SOFT-014-G4-001",
+  "status": "PASS",
+  "verdict": "EXTEND",
+  "owner": "Aberdeen Technologies",
+  "decided_at": "2026-08-22",
+  "business_outcome": "Execute the first bounded G4 proving assignment for canonical Run 014 by building a read-only internal Evidence Readiness Console entirely in non-production and proving the complete typed software-engineering handoff loop.",
+  "existing_owner_scan": "Run 014 is the canonical Software Product Engineering Team and passed fresh G3. Run 008 owns operations/runtime handoff. Factory Core provides deterministic governance utilities. No new team is required.",
+  "reuse_candidates_checked": [
+    "Run 014 recovered seven-role software engineering team",
+    "Run 014 G3 simulation and fail-closed controls",
+    "Run 008 Operations Core handoff target",
+    "Factory Core A0/SAFE governance"
+  ],
+  "duplication_analysis": "This is a proving assignment executed by existing Run 014, not a new team, service, database, or production system. The application is intentionally dependency-free and read-only.",
+  "residual_unowned_loop": "Run 014 has not yet proven a complete approved-brief -> spec -> architecture -> implementation -> automated test -> security review -> release candidate -> Run 008 operations handoff on a real non-production application.",
+  "covers_paths": [
+    "agent-factory/run-014/",
+    ".github/workflows/run-014-g4-nonprod.yml"
+  ],
+  "authority": {
+    "environment": "non-production",
+    "external_actions": 0,
+    "max_spend_cents": 0,
+    "deploy": false,
+    "publish": false,
+    "production_data": false,
+    "customer_contact": false
+  },
+  "evidence_ref": "notion:3c1e161e-ac8a-8150-9c3f-c617bde343bd; run014-g3:8dc57260ea36392d0821c7f40f54e0fb2372d65b"
+}
