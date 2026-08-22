@@ -1,0 +1,14 @@
+{
+  "decision_id": "A0-FACTORY-CORE-003",
+  "status": "PASS",
+  "verdict": "EXTEND",
+  "owner": "Aberdeen Technologies",
+  "decided_at": "2026-08-22",
+  "business_outcome": "Allow Factory acceptance teams to turn an evidence-linked, already-bounded static site specification into a reviewable multi-page artifact without deployment, network writes, spend, or autonomous content invention.",
+  "existing_owner_scan": "Reviewed Factory Core v1.1.0, Run 014 Software Product Engineering at recovered G2, and quarantined website runtimes. Run 014 is not yet executable and quarantined website executors cannot be trusted or inherited.",
+  "reuse_candidates_checked": ["Factory Core v1.1.0", "Run 014 — Software Product Engineering Team", "quarantined website executors"],
+  "duplication_analysis": "This is a deterministic non-deploying renderer only. It does not own product engineering, prospect research, strategy, hosting, customer delivery, or production deployment, so it does not replace Run 014 or create a Website Business Team.",
+  "residual_unowned_loop": "Validated evidence-linked static site specification -> atomic multi-page HTML/CSS artifact -> deterministic QA receipt with hashes and zero external actions.",
+  "covers_paths": ["agent-factory/core/"],
+  "evidence_ref": "Factory 1 T5 recovery acceptance finding: missing registered artifact-build adapter, 2026-08-22"
+}
