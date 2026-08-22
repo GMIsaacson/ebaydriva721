@@ -21,6 +21,13 @@ function getPath(object, dottedPath) {
   return current;
 }
 
+function evidenceLabel(manifest) {
+  return String(manifest.identityLabel || manifest.runLabel || manifest.testId || 'TEST')
+    .replace(/[^A-Za-z0-9-]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .toUpperCase() || 'TEST';
+}
+
 function executeCheck(check, packet, context = {}) {
   if (!check || typeof check !== 'object') throw new Error('capability check definition is required');
   if (!SUPPORTED_CHECKS.has(check.type)) throw new Error(`unsupported check type: ${check.type}`);
@@ -82,13 +89,14 @@ function runTeam(manifest, packet, options = {}) {
 
   const startedAt = options.now || new Date().toISOString();
   const packetHash = sha256(JSON.stringify(packet));
+  const label = evidenceLabel(manifest);
   const results = capabilityAgents.map((agent, index) => {
     const result = executeCheck(agent.check, packet, options);
     return {
       agentId: agent.id,
       capabilityId: agent.capabilityId,
       status: result.status,
-      evidenceId: `EV-${manifest.runLabel}-${String(index + 1).padStart(3, '0')}`,
+      evidenceId: `EV-${label}-${String(index + 1).padStart(3, '0')}`,
       observed: result.observed,
       externalActionsPerformed: 0,
       spendCents: 0,
@@ -108,8 +116,10 @@ function runTeam(manifest, packet, options = {}) {
 
   const terminalState = allPassed && qa.status === 'PASS' ? 'DELIVERED' : 'FAILED';
   return {
-    schemaVersion: '1.0',
-    runId: manifest.runId,
+    schemaVersion: '1.1',
+    governanceMode: manifest.governanceMode || (manifest.runId ? 'RUN' : 'TEST'),
+    runId: manifest.runId || null,
+    testId: manifest.testId || null,
     teamId: manifest.teamId,
     packetSha256: packetHash,
     startedAt,
@@ -150,7 +160,12 @@ function main() {
     const manifest = JSON.parse(fs.readFileSync(argv[manifestIndex + 1], 'utf8'));
     const packet = JSON.parse(fs.readFileSync(argv[packetIndex + 1], 'utf8'));
     const result = writeRunAtomic(manifest, packet, argv[outIndex + 1]);
-    console.log(JSON.stringify({ status: result.terminalState === 'DELIVERED' ? 'PASS' : 'FAIL', terminalState: result.terminalState, runId: result.runId }));
+    console.log(JSON.stringify({
+      status: result.terminalState === 'DELIVERED' ? 'PASS' : 'FAIL',
+      terminalState: result.terminalState,
+      runId: result.runId,
+      testId: result.testId,
+    }));
     process.exit(result.terminalState === 'DELIVERED' ? 0 : 1);
   } catch (error) {
     console.error(JSON.stringify({ status: 'BLOCKED', error: error.message }));
@@ -159,4 +174,4 @@ function main() {
 }
 
 if (require.main === module) main();
-module.exports = { SUPPORTED_CHECKS, getPath, executeCheck, runTeam, writeRunAtomic };
+module.exports = { SUPPORTED_CHECKS, getPath, evidenceLabel, executeCheck, runTeam, writeRunAtomic };
