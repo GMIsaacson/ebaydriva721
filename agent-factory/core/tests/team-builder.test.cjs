@@ -8,11 +8,25 @@ const path = require('path');
 const builder = require('../team-builder.cjs');
 const runner = require('../team-runner.cjs');
 
+function a0Decision(overrides = {}) {
+  return {
+    decisionId: 'A0-DOCQA-015',
+    status: 'PASS',
+    verdict: 'NEW',
+    owner: 'Aberdeen Technologies',
+    decidedAt: '2026-08-22',
+    reuseEvidence: ['Run 007 reviewed', 'Run 014 reviewed'],
+    residualUnownedLoop: 'A bounded document-QA loop remains unowned.',
+    ...overrides,
+  };
+}
+
 function baseRequest(overrides = {}) {
   return {
     teamName: 'Document Quality Assurance Team',
     purpose: 'Inspect synthetic business-document packages for completeness, contradictions, unsupported claims, formatting defects, and stale evidence.',
     domain: 'document-quality-assurance',
+    governance: { mode: 'TEST', testId: 'F1-ACCEPT-DOCQA-001' },
     existingRunNumbers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14],
     reservedRunNumbers: [13],
     authority: { maxExternalActions: 0, maxSpendCents: 0, deploy: false, allowedActions: ['read synthetic inputs', 'write local evidence'] },
@@ -52,6 +66,13 @@ function baseRequest(overrides = {}) {
   };
 }
 
+function runRequest(overrides = {}) {
+  return baseRequest({
+    governance: { mode: 'RUN', a0Decision: a0Decision() },
+    ...overrides,
+  });
+}
+
 function goodPacket() {
   return {
     asOf: '2026-08-22T18:00:00Z',
@@ -68,19 +89,43 @@ function goodPacket() {
   };
 }
 
-test('allocates Run 015 and permanently skips Run 013', () => {
+test('TEST mode uses a Test ID and does not mint a Factory Run number', () => {
   const compiled = builder.compileTeam(baseRequest(), { now: '2026-08-22T18:00:00Z' });
+  assert.equal(compiled.manifest.governanceMode, 'TEST');
+  assert.equal(compiled.manifest.testId, 'F1-ACCEPT-DOCQA-001');
+  assert.equal(compiled.manifest.structuralRunCreated, false);
+  assert.equal(compiled.manifest.runNumber, null);
+  assert.equal(compiled.manifest.runId, null);
+  assert.equal(compiled.receipt.status, 'BUILT_TEST_STAGED');
+});
+
+test('RUN mode is blocked without a current team-specific A0 decision', () => {
+  assert.throws(() => builder.compileTeam(baseRequest({ governance: { mode: 'RUN' } })), /requires a current team-specific A0 decision/);
+});
+
+test('RUN mode with current PASS A0 allocates Run 015 and skips reserved Run 013', () => {
+  const compiled = builder.compileTeam(runRequest(), { now: '2026-08-22T18:00:00Z' });
   assert.equal(compiled.manifest.runNumber, 15);
   assert.equal(compiled.manifest.runLabel, '015');
   assert.match(compiled.manifest.runId, /015$/);
+  assert.equal(compiled.manifest.a0DecisionId, 'A0-DOCQA-015');
+  assert.equal(compiled.manifest.structuralRunCreated, true);
 });
 
-test('Run 013 cannot be explicitly requested', () => {
-  assert.throws(() => builder.compileTeam(baseRequest({ requestedRunNumber: 13 })), /permanently reserved/);
+test('Run 013 cannot be explicitly requested even with valid A0', () => {
+  assert.throws(() => builder.compileTeam(runRequest({ requestedRunNumber: 13 })), /permanently reserved/);
 });
 
-test('duplicate existing run number fails closed', () => {
-  assert.throws(() => builder.compileTeam(baseRequest({ requestedRunNumber: 14 })), /already exists/);
+test('duplicate existing run number fails closed even with valid A0', () => {
+  assert.throws(() => builder.compileTeam(runRequest({ requestedRunNumber: 14 })), /already exists/);
+});
+
+test('TEST mode cannot request a Factory Run number', () => {
+  assert.throws(() => builder.compileTeam(baseRequest({ requestedRunNumber: 15 })), /TEST mode cannot request or allocate/);
+});
+
+test('invalid A0 verdict cannot authorize structural creation', () => {
+  assert.throws(() => builder.compileTeam(runRequest({ governance: { mode: 'RUN', a0Decision: a0Decision({ verdict: 'REUSE' }) } })), /verdict must be NEW or EXTEND/);
 });
 
 test('deployment or external authority is rejected at build time', () => {
@@ -93,7 +138,7 @@ test('ambiguous request without purpose is rejected', () => {
   assert.throws(() => builder.compileTeam(baseRequest({ purpose: '' })), /purpose is required/);
 });
 
-test('neutral-domain build contains no eBay or Alibaba template leakage', () => {
+test('neutral-domain TEST build contains no eBay or Alibaba template leakage', () => {
   const compiled = builder.compileTeam(baseRequest(), { now: '2026-08-22T18:00:00Z' });
   const text = JSON.stringify(compiled).toLowerCase();
   assert.equal(text.includes('ebay'), false);
@@ -103,9 +148,12 @@ test('neutral-domain build contains no eBay or Alibaba template leakage', () => 
   assert.ok(compiled.manifest.agents.some((agent) => agent.name === 'Evidence and Quality Auditor'));
 });
 
-test('synthetic Document QA team executes through independent QA and DELIVERS clean packet', () => {
+test('synthetic Document QA TEST team executes through independent QA and DELIVERS clean packet', () => {
   const compiled = builder.compileTeam(baseRequest(), { now: '2026-08-22T18:00:00Z' });
   const result = runner.runTeam(compiled.manifest, goodPacket(), { asOf: '2026-08-22T18:00:00Z', now: '2026-08-22T18:00:00Z' });
+  assert.equal(result.governanceMode, 'TEST');
+  assert.equal(result.testId, 'F1-ACCEPT-DOCQA-001');
+  assert.equal(result.runId, null);
   assert.equal(result.terminalState, 'DELIVERED');
   assert.equal(result.qa.status, 'PASS');
   assert.equal(result.capabilityResults.length, 5);
@@ -145,17 +193,17 @@ test('unsupported execution check fails closed', () => {
 
 test('invalid build leaves no partial package on disk', () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'factory-core-test-'));
-  const target = path.join(root, 'run-015');
+  const target = path.join(root, 'docqa-test');
   assert.throws(() => builder.writePackageAtomic(baseRequest({ purpose: '' }), target), /purpose is required/);
   assert.equal(fs.existsSync(target), false);
   fs.rmSync(root, { recursive: true, force: true });
 });
 
-test('valid build writes a complete atomic provenance package', () => {
+test('valid TEST build writes a complete atomic provenance package', () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'factory-core-test-'));
-  const target = path.join(root, 'run-015');
+  const target = path.join(root, 'docqa-test');
   const compiled = builder.writePackageAtomic(baseRequest(), target, { now: '2026-08-22T18:00:00Z' });
-  assert.equal(compiled.receipt.status, 'BUILT_STAGED');
+  assert.equal(compiled.receipt.status, 'BUILT_TEST_STAGED');
   assert.ok(fs.existsSync(path.join(target, 'team-manifest.json')));
   assert.ok(fs.existsSync(path.join(target, 'contracts', 'team-contract.json')));
   assert.ok(fs.existsSync(path.join(target, 'evidence', 'build-receipt.json')));

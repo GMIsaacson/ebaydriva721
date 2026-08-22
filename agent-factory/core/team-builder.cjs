@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 
-const FACTORY_CORE_VERSION = '1.0.0';
+const FACTORY_CORE_VERSION = '1.1.0';
 const DEFAULT_RESERVED_RUNS = [13];
 const LEAKAGE_TERMS = ['ebay', 'alibaba', 'seller scout', 'landed cost', 'source-matching', 'sourcing specialist'];
 
@@ -53,6 +53,35 @@ function normalizeCapability(capability, index) {
   };
 }
 
+function validateA0Decision(decision) {
+  if (!decision || typeof decision !== 'object') throw new Error('RUN mode requires a current team-specific A0 decision');
+  if (!nonEmpty(decision.decisionId) || !decision.decisionId.startsWith('A0-')) throw new Error('A0 decisionId must be a non-empty A0-* identifier');
+  if (decision.status !== 'PASS') throw new Error('A0 status must equal PASS');
+  if (!['NEW', 'EXTEND'].includes(decision.verdict)) throw new Error('A0 verdict must be NEW or EXTEND for structural creation');
+  for (const field of ['owner', 'decidedAt', 'residualUnownedLoop']) {
+    if (!nonEmpty(decision[field])) throw new Error(`A0 ${field} must be non-empty`);
+  }
+  if (!Array.isArray(decision.reuseEvidence) || decision.reuseEvidence.length === 0) throw new Error('A0 reuseEvidence must contain at least one reuse candidate/evidence item');
+  return decision;
+}
+
+function validateGovernance(request) {
+  const governance = request.governance;
+  if (!governance || typeof governance !== 'object') throw new Error('governance block is required');
+  const mode = String(governance.mode || '').toUpperCase();
+  if (!['TEST', 'RUN'].includes(mode)) throw new Error('governance.mode must be TEST or RUN');
+
+  if (mode === 'TEST') {
+    if (!nonEmpty(governance.testId)) throw new Error('TEST mode requires a non-empty testId');
+    if (request.requestedRunNumber !== undefined && request.requestedRunNumber !== null) {
+      throw new Error('TEST mode cannot request or allocate a Factory Run number');
+    }
+    return { mode, testId: governance.testId.trim(), a0Decision: null };
+  }
+
+  return { mode, testId: null, a0Decision: validateA0Decision(governance.a0Decision) };
+}
+
 function validateRequest(request) {
   if (!request || typeof request !== 'object' || Array.isArray(request)) throw new Error('request must be an object');
   for (const field of ['teamName', 'purpose', 'domain']) {
@@ -65,6 +94,7 @@ function validateRequest(request) {
   const ids = capabilities.map((item) => item.id);
   if (new Set(ids).size !== ids.length) throw new Error('capability ids must be unique');
 
+  const governance = validateGovernance(request);
   const authority = request.authority || {};
   const externalActions = Number(authority.maxExternalActions ?? 0);
   const spendCents = Number(authority.maxSpendCents ?? 0);
@@ -80,7 +110,7 @@ function validateRequest(request) {
     : DEFAULT_RESERVED_RUNS.slice();
   if (reservedRunNumbers.some((n) => !Number.isInteger(n) || n < 1 || n > 999)) throw new Error('reservedRunNumbers must contain integers 1..999');
 
-  return { capabilities, authority, existingRunNumbers, reservedRunNumbers };
+  return { capabilities, governance, authority, existingRunNumbers, reservedRunNumbers };
 }
 
 function allocateRunNumber({ existingRunNumbers, reservedRunNumbers, requestedRunNumber }) {
@@ -101,29 +131,32 @@ function allocateRunNumber({ existingRunNumbers, reservedRunNumbers, requestedRu
 
 function compileTeam(request, options = {}) {
   const normalized = validateRequest(request);
-  const runNumber = allocateRunNumber({
+  const isRun = normalized.governance.mode === 'RUN';
+  const runNumber = isRun ? allocateRunNumber({
     existingRunNumbers: normalized.existingRunNumbers,
     reservedRunNumbers: normalized.reservedRunNumbers,
     requestedRunNumber: request.requestedRunNumber,
-  });
-  const runLabel = String(runNumber).padStart(3, '0');
+  }) : null;
+  const runLabel = isRun ? String(runNumber).padStart(3, '0') : null;
+  const testId = isRun ? null : normalized.governance.testId;
+  const identityLabel = isRun ? runLabel : slug(testId).toUpperCase();
   const domainSlug = slug(request.domain);
-  const teamId = `${domainSlug.toUpperCase()}-TEAM-${runLabel}`;
-  const runId = `${domainSlug.toUpperCase()}-${runLabel}`;
+  const teamId = `${domainSlug.toUpperCase()}-TEAM-${identityLabel}`;
+  const runId = isRun ? `${domainSlug.toUpperCase()}-${runLabel}` : null;
   const now = options.now || new Date().toISOString();
   const requestCanonical = JSON.stringify(request);
   const requestHash = sha256(requestCanonical);
 
   const agents = [
     {
-      id: `${domainSlug}-lead-${runLabel}`,
+      id: `${domainSlug}-lead-${identityLabel.toLowerCase()}`,
       name: 'Team Lead and Orchestrator',
       role: 'lead',
       responsibility: 'Own scope, sequencing, typed handoffs, failure-state escalation, and terminal-state integrity.',
       canSelfApprove: false,
     },
     ...normalized.capabilities.map((capability) => ({
-      id: `${domainSlug}-${capability.id}-${runLabel}`,
+      id: `${domainSlug}-${capability.id}-${identityLabel.toLowerCase()}`,
       name: `${capability.name} Agent`,
       role: 'capability',
       capabilityId: capability.id,
@@ -132,7 +165,7 @@ function compileTeam(request, options = {}) {
       canSelfApprove: false,
     })),
     {
-      id: `${domainSlug}-qa-${runLabel}`,
+      id: `${domainSlug}-qa-${identityLabel.toLowerCase()}`,
       name: 'Evidence and Quality Auditor',
       role: 'qa',
       responsibility: 'Independently verify evidence completeness, unsupported claims, authority compliance, and terminal-state eligibility.',
@@ -149,11 +182,16 @@ function compileTeam(request, options = {}) {
   handoffs.push({ from: prior, to: agents[agents.length - 1].id, contract: 'evidence_pack_v1' });
 
   const manifest = {
-    schemaVersion: '1.0',
+    schemaVersion: '1.1',
     factoryCoreVersion: FACTORY_CORE_VERSION,
+    governanceMode: normalized.governance.mode,
+    structuralRunCreated: isRun,
     runNumber,
     runLabel,
     runId,
+    testId,
+    identityLabel,
+    a0DecisionId: isRun ? normalized.governance.a0Decision.decisionId : null,
     teamId,
     teamName: request.teamName.trim(),
     domain: request.domain.trim(),
@@ -169,7 +207,7 @@ function compileTeam(request, options = {}) {
       message: false,
       destructiveActions: false,
     },
-    gates: ['A0', 'B0', 'G0', 'G1', 'G2', 'G3'],
+    gates: isRun ? ['A0', 'B0', 'G0', 'G1', 'G2', 'G3'] : ['B0', 'G0', 'G1', 'G2', 'G3'],
     agents,
     handoffs,
     provenance: {
@@ -181,8 +219,10 @@ function compileTeam(request, options = {}) {
   };
 
   const contract = {
-    schemaVersion: '1.0',
+    schemaVersion: '1.1',
+    governanceMode: normalized.governance.mode,
     runId,
+    testId,
     teamId,
     inputs: ['bounded_input_package_v1'],
     outputs: ['evidence_pack_v1', 'qa_decision_v1', 'terminal_receipt_v1'],
@@ -192,11 +232,14 @@ function compileTeam(request, options = {}) {
   };
 
   const receipt = {
-    schemaVersion: '1.0',
-    status: 'BUILT_STAGED',
+    schemaVersion: '1.1',
+    status: isRun ? 'BUILT_STAGED' : 'BUILT_TEST_STAGED',
+    governanceMode: normalized.governance.mode,
     runId,
+    testId,
     teamId,
     runNumber,
+    a0DecisionId: isRun ? normalized.governance.a0Decision.decisionId : null,
     requestSha256: requestHash,
     roleCount: agents.length,
     capabilityCount: normalized.capabilities.length,
@@ -243,7 +286,14 @@ function main() {
   try {
     const request = JSON.parse(fs.readFileSync(argv[requestIndex + 1], 'utf8'));
     const output = writePackageAtomic(request, argv[outIndex + 1]);
-    console.log(JSON.stringify({ status: 'PASS', runNumber: output.manifest.runNumber, runId: output.manifest.runId, teamId: output.manifest.teamId }));
+    console.log(JSON.stringify({
+      status: 'PASS',
+      governanceMode: output.manifest.governanceMode,
+      runNumber: output.manifest.runNumber,
+      runId: output.manifest.runId,
+      testId: output.manifest.testId,
+      teamId: output.manifest.teamId,
+    }));
   } catch (error) {
     console.error(JSON.stringify({ status: 'BLOCKED', error: error.message }));
     process.exit(2);
@@ -251,4 +301,13 @@ function main() {
 }
 
 if (require.main === module) main();
-module.exports = { FACTORY_CORE_VERSION, DEFAULT_RESERVED_RUNS, validateRequest, allocateRunNumber, compileTeam, writePackageAtomic };
+module.exports = {
+  FACTORY_CORE_VERSION,
+  DEFAULT_RESERVED_RUNS,
+  validateA0Decision,
+  validateGovernance,
+  validateRequest,
+  allocateRunNumber,
+  compileTeam,
+  writePackageAtomic,
+};
