@@ -1,0 +1,21 @@
+{
+  "decision_id": "A0-SOFT-014-G3-001",
+  "status": "PASS",
+  "verdict": "EXTEND",
+  "owner": "Aberdeen Technologies",
+  "decided_at": "2026-08-22",
+  "business_outcome": "Reconstruct the canonical Run 014 Software Product Engineering Team at G3 with executable simulation evidence before any non-production proving assignment.",
+  "existing_owner_scan": "Reviewed the recovered Run 014 Notion design, Factory Core acceptance layer, Run 008 Operations Core patterns, Run 006 baseline controls, A0/SAFE governance, and current master after recovery acceptance. Run 014 remains the canonical owner of the software-product engineering loop.",
+  "reuse_candidates_checked": [
+    "Run 014 recovered G2 design baseline",
+    "agent-factory/core deterministic acceptance utilities",
+    "Run 008 Operations Core governance/runtime patterns",
+    "A0 Constitutional Guard and SAFE authority controls"
+  ],
+  "duplication_analysis": "No new team is being created. This change reconstructs executable G3 simulation artifacts for the existing canonical Run 014 team. Existing runs do not own the approved-brief through release-candidate software engineering loop.",
+  "residual_unowned_loop": "Fresh executable G3 simulation, typed handoff validation, adversarial failure handling, and evidence generation for Run 014 remain absent from recovered master.",
+  "covers_paths": [
+    "agent-factory/run-014/"
+  ],
+  "evidence_ref": "notion:3c1e161e-ac8a-8150-9c3f-c617bde343bd; factory1-acceptance:2026-08-22"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "1.0",
+  "runId": "SW-PROD-014",
+  "requiredHandoffs": [
+    {"type":"product_brief_v1","owner":"Product Spec Agent"},
+    {"type":"software_spec_v1","owner":"Product Spec Agent"},
+    {"type":"architecture_plan_v1","owner":"Software Architect Agent"},
+    {"type":"implementation_change_set_v1","owner":"Implementation Agent"},
+    {"type":"test_evidence_v1","owner":"Test Engineering Agent"},
+    {"type":"security_review_v1","owner":"Security & Dependency Reviewer"},
+    {"type":"release_candidate_v1","owner":"Release & Handoff Agent"},
+    {"type":"ops_handoff_v1","owner":"Release & Handoff Agent"}
+  ],
+  "requiredEnvelopeFields": [
+    "sourceVersion",
+    "owner",
+    "timestamp",
+    "acceptanceCriteria",
+    "authorityCeiling",
+    "evidenceRefs",
+    "unresolvedBlockers"
+  ],
+  "terminalStates": ["DELIVERED","BLOCKED_OWNER","BLOCKED_EXTERNAL","KILLED","FAILED"],
+  "deliveryRule": "Only a bounded simulation or release candidate with all required evidence, independent QA PASS, and zero authority violations can be DELIVERED.",
+  "g3Restriction": "Simulation only. No customer contact, deployment, publishing, paid provisioning, production mutation, destructive migration, or spend."
+}
