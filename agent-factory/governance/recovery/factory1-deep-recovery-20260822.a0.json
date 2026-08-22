@@ -1,0 +1,17 @@
+{
+  "decisionId": "A0-FACTORY1-RECOVERY-20260822",
+  "status": "PASS",
+  "verdict": "EXTEND",
+  "scope": "Controlled recovery of Factory 1 canonical source to the last known-good pre-corruption tree at commit 6db4cdeb11d6399daf8ed7b93ee2d25c44a334e8. Preserve the displaced master tip on forensics/factory1-pre-deep-recovery-20260822. No new external authority, credentials, spend, production activation, customer action, or Factory 2 mutation is authorized.",
+  "reuseEvidence": "Reuse the existing A0 constitutional lock, Factory 1 recovery controls, Run 008 rollback principles, and retained Git history. The recovery changes canonical source state only; displaced work remains preserved for forensic review and selective reintroduction.",
+  "protectedPaths": [
+    "agent-factory/run-008/",
+    ".github/workflows/run-006-g4-subscription-ops.yml",
+    "package.json"
+  ],
+  "rollbackAnchor": "6db4cdeb11d6399daf8ed7b93ee2d25c44a334e8",
+  "forensicBranch": "forensics/factory1-pre-deep-recovery-20260822",
+  "factory2Excluded": true,
+  "externalActionsAuthorized": 0,
+  "spendCentsAuthorized": 0
+}
