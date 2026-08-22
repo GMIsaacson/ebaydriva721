@@ -1,12 +1,12 @@
 {
-  "schemaVersion": "1.0",
+  "schemaVersion": "1.1",
   "runNumber": 14,
   "runLabel": "014",
   "runId": "SW-PROD-014",
   "teamName": "Software Product Engineering Team",
   "lifecycle": "Testing",
-  "currentGate": "G3",
-  "operatingState": "Simulation",
+  "currentGate": "G4",
+  "operatingState": "Non-production proving assignment",
   "externalAuthority": "None",
   "authority": {
     "maxExternalActions": 0,
@@ -36,7 +36,19 @@
     "release_candidate_v1",
     "ops_handoff_v1"
   ],
-  "simulationRule": "G3 PASS requires all required scenarios to match expected fail-closed behavior, all receipts to carry evidence IDs, zero unauthorized external actions, zero spend, and explicit Run 013 rejection.",
-  "nextGateOnPass": "G4",
-  "nextGateScope": "bounded non-production proving assignment only"
+  "g3": {
+    "status": "PASS",
+    "mergeCommit": "8dc57260ea36392d0821c7f40f54e0fb2372d65b",
+    "requiredScenarios": 14,
+    "matchedScenarios": 14
+  },
+  "g4": {
+    "assignmentId": "G4-EVIDENCE-READINESS-CONSOLE-001",
+    "product": "Evidence Readiness Console",
+    "environment": "non-production",
+    "authorityCeiling": "zero external actions / zero spend / no deployment",
+    "terminalRequirement": "All typed handoffs complete; automated tests PASS; security PASS; release hashes present; Run 008 handoff READY; Challenger/QA PASS."
+  },
+  "nextGateOnPass": "G5",
+  "nextGateScope": "manual shadow / bounded operational rehearsal only"
 }

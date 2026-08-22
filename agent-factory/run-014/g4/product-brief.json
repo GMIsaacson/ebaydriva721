@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "1.0",
+  "handoffType": "product_brief_v1",
+  "briefId": "PB-SW-PROD-014-G4-001",
+  "runId": "SW-PROD-014",
+  "title": "Evidence Readiness Console",
+  "status": "APPROVED",
+  "validationStatus": "VALIDATED_INTERNAL",
+  "approvedBy": "Owner",
+  "approvedAt": "2026-08-22",
+  "purpose": "Give Factory operators a read-only local view of release evidence before an operations handoff, and fail closed whenever required evidence is missing or unsafe.",
+  "targetUsers": ["Factory owner", "Run 014 release reviewer", "Run 008 operations reviewer"],
+  "inputs": ["local release-evidence JSON bundle"],
+  "outputs": ["READY or BLOCKED decision", "named blocker list", "run/gate/test/security/handoff summary", "artifact hash visibility", "authority-use summary"],
+  "acceptanceCriteria": [
+    {"id":"AC-01","text":"Display run ID, gate, release decision, test status, security status, handoff status, and artifact hashes from a local evidence bundle."},
+    {"id":"AC-02","text":"Return READY only when required evidence exists, tests pass, security passes, handoff is complete, no blockers exist, deployment count is zero, external actions are zero, and at least one artifact hash is present."},
+    {"id":"AC-03","text":"Return BLOCKED and enumerate deterministic reasons when any readiness condition fails."},
+    {"id":"AC-04","text":"Use no external network dependencies, credentials, database, analytics, third-party scripts, package dependencies, or production data."},
+    {"id":"AC-05","text":"Produce a versioned release candidate, automated test evidence, security review, rollback instructions, and typed ops_handoff_v1 targeted to Run 008 without deploying it."}
+  ],
+  "nonGoals": ["production deployment", "customer-facing UI", "editing evidence", "creating or mutating Factory runs", "authentication", "remote API access"],
+  "authorityCeiling": {"environment":"non-production","externalActions":0,"spendCents":0,"deployments":0,"productionMutation":false},
+  "sourceEvidence": [
+    "Run 014 G3 PASS / PR #50 / merge 8dc57260ea36392d0821c7f40f54e0fb2372d65b",
+    "Factory 1 Recovery Acceptance — 2026-08-22",
+    "Owner instruction on 2026-08-22 to proceed with G4 proving assignment"
+  ]
+}
