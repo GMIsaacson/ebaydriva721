@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+  <title>Work Control v1</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Primary navigation">
+      <div class="brand"><div class="brand-mark" aria-hidden="true">W</div><div><strong>Work Control</strong><span>Factory owner console</span></div></div>
+      <div class="environment-chip">Factory v0.2 · development</div>
+      <nav class="nav-list" id="nav-list">
+        <button class="nav-item is-active" data-view="overview"><span>Overview</span><kbd>1</kbd></button>
+        <button class="nav-item" data-view="teams"><span>Teams</span><kbd>2</kbd></button>
+        <button class="nav-item" data-view="work"><span>Work</span><kbd>3</kbd></button>
+        <button class="nav-item" data-view="approvals"><span>Approvals</span><kbd>4</kbd></button>
+        <button class="nav-item" data-view="history"><span>History</span><kbd>5</kbd></button>
+      </nav>
+      <div class="sidebar-spacer"></div>
+      <section class="connection-card" aria-label="Factory connection status"><div class="connection-row"><span class="status-dot status-dot--amber"></span><strong>Execution adapter</strong></div><p>Disconnected in v1 prototype. Draft actions are stored locally and never presented as real Factory execution.</p></section>
+      <button class="text-button" id="reset-demo" type="button">Reset local demo data</button>
+    </aside>
+
+    <main class="main" id="main-content">
+      <header class="topbar"><div><p class="eyebrow" id="view-eyebrow">Owner workspace</p><h1 id="view-title">Overview</h1></div><div class="topbar-actions"><div class="control-state"><span class="status-dot status-dot--green"></span>v0.1 recovery anchor preserved</div><button class="primary-button" id="global-run-team" type="button">Run team</button></div></header>
+
+      <section class="view is-active" data-view-panel="overview" aria-labelledby="view-title">
+        <div class="metric-grid" id="metric-grid"></div>
+        <div class="section-grid section-grid--wide-left">
+          <section class="panel"><div class="panel-heading"><div><p class="eyebrow">Owner attention</p><h2>What needs you</h2></div><button class="quiet-button" data-navigate="approvals">Open approvals</button></div><div id="owner-attention" class="stack-list"></div></section>
+          <section class="panel"><div class="panel-heading"><div><p class="eyebrow">System</p><h2>Control posture</h2></div></div><div class="posture-list"><div><span>Source of truth</span><strong>Factory records</strong></div><div><span>UI persistence</span><strong>Local browser only</strong></div><div><span>Standing external authority</span><strong>None</strong></div><div><span>Production deployment</span><strong>Not granted</strong></div></div></section>
+        </div>
+        <section class="panel"><div class="panel-heading"><div><p class="eyebrow">Active work</p><h2>Current assignments</h2></div><button class="quiet-button" data-navigate="work">View all work</button></div><div id="overview-work" class="work-list"></div></section>
+        <section class="panel"><div class="panel-heading"><div><p class="eyebrow">Teams</p><h2>Ready access</h2></div><button class="quiet-button" data-navigate="teams">All teams</button></div><div id="overview-teams" class="team-grid team-grid--compact"></div></section>
+      </section>
+
+      <section class="view" data-view-panel="teams"><div class="toolbar"><label class="search-field"><span class="sr-only">Search teams</span><input id="team-search" type="search" placeholder="Search teams or capabilities" /></label><div class="legend"><span><i class="legend-dot legend-dot--green"></i>Ready</span><span><i class="legend-dot legend-dot--amber"></i>Needs setup</span><span><i class="legend-dot"></i>Review</span></div></div><div id="teams-grid" class="team-grid"></div></section>
+
+      <section class="view" data-view-panel="work"><div class="toolbar"><div class="segmented" id="work-filter" aria-label="Work status filter"><button class="is-active" data-filter="all">All</button><button data-filter="running">Running</button><button data-filter="blocked">Blocked</button><button data-filter="queued">Queued</button><button data-filter="completed">Completed</button></div></div><div id="work-list" class="work-list work-list--large"></div></section>
+
+      <section class="view" data-view-panel="approvals"><div class="notice notice--amber"><strong>Important:</strong> v1 records approval decisions locally. It does not transmit authority to the Factory or perform any external action.</div><div id="approvals-list" class="approval-grid"></div></section>
+
+      <section class="view" data-view-panel="history"><div class="toolbar"><label class="search-field"><span class="sr-only">Search history</span><input id="history-search" type="search" placeholder="Search history" /></label></div><div class="panel"><div id="history-list" class="history-list"></div></div></section>
+    </main>
+  </div>
+
+  <div class="drawer-backdrop" id="drawer-backdrop" hidden></div>
+  <aside class="drawer" id="drawer" aria-hidden="true" aria-label="Work Control detail panel"><button class="drawer-close" id="drawer-close" type="button" aria-label="Close detail panel">×</button><div id="drawer-content"></div></aside>
+  <script src="./core.js"></script><script src="./app.js"></script>
+</body>
+</html>
