@@ -3,9 +3,14 @@
 const fs = require('fs');
 const WorkerCore = require('./worker-core.cjs');
 
+function readSecret(pathName) {
+  try { return fs.readFileSync(pathName, 'utf8').trim(); } catch { return ''; }
+}
+
 const WORKER_ID = process.env.WORK_CONTROL_WORKER_ID || 'factory-worker-v1';
 const CONTROL_URL = process.env.WORK_CONTROL_URL || 'http://work-control:8787';
-const WORKER_TOKEN = process.env.WORK_CONTROL_WORKER_TOKEN || '';
+const WORKER_TOKEN_PATH = process.env.WORK_CONTROL_WORKER_TOKEN_FILE || '/run/secrets/work-control-worker-token';
+const WORKER_TOKEN = process.env.WORK_CONTROL_WORKER_TOKEN || readSecret(WORKER_TOKEN_PATH);
 const MODEL = process.env.OPENAI_MODEL || 'gpt-5.6-luna';
 const MAX_OUTPUT_TOKENS = Number(process.env.OPENAI_MAX_OUTPUT_TOKENS || 1600);
 const POLL_MS = Number(process.env.WORK_CONTROL_POLL_MS || 5000);
@@ -141,4 +146,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { loadApiKey, controlRequest, heartbeat, claimNext, callOpenAI, failureReceipt, submitReceipt, processCommand, runLoop };
+module.exports = { readSecret, loadApiKey, controlRequest, heartbeat, claimNext, callOpenAI, failureReceipt, submitReceipt, processCommand, runLoop };
