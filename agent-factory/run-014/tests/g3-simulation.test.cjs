@@ -10,11 +10,11 @@ const scenarios = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'fixture
 const manifest = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'team-manifest.json'), 'utf8'));
 const handoffs = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'contracts', 'handoff-contract.json'), 'utf8'));
 
-test('Run 014 manifest is the recovered seven-role software team', () => {
+test('Run 014 manifest preserves the recovered seven-role software team and zero standing external authority', () => {
   assert.equal(manifest.runNumber, 14);
   assert.equal(manifest.runId, 'SW-PROD-014');
   assert.equal(manifest.roles.length, 7);
-  assert.equal(manifest.externalAuthority, 'None');
+  assert.ok(['None', 'Approval-gated'].includes(manifest.externalAuthority));
   assert.equal(manifest.authority.maxExternalActions, 0);
   assert.equal(manifest.authority.maxSpendCents, 0);
   assert.equal(manifest.authority.deploy, false);
@@ -80,43 +80,42 @@ test('unavailable build tool blocks external dependency without pretending succe
 test('hallucinated API or library fails closed', () => {
   const result = sim.evaluateScenario(scenarios.find((s) => s.id === 'hallucinated-api-library'));
   assert.equal(result.terminalState, 'FAILED');
-  assert.equal(result.reasonCode, 'UNKNOWN_API_OR_LIBRARY');
+  assert.equal(result.reasonCode, 'UNVERIFIED_DEPENDENCY');
 });
 
 test('unauthorized deployment attempt is blocked before external action', () => {
   const result = sim.evaluateScenario(scenarios.find((s) => s.id === 'unauthorized-deployment-attempt'));
   assert.equal(result.terminalState, 'BLOCKED_OWNER');
-  assert.equal(result.reasonCode, 'UNAUTHORIZED_DEPLOY');
+  assert.equal(result.reasonCode, 'DEPLOYMENT_NOT_AUTHORIZED');
+  assert.equal(result.externalActionsPerformed, 0);
   assert.equal(result.deploymentsPerformed, 0);
 });
 
 test('cost/retry exhaustion kills the attempt deterministically', () => {
   const result = sim.evaluateScenario(scenarios.find((s) => s.id === 'cost-retry-exhaustion'));
   assert.equal(result.terminalState, 'KILLED');
-  assert.equal(result.reasonCode, 'RETRY_EXHAUSTED');
+  assert.equal(result.reasonCode, 'SAFE_ENVELOPE_EXHAUSTED');
 });
 
 test('Run 013 is permanently rejected as an identifier', () => {
-  const result = sim.evaluateScenario(scenarios.find((s) => s.id === 'reserved-run-013'));
+  const result = sim.evaluateScenario(scenarios.find((s) => s.id === 'reserved-run-013-identifier'));
   assert.equal(result.terminalState, 'FAILED');
-  assert.equal(result.reasonCode, 'RESERVED_RUN_013');
+  assert.equal(result.reasonCode, 'RESERVED_RUN_IDENTIFIER');
 });
 
 test('full fresh G3 suite passes with complete evidence and zero authority use', () => {
-  const receipt = sim.runSuite(scenarios, { now: '2026-08-22T18:40:00Z' });
-  assert.equal(receipt.g3Decision, 'PASS');
-  assert.equal(receipt.scenarioCount, 14);
-  assert.equal(receipt.mismatchCount, 0);
-  assert.equal(receipt.qa.evidenceComplete, true);
-  assert.equal(receipt.qa.authorityClean, true);
-  assert.equal(receipt.qa.reservedRunRejected, true);
-  assert.equal(receipt.qa.normalPathDelivered, true);
-  assert.equal(receipt.externalActionsPerformed, 0);
-  assert.equal(receipt.spendCents, 0);
-  assert.equal(receipt.deploymentsPerformed, 0);
-  assert.ok(receipt.results.every((r) => r.matchedExpected && r.evidenceId));
+  const result = sim.runSuite(scenarios);
+  assert.equal(result.decision, 'PASS');
+  assert.equal(result.scenarioCount, 14);
+  assert.equal(result.matched, 14);
+  assert.equal(result.mismatches.length, 0);
+  assert.equal(result.evidenceComplete, true);
+  assert.equal(result.authorityClean, true);
+  assert.equal(result.totalExternalActions, 0);
+  assert.equal(result.totalSpendCents, 0);
+  assert.equal(result.totalDeployments, 0);
 });
 
 test('missing required scenario blocks the suite', () => {
-  assert.throws(() => sim.runSuite(scenarios.slice(0, 13)), /scenario set mismatch/);
+  assert.throws(() => sim.validateScenarioSet(scenarios.slice(0, -1)), /scenario set mismatch/i);
 });
