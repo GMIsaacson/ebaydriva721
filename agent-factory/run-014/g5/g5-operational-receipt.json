@@ -1,0 +1,58 @@
+{
+  "schemaVersion": "1.0",
+  "runId": "SW-PROD-014",
+  "gate": "G5",
+  "decision": "PASS",
+  "a0DecisionId": "A0-SOFT-014-G5-002",
+  "authority": {
+    "externalActionsUsed": 1,
+    "deploymentsCreated": 1,
+    "maxSpendCents": 0,
+    "observedSpendCents": 0,
+    "productionDeployAuthorized": false,
+    "productionDeploymentsCreated": 0
+  },
+  "deployment": {
+    "projectId": "prj_Y47Cdk5VDOzTaSJqOoYABAePzbT9",
+    "deploymentId": "dpl_6MqXnH1fpuT6EV1qDHd6J9ix9Top",
+    "url": "https://run014-evidence-readiness-console-cj9cc6osz.vercel.app",
+    "requestedTarget": "preview",
+    "vercelTarget": null,
+    "normalizedTarget": "preview",
+    "aliases": [],
+    "readyState": "READY",
+    "region": "iad1",
+    "filesReceived": 5
+  },
+  "targetGuard": {
+    "mergeCommit": "2730c40e68db538ab5d056205c47f38582d3850d",
+    "factoryHostTestsPassed": 9,
+    "factoryHostTestsFailed": 0,
+    "currentPreviewAccepted": true,
+    "historicalProductionMismatchRejected": true,
+    "wrongProjectRejected": true,
+    "nonReadyRejected": true
+  },
+  "artifactVerification": {
+    "rootHttpStatus": 200,
+    "rootSourceSha256AfterRemovingVercelPreviewToolbarInjection": "5bd5978eab2ef59e1642de47830d88c7e310b6f6a28f895851d551a9039340b5",
+    "matchesG4IndexSha256": true,
+    "buildReceivedExactFileCount": 5,
+    "childAssetDirectByteFetch": "BLOCKED_BY_VERCEL_SSO_INTERSTITIAL",
+    "childAssetIntegrityDisposition": "Exact G4 source files were submitted and Vercel confirmed five files received; root source hash matches G4. Direct child-asset byte equality could not be independently fetched through the SSO interstitial."
+  },
+  "rollbackRehearsal": {
+    "previewAliasesAssigned": 0,
+    "productionTrafficMutation": false,
+    "stableProductionDomainsRemainOnHistoricalProductionDeployment": true,
+    "rollbackActionForPreview": "Discard unique preview URL; no promotion or alias rollback is required."
+  },
+  "downstreamBoundary": {
+    "run008Target": "OPS-CORE-008",
+    "run008AcceptanceProven": false,
+    "run008ExecutionProven": false,
+    "disposition": "handoff remains prepared-for-review only"
+  },
+  "forensicReceiptSha256": "69087cdacb123c56450220dde8486195bfda3281cd9c27738910a096fe185cd6",
+  "nextGate": "G6"
+}
