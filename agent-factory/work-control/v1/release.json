@@ -1,8 +1,8 @@
 {
   "product": "Work Control",
-  "version": "1.1.0-governed-worker",
+  "version": "1.2.0-owner-portal",
   "factoryDevelopmentLine": "develop/factory-v0.2",
-  "status": "CONTROLLED_INTERNAL_LIVE",
+  "status": "CONTROLLED_OWNER_ACCESS_LIVE",
   "scope": [
     "Teams",
     "Run Team",
@@ -22,8 +22,23 @@
     "persistentLedger": true,
     "workerExecutor": "CONNECTED_INTERNAL",
     "workerHostPort": false,
-    "workerAuthentication": "SECRET_FILE_TOKEN",
-    "publicExposure": false
+    "workerAuthentication": "SECRET_FILE_TOKEN"
+  },
+  "remoteOwnerAccess": {
+    "status": "LIVE_AUTHENTICATED",
+    "url": "https://workcontrol.159-65-169-244.sslip.io/",
+    "edge": "Caddy v2.11.4",
+    "tls": "LETS_ENCRYPT_AUTOMATIC",
+    "authentication": "HTTP_BASIC_ARGON2ID",
+    "ownerUsername": "factory-owner",
+    "plaintextPasswordInGit": false,
+    "plaintextPasswordOnServer": false,
+    "publicPorts": [80, 443],
+    "backendExposure": "PRIVATE_DOCKER_NETWORK_PLUS_HOST_LOOPBACK",
+    "unauthenticatedStatus": 401,
+    "authenticatedUiStatus": 200,
+    "authenticatedHealthVerified": true,
+    "robots": "NOINDEX_NOFOLLOW_NOARCHIVE"
   },
   "worker": {
     "provider": "openai",
@@ -40,7 +55,9 @@
     "openAiKeyPlaintextOnDisk": false,
     "openAiKeyStorage": "RSA_ENCRYPTED_CIPHERTEXT",
     "openAiKeyUse": "DECRYPT_IN_MEMORY_AT_WORKER_START",
-    "workerTokenInDockerConfigEnv": false
+    "workerTokenInDockerConfigEnv": false,
+    "ownerPasswordStorage": "ARGON2ID_HASH_SERVER_LOCAL",
+    "ownerPasswordPlaintextRetained": false
   },
   "defaultCommandAuthority": {
     "maxExternalActions": 0,
@@ -56,26 +73,23 @@
   "productionMutationAuthorized": false,
   "externalSpendAuthorizedCents": 0,
   "tests": {
-    "passed": 46,
-    "failed": 0,
+    "runtimePassed": 46,
+    "runtimeFailed": 0,
     "testedRuntimeCommit": "85d54d16c61bc2cbd09d44996e3e9ab289eada32",
-    "evidence": "docs/test-evidence.md"
+    "runtimeEvidence": "docs/test-evidence.md",
+    "remoteAccessChecks": [
+      "TLS certificate obtained successfully",
+      "unauthenticated UI/API returns 401",
+      "authenticated UI returns 200",
+      "authenticated health reports GOVERNED_WORKER and workerOnline=true",
+      "HSTS/CSP/frame-denial/MIME/no-referrer/noindex headers verified"
+    ]
   },
-  "securityReview": "PASS_INTERNAL_GOVERNED_WORKER",
-  "securityEvidence": "docs/security-review.md",
-  "testedRuntimeArtifacts": {
-    "index.html": "3f20d09cc90232f956e5193ec4f3fb90375401a6465d1c44eff05680d50f4009",
-    "styles.css": "e7c918653aab94b91dd40c5451d454d923a54ba72ef813b3cbd289aea25781e7",
-    "core.js": "b809ab9560b1fde7ca540e3923279380af03621bd8decd504bba8143b86e66b9",
-    "api-client.js": "055637db5e152ef913deb23d4385ab3fe083bec6a00229d67ac9f29aec3a3113",
-    "app.js": "4536b64fa1a045165b2e03865458762b17a46a2fc0f136021146a1eb43764ff5",
-    "server-core.cjs": "f3a59e4177e4448e9da152b8e7650fd16f36d9f3b684cb22ebf490b8569ba1b9",
-    "server.cjs": "cf2660cccdef9a0299a7fc70b10aaf8d0c9bc7eec8af41dffd58917faecf2a6c",
-    "worker-core.cjs": "3ad98f0525cdb21ad054b61f94a10070ab1490b350bd1b333706c0c8faaf6321",
-    "worker.cjs": "6ceab08bce8497295237c4878d218d201fdaa35d52f9e778046310d372a66f88",
-    "registry.json": "8832f0e29ed5434b6b081d0f26dcfa48bdf5226138d52ff64092d584249abe3b",
-    "bootstrap-state.json": "0fa3443eff47cdce957fbdb446c7a18e182eae9bab7d3a8e5745ce3dcc61c324"
-  },
+  "securityReview": "PASS_INTERNAL_GOVERNED_WORKER_PLUS_AUTHENTICATED_HTTPS_EDGE",
+  "securityEvidence": [
+    "docs/security-review.md",
+    "remote-access/README.md"
+  ],
   "liveProof": {
     "commandId": "WC-20260823033340-59ae8e9ec2",
     "team": "SW-PROD-014",
@@ -91,5 +105,5 @@
     "branch": "archive/factory-v0.1.0",
     "commit": "37392d74728a44c3e502959c09e6400de40b846e"
   },
-  "nextBoundary": "Implement authenticated remote owner access. Connector/tool execution and any external authority remain separate future gates."
+  "nextBoundary": "Owner portal is remotely accessible. Connector/tool execution, approval consumption, and any nonzero external authority remain separate future gates."
 }
