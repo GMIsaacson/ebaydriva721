@@ -4,10 +4,11 @@ Owner-facing control UI for Factory 1 on the Factory v0.2 development line.
 
 ## Current state
 
-Work Control v1 now has two operating modes:
+Work Control v1 now has three operating states:
 
-1. **Persistent internal control mode** — the browser talks to the same-origin Work Control API, which reads the canonical run registry and persists governed assignment packets, approvals, receipts and history.
-2. **Offline safe mode** — if the API cannot be reached, the browser falls back to local drafts and explicitly does not claim Factory dispatch.
+1. **Governed worker mode** — the browser talks to the same-origin Work Control API, which persists assignment packets, atomically claims work, invokes the bounded AI worker, validates terminal receipts and exposes step-by-step results.
+2. **Queue-only mode** — the persistent control API is available but the worker is offline; assignments remain queued and Work Control does not claim execution.
+3. **Offline safe mode** — if the API cannot be reached, the browser falls back to local drafts and explicitly does not claim Factory dispatch.
 
 The UI remains a control/read surface. It is **not** a second source of authority.
 
@@ -15,28 +16,52 @@ The UI remains a control/read surface. It is **not** a second source of authorit
 
 1. **Teams** — see canonical Factory runs and distinguish reusable teams, project runs, pilots and operations core.
 2. **Run Team** — submit a governed `team_assignment_v1` packet into the persistent control queue.
-3. **See Work** — inspect queued/running/blocked/completed work and stage evidence.
+3. **See Work** — inspect queued/running/blocked/completed work and worker stages.
 4. **Approve / Reject** — persist an owner decision while keeping automatic executor authority consumption disabled.
-5. **View Results** — show a result only when a recorded result/receipt exists.
+5. **View Results** — show a result only when a validated terminal receipt exists.
 6. **History** — inspect the persistent control/event ledger plus bootstrap history.
 
-## Safety boundary
+## Governed worker v1
 
-Every new UI assignment starts with this authority ceiling:
+The current worker is deliberately narrow:
+
+- provider: OpenAI Responses API;
+- default model: `gpt-5.6-luna`;
+- one model invocation per claimed assignment;
+- maximum output: `1600` tokens;
+- internal model-compute budget: `2` cents per assignment;
+- automatic retries: disabled;
+- concurrency: effectively one worker loop;
+- external tools/connectors: none;
+- deployment, messaging, purchasing, production mutation and other external actions: not allowed.
+
+The worker must return `BLOCKED_OWNER` or `BLOCKED_EXTERNAL` rather than claim work it cannot actually perform.
+
+Assignments are claimed atomically before model execution. Claims do not expire automatically in v1. If the worker crashes after claim, the work remains visibly claimed for inspection rather than being silently re-run and charged again.
+
+## Authority boundary
+
+Every new UI assignment starts with this external authority ceiling:
 
 - external actions: `0`
-- spend: `$0`
+- external spend: `$0`
 - deploy: `false`
 - publish: `false`
 - message/contact: `false`
 - destructive actions: `false`
 - production mutation: `false`
 
-A command receives a SHA-256 integrity hash. Terminal receipts are validated against the command and rejected if they exceed its authority ceiling.
+Separately, the command carries a maximum internal model-compute budget of `2` cents. The model budget is included inside the command integrity hash and validated against the terminal receipt.
 
-Approval decisions are recorded by Work Control, but v1 does not automatically transmit/consume that authority. A later worker/executor integration must have its own authenticated and bounded authority path.
+A command receives a SHA-256 integrity hash. Terminal receipts are validated against the command and rejected if they exceed either the external authority ceiling or the model-compute budget.
 
-The general-purpose Factory team executor is **not connected yet**. A persistent command is real queued work, but it remains `WAITING_WORKER` until a governed executor produces a valid receipt. This distinction is deliberate.
+Approval decisions are recorded by Work Control, but v1 does not automatically transmit/consume that authority. Future connector/tool execution requires its own authenticated and bounded authority path.
+
+## Credential posture
+
+The OpenAI project key is not stored plaintext in Git or in the Work Control data directory. Factory1 stores an encrypted key payload plus a server-local RSA private transport key. The worker decrypts the key in memory at startup.
+
+The internal Work Control worker token is mounted from a server-local secret file. The worker container does not receive the OpenAI key or worker token as configured Docker environment values.
 
 ## Canonical registry
 
@@ -46,28 +71,38 @@ The registry is not authoritative by itself; canonical governance records remain
 
 ## Internal server
 
-The control service is dependency-free Node.js:
+The control service is dependency-free Node.js. Factory1 currently runs it in a dedicated container bound to host loopback only:
 
-```bash
-node agent-factory/work-control/v1/server.cjs
-```
-
-Defaults:
-
-- bind: `127.0.0.1`
-- port: `8787`
+- host bind: `127.0.0.1:8787`
 - API namespace: `/api/v1/*`
-- worker receipt/approval routes: disabled unless `WORK_CONTROL_WORKER_TOKEN` is explicitly configured
+- worker and Work Control communicate on an isolated Docker bridge network
+- no public Work Control port
+- existing n8n/Postgres remain separate
 
-For containerized internal operation, bind the host port to loopback only. Do not expose this version directly to the public internet.
+Do not expose this version directly to the public internet. Authenticated remote owner access is a separate next gate.
+
+## Live proof
+
+A bounded Run 014 worker-readiness assignment completed end-to-end with:
+
+- terminal state: `DELIVERED`
+- external actions: `0`
+- external spend: `0`
+- production mutation: `false`
+- model: `gpt-5.6-luna`
+- input tokens: `236`
+- output tokens: `275`
+- estimated model cost: `0.19` cents
+
+The receipt explicitly stated that the worker can reason from supplied information but cannot browse, access systems/credentials, deploy, message, purchase, modify production data or claim unavailable evidence.
 
 ## Verification
 
-The control/API candidate has deterministic tests covering UI fallback, command integrity, authority ceilings, canonical registry constraints and localhost HTTP behavior. See `docs/test-evidence.md`.
+The deterministic suite covers browser fallback, command integrity, canonical registry constraints, atomic claiming, worker authentication, model budget enforcement, receipt validation, credential decryption behavior, same-origin browser access and localhost HTTP behavior. See `docs/test-evidence.md`.
 
 ## Version
 
-Work Control: `1.0.0-control-api`
+Work Control: `1.1.0-governed-worker`
 
 Factory development line: `develop/factory-v0.2`
 
