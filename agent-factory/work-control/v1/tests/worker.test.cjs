@@ -30,7 +30,7 @@ test('encrypted OpenAI key decrypts only in memory', () => {
 
 test('profile set is structurally valid', () => {
   assert.equal(Core.validateProfileSet(profileSet), true);
-  assert.equal(profileSet.profileSetVersion, '2026-08-23.1');
+  assert.equal(profileSet.profileSetVersion, '2026-08-23.2');
 });
 
 test('every runnable registry team has exactly one execution profile', () => {
@@ -56,12 +56,19 @@ test('same ambiguous assignment yields materially different Opportunity vs Softw
   const sw = Core.buildWorkerPrompt(sampleCommand('SW-PROD-014', 'Software Product Engineering', 'Run 014', 'reusable-team', instruction), profileSet);
   assert.match(opp, /Opportunity Underwriter/);
   assert.match(opp, /Escalate\/Watch\/Archive/);
-  assert.match(opp, /100-point OIT score/);
+  assert.match(opp, /Speed to revenue 20/);
+  assert.match(opp, /Strategic fit 15/);
+  assert.match(opp, /Automation potential 15/);
+  assert.match(opp, /Evidence strength 15/);
+  assert.match(opp, /Revenue potential 15/);
+  assert.match(opp, /Low execution effort 10/);
+  assert.match(opp, /Async\/low-call operability 5/);
+  assert.match(opp, /Compounding\/defensibility 5/);
   assert.doesNotMatch(opp, /implementation_change_set_v1/);
   assert.match(sw, /implementation_change_set_v1/);
   assert.match(sw, /Security & Dependency Reviewer/);
   assert.match(sw, /ops_handoff_v1/);
-  assert.doesNotMatch(sw, /100-point OIT score/);
+  assert.doesNotMatch(sw, /Speed to revenue 20/);
   assert.notEqual(Core.sha256(opp), Core.sha256(sw));
 });
 
@@ -116,7 +123,7 @@ test('bounded receipt reports zero authority and immutable profile identity', ()
   assert.equal(receipt.productionMutation, false);
   assert.equal(receipt.modelExecution.estimatedCostCents, 0.7);
   assert.equal(receipt.teamExecutionProfile.teamId, 'SW-PROD-014');
-  assert.equal(receipt.teamExecutionProfile.profileSetVersion, '2026-08-23.1');
+  assert.equal(receipt.teamExecutionProfile.profileSetVersion, '2026-08-23.2');
   assert.match(receipt.teamExecutionProfile.profileSha256, /^[a-f0-9]{64}$/);
   assert.equal(receipt.steps[0].name, 'Team execution profile');
 });
