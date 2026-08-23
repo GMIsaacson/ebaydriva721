@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Opportunity Quick Score</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="hero">
+      <p class="eyebrow">Run 014 · Software Product Engineering Team</p>
+      <h1>Opportunity Quick Score</h1>
+      <p class="lede">A fast, deterministic first-pass filter for deciding whether an idea deserves build time.</p>
+    </header>
+
+    <section class="panel" aria-labelledby="opportunity-title">
+      <div class="section-heading">
+        <div>
+          <p class="kicker">Input</p>
+          <h2 id="opportunity-title">Score the opportunity</h2>
+        </div>
+        <button id="reset" class="secondary" type="button">Reset sample</button>
+      </div>
+
+      <label class="name-field" for="opportunity-name">Opportunity name</label>
+      <input id="opportunity-name" type="text" value="Managed missed-call recovery" autocomplete="off">
+
+      <div class="score-grid">
+        <label class="score-card" for="demand">
+          <span><strong>Demand</strong><small>Are customers actively buying solutions?</small></span>
+          <output id="demand-output" for="demand">8</output>
+          <input id="demand" type="range" min="1" max="10" value="8">
+        </label>
+
+        <label class="score-card" for="speed">
+          <span><strong>Speed to cash</strong><small>How quickly can revenue start?</small></span>
+          <output id="speed-output" for="speed">7</output>
+          <input id="speed" type="range" min="1" max="10" value="7">
+        </label>
+
+        <label class="score-card" for="margin">
+          <span><strong>Margin potential</strong><small>Is there room for healthy contribution margin?</small></span>
+          <output id="margin-output" for="margin">8</output>
+          <input id="margin" type="range" min="1" max="10" value="8">
+        </label>
+
+        <label class="score-card" for="automation">
+          <span><strong>Automation fit</strong><small>Can software or agents perform most delivery?</small></span>
+          <output id="automation-output" for="automation">9</output>
+          <input id="automation" type="range" min="1" max="10" value="9">
+        </label>
+
+        <label class="score-card" for="advantage">
+          <span><strong>Competition advantage</strong><small>Do we have a credible way to win?</small></span>
+          <output id="advantage-output" for="advantage">5</output>
+          <input id="advantage" type="range" min="1" max="10" value="5">
+        </label>
+      </div>
+    </section>
+
+    <section class="result" aria-labelledby="decision-title" aria-live="polite">
+      <div>
+        <p class="kicker">Decision</p>
+        <h2 id="decision-title"><span id="opportunity-label">Managed missed-call recovery</span></h2>
+        <p id="rationale" class="rationale"></p>
+      </div>
+      <div class="score-badge" aria-label="Opportunity score">
+        <strong id="score">0</strong><span>/100</span>
+        <em id="decision">—</em>
+      </div>
+    </section>
+
+    <footer>
+      <p>Weights: demand 30% · speed 25% · margin 20% · automation 15% · advantage 10%.</p>
+      <p>BUILD ≥75 · VALIDATE 55–74 · KILL &lt;55.</p>
+    </footer>
+  </main>
+
+  <script src="score.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

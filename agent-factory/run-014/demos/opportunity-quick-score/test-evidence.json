@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "1.0",
+  "evidenceId": "TEST-RUN014-DEMO-OPPSCORE-001",
+  "sourceCommit": "894b707461e69554f9167b41d37f7ef6c9cf41fa",
+  "runner": "node:20-alpine on Factory host",
+  "testsPassed": 12,
+  "testsFailed": 0,
+  "decision": "PASS",
+  "coverage": [
+    "documented sample score",
+    "BUILD/VALIDATE/KILL threshold boundaries",
+    "positive competition-advantage weighting",
+    "input clamping",
+    "input immutability",
+    "no runtime network APIs or remote resources",
+    "no browser persistence or dynamic code execution",
+    "safe text rendering for opportunity name",
+    "labels and outputs for all score controls",
+    "aria-live result updates"
+  ],
+  "artifactHashes": {
+    "score.js": "81559b5744f62ffe444aad28f1fc45c714b2602f9395f3563fabfafd7fad1bec",
+    "index.html": "e9ec3be67b6ca79f802985558e94db81e1b1cffaf50499e046256c739a2efd0f",
+    "app.js": "b70110594ff6ccabbed3ea57a3c951d8e76c98f74e5b2c8fce51dd6c304ae6c1",
+    "styles.css": "e81588eceda2ee8fa3f43cc5a213c56df6a7900827172df1d8a84d8f44a01804"
+  },
+  "harnessIncident": "Initial container invocation passed a literal glob to Node and did not execute tests. It was rejected as harness evidence and rerun through a container shell; the valid rerun passed 12/12."
+}

@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "1.0",
+  "releaseCandidateId": "RC-RUN014-DEMO-OPPSCORE-001",
+  "assignmentId": "RUN014-DEMO-OPPSCORE-001",
+  "status": "READY",
+  "environment": "non-production",
+  "externalDeploymentAuthorized": false,
+  "testEvidence": "TEST-RUN014-DEMO-OPPSCORE-001",
+  "securityReview": "PASS",
+  "acceptanceCriteria": {
+    "total": 8,
+    "passed": 8,
+    "failed": 0
+  },
+  "runtimeArtifacts": [
+    {"path":"index.html","sha256":"e9ec3be67b6ca79f802985558e94db81e1b1cffaf50499e046256c739a2efd0f"},
+    {"path":"styles.css","sha256":"e81588eceda2ee8fa3f43cc5a213c56df6a7900827172df1d8a84d8f44a01804"},
+    {"path":"score.js","sha256":"81559b5744f62ffe444aad28f1fc45c714b2602f9395f3563fabfafd7fad1bec"},
+    {"path":"app.js","sha256":"b70110594ff6ccabbed3ea57a3c951d8e76c98f74e5b2c8fce51dd6c304ae6c1"}
+  ],
+  "releaseNotes": [
+    "Adds a deterministic five-factor opportunity scorecard.",
+    "Calculates a 0-100 weighted score and BUILD / VALIDATE / KILL recommendation.",
+    "Includes responsive accessible UI with immediate recalculation and sample reset.",
+    "Requires no APIs, database, auth, dependencies, persistence, or secrets."
+  ],
+  "rollback": "Abandon/revert the feature branch or remove the isolated demo directory. No external or production state exists.",
+  "authorityAccounting": {
+    "deployments": 0,
+    "spendCents": 0,
+    "productionMutations": 0,
+    "customerContacts": 0
+  }
+}

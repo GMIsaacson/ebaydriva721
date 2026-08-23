@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "1.0",
+  "assignmentId": "RUN014-DEMO-OPPSCORE-001",
+  "title": "Opportunity Quick Score",
+  "purpose": "Demonstrate Run 014 on a real bounded software assignment by building a small internal decision-support application.",
+  "userOutcome": "A user can name an opportunity, score five dimensions from 1 to 10, and receive a deterministic Build, Validate, or Kill recommendation with rationale.",
+  "constraints": {
+    "environment": "non-production",
+    "externalApis": false,
+    "database": false,
+    "auth": false,
+    "runtimeDependencies": 0,
+    "externalDeploymentAuthorized": false,
+    "maxSpendCents": 0
+  },
+  "acceptanceCriteria": [
+    "Five score inputs: demand, speed-to-cash, margin, automation fit, competition advantage.",
+    "Weighted score is deterministic and displayed as 0-100.",
+    "Recommendation is BUILD at 75+, VALIDATE at 55-74, KILL below 55.",
+    "Competition advantage is scored positively: higher means a more defensible opportunity.",
+    "Changing any score immediately recalculates result and rationale.",
+    "Reset restores the documented sample state.",
+    "All form controls have accessible labels and keyboard operation.",
+    "No network requests or runtime dependencies are required."
+  ]
+}
