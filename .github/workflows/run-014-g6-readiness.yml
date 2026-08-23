@@ -1,0 +1,23 @@
+name: Run 014 G6 Controlled-Live Readiness
+
+on:
+  pull_request:
+    paths:
+      - 'agent-factory/run-014/team-manifest.json'
+      - 'agent-factory/run-014/OPERATING-CONTRACT.md'
+      - 'agent-factory/run-014/g5/g5-operational-receipt.json'
+      - 'agent-factory/run-014/g6/g6-readiness-receipt.json'
+      - 'agent-factory/run-014/tests/g6-readiness.test.cjs'
+      - 'agent-factory/governance/a0-decisions/A0-SOFT-014-G6-001.a0.json'
+      - '.github/workflows/run-014-g6-readiness.yml'
+
+jobs:
+  g6-readiness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate Run 014 G6 controlled-live closure
+        run: node --test agent-factory/run-014/tests/g6-readiness.test.cjs

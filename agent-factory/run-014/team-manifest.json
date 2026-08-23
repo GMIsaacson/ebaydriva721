@@ -1,13 +1,13 @@
 {
-  "schemaVersion": "1.1",
+  "schemaVersion": "1.2",
   "runNumber": 14,
   "runLabel": "014",
   "runId": "SW-PROD-014",
   "teamName": "Software Product Engineering Team",
-  "lifecycle": "Testing",
-  "currentGate": "G4",
-  "operatingState": "Non-production proving assignment",
-  "externalAuthority": "None",
+  "lifecycle": "Controlled Live",
+  "currentGate": "G6",
+  "operatingState": "Ready for controlled operation",
+  "externalAuthority": "Approval-gated",
   "authority": {
     "maxExternalActions": 0,
     "maxSpendCents": 0,
@@ -15,15 +15,16 @@
     "publish": false,
     "message": false,
     "productionMutation": false,
-    "destructiveActions": false
+    "destructiveActions": false,
+    "rule": "Standing external authority is zero. Every external action requires fresh bounded owner approval."
   },
   "roles": [
     {"id":"product-spec","name":"Product Spec Agent","responsibility":"Convert approved product briefs into bounded requirements, acceptance criteria, edge cases, and traceability."},
     {"id":"software-architect","name":"Software Architect Agent","responsibility":"Select bounded reuse-first architecture, interfaces, data ownership, and implementation plan."},
-    {"id":"implementation","name":"Implementation Agent","responsibility":"Produce source/configuration only inside approved scope and non-production workspace."},
+    {"id":"implementation","name":"Implementation Agent","responsibility":"Produce source/configuration only inside approved scope and workspace."},
     {"id":"test-engineering","name":"Test Engineering Agent","responsibility":"Create independent automated tests, fixtures, and failure-path evidence."},
     {"id":"security-dependency","name":"Security & Dependency Reviewer","responsibility":"Review secrets, auth boundaries, dependencies, data exposure, and dangerous defaults; cannot waive failures."},
-    {"id":"release-handoff","name":"Release & Handoff Agent","responsibility":"Package build evidence, release notes, rollback instructions, and typed operations handoff; cannot deploy externally."},
+    {"id":"release-handoff","name":"Release & Handoff Agent","responsibility":"Package build evidence, release notes, rollback instructions, and typed operations handoff; cannot deploy externally without fresh bounded approval."},
     {"id":"challenger-qa","name":"Challenger / QA Reviewer","responsibility":"Independently verify acceptance criteria, scope, freshness, regressions, authority, and readiness claims."}
   ],
   "handoffs": [
@@ -43,12 +44,46 @@
     "matchedScenarios": 14
   },
   "g4": {
+    "status": "PASS",
     "assignmentId": "G4-EVIDENCE-READINESS-CONSOLE-001",
     "product": "Evidence Readiness Console",
-    "environment": "non-production",
-    "authorityCeiling": "zero external actions / zero spend / no deployment",
-    "terminalRequirement": "All typed handoffs complete; automated tests PASS; security PASS; release hashes present; Run 008 handoff READY; Challenger/QA PASS."
+    "mergeCommit": "da5a33dd36c5ed488d899d3df2b9b011d1f511b0",
+    "testsPassed": 7,
+    "securityFindings": 0,
+    "externalActions": 0,
+    "spendCents": 0
   },
-  "nextGateOnPass": "G5",
-  "nextGateScope": "manual shadow / bounded operational rehearsal only"
+  "g5": {
+    "status": "PASS",
+    "a0DecisionId": "A0-SOFT-014-G5-002",
+    "targetGuardMergeCommit": "2730c40e68db538ab5d056205c47f38582d3850d",
+    "previewDeploymentId": "dpl_6MqXnH1fpuT6EV1qDHd6J9ix9Top",
+    "previewProjectId": "prj_Y47Cdk5VDOzTaSJqOoYABAePzbT9",
+    "normalizedTarget": "preview",
+    "readyState": "READY",
+    "aliases": [],
+    "factoryHostTargetGuardTests": "9/9 PASS",
+    "rollbackRehearsal": "PASS",
+    "externalActions": 1,
+    "spendCents": 0
+  },
+  "g6": {
+    "status": "PASS",
+    "a0DecisionId": "A0-SOFT-014-G6-001",
+    "promotion": "CONTROLLED_LIVE_CAPABILITY",
+    "terminalState": "READY_FOR_CONTROLLED_OPERATION",
+    "productionAuthorityGranted": false,
+    "run008BoundaryPreserved": true
+  },
+  "downstream": {
+    "operationsRunId": "OPS-CORE-008",
+    "handoffType": "ops_handoff_v1",
+    "acceptanceProven": false,
+    "executionProven": false
+  },
+  "nonBlockingTechnicalDebt": [
+    "Legacy Vercel production-target deployment dpl_BmozPBKih1MDQgYi6HY4JRtBLGHx is quarantined and should be removed when deletion control is available."
+  ],
+  "nextGateOnPass": null,
+  "nextGateScope": "Normal controlled operation. Reopen governance only for material architecture/authority changes, failed revalidation, or security/operational incidents."
 }

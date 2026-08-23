@@ -1,0 +1,44 @@
+{
+  "decision_id": "A0-SOFT-014-G6-001",
+  "status": "PASS",
+  "verdict": "EXTEND",
+  "owner": "Aberdeen Technologies",
+  "decided_at": "2026-08-22",
+  "business_outcome": "Promote canonical Run 014 Software Product Engineering Team from proving/testing into controlled-live operation after G5 preview deployment, post-deployment verification, target enforcement, failure rehearsal, and rollback proof all pass.",
+  "existing_owner_scan": "Run 014 already owns the software product engineering loop. G3 and G4 passed; G5 has now proven one bounded external preview deployment on the existing Run 014 Vercel project with fail-closed target enforcement and no production traffic mutation. No new team, service, database, or production infrastructure is required.",
+  "reuse_candidates_checked": [
+    "Run 014 seven-role software engineering team",
+    "Run 014 G4 Evidence Readiness Console release candidate",
+    "Run 014 G5 Vercel target guard and operational receipt",
+    "Factory Core governance",
+    "Run 008 typed operations handoff boundary"
+  ],
+  "duplication_analysis": "G6 is a lifecycle promotion and operating-contract closure of Run 014, not a new capability. Existing roles, handoffs, guardrails, release packaging, and approval gates are retained.",
+  "residual_unowned_loop": "None inside the Run 014 software engineering scope. Production operations acceptance remains owned by Run 008 and owner authority; Run 014 must not infer downstream acceptance while Run 008 remains unpromoted.",
+  "covers_paths": [
+    "agent-factory/run-014/team-manifest.json",
+    "agent-factory/run-014/OPERATING-CONTRACT.md",
+    "agent-factory/run-014/g5/g5-operational-receipt.json",
+    "agent-factory/run-014/g6/g6-readiness-receipt.json"
+  ],
+  "authority": {
+    "environment": "controlled-live capability",
+    "external_actions": 0,
+    "max_spend_cents": 0,
+    "deploy": false,
+    "publish": false,
+    "production_deploy": false,
+    "production_data": false,
+    "customer_contact": false,
+    "standing_external_authority": "none; each external action requires fresh bounded owner approval"
+  },
+  "promotion_constraints": [
+    "External deployment remains approval-gated per action",
+    "Production deployment is never inferred from G6",
+    "Run 008 handoff remains prepared-for-review until Run 008 separately accepts it",
+    "Material architecture changes require fresh A0",
+    "Target/authority mismatch fails closed",
+    "No autonomous spending, customer contact, secrets rotation, destructive migration, or production mutation"
+  ],
+  "evidence_ref": "G3:8dc57260ea36392d0821c7f40f54e0fb2372d65b; G4:da5a33dd36c5ed488d899d3df2b9b011d1f511b0; G5-target-guard:2730c40e68db538ab5d056205c47f38582d3850d; G5-deployment:dpl_6MqXnH1fpuT6EV1qDHd6J9ix9Top"
+}

@@ -10,11 +10,11 @@ const scenarios = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'fixture
 const manifest = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'team-manifest.json'), 'utf8'));
 const handoffs = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'contracts', 'handoff-contract.json'), 'utf8'));
 
-test('Run 014 manifest is the recovered seven-role software team', () => {
+test('Run 014 manifest preserves the recovered seven-role software team and zero standing external authority', () => {
   assert.equal(manifest.runNumber, 14);
   assert.equal(manifest.runId, 'SW-PROD-014');
   assert.equal(manifest.roles.length, 7);
-  assert.equal(manifest.externalAuthority, 'None');
+  assert.ok(['None', 'Approval-gated'].includes(manifest.externalAuthority));
   assert.equal(manifest.authority.maxExternalActions, 0);
   assert.equal(manifest.authority.maxSpendCents, 0);
   assert.equal(manifest.authority.deploy, false);

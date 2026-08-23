@@ -1,0 +1,60 @@
+{
+  "schemaVersion": "1.0",
+  "runId": "SW-PROD-014",
+  "gate": "G6",
+  "decision": "PASS",
+  "promotion": "CONTROLLED_LIVE_CAPABILITY",
+  "a0DecisionId": "A0-SOFT-014-G6-001",
+  "criteria": {
+    "g3FreshSimulationPass": true,
+    "g4RealSoftwareLoopPass": true,
+    "g5BoundedPreviewOperationalPass": true,
+    "targetEnforcementFailClosed": true,
+    "failureRehearsalPass": true,
+    "rollbackRehearsalPass": true,
+    "postDeploymentRootIntegrityPass": true,
+    "zeroObservedSpend": true,
+    "productionAuthorityRemainsUnapproved": true,
+    "run008BoundaryPreserved": true
+  },
+  "canonicalEvidence": {
+    "g3Merge": "8dc57260ea36392d0821c7f40f54e0fb2372d65b",
+    "g4Merge": "da5a33dd36c5ed488d899d3df2b9b011d1f511b0",
+    "g5TargetGuardMerge": "2730c40e68db538ab5d056205c47f38582d3850d",
+    "g5PreviewDeployment": "dpl_6MqXnH1fpuT6EV1qDHd6J9ix9Top",
+    "g5PreviewUrl": "https://run014-evidence-readiness-console-cj9cc6osz.vercel.app",
+    "g5ForensicReceiptSha256": "69087cdacb123c56450220dde8486195bfda3281cd9c27738910a096fe185cd6"
+  },
+  "operatingEnvelope": {
+    "defaultExternalActions": 0,
+    "defaultSpendCents": 0,
+    "buildInApprovedWorkspace": true,
+    "testsRequired": true,
+    "securityReviewRequired": true,
+    "releaseHashesRequired": true,
+    "rollbackPlanRequired": true,
+    "externalDeployment": "fresh bounded owner approval required",
+    "productionDeployment": "fresh explicit owner approval plus downstream operations readiness required",
+    "customerCommunication": "not authorized by standing policy",
+    "destructiveMigration": "not authorized by standing policy",
+    "productionDataMutation": "not authorized by standing policy"
+  },
+  "downstreamBoundary": {
+    "target": "OPS-CORE-008",
+    "handoffContract": "ops_handoff_v1",
+    "run008Acceptance": "NOT_PROVEN",
+    "run008Execution": "NOT_PROVEN",
+    "rule": "Run 014 may prepare and validate the handoff but cannot infer downstream acceptance or execute Run 008 autonomously."
+  },
+  "nonBlockingTechnicalDebt": [
+    {
+      "id": "VERCEL-LEGACY-PROD-TARGET",
+      "projectId": "prj_Y47Cdk5VDOzTaSJqOoYABAePzbT9",
+      "deploymentId": "dpl_BmozPBKih1MDQgYi6HY4JRtBLGHx",
+      "disposition": "QUARANTINED_LEGACY_ARTIFACT",
+      "reasonNonBlocking": "The target-enforcement defect is repaired; the legacy deployment is not used as G5/G6 evidence, contains no secrets or production data, and all future external actions require fresh approval. Remove when Vercel deletion control is available."
+    }
+  ],
+  "terminalState": "READY_FOR_CONTROLLED_OPERATION",
+  "nextAction": "Operate Run 014 on approved software assignments. Reopen lifecycle gates only for material architecture/authority changes or failed revalidation."
+}
