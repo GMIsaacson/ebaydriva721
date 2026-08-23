@@ -127,7 +127,7 @@ test('profile hash changes when contract content changes', () => {
   assert.notEqual(Core.sha256(profile), Core.sha256(changed));
 });
 
-test('worker source makes one model invocation path, loads profile set, and contains no API-key logging', () => {
+test('worker source makes one model invocation path, strict JSON schema output, and contains no API-key logging', () => {
   const source = fs.readFileSync(path.resolve(__dirname, '../worker.cjs'), 'utf8');
   assert.match(source, /team-profiles\.json/);
   assert.match(source, /loadProfileSet/);
@@ -135,6 +135,11 @@ test('worker source makes one model invocation path, loads profile set, and cont
   assert.match(source, /https:\/\/api\.openai\.com\/v1\/responses/);
   assert.equal((source.match(/api\.openai\.com\/v1\/responses/g) || []).length, 1);
   assert.equal((source.match(/await callOpenAI\(/g) || []).length, 1);
+  assert.match(source, /type: 'json_schema'/);
+  assert.match(source, /name: 'work_control_result'/);
+  assert.match(source, /strict: true/);
+  assert.match(source, /additionalProperties: false/);
+  assert.match(source, /store: false/);
   assert.doesNotMatch(source, /console\.log\([^\n]*apiKey/i);
   assert.doesNotMatch(source, /console\.error\([^\n]*apiKey/i);
 });
