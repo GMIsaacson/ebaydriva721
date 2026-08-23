@@ -5,13 +5,13 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
-const repoRoot = path.resolve(root, '..', '..');
+const factoryRoot = path.resolve(root, '..');
 const readJson = p => JSON.parse(fs.readFileSync(p, 'utf8'));
 
 const manifest = readJson(path.join(root, 'team-manifest.json'));
 const g5 = readJson(path.join(root, 'g5', 'g5-operational-receipt.json'));
 const g6 = readJson(path.join(root, 'g6', 'g6-readiness-receipt.json'));
-const a0 = readJson(path.join(repoRoot, 'governance', 'a0-decisions', 'A0-SOFT-014-G6-001.a0.json'));
+const a0 = readJson(path.join(factoryRoot, 'governance', 'a0-decisions', 'A0-SOFT-014-G6-001.a0.json'));
 const contract = fs.readFileSync(path.join(root, 'OPERATING-CONTRACT.md'), 'utf8');
 
 test('manifest is promoted to controlled-live G6', () => {
