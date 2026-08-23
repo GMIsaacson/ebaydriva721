@@ -9,6 +9,7 @@ const Core = require('./server-core.cjs');
 const ROOT = __dirname;
 const DEFAULT_DATA_DIR = path.join(ROOT, 'runtime-data');
 const MAX_BODY_BYTES = 64 * 1024;
+const WORKER_ONLINE_MS = 30_000;
 const STATIC_FILES = new Map([
   ['/', ['index.html', 'text/html; charset=utf-8']],
   ['/index.html', ['index.html', 'text/html; charset=utf-8']],
@@ -23,7 +24,7 @@ function readJson(file, fallback) {
 }
 
 function ensureDirs(dataDir) {
-  for (const name of ['commands', 'receipts', 'approvals']) fs.mkdirSync(path.join(dataDir, name), { recursive: true });
+  for (const name of ['commands', 'receipts', 'approvals', 'claims']) fs.mkdirSync(path.join(dataDir, name), { recursive: true });
   const ledger = path.join(dataDir, 'events.jsonl');
   if (!fs.existsSync(ledger)) fs.writeFileSync(ledger, '');
 }
@@ -32,6 +33,12 @@ function atomicWriteJson(file, value) {
   const dir = path.dirname(file);
   fs.mkdirSync(dir, { recursive: true });
   const temp = `${file}.tmp-${process.pid}-${Date.now()}`;
+  fs.writeFileSync(temp, `${JSON.stringify(value, null, 2)}\n`, { flag: 'wx' });
+  fs.renameSync(temp, file);
+}
+
+function replaceJson(file, value) {
+  const temp = `${file}.next-${process.pid}-${Date.now()}`;
   fs.writeFileSync(temp, `${JSON.stringify(value, null, 2)}\n`, { flag: 'wx' });
   fs.renameSync(temp, file);
 }
@@ -55,6 +62,8 @@ function listJson(dir) {
 function commandFile(dataDir, id) { return path.join(dataDir, 'commands', `${Core.safeId(id)}.json`); }
 function receiptFile(dataDir, id) { return path.join(dataDir, 'receipts', `${Core.safeId(id)}.json`); }
 function approvalFile(dataDir, id) { return path.join(dataDir, 'approvals', `${Core.safeId(id)}.json`); }
+function claimFile(dataDir, id) { return path.join(dataDir, 'claims', `${Core.safeId(id)}.json`); }
+function workerStatusFile(dataDir) { return path.join(dataDir, 'worker-status.json'); }
 
 function json(res, status, payload, extraHeaders = {}) {
   const body = `${JSON.stringify(payload)}\n`;
@@ -102,10 +111,22 @@ function workerAuthorized(req, workerToken) {
   try { return require('crypto').timingSafeEqual(Buffer.from(supplied), Buffer.from(workerToken)); } catch { return false; }
 }
 
+function workerOnline(dataDir, now = Date.now()) {
+  const status = readJson(workerStatusFile(dataDir), null);
+  if (!status?.at) return false;
+  const age = now - new Date(status.at).getTime();
+  return Number.isFinite(age) && age >= 0 && age <= WORKER_ONLINE_MS;
+}
+
 function buildState({ dataDir, registry, bootstrap }) {
   const commands = listJson(path.join(dataDir, 'commands'));
   const receipts = new Map(listJson(path.join(dataDir, 'receipts')).map((receipt) => [receipt.commandId, receipt]));
-  const runtimeWork = commands.map((command) => Core.commandToWork(command, receipts.get(command.commandId) || null));
+  const claims = new Map(listJson(path.join(dataDir, 'claims')).map((claim) => [claim.commandId, claim]));
+  const runtimeWork = commands.map((command) => Core.commandToWork(
+    command,
+    receipts.get(command.commandId) || null,
+    claims.has(command.commandId) && !receipts.has(command.commandId) ? 'CLAIMED' : null
+  ));
   const approvals = listJson(path.join(dataDir, 'approvals'));
   const runtimeHistory = readEvents(dataDir).map((event) => ({
     id: event.eventId,
@@ -114,12 +135,13 @@ function buildState({ dataDir, registry, bootstrap }) {
     detail: event.detail,
     type: event.type || 'control'
   }));
+  const online = workerOnline(dataDir);
   return {
     schemaVersion: '1.0',
-    connection: { connected: true, mode: 'QUEUE_ONLY', executor: 'WAITING_WORKER', persistent: true },
+    connection: { connected: true, mode: online ? 'GOVERNED_WORKER' : 'QUEUE_ONLY', executor: online ? 'ONLINE' : 'WAITING_WORKER', persistent: true },
     meta: {
       product: 'Work Control',
-      version: '1.0.0-control-api',
+      version: '1.1.0-governed-worker',
       registryAsOf: registry.asOf,
       reservedRuns: registry.reservedRuns,
       recoveryBaseline: '37392d74728a44c3e502959c09e6400de40b846e'
@@ -137,8 +159,31 @@ function eventForCommand(command) {
     at: command.requestedAt,
     type: 'command',
     title: 'Governed team assignment queued',
-    detail: `${command.team.name}: ${command.instruction}. Integrity ${command.integritySha256.slice(0, 12)}…; zero external authority.`
+    detail: `${command.team.name}: ${command.instruction}. Integrity ${command.integritySha256.slice(0, 12)}…; model budget ${command.modelBudgetCents}¢; zero external authority.`
   };
+}
+
+function sortPendingCommands(commands) {
+  const order = { urgent: 0, high: 1, normal: 2, low: 3 };
+  return commands.slice().sort((a, b) => (order[a.priority] ?? 9) - (order[b.priority] ?? 9) || String(a.requestedAt).localeCompare(String(b.requestedAt)));
+}
+
+function claimNext(dataDir, workerId) {
+  const receipts = new Set(listJson(path.join(dataDir, 'receipts')).map((r) => r.commandId));
+  const claims = new Set(listJson(path.join(dataDir, 'claims')).map((c) => c.commandId));
+  for (const command of sortPendingCommands(listJson(path.join(dataDir, 'commands')))) {
+    if (receipts.has(command.commandId) || claims.has(command.commandId)) continue;
+    if (!Core.verifyCommand(command)) continue;
+    const claim = { schemaVersion: '1.0', commandId: command.commandId, workerId, state: 'CLAIMED', claimedAt: new Date().toISOString() };
+    try {
+      fs.writeFileSync(claimFile(dataDir, command.commandId), `${JSON.stringify(claim, null, 2)}\n`, { flag: 'wx' });
+      appendEvent(dataDir, { eventId: `EV-${command.commandId}-CLAIMED`, at: claim.claimedAt, type: 'worker', title: 'Team assignment claimed', detail: `${command.team.name} assignment claimed by governed worker ${workerId}.` });
+      return { command, claim };
+    } catch (error) {
+      if (error.code !== 'EEXIST') throw error;
+    }
+  }
+  return null;
 }
 
 function createApp(options = {}) {
@@ -155,7 +200,7 @@ function createApp(options = {}) {
 
     try {
       if (req.method === 'GET' && pathname === '/api/v1/health') {
-        return json(res, 200, { status: 'ok', mode: 'QUEUE_ONLY', workerReceiptApi: workerToken ? 'enabled' : 'disabled', registryTeams: registry.teams.length });
+        return json(res, 200, { status: 'ok', mode: workerOnline(dataDir) ? 'GOVERNED_WORKER' : 'QUEUE_ONLY', workerReceiptApi: workerToken ? 'enabled' : 'disabled', workerOnline: workerOnline(dataDir), registryTeams: registry.teams.length });
       }
       if (req.method === 'GET' && pathname === '/api/v1/state') {
         return json(res, 200, buildState({ dataDir, registry, bootstrap }));
@@ -172,7 +217,8 @@ function createApp(options = {}) {
         const command = readJson(commandFile(dataDir, id), null);
         if (!command) return json(res, 404, { error: 'COMMAND_NOT_FOUND' });
         const receipt = readJson(receiptFile(dataDir, id), null);
-        return json(res, 200, { command, receipt, work: Core.commandToWork(command, receipt) });
+        const claim = readJson(claimFile(dataDir, id), null);
+        return json(res, 200, { command, receipt, claim, work: Core.commandToWork(command, receipt, claim && !receipt ? 'CLAIMED' : null) });
       }
       if (req.method === 'POST' && /^\/api\/v1\/approvals\/[A-Za-z0-9._-]+\/decision$/.test(pathname)) {
         const id = Core.safeId(pathname.split('/')[4]);
@@ -180,8 +226,7 @@ function createApp(options = {}) {
         if (!current) return json(res, 404, { error: 'APPROVAL_NOT_FOUND' });
         const body = await readBody(req);
         const decided = Core.decideApproval(current, body.decision);
-        atomicWriteJson(`${approvalFile(dataDir, id)}.next`, decided);
-        fs.renameSync(`${approvalFile(dataDir, id)}.next`, approvalFile(dataDir, id));
+        replaceJson(approvalFile(dataDir, id), decided);
         appendEvent(dataDir, {
           eventId: `EV-${id}-${decided.status.toUpperCase()}`,
           at: decided.decidedAt,
@@ -190,6 +235,21 @@ function createApp(options = {}) {
           detail: `${decided.title}; decision recorded in Work Control. Executor transmission remains disabled.`
         });
         return json(res, 200, { approval: decided });
+      }
+      if (req.method === 'POST' && pathname === '/api/v1/worker/heartbeat') {
+        if (!workerAuthorized(req, workerToken)) return json(res, 403, { error: 'WORKER_AUTH_REQUIRED' });
+        const body = await readBody(req);
+        const status = { workerId: Core.safeId(body.workerId || 'factory-worker-v1'), model: Core.normalizeText(body.model || 'unknown', 80), state: Core.normalizeText(body.state || 'ONLINE', 40), at: new Date().toISOString() };
+        replaceJson(workerStatusFile(dataDir), status);
+        return json(res, 200, { status: 'OK', worker: status });
+      }
+      if (req.method === 'POST' && pathname === '/api/v1/worker/next') {
+        if (!workerAuthorized(req, workerToken)) return json(res, 403, { error: 'WORKER_AUTH_REQUIRED' });
+        const body = await readBody(req);
+        const workerId = Core.safeId(body.workerId || 'factory-worker-v1');
+        const claimed = claimNext(dataDir, workerId);
+        if (!claimed) return json(res, 200, { status: 'IDLE' });
+        return json(res, 200, { status: 'CLAIMED', ...claimed });
       }
       if (req.method === 'POST' && pathname === '/api/v1/worker/approvals') {
         if (!workerAuthorized(req, workerToken)) return json(res, 403, { error: 'WORKER_AUTH_REQUIRED' });
@@ -206,8 +266,12 @@ function createApp(options = {}) {
         const receipt = await readBody(req);
         const command = readJson(commandFile(dataDir, Core.safeId(receipt.commandId)), null);
         if (!command) return json(res, 404, { error: 'COMMAND_NOT_FOUND' });
+        if (readJson(receiptFile(dataDir, command.commandId), null)) return json(res, 409, { error: 'RECEIPT_ALREADY_EXISTS' });
+        const claim = readJson(claimFile(dataDir, command.commandId), null);
+        if (!claim) return json(res, 409, { error: 'CLAIM_REQUIRED' });
         Core.validateReceipt(command, receipt);
         atomicWriteJson(receiptFile(dataDir, command.commandId), receipt);
+        replaceJson(claimFile(dataDir, command.commandId), { ...claim, state: 'COMPLETED', completedAt: receipt.completedAt || new Date().toISOString() });
         appendEvent(dataDir, {
           eventId: `EV-${command.commandId}-${receipt.terminalState}`,
           at: receipt.completedAt || new Date().toISOString(),
@@ -226,7 +290,8 @@ function createApp(options = {}) {
       }
       return json(res, 404, { error: 'NOT_FOUND' });
     } catch (error) {
-      const status = Number(error.statusCode) || (['TEAM_NOT_FOUND', 'TEAM_NOT_RUNNABLE', 'RUN_013_RESERVED', 'INSTRUCTION_REQUIRED', 'INVALID_PRIORITY', 'INVALID_ID', 'APPROVAL_ALREADY_DECIDED', 'INVALID_DECISION'].includes(error.message) ? 400 : 500);
+      const clientErrors = ['TEAM_NOT_FOUND', 'TEAM_NOT_RUNNABLE', 'RUN_013_RESERVED', 'INSTRUCTION_REQUIRED', 'INVALID_PRIORITY', 'INVALID_MODEL_BUDGET', 'INVALID_ID', 'APPROVAL_ALREADY_DECIDED', 'INVALID_DECISION'];
+      const status = Number(error.statusCode) || (clientErrors.includes(error.message) ? 400 : 500);
       return json(res, status, { error: error.message || 'INTERNAL_ERROR' });
     }
   });
@@ -240,4 +305,4 @@ function main() {
 }
 
 if (require.main === module) main();
-module.exports = { createApp, buildState, readJson, atomicWriteJson, appendEvent };
+module.exports = { createApp, buildState, readJson, atomicWriteJson, replaceJson, appendEvent, workerOnline, claimNext };
