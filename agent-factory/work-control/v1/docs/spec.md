@@ -2,69 +2,117 @@
 
 ## Product goal
 
-Give the owner one simple place to see governed teams, stage work, inspect progress, record bounded approval decisions, inspect results, and review history without memorizing run IDs or bouncing between infrastructure tools.
+Give the owner one organized interface to see governed Factory runs, submit work, inspect progress/results, handle owner decisions and review history—without memorizing run IDs or manually bouncing among Notion, GitHub and infrastructure tools.
+
+## Core rule
+
+**Work Control is a control/read surface, not a second authority store.**
+
+Canonical Factory governance remains authoritative. `registry.json` is a source-referenced read model. Persistent command/evidence records capture Work Control activity but cannot expand a team's external authority.
 
 ## Owner workflows
 
 ### Teams
-Show recognizable team names, capability, run identity, readiness, live state, external-authority posture, and current work.
+Show canonical run identity, type, capability, readiness, live posture, authority posture and source record. Distinguish reusable teams, project runs, pilots and operations core.
 
 ### Run Team
-Owner selects a team and writes the desired outcome. In v1, submission creates a local governed request packet only. The UI must not claim dispatch while the execution adapter is disconnected.
+Owner selects a runnable team and writes the desired outcome. A connected Work Control API persists a `team_assignment_v1` command with SHA-256 integrity and a zero-authority ceiling. If the API is unavailable, the UI falls back to an explicitly labeled offline draft.
 
 ### See Work
-Show assignment title, team, status, next action, stage progression and blockers. Opening an assignment reveals stage-level evidence labels and latest result.
+Show assignment title, team, queued/running/blocked/completed state, progress, stages, next action, evidence class and result. Persistent commands remain queued while `executorState=WAITING_WORKER`.
 
 ### Approve / Reject
-Show target, environment, action count, spend ceiling and production posture before a decision. v1 decision records must set `transmitted=false` and visibly state that the Factory did not receive authority.
+Display target, environment, action ceiling, spend ceiling and production posture before an owner decision. Decisions are persistent, but v1 sets `transmitted=false` and does not permit automatic executor consumption.
 
 ### View Results
-Completed work exposes a concise result summary and detail. Blocked/queued work must not manufacture a completed result.
+Terminal completion requires a valid executor receipt. Work Control must not synthesize successful results for queued work.
 
 ### History
-Display chronological owner/control events. Browser-local actions are labeled so they cannot be confused with canonical Factory execution evidence.
+Display persistent control events plus canonical bootstrap history. Offline actions remain explicitly labeled offline/local.
 
 ## Architecture
 
-Static, dependency-free browser application:
+### Browser
 
-- `index.html` — semantic shell and owner navigation
-- `styles.css` — responsive design system
-- `core.js` — universal deterministic control-domain functions used by browser and Node tests
-- `app.js` — presentation state, seeded control snapshot, local persistence and interaction handling
-- `tests/work-control.test.cjs` — deterministic safety and feature tests
+- `index.html` — semantic owner console
+- `styles.css` — responsive presentation
+- `core.js` — browser/offline deterministic functions
+- `api-client.js` — same-origin `/api/v1/*` client only
+- `app.js` — view state, polling, submission and graceful offline fallback
 
-Persistence: browser `localStorage` only in v1.
+### Control service
 
-Remote APIs: none.
+- `server.cjs` — dependency-free Node.js localhost HTTP server
+- `server-core.cjs` — command hashing, registry/runnability validation, approval records, receipt authority validation
+- `registry.json` — source-referenced canonical run read model
+- `bootstrap-state.json` — historical bootstrap work/history only
+- `runtime-data/commands/*.json` — persistent command ledger
+- `runtime-data/receipts/*.json` — future governed terminal receipts
+- `runtime-data/approvals/*.json` — bounded owner decision records
+- `runtime-data/events.jsonl` — append-only control event history
 
-Factory execution adapter: deliberately disconnected.
+## API
 
-## Source-of-truth rule
+- `GET /api/v1/health`
+- `GET /api/v1/state`
+- `POST /api/v1/commands`
+- `GET /api/v1/commands/:id`
+- `POST /api/v1/approvals/:id/decision`
+- `POST /api/v1/worker/approvals` — requires explicit worker token
+- `POST /api/v1/worker/receipts` — requires explicit worker token
 
-Work Control must never become an independent authority store. Canonical Factory state remains in governed Factory records. A future adapter may synchronize canonical team/work/approval state into the UI and transmit explicitly authorized command packets back to the Factory.
+No worker token is configured for the initial internal deployment.
+
+## Command authority model
+
+Every UI-created command begins with:
+
+```json
+{
+  "maxExternalActions": 0,
+  "maxSpendCents": 0,
+  "deploy": false,
+  "publish": false,
+  "message": false,
+  "destructiveActions": false,
+  "productionMutation": false
+}
+```
+
+Receipt validation rejects external actions, spend or production mutation above this originating ceiling.
+
+## Source-of-truth model
+
+- Notion Factory Runs: canonical business/control run records.
+- GitHub Factory code/contracts/evidence: canonical versioned engineering/governance evidence.
+- Work Control registry: read model linking to canonical records.
+- Work Control command ledger: canonical only for Work Control-submitted command/evidence events; it does not rewrite Factory governance or team authority.
 
 ## Acceptance criteria
 
-- Team catalog renders current seeded governed teams and skips the reserved run number.
-- Owner can stage a team request with instruction and priority.
-- Disconnected execution guard fails closed and records `local-draft` instead of execution.
-- Work list supports status filtering and stage-level detail.
-- Approval cards expose target/environment/action/spend/production facts before decision.
-- Approve/reject changes local state, writes history, and records `transmitted=false`.
-- Completed work exposes recorded results; blocked work exposes blocker/next action.
-- History supports search and persists local actions across refresh.
-- Runtime uses no remote resources, network APIs, dynamic code execution, secrets, spend or production mutation.
-- Layout remains usable on desktop and mobile.
+- Full registered run catalog is visible with Run 013 absent/reserved.
+- Non-runnable records cannot receive team assignments.
+- Owner can submit a persistent zero-authority command when API is connected.
+- API outage falls back to a local draft and never claims Factory dispatch.
+- Command integrity is deterministic and tamper-detectable.
+- Work status distinguishes queued/waiting-worker from actual execution.
+- Owner decisions are persistent but not automatically transmitted to an executor.
+- Worker routes fail closed when no worker token is configured.
+- Receipts exceeding external-action, spend or production ceilings are rejected.
+- Results require recorded result/receipt evidence.
+- History shows persistent control events.
+- Browser/server runtime uses no third-party package dependency or dynamic code execution.
+- Internal server binds to localhost by default and sends restrictive browser security headers.
 - Factory v0.1 recovery refs remain untouched.
 
-## Out of scope for v1
+## Out of scope for this release
 
-- Real Factory dispatch
-- Real external approval transmission
-- Authentication / multi-user permissions
-- Customer access
+- General-purpose LLM/team execution worker
+- Automatic consumption of owner approval authority
+- Public internet exposure
+- Multi-user login/RBAC
+- Customer-facing access
 - Agent-to-agent chat
-- Workflow visual builder
+- Visual workflow builder
 - Deep analytics
 - Production deployment
