@@ -6,6 +6,7 @@ on:
       - 'agent-factory/run-014/runtime/vercel-preview-target-guard.cjs'
       - 'agent-factory/run-014/tests/vercel-preview-target-guard.test.cjs'
       - 'agent-factory/governance/a0-decisions/A0-SOFT-014-G5-REPAIR-001.a0.json'
+      - 'agent-factory/governance/a0-decisions/A0-SOFT-014-G5-002.a0.json'
       - '.github/workflows/run-014-g5-vercel-target-guard.yml'
 
 jobs:
@@ -20,9 +21,17 @@ jobs:
         run: node --test agent-factory/run-014/tests/vercel-preview-target-guard.test.cjs
       - name: Prove production mismatch fails closed
         run: |
-          if node agent-factory/run-014/runtime/vercel-preview-target-guard.cjs '{"requestedTarget":"preview","actualTarget":"production","readyState":"READY"}'; then
+          if node agent-factory/run-014/runtime/vercel-preview-target-guard.cjs '{"requestedTarget":"preview","actualTarget":"production","aliases":["stable.vercel.app"],"readyState":"READY"}'; then
             echo 'ERROR: production mismatch was accepted'
             exit 1
           fi
-      - name: Prove verified preview passes
-        run: node agent-factory/run-014/runtime/vercel-preview-target-guard.cjs '{"requestedTarget":"preview","actualTarget":"preview","readyState":"READY"}'
+      - name: Prove explicit preview passes
+        run: node agent-factory/run-014/runtime/vercel-preview-target-guard.cjs '{"requestedTarget":"preview","actualTarget":"preview","aliases":[],"readyState":"READY"}'
+      - name: Prove Vercel null-target preview shape passes
+        run: node agent-factory/run-014/runtime/vercel-preview-target-guard.cjs '{"requestedTarget":"preview","actualTarget":null,"aliases":[],"readyState":"READY","projectId":"prj_test","expectedProjectId":"prj_test"}'
+      - name: Prove ambiguous null target fails closed
+        run: |
+          if node agent-factory/run-014/runtime/vercel-preview-target-guard.cjs '{"requestedTarget":"preview","actualTarget":null,"readyState":"READY"}'; then
+            echo 'ERROR: ambiguous null target was accepted'
+            exit 1
+          fi
