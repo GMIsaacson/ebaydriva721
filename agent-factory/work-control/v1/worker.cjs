@@ -1,6 +1,7 @@
 'use strict';
 
 const fs = require('fs');
+const path = require('path');
 const WorkerCore = require('./worker-core.cjs');
 
 function readSecret(pathName) {
@@ -16,6 +17,7 @@ const MAX_OUTPUT_TOKENS = Number(process.env.OPENAI_MAX_OUTPUT_TOKENS || 1600);
 const POLL_MS = Number(process.env.WORK_CONTROL_POLL_MS || 5000);
 const PRIVATE_KEY_PATH = process.env.OPENAI_KEY_PRIVATE_PATH || '/run/secrets/openai-transport-private.pem';
 const ENCRYPTED_KEY_PATH = process.env.OPENAI_KEY_CIPHERTEXT_PATH || '/run/secrets/openai-key-ciphertext.txt';
+const PROFILE_PATH = process.env.WORK_CONTROL_TEAM_PROFILES || path.join(__dirname, 'team-profiles.json');
 
 function sleep(ms) { return new Promise((resolve) => setTimeout(resolve, ms)); }
 
@@ -25,8 +27,14 @@ function loadApiKey() {
   return WorkerCore.decryptApiKey(privatePem, ciphertext);
 }
 
-async function controlRequest(path, options = {}) {
-  const response = await fetch(`${CONTROL_URL}${path}`, {
+function loadProfileSet() {
+  const profileSet = JSON.parse(fs.readFileSync(PROFILE_PATH, 'utf8'));
+  WorkerCore.validateProfileSet(profileSet);
+  return profileSet;
+}
+
+async function controlRequest(pathName, options = {}) {
+  const response = await fetch(`${CONTROL_URL}${pathName}`, {
     method: options.method || 'GET',
     headers: {
       'content-type': 'application/json',
@@ -46,10 +54,10 @@ async function controlRequest(path, options = {}) {
   return payload;
 }
 
-async function heartbeat() {
+async function heartbeat(profileSet = null) {
   return controlRequest('/api/v1/worker/heartbeat', {
     method: 'POST',
-    body: { workerId: WORKER_ID, model: MODEL, state: 'ONLINE' }
+    body: { workerId: WORKER_ID, model: MODEL, state: 'ONLINE', profileSetVersion: profileSet?.profileSetVersion || null }
   });
 }
 
@@ -60,8 +68,8 @@ async function claimNext() {
   });
 }
 
-async function callOpenAI(apiKey, command) {
-  const prompt = WorkerCore.buildWorkerPrompt(command);
+async function callOpenAI(apiKey, command, profileSet) {
+  const prompt = WorkerCore.buildWorkerPrompt(command, profileSet);
   const response = await fetch('https://api.openai.com/v1/responses', {
     method: 'POST',
     headers: {
@@ -83,10 +91,14 @@ async function callOpenAI(apiKey, command) {
   return payload;
 }
 
-function failureReceipt(command, error) {
+function failureReceipt(command, error, profileSet = null) {
   const safeCode = String(error?.message || 'WORKER_FAILURE').replace(/[^A-Za-z0-9_:-]/g, '_').slice(0, 160);
+  let teamExecutionProfile = null;
+  try {
+    if (profileSet) teamExecutionProfile = WorkerCore.profileIdentity(profileSet, WorkerCore.getTeamProfile(profileSet, command.team.id));
+  } catch {}
   return {
-    schemaVersion: '1.0',
+    schemaVersion: '1.1',
     commandId: command.commandId,
     terminalState: 'FAILED',
     summary: 'Governed worker execution failed',
@@ -96,6 +108,7 @@ function failureReceipt(command, error) {
     externalActionsPerformed: 0,
     spendCents: 0,
     productionMutation: false,
+    teamExecutionProfile,
     modelExecution: { provider: 'openai', model: MODEL, responseId: null, inputTokens: 0, outputTokens: 0, estimatedCostCents: 0 }
   };
 }
@@ -104,16 +117,17 @@ async function submitReceipt(receipt) {
   return controlRequest('/api/v1/worker/receipts', { method: 'POST', body: receipt });
 }
 
-async function processCommand(apiKey, command) {
+async function processCommand(apiKey, command, profileSet) {
   try {
-    const response = await callOpenAI(apiKey, command);
+    WorkerCore.getTeamProfile(profileSet, command.team.id);
+    const response = await callOpenAI(apiKey, command, profileSet);
     const text = WorkerCore.extractResponseText(response);
     const modelResult = WorkerCore.parseModelResult(text);
-    const receipt = WorkerCore.buildReceipt(command, modelResult, response, MODEL);
+    const receipt = WorkerCore.buildReceipt(command, modelResult, response, MODEL, profileSet);
     await submitReceipt(receipt);
-    return { commandId: command.commandId, terminalState: receipt.terminalState, estimatedCostCents: receipt.modelExecution.estimatedCostCents };
+    return { commandId: command.commandId, terminalState: receipt.terminalState, estimatedCostCents: receipt.modelExecution.estimatedCostCents, profile: receipt.teamExecutionProfile };
   } catch (error) {
-    const receipt = failureReceipt(command, error);
+    const receipt = failureReceipt(command, error, profileSet);
     try { await submitReceipt(receipt); } catch {}
     throw error;
   }
@@ -123,16 +137,17 @@ async function runLoop({ once = false } = {}) {
   if (!WORKER_TOKEN) throw new Error('WORK_CONTROL_WORKER_TOKEN_REQUIRED');
   if (!Number.isInteger(MAX_OUTPUT_TOKENS) || MAX_OUTPUT_TOKENS < 100 || MAX_OUTPUT_TOKENS > 1600) throw new Error('INVALID_MAX_OUTPUT_TOKENS');
   const apiKey = loadApiKey();
+  const profileSet = loadProfileSet();
   let processed = 0;
   do {
-    await heartbeat();
+    await heartbeat(profileSet);
     const next = await claimNext();
     if (next.status === 'CLAIMED' && next.command) {
-      const result = await processCommand(apiKey, next.command);
+      const result = await processCommand(apiKey, next.command, profileSet);
       processed += 1;
       console.log(JSON.stringify({ status: 'PROCESSED', ...result }));
     } else if (once) {
-      console.log(JSON.stringify({ status: 'IDLE' }));
+      console.log(JSON.stringify({ status: 'IDLE', profileSetVersion: profileSet.profileSetVersion }));
     }
     if (!once) await sleep(POLL_MS);
   } while (!once);
@@ -146,4 +161,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { readSecret, loadApiKey, controlRequest, heartbeat, claimNext, callOpenAI, failureReceipt, submitReceipt, processCommand, runLoop };
+module.exports = { readSecret, loadApiKey, loadProfileSet, controlRequest, heartbeat, claimNext, callOpenAI, failureReceipt, submitReceipt, processCommand, runLoop };
