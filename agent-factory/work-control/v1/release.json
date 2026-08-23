@@ -1,8 +1,8 @@
 {
   "product": "Work Control",
-  "version": "1.0.0-control-api",
+  "version": "1.1.0-governed-worker",
   "factoryDevelopmentLine": "develop/factory-v0.2",
-  "status": "READY_FOR_INTERNAL_CONTROL_API",
+  "status": "CONTROLLED_INTERNAL_LIVE",
   "scope": [
     "Teams",
     "Run Team",
@@ -17,11 +17,30 @@
     "reservedRuns": [13]
   },
   "controlApi": {
-    "mode": "QUEUE_ONLY",
-    "defaultBind": "127.0.0.1:8787",
+    "mode": "GOVERNED_WORKER",
+    "hostBind": "127.0.0.1:8787",
     "persistentLedger": true,
-    "workerExecutor": "NOT_CONNECTED",
-    "workerRoutesWithoutToken": "DISABLED"
+    "workerExecutor": "CONNECTED_INTERNAL",
+    "workerHostPort": false,
+    "workerAuthentication": "SECRET_FILE_TOKEN",
+    "publicExposure": false
+  },
+  "worker": {
+    "provider": "openai",
+    "api": "Responses API",
+    "model": "gpt-5.6-luna",
+    "maxOutputTokens": 1600,
+    "modelInvocationsPerClaim": 1,
+    "automaticModelRetries": false,
+    "defaultModelBudgetCents": 2,
+    "claimMode": "ATOMIC_NO_AUTO_EXPIRY",
+    "externalTools": []
+  },
+  "credentialPosture": {
+    "openAiKeyPlaintextOnDisk": false,
+    "openAiKeyStorage": "RSA_ENCRYPTED_CIPHERTEXT",
+    "openAiKeyUse": "DECRYPT_IN_MEMORY_AT_WORKER_START",
+    "workerTokenInDockerConfigEnv": false
   },
   "defaultCommandAuthority": {
     "maxExternalActions": 0,
@@ -35,29 +54,42 @@
   "approvalConsumption": "DISABLED",
   "externalDeploymentAuthorized": false,
   "productionMutationAuthorized": false,
-  "spendAuthorizedCents": 0,
+  "externalSpendAuthorizedCents": 0,
   "tests": {
-    "passed": 29,
+    "passed": 46,
     "failed": 0,
-    "testedCommit": "10aeded62fc4f9b8ed9f5aa080ccd3b2483ccf6d",
+    "testedRuntimeCommit": "85d54d16c61bc2cbd09d44996e3e9ab289eada32",
     "evidence": "docs/test-evidence.md"
   },
-  "securityReview": "PASS_INTERNAL_QUEUE_ONLY",
+  "securityReview": "PASS_INTERNAL_GOVERNED_WORKER",
   "securityEvidence": "docs/security-review.md",
   "testedRuntimeArtifacts": {
     "index.html": "3f20d09cc90232f956e5193ec4f3fb90375401a6465d1c44eff05680d50f4009",
     "styles.css": "e7c918653aab94b91dd40c5451d454d923a54ba72ef813b3cbd289aea25781e7",
     "core.js": "b809ab9560b1fde7ca540e3923279380af03621bd8decd504bba8143b86e66b9",
-    "api-client.js": "46ba27889e63668752a4bdaa3e4dd3e0876d178f5673fdbe47329a366374a03e",
+    "api-client.js": "055637db5e152ef913deb23d4385ab3fe083bec6a00229d67ac9f29aec3a3113",
     "app.js": "4536b64fa1a045165b2e03865458762b17a46a2fc0f136021146a1eb43764ff5",
-    "server-core.cjs": "f31b822bbce5ddd22bdb3ae15218c914eab7fe63ba81d68d2e514fe1679afc63",
-    "server.cjs": "a1a3df78345ca1f3a4e69106b40331bfc36d47cd3e70c774dd4411687eaa0a28",
+    "server-core.cjs": "f3a59e4177e4448e9da152b8e7650fd16f36d9f3b684cb22ebf490b8569ba1b9",
+    "server.cjs": "cf2660cccdef9a0299a7fc70b10aaf8d0c9bc7eec8af41dffd58917faecf2a6c",
+    "worker-core.cjs": "3ad98f0525cdb21ad054b61f94a10070ab1490b350bd1b333706c0c8faaf6321",
+    "worker.cjs": "6ceab08bce8497295237c4878d218d201fdaa35d52f9e778046310d372a66f88",
     "registry.json": "8832f0e29ed5434b6b081d0f26dcfa48bdf5226138d52ff64092d584249abe3b",
     "bootstrap-state.json": "0fa3443eff47cdce957fbdb446c7a18e182eae9bab7d3a8e5745ce3dcc61c324"
+  },
+  "liveProof": {
+    "commandId": "WC-20260823033340-59ae8e9ec2",
+    "team": "SW-PROD-014",
+    "terminalState": "DELIVERED",
+    "externalActions": 0,
+    "externalSpendCents": 0,
+    "productionMutation": false,
+    "inputTokens": 236,
+    "outputTokens": 275,
+    "estimatedModelCostCents": 0.19
   },
   "recoveryBaseline": {
     "branch": "archive/factory-v0.1.0",
     "commit": "37392d74728a44c3e502959c09e6400de40b846e"
   },
-  "nextBoundary": "Run final exact-head tests, install localhost-only internal control service, then separately design authenticated remote owner access and a general-purpose governed team worker. Public exposure and worker authority remain unapproved."
+  "nextBoundary": "Implement authenticated remote owner access. Connector/tool execution and any external authority remain separate future gates."
 }
