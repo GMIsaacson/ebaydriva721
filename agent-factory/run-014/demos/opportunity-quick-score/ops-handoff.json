@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "1.0",
+  "handoffType": "ops_handoff_v1",
+  "handoffId": "OPS-HO-RUN014-DEMO-OPPSCORE-001",
+  "sourceRun": "SW-PROD-014",
+  "target": "OPS-CORE-008",
+  "assignmentId": "RUN014-DEMO-OPPSCORE-001",
+  "releaseCandidate": "RC-RUN014-DEMO-OPPSCORE-001",
+  "status": "PACKAGE_READY",
+  "authorityCeiling": {
+    "externalDeploymentAuthorized": false,
+    "maxSpendCents": 0,
+    "productionMutation": false
+  },
+  "evidenceRefs": [
+    "product-brief.json",
+    "software-spec.md",
+    "architecture-plan.md",
+    "test-evidence.json",
+    "security-review.md",
+    "release-candidate.json"
+  ],
+  "rollback": "Revert/remove the isolated demo directory or abandon its feature branch. No external state exists.",
+  "unresolvedBlockers": [],
+  "downstreamBoundary": "This package is ready for operations review only. It does not claim OPS-CORE-008 accepted or executed the handoff."
+}
