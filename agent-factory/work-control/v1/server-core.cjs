@@ -5,6 +5,7 @@ const crypto = require('crypto');
 const PRIORITIES = new Set(['low', 'normal', 'high', 'urgent']);
 const TERMINAL_STATES = new Set(['DELIVERED', 'BLOCKED_OWNER', 'BLOCKED_EXTERNAL', 'KILLED', 'FAILED']);
 const APPROVAL_DECISIONS = new Set(['approved', 'rejected']);
+const DEFAULT_MODEL_BUDGET_CENTS = 2;
 
 function normalizeText(value, max = 4000) {
   return String(value ?? '').replace(/\s+/g, ' ').trim().slice(0, max);
@@ -41,11 +42,12 @@ function findRunnableTeam(registry, teamId) {
   return team;
 }
 
-function createCommand({ registry, teamId, instruction, priority = 'normal', now = new Date().toISOString(), idFactory = crypto.randomUUID }) {
+function createCommand({ registry, teamId, instruction, priority = 'normal', modelBudgetCents = DEFAULT_MODEL_BUDGET_CENTS, now = new Date().toISOString(), idFactory = crypto.randomUUID }) {
   const team = findRunnableTeam(registry, teamId);
   const clean = normalizeText(instruction, 2000);
   if (clean.length < 3) throw new Error('INSTRUCTION_REQUIRED');
   if (!PRIORITIES.has(priority)) throw new Error('INVALID_PRIORITY');
+  if (!Number.isInteger(Number(modelBudgetCents)) || Number(modelBudgetCents) < 0 || Number(modelBudgetCents) > 10) throw new Error('INVALID_MODEL_BUDGET');
   const commandId = `WC-${String(now).replace(/[^0-9]/g, '').slice(0, 14)}-${String(idFactory()).replace(/-/g, '').slice(0, 10)}`;
   const payload = {
     schemaVersion: '1.0',
@@ -58,6 +60,7 @@ function createCommand({ registry, teamId, instruction, priority = 'normal', now
     source: 'work-control-v1',
     status: 'QUEUED_GOVERNED',
     executorState: 'WAITING_WORKER',
+    modelBudgetCents: Number(modelBudgetCents),
     authorityCeiling: {
       maxExternalActions: 0,
       maxSpendCents: 0,
@@ -115,22 +118,26 @@ function validateReceipt(command, receipt) {
   if (!TERMINAL_STATES.has(receipt.terminalState)) throw new Error('INVALID_TERMINAL_STATE');
   const externalActions = Number(receipt.externalActionsPerformed ?? 0);
   const spendCents = Number(receipt.spendCents ?? 0);
+  const modelCostCents = Number(receipt.modelExecution?.estimatedCostCents ?? 0);
   if (!Number.isInteger(externalActions) || externalActions < 0) throw new Error('INVALID_EXTERNAL_ACTION_COUNT');
   if (!Number.isInteger(spendCents) || spendCents < 0) throw new Error('INVALID_SPEND');
+  if (!Number.isFinite(modelCostCents) || modelCostCents < 0) throw new Error('INVALID_MODEL_COST');
   if (externalActions > command.authorityCeiling.maxExternalActions) throw new Error('EXTERNAL_AUTHORITY_EXCEEDED');
   if (spendCents > command.authorityCeiling.maxSpendCents) throw new Error('SPEND_AUTHORITY_EXCEEDED');
+  if (modelCostCents > Number(command.modelBudgetCents || 0)) throw new Error('MODEL_BUDGET_EXCEEDED');
   if (receipt.productionMutation === true && command.authorityCeiling.productionMutation !== true) throw new Error('PRODUCTION_AUTHORITY_EXCEEDED');
   return true;
 }
 
-function commandToWork(command, receipt = null) {
+function commandToWork(command, receipt = null, executorState = null) {
+  const effectiveState = executorState || command.executorState;
   const map = {
     WAITING_WORKER: ['queued', 15, 'Waiting for governed team executor'],
     CLAIMED: ['running', 25, 'Executor claimed assignment'],
     RUNNING: ['running', 55, 'Team work in progress']
   };
   if (!receipt) {
-    const [status, progress, next] = map[command.executorState] || map.WAITING_WORKER;
+    const [status, progress, next] = map[effectiveState] || map.WAITING_WORKER;
     return {
       id: command.commandId,
       title: command.instruction.length > 76 ? `${command.instruction.slice(0, 73)}...` : command.instruction,
@@ -142,9 +149,10 @@ function commandToWork(command, receipt = null) {
       progress,
       next,
       source: 'control-ledger',
+      modelBudgetCents: command.modelBudgetCents,
       stages: [
         { name: 'Governed request', state: 'done', detail: `Integrity ${command.integritySha256.slice(0, 12)}…` },
-        { name: 'Team executor', state: status === 'running' ? 'active' : 'queued', detail: command.executorState }
+        { name: 'Team executor', state: status === 'running' ? 'active' : 'queued', detail: effectiveState }
       ],
       result: { summary: 'No terminal receipt yet', detail: 'The assignment is real and persisted, but Work Control does not claim execution until a governed executor produces a receipt.' }
     };
@@ -157,6 +165,11 @@ function commandToWork(command, receipt = null) {
     FAILED: ['blocked', 100, 'Execution failed']
   };
   const [status, progress, next] = terminalMap[receipt.terminalState];
+  const workerStages = (Array.isArray(receipt.steps) ? receipt.steps : []).slice(0, 8).map((step) => ({
+    name: normalizeText(step?.name || 'Worker stage', 100),
+    state: receipt.terminalState === 'DELIVERED' ? 'done' : 'blocked',
+    detail: normalizeText(step?.detail || '', 600)
+  })).filter((step) => step.name && step.detail);
   return {
     id: command.commandId,
     title: command.instruction.length > 76 ? `${command.instruction.slice(0, 73)}...` : command.instruction,
@@ -168,13 +181,16 @@ function commandToWork(command, receipt = null) {
     progress,
     next,
     source: 'control-ledger',
+    modelBudgetCents: command.modelBudgetCents,
     stages: [
       { name: 'Governed request', state: 'done', detail: `Integrity ${command.integritySha256.slice(0, 12)}…` },
-      { name: 'Team execution', state: receipt.terminalState === 'DELIVERED' ? 'done' : 'blocked', detail: receipt.terminalState }
+      ...workerStages,
+      { name: 'Terminal receipt', state: receipt.terminalState === 'DELIVERED' ? 'done' : 'blocked', detail: receipt.terminalState }
     ],
     result: {
       summary: normalizeText(receipt.summary || receipt.terminalState, 300),
-      detail: normalizeText(receipt.detail || 'Terminal receipt recorded by governed executor.', 2000)
+      detail: normalizeText(receipt.detail || 'Terminal receipt recorded by governed executor.', 4000),
+      modelExecution: receipt.modelExecution || null
     }
   };
 }
@@ -182,6 +198,7 @@ function commandToWork(command, receipt = null) {
 module.exports = {
   PRIORITIES,
   TERMINAL_STATES,
+  DEFAULT_MODEL_BUDGET_CENTS,
   normalizeText,
   canonicalize,
   sha256,
