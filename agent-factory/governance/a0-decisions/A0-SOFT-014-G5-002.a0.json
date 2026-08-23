@@ -1,0 +1,16 @@
+{
+  "decision_id": "A0-SOFT-014-G5-002",
+  "status": "PASS",
+  "verdict": "EXTEND",
+  "owner": "Aberdeen Technologies",
+  "decided_at": "2026-08-22",
+  "business_outcome": "Complete Run 014 G5 by executing one bounded Vercel preview-only deployment of the already-proven Evidence Readiness Console, verifying the actual deployment target with the merged fail-closed target guard, and rehearsing failure/rollback behavior without granting production authority.",
+  "existing_owner_scan": "Run 014 is the canonical Software Product Engineering Team. The Evidence Readiness Console release candidate passed G4. The Vercel target guard is merged on master. The existing Vercel project run014-evidence-readiness-console is quarantined after the first deployment target mismatch and may be reused only for this bounded preview retry; no new project or team is required.",
+  "reuse_candidates_checked": ["Run 014 G4 release candidate","Run 014 Vercel preview target guard merged as abf2635c996113f8e5c3d815ec3b902c439769a3","Existing quarantined Vercel project prj_Y47Cdk5VDOzTaSJqOoYABAePzbT9","Factory Core governance and failure controls"],
+  "duplication_analysis": "No new software product, team, database, domain, or paid infrastructure is authorized. This is an operational proof using the existing G4 artifact and existing quarantined Vercel project.",
+  "residual_unowned_loop": "Run 014 has not yet proven that a requested preview deployment is returned by Vercel as actual target=preview and READY, nor completed a bounded failure/rollback rehearsal after the target-enforcement defect was repaired.",
+  "covers_paths": ["agent-factory/run-014/","agent-factory/governance/a0-decisions/A0-SOFT-014-G5-002.a0.json"],
+  "authority": {"environment":"non-production-preview","external_actions":1,"max_spend_cents":0,"deploy":true,"deploy_target":"preview","max_deployments":1,"project_scope":"prj_Y47Cdk5VDOzTaSJqOoYABAePzbT9","production_deploy":false,"publish":false,"custom_domain":false,"production_data":false,"customer_contact":false},
+  "fail_closed_conditions": ["requested target is not preview","actual Vercel target is not preview","deployment is not READY","deployment creates or targets a project outside prj_Y47Cdk5VDOzTaSJqOoYABAePzbT9","spend is nonzero","any production promotion or stable-domain mutation is attempted"],
+  "evidence_ref": "run014-g4:da5a33dd36c5ed488d899d3df2b9b011d1f511b0; target-guard:abf2635c996113f8e5c3d815ec3b902c439769a3; prior-failed-attempt:G5-VERCEL-PREVIEW-001"
+}
