@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "profileSetVersion": "2026-08-23.1",
+  "profileSetVersion": "2026-08-23.2",
   "policy": "Profiles are execution read-models derived from canonical Factory run records. They constrain worker behavior; they do not expand authority.",
   "profiles": [
     {
@@ -125,17 +125,17 @@
     },
     {
       "teamId": "OPP-011",
-      "profileVersion": "1.0",
+      "profileVersion": "1.1",
       "sourceFidelity": "canonical-full",
       "executionMode": "opportunity-intelligence-underwriting",
       "mission": "Turn noisy public business content into a small stream of evidence-backed, economically reconstructed opportunities worthy of portfolio attention.",
       "roles": ["Opportunity Source Scout", "Business Model Normalizer", "Opportunity Underwriter", "Portfolio Fit Router", "Opportunity Portfolio Steward (downstream)", "Research & Validation Agent (downstream)"],
-      "stages": ["approved source/evidence", "5W1H normalization", "buyer pain/acquisition/delivery model", "reconstruct economics/dependencies", "hype filter/stress test", "100-point OIT score", "duplicate/opportunity-cost check", "Escalate/Watch/Archive", "cheapest reversible next test"],
-      "evidenceRequirements": ["source/date/location", "5W1H", "buyer pain/trigger", "acquisition/delivery", "price/unit economics", "startup capital/dependencies", "automation/human bottlenecks", "assumptions/unknowns/invalidation signals", "duplicate check"],
-      "gates": ["80+ only eligible to escalate with evidence strength >=3/5 and no fatal issue", "65-79 Watch", "below 65 Archive unless material evidence gap", "no direct portfolio write unless authorized"],
-      "forbidden": ["accepting reported revenue as proof of profit", "ignoring duplicates", "bypassing paywalls/access controls/platform rules", "commercial outreach/payment without approval"],
-      "terminalCriteria": "Deliver underwriting/routing from supplied/publicly evidenced facts; if evidence is absent, expose the gap and recommend the cheapest reversible validation rather than manufacture certainty.",
-      "outputContract": ["source/evidence", "5W1H model", "economics", "automation/human bottlenecks", "evidence strength/assumptions", "OIT score/confidence", "duplicate check", "Escalate/Watch/Archive", "next test"],
+      "stages": ["approved source/evidence", "5W1H normalization", "buyer pain/acquisition/delivery model", "reconstruct economics/dependencies", "hype filter/stress test", "score exactly 100 points using Speed to revenue 20; Strategic fit 15; Automation potential 15; Evidence strength 15; Revenue potential 15; Low execution effort 10; Async/low-call operability 5; Compounding/defensibility 5", "duplicate/opportunity-cost check", "Escalate/Watch/Archive", "cheapest reversible next test"],
+      "evidenceRequirements": ["source/date/evidence location", "5W1H", "buyer pain/trigger", "acquisition/delivery", "price/unit economics", "startup capital/dependencies", "automation/human bottlenecks", "assumptions/unknowns/invalidation signals", "duplicate check", "score breakdown using only the canonical OIT dimensions"],
+      "gates": ["use only canonical OIT weights: Speed to revenue=20, Strategic fit=15, Automation potential=15, Evidence strength=15, Revenue potential=15, Low execution effort=10, Async/low-call operability=5, Compounding/defensibility=5", "80-100 is only eligible to Escalate when evidence strength is at least 3/5 and no fatal legal/policy issue remains", "65-79 => Watch and identify the one fact most likely to move the score", "below 65 => Archive unless a material evidence gap could plausibly change the decision", "duplicate does not Escalate unless the new version materially improves economics, execution, distribution, or defensibility", "no direct Opportunity Portfolio write unless separately authorized"],
+      "forbidden": ["inventing scoring dimensions or weights", "accepting reported revenue as proof of profit", "confusing founder skill with replicability or exceptional outcomes with base rates", "ignoring duplicates", "bypassing paywalls/access controls/platform rules", "commercial outreach/payment without approval"],
+      "terminalCriteria": "Deliver underwriting/routing from supplied/publicly evidenced facts using the exact canonical OIT rubric; if evidence is absent, expose the gap and recommend the cheapest reversible validation rather than manufacture certainty.",
+      "outputContract": ["source/date/evidence", "5W1H model", "buyer pain and trigger", "acquisition/delivery", "price/unit economics and dependencies", "automation/human bottlenecks", "evidence strength/assumptions/unknowns/invalidation", "canonical OIT score with all eight dimension subtotals summing to 100-point maximum", "confidence", "duplicate/overlap check", "Escalate/Watch/Archive", "cheapest reversible next test"],
       "sourceRefs": ["Notion Run 011 canonical page"]
     },
     {
