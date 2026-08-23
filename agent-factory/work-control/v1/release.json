@@ -1,0 +1,36 @@
+{
+  "product": "Work Control",
+  "version": "1.0.0-prototype",
+  "factoryDevelopmentLine": "develop/factory-v0.2",
+  "status": "READY_FOR_OWNER_REVIEW",
+  "scope": [
+    "Teams",
+    "Run Team",
+    "See Work",
+    "Approve/Reject",
+    "View Results",
+    "History"
+  ],
+  "executionAdapter": "DISCONNECTED",
+  "externalDeploymentAuthorized": false,
+  "productionMutationAuthorized": false,
+  "spendAuthorizedCents": 0,
+  "tests": {
+    "passed": 12,
+    "failed": 0,
+    "evidence": "docs/test-evidence.md"
+  },
+  "securityReview": "PASS_LOCAL_PROTOTYPE",
+  "securityEvidence": "docs/security-review.md",
+  "runtimeArtifacts": {
+    "index.html": "90c3a4db22255227b0decc278b3fcf9137de2e1e798e73cfae3049310831b65a",
+    "styles.css": "e7c918653aab94b91dd40c5451d454d923a54ba72ef813b3cbd289aea25781e7",
+    "core.js": "b809ab9560b1fde7ca540e3923279380af03621bd8decd504bba8143b86e66b9",
+    "app.js": "b157a550e00fc377d7482f6029b4f4ff4b2aa8be293d207befb4546659245d76"
+  },
+  "recoveryBaseline": {
+    "branch": "archive/factory-v0.1.0",
+    "commit": "37392d74728a44c3e502959c09e6400de40b846e"
+  },
+  "nextBoundary": "Owner review. Connecting a real Factory execution adapter or externally deploying the console requires a fresh bounded approval and revalidation."
+}
