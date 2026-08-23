@@ -19,6 +19,27 @@ const PRIVATE_KEY_PATH = process.env.OPENAI_KEY_PRIVATE_PATH || '/run/secrets/op
 const ENCRYPTED_KEY_PATH = process.env.OPENAI_KEY_CIPHERTEXT_PATH || '/run/secrets/openai-key-ciphertext.txt';
 const PROFILE_PATH = process.env.WORK_CONTROL_TEAM_PROFILES || path.join(__dirname, 'team-profiles.json');
 
+const WORK_RESULT_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    terminalState: { type: 'string', enum: ['DELIVERED', 'BLOCKED_OWNER', 'BLOCKED_EXTERNAL', 'KILLED', 'FAILED'] },
+    summary: { type: 'string' },
+    detail: { type: 'string' },
+    steps: {
+      type: 'array',
+      maxItems: 7,
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        properties: { name: { type: 'string' }, detail: { type: 'string' } },
+        required: ['name', 'detail']
+      }
+    }
+  },
+  required: ['terminalState', 'summary', 'detail', 'steps']
+};
+
 function sleep(ms) { return new Promise((resolve) => setTimeout(resolve, ms)); }
 
 function loadApiKey() {
@@ -79,7 +100,16 @@ async function callOpenAI(apiKey, command, profileSet) {
     body: JSON.stringify({
       model: MODEL,
       input: prompt,
-      max_output_tokens: MAX_OUTPUT_TOKENS
+      max_output_tokens: MAX_OUTPUT_TOKENS,
+      store: false,
+      text: {
+        format: {
+          type: 'json_schema',
+          name: 'work_control_result',
+          strict: true,
+          schema: WORK_RESULT_SCHEMA
+        }
+      }
     })
   });
   const payload = await response.json().catch(() => ({}));
@@ -88,6 +118,7 @@ async function callOpenAI(apiKey, command, profileSet) {
     error.openaiType = payload?.error?.type || null;
     throw error;
   }
+  if (payload?.status && payload.status !== 'completed') throw new Error(`OPENAI_RESPONSE_${String(payload.status).toUpperCase()}`);
   return payload;
 }
 
@@ -161,4 +192,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { readSecret, loadApiKey, loadProfileSet, controlRequest, heartbeat, claimNext, callOpenAI, failureReceipt, submitReceipt, processCommand, runLoop };
+module.exports = { WORK_RESULT_SCHEMA, readSecret, loadApiKey, loadProfileSet, controlRequest, heartbeat, claimNext, callOpenAI, failureReceipt, submitReceipt, processCommand, runLoop };
