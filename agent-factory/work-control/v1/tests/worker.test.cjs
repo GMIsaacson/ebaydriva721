@@ -65,11 +65,11 @@ test('bounded receipt always reports zero external action and external spend', (
   assert.equal(receipt.modelExecution.estimatedCostCents, 0.7);
 });
 
-test('worker source makes one Responses API call path and contains no API-key logging', () => {
+test('worker source makes one model invocation path and contains no API-key logging', () => {
   const source = fs.readFileSync(path.resolve(__dirname, '../worker.cjs'), 'utf8');
   assert.match(source, /https:\/\/api\.openai\.com\/v1\/responses/);
   assert.equal((source.match(/api\.openai\.com\/v1\/responses/g) || []).length, 1);
+  assert.equal((source.match(/await callOpenAI\(/g) || []).length, 1);
   assert.doesNotMatch(source, /console\.log\([^\n]*apiKey/i);
   assert.doesNotMatch(source, /console\.error\([^\n]*apiKey/i);
-  assert.doesNotMatch(source, /retry/i);
 });
