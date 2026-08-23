@@ -13,11 +13,12 @@ function command() {
   return Core.createCommand({ registry, teamId: 'SW-PROD-014', instruction: 'Build a bounded internal control improvement', priority: 'high', now: fixedNow, idFactory: fixedId });
 }
 
-test('persistent command is governed, integrity-protected and zero-authority', () => {
+test('persistent command is governed, integrity-protected, zero-external-authority and model-budgeted', () => {
   const cmd = command();
   assert.equal(cmd.status, 'QUEUED_GOVERNED');
   assert.equal(cmd.executorState, 'WAITING_WORKER');
   assert.equal(cmd.team.runNumber, 14);
+  assert.equal(cmd.modelBudgetCents, 2);
   assert.deepEqual(cmd.authorityCeiling, {
     maxExternalActions: 0,
     maxSpendCents: 0,
@@ -30,10 +31,14 @@ test('persistent command is governed, integrity-protected and zero-authority', (
   assert.equal(Core.verifyCommand(cmd), true);
 });
 
-test('command integrity detects tampering', () => {
+test('command integrity detects tampering including budget changes', () => {
   const cmd = command();
-  const tampered = { ...cmd, instruction: 'Deploy to production' };
-  assert.equal(Core.verifyCommand(tampered), false);
+  assert.equal(Core.verifyCommand({ ...cmd, instruction: 'Deploy to production' }), false);
+  assert.equal(Core.verifyCommand({ ...cmd, modelBudgetCents: 9 }), false);
+});
+
+test('model budget is bounded to a small internal range', () => {
+  assert.throws(() => Core.createCommand({ registry, teamId: 'SW-PROD-014', instruction: 'x task', modelBudgetCents: 11, now: fixedNow, idFactory: fixedId }), /INVALID_MODEL_BUDGET/);
 });
 
 test('non-runnable canonical records cannot receive team assignments', () => {
@@ -62,9 +67,14 @@ test('receipt exceeding external-action ceiling is rejected', () => {
   assert.throws(() => Core.validateReceipt(cmd, { commandId: cmd.commandId, terminalState: 'DELIVERED', externalActionsPerformed: 1, spendCents: 0 }), /EXTERNAL_AUTHORITY_EXCEEDED/);
 });
 
-test('receipt exceeding spend ceiling is rejected', () => {
+test('receipt exceeding external spend ceiling is rejected', () => {
   const cmd = command();
   assert.throws(() => Core.validateReceipt(cmd, { commandId: cmd.commandId, terminalState: 'DELIVERED', externalActionsPerformed: 0, spendCents: 1 }), /SPEND_AUTHORITY_EXCEEDED/);
+});
+
+test('receipt exceeding internal model budget is rejected', () => {
+  const cmd = command();
+  assert.throws(() => Core.validateReceipt(cmd, { commandId: cmd.commandId, terminalState: 'DELIVERED', externalActionsPerformed: 0, spendCents: 0, modelExecution: { estimatedCostCents: 2.01 } }), /MODEL_BUDGET_EXCEEDED/);
 });
 
 test('production mutation without authority is rejected', () => {
@@ -72,14 +82,22 @@ test('production mutation without authority is rejected', () => {
   assert.throws(() => Core.validateReceipt(cmd, { commandId: cmd.commandId, terminalState: 'DELIVERED', externalActionsPerformed: 0, spendCents: 0, productionMutation: true }), /PRODUCTION_AUTHORITY_EXCEEDED/);
 });
 
-test('zero-authority terminal receipt is accepted and becomes completed work', () => {
+test('bounded terminal receipt is accepted and worker stages become visible', () => {
   const cmd = command();
-  const receipt = { commandId: cmd.commandId, terminalState: 'DELIVERED', externalActionsPerformed: 0, spendCents: 0, productionMutation: false, summary: 'Completed safely', detail: 'No external actions were used.' };
+  const receipt = { commandId: cmd.commandId, terminalState: 'DELIVERED', externalActionsPerformed: 0, spendCents: 0, productionMutation: false, summary: 'Completed safely', detail: 'No external actions were used.', steps: [{ name: 'Analysis', detail: 'Reasoned from the supplied assignment only.' }], modelExecution: { estimatedCostCents: 0.7 } };
   assert.equal(Core.validateReceipt(cmd, receipt), true);
   const work = Core.commandToWork(cmd, receipt);
   assert.equal(work.status, 'completed');
   assert.equal(work.progress, 100);
   assert.match(work.result.summary, /Completed safely/);
+  assert.equal(work.stages.some((stage) => stage.name === 'Analysis'), true);
+});
+
+test('claimed command is visibly running without mutating integrity-protected command', () => {
+  const cmd = command();
+  const work = Core.commandToWork(cmd, null, 'CLAIMED');
+  assert.equal(work.status, 'running');
+  assert.equal(Core.verifyCommand(cmd), true);
 });
 
 test('command without terminal receipt stays queued and does not claim execution', () => {
