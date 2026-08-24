@@ -10,6 +10,39 @@ const numberValue = (value) => {
   return Number.isFinite(parsed) ? parsed : null;
 };
 
+const researchExportFields = [
+  ["Document ID", "id"],
+  ["Title", "Title"],
+  ["Sold", "Sold"],
+  ["Price", "Price"],
+  ["BEP", "BEP"],
+  ["Category", "Category"],
+  ["SubCategory", "SubCategory"],
+  ["SubSubCategory", "SubSubCategory"],
+  ["Item", "Item"],
+  ["Dimensions", "Dimensions"],
+  ["Sell URL", "Sell"],
+  ["Buy URL", "Buy"],
+];
+
+const csvCell = (value) => {
+  if (value === null || value === undefined) return '""';
+  const normalized = typeof value === "object" ? JSON.stringify(value) : String(value);
+  return `"${normalized.replace(/"/g, '""')}"`;
+};
+
+const downloadCsv = (filename, rows) => {
+  const blob = new Blob([`\uFEFF${rows.join("\n")}`], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+};
+
 const ProductData = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -152,6 +185,18 @@ const ProductData = () => {
     setSortField(""); setSortDirection("asc");
   };
 
+  const exportResearchCatalog = () => {
+    const exportedAt = new Date().toISOString();
+    const header = ["Exported At", ...researchExportFields.map(([label]) => label)].map(csvCell).join(",");
+    const rows = products.map((product) => [
+      exportedAt,
+      ...researchExportFields.map(([, field]) => product?.[field] ?? ""),
+    ].map(csvCell).join(","));
+
+    const dateStamp = exportedAt.slice(0, 10);
+    downloadCsv(`datascout-research-export-${dateStamp}.csv`, [header, ...rows]);
+  };
+
   const money = (value) => {
     const parsed = numberValue(value);
     return parsed === null ? "N/A" : `$${parsed.toFixed(2)}`;
@@ -205,7 +250,18 @@ const ProductData = () => {
 
         <div className="ds-filter-footer">
           <span>{filteredProducts.length} of {products.length} products</span>
-          <button className="ds-button ds-button-secondary" type="button" onClick={resetFilters}>Reset filters</button>
+          <div className="ds-filter-actions">
+            <button
+              className="ds-button ds-button-primary"
+              type="button"
+              onClick={exportResearchCatalog}
+              disabled={loading || Boolean(error) || products.length === 0}
+              title="Export the complete Firestore product catalog, ignoring current filters"
+            >
+              Research Export ({products.length})
+            </button>
+            <button className="ds-button ds-button-secondary" type="button" onClick={resetFilters}>Reset filters</button>
+          </div>
         </div>
       </section>
 
