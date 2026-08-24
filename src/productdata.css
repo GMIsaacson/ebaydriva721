@@ -8,6 +8,7 @@
 .ds-products-count span { color: var(--ds-text-muted); font-size: .72rem; }
 .ds-products-filters, .ds-products-results { padding: 22px; }
 .ds-filter-topline, .ds-filter-footer, .ds-results-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+.ds-filter-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
 .ds-filter-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 18px; }
 .ds-filter-grid label, .ds-sort-mobile { display: block; }
 .ds-filter-grid label > span, .ds-sort-mobile > span { display: block; margin: 0 0 6px; color: var(--ds-text-muted); font-size: .75rem; font-weight: 750; }
@@ -43,6 +44,8 @@
   .ds-advanced-filters { display: none; }
   .ds-advanced-filters.open { display: block; }
   .ds-filter-footer { align-items: stretch; flex-direction: column; }
+  .ds-filter-actions { display: grid; grid-template-columns: 1fr; width: 100%; }
+  .ds-filter-actions .ds-button { width: 100%; }
   .ds-results-toolbar { align-items: flex-end; }
   .ds-sort-mobile { display: block; }
   .ds-sort-mobile select { margin: 0 !important; }
