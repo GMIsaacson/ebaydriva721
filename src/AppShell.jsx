@@ -2,7 +2,6 @@ import React, { useMemo, useState } from "react";
 import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   FaBars,
-  FaChartBar,
   FaChevronRight,
   FaCog,
   FaDatabase,
@@ -16,13 +15,13 @@ import "./app-shell.css";
 
 const navigation = [
   { to: "/products", label: "Opportunities", icon: FaLayerGroup },
-  { to: "/dashboard", label: "Catalog admin", icon: FaDatabase },
+  { to: "/dashboard", label: "Dashboard", icon: FaDatabase },
   { to: "/resources", label: "Resources", icon: FaTools, publicRoute: true },
 ];
 
 const pageLabels = {
   "/products": "Opportunities",
-  "/dashboard": "Catalog admin",
+  "/dashboard": "Dashboard",
   "/accounts": "Account settings",
 };
 
