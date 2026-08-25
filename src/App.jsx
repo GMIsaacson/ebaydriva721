@@ -16,6 +16,7 @@ import Calculators from "./resources";
 import AccountPage from "./accountspage";
 import SourcingWorkspace from "./liveSourcing/SourcingWorkspace";
 import LocalArbitrageWorkspace from "./liveSourcing/LocalArbitrageWorkspace";
+import ProductDiscoveryWorkspace from "./liveSourcing/ProductDiscoveryWorkspace";
 
 const App = () => {
   return (
@@ -30,6 +31,7 @@ const App = () => {
             <Route path="/signup" element={<ErrorBoundary><Signup /></ErrorBoundary>} />
             <Route path="/verifyemail" element={<ErrorBoundary><VerifyEmail /></ErrorBoundary>} />
             <Route path="/sourcing" element={<ProtectedRoute><ErrorBoundary><SourcingWorkspace /></ErrorBoundary></ProtectedRoute>} />
+            <Route path="/product-discovery" element={<ProtectedRoute><ErrorBoundary><ProductDiscoveryWorkspace /></ErrorBoundary></ProtectedRoute>} />
             <Route path="/local-arbitrage" element={<ProtectedRoute><ErrorBoundary><LocalArbitrageWorkspace /></ErrorBoundary></ProtectedRoute>} />
             <Route path="/dashboard" element={<ProtectedRoute><ErrorBoundary><Dashboard /></ErrorBoundary></ProtectedRoute>} />
             <Route path="/products" element={<ProtectedRoute><ErrorBoundary><ProductData /></ErrorBoundary></ProtectedRoute>} />
