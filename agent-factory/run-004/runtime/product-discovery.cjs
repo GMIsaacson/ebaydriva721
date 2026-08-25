@@ -46,20 +46,23 @@ function stage1Screen(candidate = {}) {
   else if (itemPriceCents < 1000 && candidate.bundleEligible === true) reasons.push('low ASP; bundle/buyer-paid shipping test required');
   else reasons.push('outside preferred ASP band');
 
+  let sourceRatioBps = null;
   if (preliminarySupplierUnitCostCents !== null && preliminarySupplierUnitCostCents >= 0) {
-    const ratioBps = Math.round((preliminarySupplierUnitCostCents / itemPriceCents) * 10_000);
-    reasons.push(`preliminary source ratio ${ratioBps} bps`);
+    sourceRatioBps = Math.round((preliminarySupplierUnitCostCents / itemPriceCents) * 10_000);
+    reasons.push(`preliminary source ratio ${sourceRatioBps} bps`);
+    if (sourceRatioBps <= 2000) reasons.push('preferred <=20% source ratio');
+    else if (sourceRatioBps <= 3500) reasons.push('source ratio above preference; allow Stage 2 economics to decide');
   }
 
   if (candidate.sizeClass === 'BULKY' || candidate.weightClass === 'HEAVY') reasons.push('freight-sensitive physical profile');
   if (candidate.ipRisk === 'HIGH' || candidate.complianceRisk === 'HIGH') return { version: DISCOVERY_VERSION, status: 'FAIL', reasons: [...reasons, 'high IP/compliance risk'] };
 
-  const sourceRatioOk = preliminarySupplierUnitCostCents === null || preliminarySupplierUnitCostCents <= Math.round(itemPriceCents * 0.2);
+  const sourceRatioWorkable = sourceRatioBps === null || sourceRatioBps <= 3500;
   const physicalOk = candidate.sizeClass !== 'BULKY' && candidate.weightClass !== 'HEAVY';
   const riskOk = candidate.ipRisk !== 'MEDIUM_HIGH' && candidate.complianceRisk !== 'MEDIUM_HIGH';
 
-  if (soldCount >= 100 && sourceRatioOk && physicalOk && riskOk) return { version: DISCOVERY_VERSION, status: 'PASS', reasons };
-  if (soldCount >= 25 && sourceRatioOk && riskOk) return { version: DISCOVERY_VERSION, status: 'PASS', reasons };
+  if (soldCount >= 100 && sourceRatioWorkable && physicalOk && riskOk) return { version: DISCOVERY_VERSION, status: 'PASS', reasons };
+  if (soldCount >= 25 && sourceRatioWorkable && riskOk) return { version: DISCOVERY_VERSION, status: 'PASS', reasons };
   return { version: DISCOVERY_VERSION, status: 'HOLD', reasons };
 }
 
