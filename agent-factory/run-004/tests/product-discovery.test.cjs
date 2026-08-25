@@ -125,14 +125,15 @@ test('missing economics fail closed to RFQ and strong economics require conserva
     quantity: 1,
     supplierUnitCostCents: 250,
     inboundFreightCents: 125,
-    outboundShippingCents: 500,
+    outboundShippingCents: 400,
     packagingCents: 60,
     ebayFeeBps: 1360,
     orderFeeCents: 40,
-    promotionBps: 1000,
-    returnsBps: 500,
-    defectsBps: 200,
+    promotionBps: 750,
+    returnsBps: 400,
+    defectsBps: 150,
   });
+  assert.ok(conservative.marginBps >= 2000, `expected conservative margin >= 2000 bps, got ${conservative.marginBps}`);
   const result = classifyFinalDecision({ stage1, equivalence: 'EXACT', base, conservative, sourcingComplete: true, riskState: 'PASS' });
   assert.equal(result.status, 'STRONG PASS');
 
