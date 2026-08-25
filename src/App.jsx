@@ -4,6 +4,7 @@ import ErrorBoundary from "./ErrorBoundary";
 import Nav from "./nav";
 import Home from "./home";
 import Dashboard from "./dashboard";
+import Overview from "./overview";
 import ProductData from "./productdata";
 import Footer from "./footer";
 import Login from "./login";
@@ -39,8 +40,9 @@ const App = () => {
           </Route>
 
           <Route element={<ProtectedRoute><AppShell /></ProtectedRoute>}>
-            <Route path="/dashboard" element={<ErrorBoundary><Dashboard /></ErrorBoundary>} />
+            <Route path="/dashboard" element={<ErrorBoundary><Overview /></ErrorBoundary>} />
             <Route path="/products" element={<ErrorBoundary><ProductData /></ErrorBoundary>} />
+            <Route path="/catalog-admin" element={<ErrorBoundary><Dashboard /></ErrorBoundary>} />
             <Route path="/accounts/*" element={<ErrorBoundary><AccountPage /></ErrorBoundary>} />
           </Route>
         </Routes>
