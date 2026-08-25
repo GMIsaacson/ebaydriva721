@@ -1,0 +1,48 @@
+name: Run 004 Product Opportunity Discovery
+
+on:
+  push:
+    branches: [codex/run-004-product-discovery]
+    paths:
+      - 'agent-factory/run-004/**'
+      - 'api/product-opportunity-discovery.mjs'
+      - 'src/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/run-004-product-discovery.yml'
+  pull_request:
+    paths:
+      - 'agent-factory/run-004/**'
+      - 'api/product-opportunity-discovery.mjs'
+      - 'src/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/run-004-product-discovery.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  product-discovery-acceptance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Product discovery calibration and fail-closed tests
+        run: node --test agent-factory/run-004/tests/product-discovery.test.cjs
+      - name: Product discovery endpoint syntax
+        run: node --check api/product-opportunity-discovery.mjs
+      - name: Preserve Run 004 source-to-marketplace tests
+        run: npm run test:run004:sourcing
+      - name: Preserve Run 004 G4 controls
+        run: npm run test:g4
+      - name: Validate Run 004 G4 package
+        run: npm run validate:g4
+      - name: Build DataScout
+        run: npm run build
