@@ -48,6 +48,7 @@ const Nav = () => {
           <div className="ds-nav-links">
             {currentUser && (
               <>
+                <NavLink className={navClass} to="/product-discovery" onClick={closeMenus}>Discover</NavLink>
                 <NavLink className={navClass} to="/sourcing" onClick={closeMenus}>Sourcing</NavLink>
                 <NavLink className={navClass} to="/local-arbitrage" onClick={closeMenus}>Local Arbitrage</NavLink>
                 <NavLink className={navClass} to="/products" onClick={closeMenus}>Products</NavLink>
