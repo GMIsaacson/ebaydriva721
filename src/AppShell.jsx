@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   FaBars,
+  FaChartBar,
   FaChevronRight,
   FaCog,
   FaDatabase,
@@ -14,14 +15,16 @@ import { useAuth } from "./AuthProvider";
 import "./app-shell.css";
 
 const navigation = [
+  { to: "/dashboard", label: "Overview", icon: FaChartBar },
   { to: "/products", label: "Opportunities", icon: FaLayerGroup },
-  { to: "/dashboard", label: "Dashboard", icon: FaDatabase },
+  { to: "/catalog-admin", label: "Catalog admin", icon: FaDatabase },
   { to: "/resources", label: "Resources", icon: FaTools, publicRoute: true },
 ];
 
 const pageLabels = {
+  "/dashboard": "Overview",
   "/products": "Opportunities",
-  "/dashboard": "Dashboard",
+  "/catalog-admin": "Catalog admin",
   "/accounts": "Account settings",
 };
 
@@ -50,7 +53,7 @@ const AppShell = () => {
     <div className="ds-app-shell">
       <aside className={`ds-app-sidebar ${mobileOpen ? "open" : ""}`} aria-label="DataScout workspace navigation">
         <div className="ds-app-sidebar-head">
-          <Link className="ds-app-brand" to="/products" onClick={closeMobile}>
+          <Link className="ds-app-brand" to="/dashboard" onClick={closeMobile}>
             <span className="ds-app-brand-mark">D</span>
             <span className="ds-app-brand-copy">
               <strong>DataScout</strong>
