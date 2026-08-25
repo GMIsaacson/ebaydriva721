@@ -1,6 +1,6 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import ErrorBoundary from "./ErrorBoundary"; // Ensure the correct path to ErrorBoundary
+import { BrowserRouter as Router, Outlet, Route, Routes } from "react-router-dom";
+import ErrorBoundary from "./ErrorBoundary";
 import Nav from "./nav";
 import Home from "./home";
 import Dashboard from "./dashboard";
@@ -14,109 +14,39 @@ import { AuthProvider } from "./AuthProvider";
 import VerifyEmail from "./verifyemail";
 import Calculators from "./resources";
 import AccountPage from "./accountspage";
+import AppShell from "./AppShell";
+
+const PublicLayout = () => (
+  <div className="App">
+    <Nav />
+    <Outlet />
+    <Footer />
+  </div>
+);
 
 const App = () => {
   return (
     <AuthProvider>
       <Router>
-        <div className="App">
-          {/* Navigation Bar */}
-          <Nav />
+        <Routes>
+          <Route element={<PublicLayout />}>
+            <Route path="/" element={<ErrorBoundary><Home /></ErrorBoundary>} />
+            <Route path="/ResetPassword" element={<ErrorBoundary><ResetPassword /></ErrorBoundary>} />
+            <Route path="/login" element={<ErrorBoundary><Login /></ErrorBoundary>} />
+            <Route path="/signup" element={<ErrorBoundary><Signup /></ErrorBoundary>} />
+            <Route path="/verifyemail" element={<ErrorBoundary><VerifyEmail /></ErrorBoundary>} />
+            <Route path="/resources" element={<ErrorBoundary><Calculators /></ErrorBoundary>} />
+          </Route>
 
-          {/* Application Routes */}
-          <Routes>
-            {/* Public Routes */}
-            <Route
-              path="/"
-              element={
-                <ErrorBoundary>
-                  <Home />
-                </ErrorBoundary>
-              }
-            />
-            <Route
-              path="/ResetPassword"
-              element={
-                <ErrorBoundary>
-                  <ResetPassword />
-                </ErrorBoundary>
-              }
-            />
-            <Route
-              path="/login"
-              element={
-                <ErrorBoundary>
-                  <Login />
-                </ErrorBoundary>
-              }
-            />
-            <Route
-              path="/signup"
-              element={
-                <ErrorBoundary>
-                  <Signup />
-                </ErrorBoundary>
-              }
-            />
-            <Route
-              path="/verifyemail"
-              element={
-                <ErrorBoundary>
-                  <VerifyEmail />
-                </ErrorBoundary>
-              }
-            />
-
-            {/* Protected Routes */}
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <ErrorBoundary>
-                    <Dashboard />
-                  </ErrorBoundary>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/products"
-              element={
-                <ProtectedRoute>
-                  <ErrorBoundary>
-                    <ProductData />
-                  </ErrorBoundary>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/resources"
-              element={
-               
-                  <ErrorBoundary>
-                    <Calculators />
-                  </ErrorBoundary>
-               
-              }
-            />
-            <Route
-              path="/accounts/*"
-              element={
-                <ProtectedRoute>
-                  <ErrorBoundary>
-                    <AccountPage />
-                  </ErrorBoundary>
-                </ProtectedRoute>
-              }
-            />
-          </Routes>
-
-          {/* Footer */}
-          <Footer />
-        </div>
+          <Route element={<ProtectedRoute><AppShell /></ProtectedRoute>}>
+            <Route path="/dashboard" element={<ErrorBoundary><Dashboard /></ErrorBoundary>} />
+            <Route path="/products" element={<ErrorBoundary><ProductData /></ErrorBoundary>} />
+            <Route path="/accounts/*" element={<ErrorBoundary><AccountPage /></ErrorBoundary>} />
+          </Route>
+        </Routes>
       </Router>
     </AuthProvider>
   );
 };
 
 export default App;
-
