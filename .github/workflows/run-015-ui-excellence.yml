@@ -1,0 +1,38 @@
+name: Run 015 UI Excellence Acceptance
+
+on:
+  pull_request:
+    paths:
+      - 'agent-factory/run-015/**'
+      - 'agent-factory/governance/a0-decisions/A0-UIX-015-001.a0.json'
+      - '.github/workflows/run-015-ui-excellence.yml'
+  push:
+    paths:
+      - 'agent-factory/run-015/**'
+      - 'agent-factory/governance/a0-decisions/A0-UIX-015-001.a0.json'
+      - '.github/workflows/run-015-ui-excellence.yml'
+
+jobs:
+  run-015-g3:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: UI quality gate acceptance
+        run: node agent-factory/run-015/tests/ui-quality-gate.test.cjs
+      - name: Verify governance and manifest boundaries
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const manifest = JSON.parse(fs.readFileSync('agent-factory/run-015/team-manifest.json','utf8'));
+          const a0 = JSON.parse(fs.readFileSync('agent-factory/governance/a0-decisions/A0-UIX-015-001.a0.json','utf8'));
+          if (manifest.runNumber !== 15 || manifest.runId !== 'UIX-015') throw new Error('RUN_ID_MISMATCH');
+          if (manifest.externalAuthority !== 'None') throw new Error('EXTERNAL_AUTHORITY_NOT_ZERO');
+          if (manifest.authority.maxExternalActions !== 0 || manifest.authority.maxSpendCents !== 0) throw new Error('AUTHORITY_BUDGET_NOT_ZERO');
+          if (manifest.authority.deploy || manifest.authority.publish || manifest.authority.productionMutation) throw new Error('PROTECTED_ACTION_ENABLED');
+          if (a0.status !== 'PASS' || a0.verdict !== 'NEW') throw new Error('A0_NOT_PASS_NEW');
+          if (manifest.qualityGate.productionThreshold !== 92 || manifest.qualityGate.exceptionalThreshold !== 96) throw new Error('QUALITY_THRESHOLDS_CHANGED');
+          console.log('PASS Run 015 governance boundary');
+          NODE

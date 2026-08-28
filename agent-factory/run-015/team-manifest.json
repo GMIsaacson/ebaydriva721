@@ -1,0 +1,78 @@
+{
+  "schemaVersion": "1.1",
+  "factoryCoreVersion": "1.1.0",
+  "governanceMode": "RUN",
+  "structuralRunCreated": true,
+  "runNumber": 15,
+  "runLabel": "015",
+  "runId": "UIX-015",
+  "identityLabel": "015",
+  "a0DecisionId": "A0-UIX-015-001",
+  "teamId": "UIX-TEAM-015",
+  "teamName": "UI Excellence Team",
+  "domain": "uix",
+  "purpose": "Transform approved existing interfaces into distinctive production-grade UI while preserving functionality and proving quality with independent visual evidence.",
+  "lifecycle": "Testing",
+  "currentGate": "G4",
+  "operatingState": "G3 PASS — ready for real UI shadow qualification",
+  "externalAuthority": "None",
+  "authority": {
+    "maxExternalActions": 0,
+    "maxSpendCents": 0,
+    "deploy": false,
+    "publish": false,
+    "message": false,
+    "productionMutation": false,
+    "destructiveActions": false,
+    "rule": "Standing external authority is zero. Source edits are limited to an approved workspace/branch; deployment or production mutation requires fresh bounded owner approval."
+  },
+  "qualityGate": {
+    "scoreSystem": "UIX-100-v1",
+    "productionThreshold": 92,
+    "exceptionalThreshold": 96,
+    "criticalDimensionMinimum": 90,
+    "requiredViewports": ["mobile", "tablet", "desktop"],
+    "criticalDimensions": ["visualHierarchy", "uxClarity", "responsiveExecution", "accessibility"],
+    "blockerRule": "Any unresolved critical blocker yields REJECT regardless of aggregate score.",
+    "functionalPreservationRule": "Business logic, data contracts, routing, permissions, and approved user outcomes may not be changed unless the assignment explicitly authorizes the change."
+  },
+  "roles": [
+    {"id":"uix-lead-015","name":"Team Lead and Orchestrator","responsibility":"Own scope, sequencing, typed handoffs, functional-preservation boundary, iteration control, and terminal-state integrity.","canSelfApprove":false},
+    {"id":"uix-benchmark-scout-015","name":"UI Benchmark Scout","responsibility":"Inspect relevant best-in-class product interfaces and derive bounded, non-copying benchmark criteria.","canSelfApprove":false},
+    {"id":"uix-ux-architect-015","name":"Product UX Architect","responsibility":"Audit information architecture, task flows, hierarchy, navigation, friction, cognitive load, and journey clarity.","canSelfApprove":false},
+    {"id":"uix-art-director-015","name":"Art Director","responsibility":"Define the visual direction, composition language, typography approach, imagery treatment, density, and product personality.","canSelfApprove":false},
+    {"id":"uix-design-system-015","name":"Design System Specialist","responsibility":"Create or normalize reusable design tokens and component rules across type, spacing, surfaces, controls, states, icons, and responsiveness.","canSelfApprove":false},
+    {"id":"uix-interaction-designer-015","name":"Interaction Designer","responsibility":"Specify feedback, motion, hover/focus/pressed behavior, loading, empty, success, and error states.","canSelfApprove":false},
+    {"id":"uix-frontend-polish-015","name":"Frontend Polish Engineer","responsibility":"Implement approved UI changes while preserving routes, behavior, data contracts, and acceptance-tested functionality.","canSelfApprove":false},
+    {"id":"uix-responsive-accessibility-015","name":"Responsive & Accessibility Specialist","responsibility":"Validate phone, tablet, desktop, touch, keyboard, focus, contrast, readable type, reduced motion, and semantics.","canSelfApprove":false},
+    {"id":"uix-visual-acceptance-015","name":"Visual Acceptance Scorer","responsibility":"Produce a structured UIX-100 scorecard with viewport evidence and repairable defects; may not approve its own implementation work.","canSelfApprove":false},
+    {"id":"uix-qa-015","name":"Independent Visual Quality Auditor","responsibility":"Independently verify evidence completeness, functional preservation, unsupported claims, accessibility, viewport quality, authority compliance, score calculation, and terminal-state eligibility.","canSelfApprove":false}
+  ],
+  "handoffs": [
+    "ui_intake_v1",
+    "benchmark_brief_v1",
+    "ux_diagnosis_v1",
+    "art_direction_v1",
+    "design_system_delta_v1",
+    "interaction_spec_v1",
+    "frontend_change_set_v1",
+    "responsive_accessibility_report_v1",
+    "visual_scorecard_v1",
+    "independent_qa_decision_v1"
+  ],
+  "g3": {
+    "status": "PASS",
+    "testsPassed": 14,
+    "testsTotal": 14,
+    "externalActions": 0,
+    "spendCents": 0,
+    "evidence": "agent-factory/run-015/evidence/g3-acceptance.json"
+  },
+  "g4": {
+    "status": "READY_NOT_RUN",
+    "requiredEvidence": "One real existing UI transformed on a non-production branch with mobile/tablet/desktop before-and-after screenshots, functional-equivalence PASS, independent QA, and final score >=92."
+  },
+  "nextGateOnPass": "G5 controlled preview deployment",
+  "firstIntendedConsumer": "Run 014 Software Product Engineering Team",
+  "firstPlannedQualificationArtifact": "StorySpark after Run 015 itself is installed and accepted for G4 shadow use"
+}

@@ -1,0 +1,40 @@
+{
+  "teamName": "UI Excellence Team",
+  "purpose": "Take an existing working user interface and transform it into a distinctive, production-grade experience while preserving approved functionality and proving quality with independent visual acceptance evidence.",
+  "domain": "uix",
+  "requestedRunNumber": 15,
+  "existingRunNumbers": [4, 5, 6, 8, 9, 14],
+  "reservedRunNumbers": [13],
+  "capabilities": [
+    {"id":"benchmark-scout","name":"UI Benchmark Scout","responsibility":"Inspect relevant best-in-class product interfaces and convert observations into bounded, non-copying benchmark criteria."},
+    {"id":"ux-architect","name":"Product UX Architect","responsibility":"Audit information architecture, task flows, navigation, hierarchy, friction, cognitive load, and user journey without altering approved business scope."},
+    {"id":"art-director","name":"Art Director","responsibility":"Define a coherent visual direction, composition language, typography approach, imagery treatment, density, and product personality appropriate to the audience."},
+    {"id":"design-system","name":"Design System Specialist","responsibility":"Create or normalize reusable tokens and component rules for typography, spacing, surfaces, controls, states, icons, and responsive behavior."},
+    {"id":"interaction-designer","name":"Interaction Designer","responsibility":"Specify feedback, transitions, motion, hover/focus/pressed behavior, loading, empty, success, and error states with restraint and accessibility."},
+    {"id":"frontend-polish","name":"Frontend Polish Engineer","responsibility":"Implement the approved visual and interaction changes in the existing frontend while preserving behavior, routes, data contracts, and testable functionality."},
+    {"id":"responsive-accessibility","name":"Responsive & Accessibility Specialist","responsibility":"Validate mobile, tablet, and desktop layouts, touch targets, keyboard behavior, focus, contrast, readable type, reduced motion, and accessible semantics."},
+    {"id":"visual-acceptance","name":"Visual Acceptance Scorer","responsibility":"Produce the structured 100-point UI scorecard and evidence packet for independent QA; cannot approve its own implementation work."}
+  ],
+  "authority": {
+    "maxExternalActions": 0,
+    "maxSpendCents": 0,
+    "deploy": false,
+    "allowedActions": ["inspect approved UI artifacts", "draft redesign plans", "edit source in approved workspace", "run local tests", "produce screenshots and scorecards"]
+  },
+  "governance": {
+    "mode": "RUN",
+    "a0Decision": {
+      "decisionId": "A0-UIX-015-001",
+      "status": "PASS",
+      "verdict": "NEW",
+      "owner": "Aberdeen Technologies",
+      "decidedAt": "2026-08-28",
+      "reuseEvidence": [
+        "Run 014 owns general software product engineering but not cross-product visual excellence acceptance.",
+        "Website Business Team contains website-specific design capability but is not a reusable any-interface specialist.",
+        "Factory Quality Reviewer can judge visual quality but does not own redesign implementation."
+      ],
+      "residualUnownedLoop": "A reusable cross-product loop that accepts any existing UI, benchmarks it, redesigns and implements visual/UX improvements, proves functional preservation, and iterates until independent visual acceptance passes."
+    }
+  }
+}

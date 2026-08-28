@@ -1,0 +1,43 @@
+{
+  "decision_id": "A0-UIX-015-001",
+  "status": "PASS",
+  "verdict": "NEW",
+  "owner": "Aberdeen Technologies",
+  "decided_at": "2026-08-28",
+  "business_outcome": "Create one reusable cross-product UI Excellence capability that can take an existing working interface and raise its visual/UX quality to a measurable production standard without duplicating general software engineering or website-business ownership.",
+  "existing_owner_scan": "Run 014 owns general software product engineering. The Website Business Team contains website-specific design capability. Factory QA can inspect visual quality. None owns the complete reusable loop of benchmark -> UX diagnosis -> art direction -> design system -> frontend polish -> responsive/accessibility validation -> independent screenshot acceptance across arbitrary software interfaces.",
+  "reuse_candidates_checked": [
+    "Run 014 Software Product Engineering Team",
+    "Website Business Team visual/art-direction capability",
+    "Factory-wide Quality Reviewer",
+    "existing frontend and screenshot/browser tooling"
+  ],
+  "duplication_analysis": "Run 015 is intentionally a shared specialist capability. It does not replace Run 014, the Website Business Team, or global QA. It accepts work from those teams and returns a UI change set plus independent visual evidence.",
+  "residual_unowned_loop": "Cross-product UI transformation with a fixed quality gate and functional-preservation contract remains unowned; NEW team creation is justified.",
+  "covers_paths": [
+    "agent-factory/run-015/**",
+    "agent-factory/governance/a0-decisions/A0-UIX-015-001.a0.json",
+    ".github/workflows/run-015-ui-excellence.yml"
+  ],
+  "authority": {
+    "environment": "testing/shadow",
+    "external_actions": 0,
+    "max_spend_cents": 0,
+    "deploy": false,
+    "publish": false,
+    "production_deploy": false,
+    "production_data": false,
+    "customer_contact": false,
+    "standing_external_authority": "none"
+  },
+  "promotion_constraints": [
+    "G3 deterministic acceptance must pass before G4",
+    "G4 requires a real existing UI, not a prompt-only mockup",
+    "Before/after screenshots required at mobile, tablet, and desktop",
+    "Functional equivalence must pass",
+    "Independent QA may not be the implementing agent",
+    "Weighted UIX-100 score must be at least 92 for delivery",
+    "Any critical blocker or critical dimension below 90 fails closed",
+    "Deployment remains a separate approval-gated action"
+  ]
+}
