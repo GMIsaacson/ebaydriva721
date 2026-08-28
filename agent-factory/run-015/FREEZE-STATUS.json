@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "1.0",
+  "runId": "UIX-015",
+  "status": "FROZEN",
+  "effectiveAt": "2026-08-28",
+  "reason": "Owner-directed freeze after repeated Capable Hands qualification experiments showed strong evaluation machinery but weaker commercial website creative output than the pre-015 Website Business + Run 014 stack.",
+  "newAssignmentPolicy": "REJECT",
+  "existingArtifactsPolicy": "PRESERVE_READ_ONLY",
+  "productionCreativeOwnership": "NONE",
+  "reactivationRequires": [
+    "fresh owner approval",
+    "current A0 EXTEND/REACTIVATE decision",
+    "explicit revised mission and qualification plan"
+  ],
+  "lessonsReusable": [
+    "browser/screenshot evidence patterns",
+    "independent challenger mechanics",
+    "fail-closed quality gates",
+    "provenance receipts"
+  ],
+  "forbiddenWhileFrozen": [
+    "new UI implementation assignments",
+    "primary website creative direction",
+    "automatic fallback from another team",
+    "standing deployment/publish authority"
+  ]
+}
