@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "1.0",
+  "assignmentId": "SW-PROD-014-A-001",
+  "files": [
+    {"path":"agent-factory/core/topology-compiler.cjs","change":"add","purpose":"Pure component vocabulary and topology validator/compiler."},
+    {"path":"agent-factory/core/team-builder.cjs","change":"modify","purpose":"Compile legacy or explicit hybrid manifests and receipts."},
+    {"path":"agent-factory/core/team-runner.cjs","change":"modify","purpose":"Fail closed instead of impersonating a hybrid runtime."},
+    {"path":"agent-factory/core/tests/team-builder.test.cjs","change":"modify","purpose":"Add hybrid classification, governance, graph, and runtime-boundary tests."},
+    {"path":"agent-factory/core/README.md","change":"add","purpose":"Document modes, types, rules, and example."},
+    {"path":"agent-factory/governance/a0-decisions/A0-FACTORY-CORE-004.a0.json","change":"add","purpose":"Same-change A0 EXTEND authority."}
+  ],
+  "outOfScope": [
+    "World Technology Intelligence Team creation",
+    "live source collection",
+    "scheduling",
+    "notifications",
+    "deployment",
+    "production mutation"
+  ]
+}
+

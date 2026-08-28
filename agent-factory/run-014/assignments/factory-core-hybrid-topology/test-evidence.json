@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "1.0",
+  "assignmentId": "SW-PROD-014-A-001",
+  "status": "PASS",
+  "executedAt": "2026-08-28",
+  "command": "node --test agent-factory/core/tests/*.test.cjs agent-factory/governance/a0-guard.test.cjs agent-factory/governance/reserved-run-guard.test.cjs",
+  "testsPassed": 38,
+  "testsFailed": 0,
+  "hybridCases": [
+    "explicit mixed component types compile without agent inflation",
+    "missing component type fails closed",
+    "independent assurance and acyclic reachable graph are enforced",
+    "generic synthetic runner refuses hybrid runtime claims"
+  ],
+  "regressionCoverage": [
+    "legacy agent-team compilation",
+    "synthetic legacy execution",
+    "atomic package writes",
+    "static-site builder",
+    "selection checks",
+    "A0 constitutional guard",
+    "reserved Run 013 guard"
+  ],
+  "externalActions": 0,
+  "spendCents": 0
+}
+

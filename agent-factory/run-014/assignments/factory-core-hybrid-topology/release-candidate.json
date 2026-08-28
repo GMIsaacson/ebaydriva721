@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "1.0",
+  "assignmentId": "SW-PROD-014-A-001",
+  "release": "Factory Core v1.2.0-rc1",
+  "status": "READY_FOR_REVIEW",
+  "a0DecisionId": "A0-FACTORY-CORE-004",
+  "acceptanceCriteria": "8/8 SATISFIED",
+  "tests": "38/38 PASS",
+  "securityReview": "PASS",
+  "authorityReview": "PASS — zero standing external authority",
+  "rollback": "Revert the release commit; no data or schema migration is involved.",
+  "mergeAuthorized": false,
+  "deploymentAuthorized": false,
+  "nextAssignment": "After review and merge, ask A0 to classify and compile the World Technology Intelligence Team as the next non-reserved run."
+}
+

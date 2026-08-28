@@ -52,6 +52,7 @@ function executeCheck(check, packet, context = {}) {
 }
 function runTeam(manifest, packet, options = {}) {
   if(!manifest||typeof manifest!=='object')throw new Error('manifest is required');
+  if(manifest.topologyMode==='hybrid')throw new Error('hybrid topologies require a run-specific runtime; the generic runner is synthetic legacy validation only');
   if(manifest.externalAuthority!=='None')throw new Error('synthetic runner requires externalAuthority=None');
   if(!manifest.authority||Number(manifest.authority.maxExternalActions)!==0||Number(manifest.authority.maxSpendCents)!==0)throw new Error('synthetic runner requires zero external-action and spend authority');
   const capabilityAgents=(manifest.agents||[]).filter(a=>a.role==='capability'),qaAgents=(manifest.agents||[]).filter(a=>a.role==='qa');

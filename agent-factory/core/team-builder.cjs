@@ -4,8 +4,9 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const { COMPONENT_TYPES, compileHybridTopology } = require('./topology-compiler.cjs');
 
-const FACTORY_CORE_VERSION = '1.1.0';
+const FACTORY_CORE_VERSION = '1.2.0';
 const DEFAULT_RESERVED_RUNS = [13];
 const LEAKAGE_TERMS = ['ebay', 'alibaba', 'seller scout', 'landed cost', 'source-matching', 'sourcing specialist'];
 
@@ -37,7 +38,7 @@ function normalizeCapability(capability, index) {
   if (typeof capability === 'string') {
     if (!nonEmpty(capability)) throw new Error(`capabilities[${index}] must be non-empty`);
     const id = slug(capability);
-    return { id, name: title(capability), responsibility: `Perform ${capability} within the approved scope.`, check: null };
+    return { id, name: title(capability), responsibility: `Perform ${capability} within the approved scope.`, check: null, componentType: null, role: 'capability', independentAssurance: false, canSelfApprove: false };
   }
   if (!capability || typeof capability !== 'object') throw new Error(`capabilities[${index}] must be a string or object`);
   const name = capability.name || capability.id;
@@ -50,6 +51,10 @@ function normalizeCapability(capability, index) {
       ? capability.responsibility.trim()
       : `Perform ${title(name).toLowerCase()} within the approved scope.`,
     check: capability.check || null,
+    componentType: capability.componentType || null,
+    role: capability.role || 'capability',
+    independentAssurance: capability.independentAssurance === true,
+    canSelfApprove: capability.canSelfApprove === true,
   };
 }
 
@@ -93,6 +98,14 @@ function validateRequest(request) {
   const capabilities = request.capabilities.map(normalizeCapability);
   const ids = capabilities.map((item) => item.id);
   if (new Set(ids).size !== ids.length) throw new Error('capability ids must be unique');
+  const topologyMode = request.topologyMode || 'legacy-agent-team';
+  if (!['legacy-agent-team', 'hybrid'].includes(topologyMode)) throw new Error('topologyMode must be legacy-agent-team or hybrid');
+  if (topologyMode === 'hybrid') {
+    if (request.capabilities.some((capability) => typeof capability === 'string')) throw new Error('hybrid topology requires explicit component objects');
+    for (const [index, capability] of capabilities.entries()) {
+      if (!COMPONENT_TYPES.includes(capability.componentType)) throw new Error(`capabilities[${index}].componentType must be one of ${COMPONENT_TYPES.join(', ')}`);
+    }
+  }
 
   const governance = validateGovernance(request);
   const authority = request.authority || {};
@@ -110,7 +123,7 @@ function validateRequest(request) {
     : DEFAULT_RESERVED_RUNS.slice();
   if (reservedRunNumbers.some((n) => !Number.isInteger(n) || n < 1 || n > 999)) throw new Error('reservedRunNumbers must contain integers 1..999');
 
-  return { capabilities, governance, authority, existingRunNumbers, reservedRunNumbers };
+  return { capabilities, governance, authority, existingRunNumbers, reservedRunNumbers, topologyMode };
 }
 
 function allocateRunNumber({ existingRunNumbers, reservedRunNumbers, requestedRunNumber }) {
@@ -147,7 +160,7 @@ function compileTeam(request, options = {}) {
   const requestCanonical = JSON.stringify(request);
   const requestHash = sha256(requestCanonical);
 
-  const agents = [
+  let agents = [
     {
       id: `${domainSlug}-lead-${identityLabel.toLowerCase()}`,
       name: 'Team Lead and Orchestrator',
@@ -173,16 +186,29 @@ function compileTeam(request, options = {}) {
     },
   ];
 
-  const handoffs = [];
-  let prior = agents[0].id;
-  for (const agent of agents.slice(1, -1)) {
-    handoffs.push({ from: prior, to: agent.id, contract: 'bounded_task_v1' });
-    prior = agent.id;
+  let components = agents.map((agent) => ({ ...agent, componentType: 'agent', executionClass: 'reasoning' }));
+  let handoffs = [];
+  if (normalized.topologyMode === 'hybrid') {
+    const topology = compileHybridTopology({
+      capabilities: normalized.capabilities,
+      handoffs: request.handoffs,
+      domainSlug,
+      identityLabel,
+    });
+    components = topology.components;
+    agents = topology.agents;
+    handoffs = topology.handoffs;
+  } else {
+    let prior = agents[0].id;
+    for (const agent of agents.slice(1, -1)) {
+      handoffs.push({ from: prior, to: agent.id, contract: 'bounded_task_v1' });
+      prior = agent.id;
+    }
+    handoffs.push({ from: prior, to: agents[agents.length - 1].id, contract: 'evidence_pack_v1' });
   }
-  handoffs.push({ from: prior, to: agents[agents.length - 1].id, contract: 'evidence_pack_v1' });
 
   const manifest = {
-    schemaVersion: '1.1',
+    schemaVersion: '1.2',
     factoryCoreVersion: FACTORY_CORE_VERSION,
     governanceMode: normalized.governance.mode,
     structuralRunCreated: isRun,
@@ -196,6 +222,7 @@ function compileTeam(request, options = {}) {
     teamName: request.teamName.trim(),
     domain: request.domain.trim(),
     purpose: request.purpose.trim(),
+    topologyMode: normalized.topologyMode,
     lifecycle: 'Testing',
     operatingState: 'Design/Validation',
     externalAuthority: 'None',
@@ -208,6 +235,7 @@ function compileTeam(request, options = {}) {
       destructiveActions: false,
     },
     gates: isRun ? ['A0', 'B0', 'G0', 'G1', 'G2', 'G3'] : ['B0', 'G0', 'G1', 'G2', 'G3'],
+    components,
     agents,
     handoffs,
     provenance: {
@@ -219,20 +247,22 @@ function compileTeam(request, options = {}) {
   };
 
   const contract = {
-    schemaVersion: '1.1',
+    schemaVersion: '1.2',
     governanceMode: normalized.governance.mode,
     runId,
     testId,
     teamId,
+    topologyMode: normalized.topologyMode,
+    componentTypes: [...new Set(components.map((component) => component.componentType))],
     inputs: ['bounded_input_package_v1'],
     outputs: ['evidence_pack_v1', 'qa_decision_v1', 'terminal_receipt_v1'],
     terminalStates: ['DELIVERED', 'BLOCKED_OWNER', 'BLOCKED_EXTERNAL', 'KILLED', 'FAILED'],
-    successRule: 'DELIVERED requires every required capability result, evidence references, independent QA PASS, and zero authority violations.',
+    successRule: 'DELIVERED requires every required component result, evidence references, independent assurance PASS, and zero authority violations.',
     failureRule: 'Unknown, unsupported, ambiguous, stale, duplicate, or unauthorized conditions fail closed.',
   };
 
   const receipt = {
-    schemaVersion: '1.1',
+    schemaVersion: '1.2',
     status: isRun ? 'BUILT_STAGED' : 'BUILT_TEST_STAGED',
     governanceMode: normalized.governance.mode,
     runId,
@@ -241,8 +271,10 @@ function compileTeam(request, options = {}) {
     runNumber,
     a0DecisionId: isRun ? normalized.governance.a0Decision.decisionId : null,
     requestSha256: requestHash,
-    roleCount: agents.length,
+    roleCount: components.length,
     capabilityCount: normalized.capabilities.length,
+    componentCount: components.length,
+    agentCount: agents.length,
     externalActionsPerformed: 0,
     spendCents: 0,
     builtAt: now,

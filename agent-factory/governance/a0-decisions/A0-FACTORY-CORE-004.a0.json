@@ -1,0 +1,23 @@
+{
+  "decision_id": "A0-FACTORY-CORE-004",
+  "status": "PASS",
+  "verdict": "EXTEND",
+  "owner": "Aberdeen Technologies",
+  "decided_at": "2026-08-28",
+  "business_outcome": "Allow Factory A0 to create efficient mixed-mechanism systems in which deterministic software, workflows, data stores, services, bounded reasoning agents, decision support, and human approvals remain explicit instead of every capability becoming an agent.",
+  "existing_owner_scan": "Reviewed Factory Core v1.1.0, Run 008 Operations Core, Run 009 Publishing Engine, Run 014 Software Product Engineering Team, and Run 015 UI Excellence Team. Factory Core already owns generic package compilation, while the existing runs own downstream implementation, operations, publishing, and UI quality. None provides a generic hybrid topology compiler.",
+  "reuse_candidates_checked": [
+    "Factory Core v1.1.0",
+    "OPS-CORE-008",
+    "PUB-ENG-009",
+    "SW-PROD-014",
+    "UIX-TEAM-015"
+  ],
+  "duplication_analysis": "EXTEND reuses the existing Factory Core governance, allocation, provenance, authority lock, and package compiler. It adds only explicit component classification and typed topology compilation. It does not duplicate software delivery, operations, publishing, UI quality, or any domain-specific runtime.",
+  "residual_unowned_loop": "Governed hybrid system request -> explicit mechanism classification -> validated reachable typed topology -> staged manifest/contract/receipt without silently converting non-agent work into agents.",
+  "covers_paths": [
+    "agent-factory/core/"
+  ],
+  "evidence_ref": "agent-factory/run-014/assignments/factory-core-hybrid-topology/release-candidate.json"
+}
+
