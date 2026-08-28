@@ -14,8 +14,9 @@
   ],
   "duplication_analysis": "Run 015 is intentionally a shared specialist capability. It does not replace Run 014, the Website Business Team, or global QA. It accepts work from those teams and returns a UI change set plus independent visual evidence.",
   "residual_unowned_loop": "Cross-product UI transformation with a fixed quality gate and functional-preservation contract remains unowned; NEW team creation is justified.",
+  "evidence_ref": "Owner instruction 2026-08-28; Factory 1 current owner scan; Run 015 local deterministic acceptance 14/14 PASS; PR #64 repository acceptance evidence.",
   "covers_paths": [
-    "agent-factory/run-015/**",
+    "agent-factory/run-015",
     "agent-factory/governance/a0-decisions/A0-UIX-015-001.a0.json",
     ".github/workflows/run-015-ui-excellence.yml"
   ],
