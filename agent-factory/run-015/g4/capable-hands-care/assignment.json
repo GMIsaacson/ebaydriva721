@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "1.0",
+  "runId": "UIX-015",
+  "teamId": "UIX-TEAM-015",
+  "gate": "G4",
+  "assignmentId": "UIX-G4-CHC-001",
+  "mode": "SHADOW_NON_PRODUCTION",
+  "target": {
+    "name": "Capable Hands Care",
+    "url": "https://capablehandscare.com/",
+    "type": "real_public_production_website",
+    "sourceAccess": false,
+    "productionMutationAllowed": false
+  },
+  "approvedObjective": "Use the real public Capable Hands Care website as Run 015's first qualification target. Audit its current UI/UX, preserve its legitimate business content and public user outcomes, create a non-production redesign, and iterate until independent UIX-100 evaluation reaches production quality or the team records a justified failure/blocker.",
+  "preserve": [
+    "home-care/disability-services positioning",
+    "Minnesota/Twin Cities service context",
+    "service discovery",
+    "Integrated Community Supports path",
+    "Special Transportation Services path where present",
+    "client referral path",
+    "employment/hiring path",
+    "contact path",
+    "public phone, email, business-hours, and location information unless later verified as stale",
+    "accessibility and user ability to reach existing public actions"
+  ],
+  "forbiddenWithoutSeparateApproval": [
+    "edit the live WordPress site",
+    "change DNS or hosting",
+    "publish or deploy over capablehandscare.com",
+    "submit forms",
+    "send email or contact the business",
+    "change business claims, licenses, service eligibility, pricing, or legal content",
+    "collect real user data"
+  ],
+  "publicInspectionEvidence": {
+    "home": "https://capablehandscare.com/",
+    "services": "https://capablehandscare.com/services/",
+    "hiring": "https://capablehandscare.com/were-hiring/",
+    "contact": "https://capablehandscare.com/contact/",
+    "referralPdf": "https://capablehandscare.com/wp-content/uploads/2024/07/CAPABLE-HANDS-CARE_REFERRAL-FORM.pdf",
+    "observedAt": "2026-08-28"
+  },
+  "requiredG4Evidence": [
+    "current-state UI/UX audit",
+    "mobile/tablet/desktop before evidence",
+    "benchmark brief",
+    "UX diagnosis",
+    "art direction",
+    "design-system delta",
+    "non-production frontend redesign",
+    "mobile/tablet/desktop after evidence",
+    "functional-equivalence checks",
+    "responsive/accessibility report",
+    "UIX-100 scorecard",
+    "independent visual QA decision"
+  ],
+  "passRule": "G4 passes only if the real-target redesign preserves approved functionality, has no unresolved critical blockers, all critical UI dimensions score at least 90, and weighted UIX-100 is at least 92.",
+  "externalActions": 0,
+  "spendCents": 0,
+  "status": "ACCEPTED_FOR_G4_SHADOW"
+}
