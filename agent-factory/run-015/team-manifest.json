@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "1.1",
+  "schemaVersion": "1.2",
   "factoryCoreVersion": "1.1.0",
   "governanceMode": "RUN",
   "structuralRunCreated": true,
@@ -11,10 +11,10 @@
   "teamId": "UIX-TEAM-015",
   "teamName": "UI Excellence Team",
   "domain": "uix",
-  "purpose": "Transform approved existing interfaces into distinctive production-grade UI while preserving functionality and proving quality with independent visual evidence.",
-  "lifecycle": "Testing",
+  "purpose": "Preserved experimental UI-specialist capability. Frozen after qualification experiments; not available for new assignments until explicit reactivation.",
+  "lifecycle": "Frozen",
   "currentGate": "G4",
-  "operatingState": "G3 PASS — ready for real UI shadow qualification",
+  "operatingState": "FROZEN — new assignments rejected; artifacts/evidence preserved read-only",
   "externalAuthority": "None",
   "authority": {
     "maxExternalActions": 0,
@@ -24,29 +24,46 @@
     "message": false,
     "productionMutation": false,
     "destructiveActions": false,
-    "rule": "Standing external authority is zero. Source edits are limited to an approved workspace/branch; deployment or production mutation requires fresh bounded owner approval."
+    "rule": "Frozen. No new assignment execution. Existing evidence remains readable. Reactivation requires fresh owner approval and current A0 reactivation/extension decision."
+  },
+  "freeze": {
+    "status": "FROZEN",
+    "effectiveAt": "2026-08-28",
+    "statusFile": "agent-factory/run-015/FREEZE-STATUS.json",
+    "newAssignmentPolicy": "REJECT",
+    "existingArtifactsPolicy": "PRESERVE_READ_ONLY",
+    "primaryWebsiteCreativeDirection": false
   },
   "qualityGate": {
     "scoreSystem": "UIX-100-v1",
     "productionThreshold": 92,
     "exceptionalThreshold": 96,
     "criticalDimensionMinimum": 90,
-    "requiredViewports": ["mobile", "tablet", "desktop"],
-    "criticalDimensions": ["visualHierarchy", "uxClarity", "responsiveExecution", "accessibility"],
-    "blockerRule": "Any unresolved critical blocker yields REJECT regardless of aggregate score.",
-    "functionalPreservationRule": "Business logic, data contracts, routing, permissions, and approved user outcomes may not be changed unless the assignment explicitly authorizes the change."
+    "requiredViewports": [
+      "mobile",
+      "tablet",
+      "desktop"
+    ],
+    "criticalDimensions": [
+      "visualHierarchy",
+      "uxClarity",
+      "responsiveExecution",
+      "accessibility"
+    ],
+    "blockerRule": "Historical rule preserved for evidence interpretation only while frozen.",
+    "functionalPreservationRule": "Historical rule preserved; no new work executes while frozen."
   },
   "roles": [
-    {"id":"uix-lead-015","name":"Team Lead and Orchestrator","responsibility":"Own scope, sequencing, typed handoffs, functional-preservation boundary, iteration control, and terminal-state integrity.","canSelfApprove":false},
-    {"id":"uix-benchmark-scout-015","name":"UI Benchmark Scout","responsibility":"Inspect relevant best-in-class product interfaces and derive bounded, non-copying benchmark criteria.","canSelfApprove":false},
-    {"id":"uix-ux-architect-015","name":"Product UX Architect","responsibility":"Audit information architecture, task flows, hierarchy, navigation, friction, cognitive load, and journey clarity.","canSelfApprove":false},
-    {"id":"uix-art-director-015","name":"Art Director","responsibility":"Define the visual direction, composition language, typography approach, imagery treatment, density, and product personality.","canSelfApprove":false},
-    {"id":"uix-design-system-015","name":"Design System Specialist","responsibility":"Create or normalize reusable design tokens and component rules across type, spacing, surfaces, controls, states, icons, and responsiveness.","canSelfApprove":false},
-    {"id":"uix-interaction-designer-015","name":"Interaction Designer","responsibility":"Specify feedback, motion, hover/focus/pressed behavior, loading, empty, success, and error states.","canSelfApprove":false},
-    {"id":"uix-frontend-polish-015","name":"Frontend Polish Engineer","responsibility":"Implement approved UI changes while preserving routes, behavior, data contracts, and acceptance-tested functionality.","canSelfApprove":false},
-    {"id":"uix-responsive-accessibility-015","name":"Responsive & Accessibility Specialist","responsibility":"Validate phone, tablet, desktop, touch, keyboard, focus, contrast, readable type, reduced motion, and semantics.","canSelfApprove":false},
-    {"id":"uix-visual-acceptance-015","name":"Visual Acceptance Scorer","responsibility":"Produce a structured UIX-100 scorecard with viewport evidence and repairable defects; may not approve its own implementation work.","canSelfApprove":false},
-    {"id":"uix-qa-015","name":"Independent Visual Quality Auditor","responsibility":"Independently verify evidence completeness, functional preservation, unsupported claims, accessibility, viewport quality, authority compliance, score calculation, and terminal-state eligibility.","canSelfApprove":false}
+    {"id":"uix-lead-015","name":"Team Lead and Orchestrator","responsibility":"Historical/preserved role definition.","canSelfApprove":false},
+    {"id":"uix-benchmark-scout-015","name":"UI Benchmark Scout","responsibility":"Historical/preserved role definition.","canSelfApprove":false},
+    {"id":"uix-ux-architect-015","name":"Product UX Architect","responsibility":"Historical/preserved role definition.","canSelfApprove":false},
+    {"id":"uix-art-director-015","name":"Art Director","responsibility":"Historical/preserved role definition.","canSelfApprove":false},
+    {"id":"uix-design-system-015","name":"Design System Specialist","responsibility":"Historical/preserved role definition.","canSelfApprove":false},
+    {"id":"uix-interaction-designer-015","name":"Interaction Designer","responsibility":"Historical/preserved role definition.","canSelfApprove":false},
+    {"id":"uix-frontend-polish-015","name":"Frontend Polish Engineer","responsibility":"Historical/preserved role definition.","canSelfApprove":false},
+    {"id":"uix-responsive-accessibility-015","name":"Responsive & Accessibility Specialist","responsibility":"Historical/preserved role definition.","canSelfApprove":false},
+    {"id":"uix-visual-acceptance-015","name":"Visual Acceptance Scorer","responsibility":"Historical/preserved role definition.","canSelfApprove":false},
+    {"id":"uix-qa-015","name":"Independent Visual Quality Auditor","responsibility":"Historical/preserved role definition.","canSelfApprove":false}
   ],
   "handoffs": [
     "ui_intake_v1",
@@ -69,10 +86,11 @@
     "evidence": "agent-factory/run-015/evidence/g3-acceptance.json"
   },
   "g4": {
-    "status": "READY_NOT_RUN",
-    "requiredEvidence": "One real existing UI transformed on a non-production branch with mobile/tablet/desktop before-and-after screenshots, functional-equivalence PASS, independent QA, and final score >=92."
+    "status": "FROZEN_AFTER_FAILED_QUALIFICATION",
+    "requiredEvidence": "Historical qualification contract preserved. New qualification prohibited while frozen.",
+    "latestKnownExperiment": "Capable Hands domain-calibrated run failed G4 despite improved domain fit; pre-015 Website Business + Run 014 stack produced stronger commercial direction."
   },
-  "nextGateOnPass": "G5 controlled preview deployment",
-  "firstIntendedConsumer": "Run 014 Software Product Engineering Team",
-  "firstPlannedQualificationArtifact": "StorySpark after Run 015 itself is installed and accepted for G4 shadow use"
+  "nextGateOnPass": null,
+  "firstIntendedConsumer": null,
+  "firstPlannedQualificationArtifact": null
 }
