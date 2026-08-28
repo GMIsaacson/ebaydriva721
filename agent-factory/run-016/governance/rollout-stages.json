@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "1.0",
+  "stages": [
+    {"gate":"G3","status":"PASS","scope":"Deterministic fixture simulation, topology, contracts, registry, safety and garbage-filter tests; zero external actions."},
+    {"gate":"G4","status":"READY_NOT_RUN","scope":"Bounded public-source shadow run with real source URLs, transcript extraction, model outputs, costs, source-health telemetry, independent QA, and no delivery."},
+    {"gate":"G5","status":"BLOCKED_ON_G4","scope":"Controlled owner-visible delivery rehearsal to one verified recipient and one channel under fresh authority; rollback and failure rehearsal required."},
+    {"gate":"G6","status":"BLOCKED_ON_G5","scope":"Controlled Live promotion only after measured accuracy, false-alert rate, cost, source coverage, Run009/Run008 handoffs, incident ownership, and backup/restore evidence pass."}
+  ],
+  "activeNow": false,
+  "scheduledNow": false,
+  "deliveryNow": false
+}

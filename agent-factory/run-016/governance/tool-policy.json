@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "1.0",
+  "status": "G3_STAGED",
+  "allowedToolClasses": [
+    "approved public HTTP reader",
+    "approved feed and transcript reader",
+    "deterministic parser, normalizer, dedupe, taxonomy, scoring, and renderer",
+    "bounded model runtime for registered analyst contracts",
+    "append-only evidence and receipt store"
+  ],
+  "prohibitedToolClasses": [
+    "private-account browser automation",
+    "credential discovery or reuse outside approved connectors",
+    "paywalled or access-control circumvention",
+    "unapproved messaging, notification, or publishing connector",
+    "purchase, billing, infrastructure provisioning, deletion, or production-mutation tool",
+    "weapon design, targeting, evasion, or tactical operational tool"
+  ],
+  "activationRequirements": [
+    "Concrete tool and source identifier",
+    "Credentials owner",
+    "Data and retention policy",
+    "Terms-of-use and rate-limit review",
+    "Per-run and daily cost ceiling",
+    "Timeout and retry classification",
+    "One passing G4 shadow run",
+    "Fresh owner approval for any external delivery"
+  ],
+  "currentConnectedTools": [],
+  "currentCredentials": []
+}
+

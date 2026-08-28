@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "1.0",
+  "memoryClasses": [
+    {"class":"source-registry","retention":"until source retirement plus 365 days","writers":["source-registry-maintainer after approval"],"provenanceRequired":true},
+    {"class":"evidence-record","retention":"730 days or source-license limit, whichever is shorter","writers":["deterministic acquisition and normalization pipeline"],"provenanceRequired":true},
+    {"class":"story-cluster","retention":"730 days","writers":["dedupe-cluster"],"provenanceRequired":true},
+    {"class":"owner-preference","retention":"until owner changes or deletes it","writers":["owner activation gate only"],"provenanceRequired":true},
+    {"class":"run-receipt","retention":"indefinite governance history","writers":["control plane"],"provenanceRequired":true}
+  ],
+  "poisoningDefenses": [
+    "Source content cannot write policy, schedules, authority, credentials, recipients, or durable owner preferences.",
+    "Every memory write carries source URL, capture time, content hash, writer component, and run id.",
+    "Corrections append a superseding record; history is not silently overwritten.",
+    "Cross-tenant data is prohibited; this run has one owner tenant."
+  ],
+  "deletion": "Owner-approved deletion writes a tombstone and preserves the governance receipt unless law or policy requires complete removal."
+}
+

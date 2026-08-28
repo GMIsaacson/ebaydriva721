@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "1.0",
+  "runId": "WORLD-TECHNOLOGY-INTELLIGENCE-016",
+  "teamId": "WORLD-TECHNOLOGY-INTELLIGENCE-TEAM-016",
+  "gate": "G3",
+  "status": "PASS",
+  "executedAt": "2026-08-28",
+  "testsPassed": 20,
+  "testsTotal": 20,
+  "externalActions": 0,
+  "spendCents": 0,
+  "validatedBehaviors": [
+    "priced and orderable robotics development qualifies for urgent review",
+    "direct Emad-style statement alerts quickly while remaining explicitly attributed rather than externally verified",
+    "unsupported repost of a firsthand claim is rejected",
+    "duplicates require a material delta",
+    "stale and sourceless items are rejected",
+    "independent-source ownership is enforced",
+    "preliminary medicine evidence retains stage and regulator status",
+    "public defense capability summaries are allowed while tactical instruction is rejected",
+    "untrusted source directives cannot change policy",
+    "price basis and direct evidence are mandatory",
+    "low-significance noise is rejected",
+    "new fields route to emerging-unclassified",
+    "coverage blind spots remain visible and completeness is never falsely claimed",
+    "unavailable sources dead-letter safely",
+    "batch volume and cost ceiling kills before processing"
+  ],
+  "defectsDetectedAndRepaired": [
+    "The initial direct-statement threshold delayed a weighted 89.5 high-priority firsthand event into the daily brief. The governed threshold was set to 88 while preserving the firsthand-not-verified label and direct-primary-source requirement."
+  ],
+  "nextGate": "G4 bounded public-source shadow qualification with real source URLs, model runtime, measured cost, source-health telemetry, and no notifications"
+}
+

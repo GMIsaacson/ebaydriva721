@@ -1,0 +1,86 @@
+{
+  "teamName": "World Technology Intelligence Team",
+  "purpose": "Continuously detect, verify, rank, and brief material public developments across every technology domain while preserving source provenance, prices and availability where reported, and rejecting stale, duplicated, unsupported, promotional, or operationally unsafe material.",
+  "domain": "world-technology-intelligence",
+  "topologyMode": "hybrid",
+  "governance": {
+    "mode": "RUN",
+    "a0Decision": {
+      "decisionId": "A0-WTI-016-001",
+      "status": "PASS",
+      "verdict": "NEW",
+      "owner": "Aberdeen Technologies",
+      "decidedAt": "2026-08-28",
+      "reuseEvidence": [
+        "Factory Core v1.2.0 reviewed",
+        "OPS-CORE-008 reviewed for operations reuse",
+        "PUB-ENG-009 reviewed for publishing reuse",
+        "SW-PROD-014 reviewed for implementation reuse",
+        "UIX-TEAM-015 reviewed for future presentation reuse"
+      ],
+      "residualUnownedLoop": "Public technology signals to verified urgent alerts and comprehensive daily intelligence remains unowned."
+    }
+  },
+  "requestedRunNumber": 16,
+  "existingRunNumbers": [4, 5, 6, 8, 9, 14, 15],
+  "reservedRunNumbers": [13],
+  "authority": {
+    "maxExternalActions": 0,
+    "maxSpendCents": 0,
+    "deploy": false,
+    "allowedActions": [
+      "read approved public-source fixtures",
+      "write local evidence",
+      "prepare typed downstream handoff packages"
+    ]
+  },
+  "capabilities": [
+    {"id":"control","name":"Intelligence Control Plane","componentType":"workflow","role":"orchestrator","responsibility":"Own scheduled and event-driven run identity, bounded retries, cancellation, typed routing, terminal states, and authority accounting."},
+    {"id":"source-registry","name":"Source Registry","componentType":"data-store","role":"capability","responsibility":"Store approved sources, ownership, domain coverage, reliability tier, retrieval method, review cadence, and active or paused state."},
+    {"id":"source-acquisition","name":"Public Source Acquisition","componentType":"software","role":"capability","responsibility":"Collect only approved public pages, feeds, transcripts, papers, filings, registries, and announcements under rate and freshness limits."},
+    {"id":"media-extraction","name":"Media and Transcript Extraction","componentType":"software","role":"capability","responsibility":"Extract attributable text and metadata from supported public video, audio, document, and web inputs without inventing unavailable content."},
+    {"id":"event-normalizer","name":"Technology Event Normalizer","componentType":"software","role":"capability","responsibility":"Normalize each signal into a source-attributed event with actor, action, object, place, time, price, availability, evidence tier, and claim mode."},
+    {"id":"dedupe-cluster","name":"Duplicate and Story Clusterer","componentType":"software","role":"capability","responsibility":"Collapse repeated coverage and updates into canonical story clusters while preserving every source and material delta."},
+    {"id":"taxonomy-router","name":"Universal Technology Taxonomy Router","componentType":"software","role":"capability","responsibility":"Route events across the governed technology taxonomy and retain an emerging-or-unclassified escape hatch for genuinely new fields."},
+    {"id":"evidence-store","name":"Provenance Evidence Store","componentType":"data-store","role":"capability","responsibility":"Retain immutable source snapshots, hashes, timestamps, extraction metadata, claim links, corrections, and retention status."},
+    {"id":"general-tech-analyst","name":"General Technology Systems Analyst","componentType":"agent","role":"capability","responsibility":"Interpret verified AI, computing, semiconductors, robotics, autonomy, energy, space, manufacturing, materials, mobility, telecom, quantum, cybersecurity, climate, agriculture, construction, and consumer technology evidence."},
+    {"id":"medicine-life-sciences-analyst","name":"Medicine and Life Sciences Analyst","componentType":"agent","role":"capability","responsibility":"Interpret verified medicine, medical-device, biotech, genomics, clinical-trial, regulatory, and health-system evidence without giving medical advice or upgrading preliminary claims."},
+    {"id":"defense-dual-use-analyst","name":"Defense and Dual-Use Technology Analyst","componentType":"agent","role":"capability","responsibility":"Interpret public evidence about battlefield, drone, electronic-warfare, counter-drone, logistics, sensing, autonomy, and dual-use capabilities without producing tactical operational instructions."},
+    {"id":"cross-domain-synthesis","name":"Cross-Domain Synthesis Analyst","componentType":"agent","role":"capability","responsibility":"Identify connections, second-order effects, competing approaches, adoption constraints, and changes since the prior verified state across specialist analyses."},
+    {"id":"claim-verifier","name":"Claim and Price Verification Desk","componentType":"decision-support","role":"capability","responsibility":"Check claim mode, source independence, primary evidence, dates, availability, currency, geography, quantity, and uncertainty; distinguish a person's statement from an externally verified fact."},
+    {"id":"significance-scorer","name":"Novelty and Significance Scorer","componentType":"software","role":"capability","responsibility":"Score novelty, consequence, evidence confidence, immediacy, adoption readiness, price relevance, and owner-defined watch priority using deterministic rules."},
+    {"id":"coverage-auditor","name":"Technology Coverage Auditor","componentType":"software","role":"capability","responsibility":"Measure source and event coverage across every governed domain, flag blind spots and silent-source failures, and preserve an unclassified queue."},
+    {"id":"independent-intelligence-qa","name":"Independent Intelligence Quality Gate","componentType":"decision-support","role":"assurance","independentAssurance":true,"responsibility":"Reject unsupported success claims, promotional noise, duplicates without material delta, stale evidence, missing provenance, unsafe operational detail, false price precision, and incomplete domain coverage accounting."},
+    {"id":"brief-renderer","name":"Evidence-Linked Brief Renderer","componentType":"software","role":"capability","responsibility":"Render scannable daily and on-demand briefs with what happened, who built what where, cost and availability when known, why it matters, confidence, caveats, and direct evidence links."},
+    {"id":"urgent-alert-gate","name":"Urgent Technology Alert Gate","componentType":"decision-support","role":"capability","responsibility":"Recommend immediate notification only for high-significance, sufficiently verified, genuinely new developments; otherwise route to daily brief or watchlist."},
+    {"id":"run009-publishing-adapter","name":"Run 009 Publishing Adapter","componentType":"service","role":"capability","responsibility":"Prepare a typed publication package for PUB-ENG-009 without claiming downstream acceptance, publishing, or delivery."},
+    {"id":"owner-activation","name":"Owner Activation and Notification Approval","componentType":"human-gate","role":"approval","responsibility":"Approve connectors, recipients, cadence, spend ceiling, and any future notification or publication authority before activation."},
+    {"id":"run008-operations-adapter","name":"Run 008 Operations Adapter","componentType":"service","role":"capability","responsibility":"Prepare terminal receipts, dead-letter items, source-health signals, and typed ops_handoff_v1 for OPS-CORE-008 without claiming downstream execution."}
+  ],
+  "handoffs": [
+    {"from":"control","to":"source-registry","contract":"intelligence_run_request_v1"},
+    {"from":"source-registry","to":"source-acquisition","contract":"approved_source_batch_v1"},
+    {"from":"source-acquisition","to":"media-extraction","contract":"raw_source_capture_v1"},
+    {"from":"media-extraction","to":"event-normalizer","contract":"attributed_extraction_v1"},
+    {"from":"event-normalizer","to":"dedupe-cluster","contract":"normalized_technology_event_v1"},
+    {"from":"dedupe-cluster","to":"taxonomy-router","contract":"canonical_story_cluster_v1"},
+    {"from":"taxonomy-router","to":"evidence-store","contract":"classified_evidence_record_v1"},
+    {"from":"evidence-store","to":"general-tech-analyst","contract":"general_technology_evidence_pack_v1"},
+    {"from":"evidence-store","to":"medicine-life-sciences-analyst","contract":"medicine_life_sciences_evidence_pack_v1"},
+    {"from":"evidence-store","to":"defense-dual-use-analyst","contract":"defense_dual_use_evidence_pack_v1"},
+    {"from":"general-tech-analyst","to":"cross-domain-synthesis","contract":"general_technology_analysis_v1"},
+    {"from":"medicine-life-sciences-analyst","to":"cross-domain-synthesis","contract":"medicine_life_sciences_analysis_v1"},
+    {"from":"defense-dual-use-analyst","to":"cross-domain-synthesis","contract":"defense_dual_use_analysis_v1"},
+    {"from":"evidence-store","to":"claim-verifier","contract":"claim_evidence_index_v1"},
+    {"from":"cross-domain-synthesis","to":"claim-verifier","contract":"candidate_intelligence_items_v1"},
+    {"from":"claim-verifier","to":"significance-scorer","contract":"verified_intelligence_items_v1"},
+    {"from":"significance-scorer","to":"coverage-auditor","contract":"scored_intelligence_items_v1"},
+    {"from":"coverage-auditor","to":"independent-intelligence-qa","contract":"coverage_and_quality_packet_v1"},
+    {"from":"independent-intelligence-qa","to":"brief-renderer","contract":"approved_brief_items_v1"},
+    {"from":"independent-intelligence-qa","to":"urgent-alert-gate","contract":"approved_alert_candidates_v1"},
+    {"from":"brief-renderer","to":"run009-publishing-adapter","contract":"technology_brief_package_v1"},
+    {"from":"urgent-alert-gate","to":"owner-activation","contract":"notification_activation_request_v1"},
+    {"from":"run009-publishing-adapter","to":"run008-operations-adapter","contract":"publication_terminal_receipt_v1"},
+    {"from":"owner-activation","to":"run008-operations-adapter","contract":"activation_decision_receipt_v1"}
+  ]
+}

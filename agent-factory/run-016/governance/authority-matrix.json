@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "1.0",
+  "runId": "WORLD-TECHNOLOGY-INTELLIGENCE-016",
+  "standingAuthority": "Observe and Recommend",
+  "allowed": [
+    "Read approved public-source fixtures during G3",
+    "Normalize, deduplicate, classify, score, and summarize locally",
+    "Write source-attributed evidence and test receipts in the approved branch",
+    "Prepare typed Run009 and Run008 handoff packages"
+  ],
+  "prohibited": [
+    "Send notifications or messages",
+    "Publish externally",
+    "Buy products, subscriptions, data, or infrastructure",
+    "Access private accounts or restricted data",
+    "Circumvent access controls or terms of use",
+    "Give medical advice",
+    "Generate tactical weapon, targeting, evasion, or operational instructions",
+    "Delete data or mutate production systems",
+    "Treat scheduled execution as successful delivery"
+  ],
+  "machineLimits": {
+    "maxExternalActions": 0,
+    "maxSpendCents": 0,
+    "maxG3ItemsPerBatch": 100,
+    "maxRetryAttempts": 2,
+    "notificationAuthorized": false,
+    "publishAuthorized": false
+  },
+  "activationGate": "Fresh owner approval naming sources, connectors, recipients, cadence, timezone, action ceiling, spend ceiling, and environment after G4 PASS."
+}
+
