@@ -1,0 +1,14 @@
+{
+  "schemaVersion": "1.0",
+  "handoffType": "ops_handoff_v1",
+  "assignmentId": "SW-PROD-014-A-001",
+  "sourceRunId": "SW-PROD-014",
+  "targetRunId": "OPS-CORE-008",
+  "artifact": "Factory Core v1.2.0-rc1",
+  "operationRequested": "None until owner review and merge.",
+  "observability": "GitHub pull-request checks plus deterministic local test evidence.",
+  "rollback": "Revert the release commit.",
+  "authority": {"externalActions":0,"spendCents":0,"deploy":false,"merge":false},
+  "targetAcceptance": "NOT_PROVEN",
+  "targetExecution": "NOT_PROVEN"
+}

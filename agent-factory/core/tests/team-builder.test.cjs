@@ -148,6 +148,83 @@ test('neutral-domain TEST build contains no eBay or Alibaba template leakage', (
   assert.ok(compiled.manifest.agents.some((agent) => agent.name === 'Evidence and Quality Auditor'));
 });
 
+test('hybrid mode compiles explicit component types without converting deterministic work into agents', () => {
+  const compiled = builder.compileTeam(baseRequest({
+    topologyMode: 'hybrid',
+    capabilities: [
+      { id: 'control', name: 'Pipeline Control', componentType: 'workflow', role: 'orchestrator', responsibility: 'Route typed work and terminal states.' },
+      { id: 'collect', name: 'Source Collector', componentType: 'software', role: 'capability', responsibility: 'Collect approved public source records deterministically.' },
+      { id: 'store', name: 'Evidence Store', componentType: 'data-store', role: 'capability', responsibility: 'Retain source-attributed evidence and provenance.' },
+      { id: 'analyst', name: 'Technology Analyst', componentType: 'agent', role: 'capability', responsibility: 'Interpret verified evidence within the bounded assignment.' },
+      { id: 'qa', name: 'Independent Evidence QA', componentType: 'decision-support', role: 'assurance', independentAssurance: true, responsibility: 'Fail closed on unsupported, stale, duplicated, or low-value claims.' },
+      { id: 'approval', name: 'Owner Approval', componentType: 'human-gate', role: 'approval', responsibility: 'Approve any later expansion of authority.' },
+    ],
+    handoffs: [
+      { from: 'control', to: 'collect', contract: 'source_request_v1' },
+      { from: 'collect', to: 'store', contract: 'evidence_record_v1' },
+      { from: 'store', to: 'analyst', contract: 'verified_evidence_pack_v1' },
+      { from: 'analyst', to: 'qa', contract: 'candidate_brief_v1' },
+      { from: 'qa', to: 'approval', contract: 'approval_packet_v1' },
+    ],
+  }), { now: '2026-08-28T00:00:00Z' });
+  assert.equal(compiled.manifest.topologyMode, 'hybrid');
+  assert.equal(compiled.manifest.components.length, 6);
+  assert.equal(compiled.manifest.agents.length, 1);
+  assert.equal(compiled.manifest.agents[0].name, 'Technology Analyst');
+  assert.equal(compiled.manifest.components.find((item) => item.capabilityId === 'collect').componentType, 'software');
+  assert.equal(compiled.manifest.components.find((item) => item.capabilityId === 'qa').componentType, 'decision-support');
+  assert.equal(compiled.receipt.componentCount, 6);
+  assert.equal(compiled.receipt.agentCount, 1);
+  assert.deepEqual(compiled.contract.componentTypes, ['workflow', 'software', 'data-store', 'agent', 'decision-support', 'human-gate']);
+});
+
+test('hybrid mode fails closed when component classification is omitted', () => {
+  assert.throws(() => builder.compileTeam(baseRequest({
+    topologyMode: 'hybrid',
+    capabilities: [
+      { id: 'control', name: 'Control', componentType: 'workflow', role: 'orchestrator' },
+      { id: 'mystery', name: 'Mystery Work', role: 'capability' },
+    ],
+    handoffs: [{ from: 'control', to: 'mystery', contract: 'bounded_task_v1' }],
+  })), /componentType must be one of/);
+});
+
+test('hybrid mode requires independent assurance and an acyclic reachable graph', () => {
+  const request = baseRequest({
+    topologyMode: 'hybrid',
+    capabilities: [
+      { id: 'control', name: 'Control', componentType: 'workflow', role: 'orchestrator' },
+      { id: 'build', name: 'Build', componentType: 'software', role: 'capability' },
+      { id: 'qa', name: 'QA', componentType: 'software', role: 'assurance', independentAssurance: true },
+    ],
+    handoffs: [
+      { from: 'control', to: 'build', contract: 'task_v1' },
+      { from: 'build', to: 'qa', contract: 'evidence_v1' },
+      { from: 'qa', to: 'build', contract: 'repair_v1' },
+    ],
+  });
+  assert.throws(() => builder.compileTeam(request), /must be acyclic/);
+  request.capabilities[2].independentAssurance = false;
+  request.handoffs.pop();
+  assert.throws(() => builder.compileTeam(request), /independent assurance/);
+});
+
+test('generic synthetic runner refuses to impersonate a hybrid runtime', () => {
+  const compiled = builder.compileTeam(baseRequest({
+    topologyMode: 'hybrid',
+    capabilities: [
+      { id: 'control', name: 'Control', componentType: 'workflow', role: 'orchestrator' },
+      { id: 'check', name: 'Check', componentType: 'software', role: 'capability' },
+      { id: 'qa', name: 'QA', componentType: 'software', role: 'assurance', independentAssurance: true },
+    ],
+    handoffs: [
+      { from: 'control', to: 'check', contract: 'task_v1' },
+      { from: 'check', to: 'qa', contract: 'evidence_v1' },
+    ],
+  }));
+  assert.throws(() => runner.runTeam(compiled.manifest, goodPacket()), /run-specific runtime/);
+});
+
 test('synthetic Document QA TEST team executes through independent QA and DELIVERS clean packet', () => {
   const compiled = builder.compileTeam(baseRequest(), { now: '2026-08-22T18:00:00Z' });
   const result = runner.runTeam(compiled.manifest, goodPacket(), { asOf: '2026-08-22T18:00:00Z', now: '2026-08-22T18:00:00Z' });

@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "1.0",
+  "assignmentId": "SW-PROD-014-A-001",
+  "title": "Factory Core hybrid topology extension",
+  "owner": "Aberdeen Technologies",
+  "a0DecisionId": "A0-FACTORY-CORE-004",
+  "problem": "Factory Core v1.1.0 converts every declared capability into an agent, even when software, a workflow, a data store, a service, decision support, or a human approval gate is the safer and more efficient mechanism.",
+  "outcome": "Factory A0 can compile explicit hybrid topologies while preserving legacy requests and zero standing external authority.",
+  "acceptanceCriteria": [
+    "Hybrid requests require an explicit component type for every capability.",
+    "Only components declared as agent appear in the manifest agents collection.",
+    "Software, workflow, decision-support, data-store, service, and human-gate identities are preserved.",
+    "Exactly one orchestrator and at least one independent assurance component are required.",
+    "Handoffs reference known components, are typed, reachable from the orchestrator, and acyclic.",
+    "Legacy agent-team requests retain their existing behavior.",
+    "The generic synthetic runner fails closed on hybrid manifests.",
+    "All Factory Core, A0, and reserved Run 013 tests pass with zero external actions and zero spend."
+  ],
+  "authority": {
+    "approvedWorkspace": "GMIsaacson/ebaydriva721 review branch only",
+    "externalActions": 0,
+    "spendCents": 0,
+    "deploy": false,
+    "merge": false
+  }
+}
+
