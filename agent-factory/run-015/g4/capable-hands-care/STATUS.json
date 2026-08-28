@@ -1,0 +1,12 @@
+{
+  "assignmentId": "UIX-G4-CHC-001",
+  "artifactQuality": "PASS_PRODUCTION",
+  "uix100": 92.7,
+  "functionalPreservation": "PASS",
+  "functionalChecks": "21/21",
+  "formalGate": "G4",
+  "formalGateStatus": "REVISE_EVIDENCE",
+  "nextRequiredEvidence": "capture live before screenshots at desktop/tablet/mobile in a network-enabled trusted browser runtime",
+  "externalActions": 0,
+  "spendCents": 0
+}
