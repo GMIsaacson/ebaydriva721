@@ -1,0 +1,19 @@
+{
+  "assignmentId": "UIX-G4-CHC-001",
+  "artifact": "Capable Hands Care non-production redesign",
+  "sourceFile": "index.html",
+  "sourceSha256": "9da6cd4044976d0c862684ed851d44b49948532a6beed6fbd19037408c9e26a2",
+  "sourceBytes": 28489,
+  "renderedEvidence": {
+    "desktop": {"sha256":"7a66fbdc119b189aa7b7c4ec242e4bd22e1f280afd4b5d580e443a78933f3d81","bytes":691567},
+    "tablet": {"sha256":"b8914a802acfdd4bf89032e7ccf6b83667fef81e745c9fb9c41b796486ef5157","bytes":708650},
+    "mobile": {"sha256":"10634c06e6cf66a1b4918bb3a88985cae72f192fe741e6a6ae3ef8e04b533ab0","bytes":717360}
+  },
+  "bundle": "capable-hands-uix-g4.zip",
+  "functionalEquivalence": "21/21 PASS",
+  "UIX100": 92.7,
+  "artifactVerdict": "PASS_PRODUCTION",
+  "formalG4State": "REVISE_EVIDENCE",
+  "externalActions": 0,
+  "spendCents": 0
+}
