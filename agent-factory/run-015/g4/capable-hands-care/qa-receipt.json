@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "1.0",
+  "assignmentId": "UIX-G4-CHC-001",
+  "reviewerRole": "independent-visual-qa",
+  "implementationArtifact": "index.html",
+  "functionalChecks": "21/21 PASS",
+  "afterViewportEvidence": ["desktop", "tablet", "mobile"],
+  "afterQualityScore": 92.7,
+  "artifactVerdict": "PASS_PRODUCTION",
+  "g4TerminalState": "REVISE_EVIDENCE",
+  "blockingEvidence": ["live before screenshot — desktop", "live before screenshot — tablet", "live before screenshot — mobile"],
+  "unresolvedCriticalUIDefects": [],
+  "unauthorizedBusinessLogicChanges": 0,
+  "externalActions": 0,
+  "spendCents": 0
+}
