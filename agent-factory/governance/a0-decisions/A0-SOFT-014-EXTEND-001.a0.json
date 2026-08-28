@@ -1,0 +1,46 @@
+{
+  "decision_id": "A0-SOFT-014-EXTEND-001",
+  "status": "PASS",
+  "verdict": "EXTEND",
+  "owner": "Aberdeen Technologies",
+  "decided_at": "2026-08-28",
+  "business_outcome": "Strengthen existing Run 014 Software Product Engineering so approved website/product creative briefs are implemented coherently, faithfully, responsively, accessibly, and with browser/screenshot evidence, without moving commercial creative ownership into Run 014 or duplicating Run 015.",
+  "existing_owner_scan": "Run 014 already owns software implementation, deterministic testing, security/dependency review, release packaging and controlled handoff. Website Business owns website commercial/creative strategy. Run 015 is frozen after qualification experiments. The observed residual gap is implementation fidelity and executable QA inside Run 014: oversized single-response artifacts, fragmented source drift, bad links/selectors, weak browser interaction proof, insufficient screenshot-aware implementation QA, and repair-loop weakness.",
+  "reuse_candidates_checked": [
+    "Run 014 Software Product Engineering Team",
+    "Website Business Team commercial/creative website capability",
+    "existing Factory browser/screenshot renderer",
+    "Factory-wide Challenger / QA",
+    "Run 015 evidence/tooling lessons (code patterns only; no creative ownership transfer)"
+  ],
+  "duplication_analysis": "EXTEND Run 014 rather than create another team. Website Business remains upstream creative owner. Run 014 receives an approved creative/design handoff and may not reinterpret art direction except where implementation constraints require an explicit exception. New visual review is limited to implementation fidelity, rendered defects, accessibility, responsiveness, and release readiness; it is not an art-direction or benchmark-generation role.",
+  "residual_unowned_loop": "Approved creative handoff -> coherent multi-file implementation -> deterministic source integrity -> browser E2E -> screenshot-aware implementation QA -> bounded repair -> release-candidate package.",
+  "evidence_ref": "Owner instruction 2026-08-28; Capable Hands pre-015 A/B experiment; Run 014 receipts WC-20260828223844-247e88d765 and subsequent implementation/repair/QA receipts; observed clipped artifact transport, CSS/class drift, wrong URLs, nonfunctional mobile menu, malformed CSS, contrast/layout defects.",
+  "covers_paths": [
+    "agent-factory/run-014",
+    "agent-factory/governance/a0-decisions/A0-SOFT-014-EXTEND-001.a0.json",
+    "agent-factory/run-015/FREEZE-STATUS.json",
+    "agent-factory/run-015/team-manifest.json",
+    "agent-factory/run-015/OPERATING-CONTRACT.md"
+  ],
+  "authority": {
+    "environment": "controlled-live/internal-workspace",
+    "external_actions": 0,
+    "max_spend_cents": 0,
+    "deploy": false,
+    "publish": false,
+    "production_deploy": false,
+    "production_data": false,
+    "customer_contact": false,
+    "standing_external_authority": "none"
+  },
+  "promotion_constraints": [
+    "Run 014 web implementation v2 requires an approved upstream creative/design handoff.",
+    "Run 014 may not silently reinterpret approved art direction or commercial positioning.",
+    "Implementation cannot self-approve.",
+    "Artifact source-integrity, exact-link, browser, responsive and screenshot-aware implementation QA must pass before release-candidate handoff.",
+    "Repair cycles must be defect-targeted and preserve approved creative direction.",
+    "Preview deployment remains a separate approval-gated action.",
+    "Run 015 remains frozen and non-runnable until a fresh owner-approved reactivation decision."
+  ]
+}
