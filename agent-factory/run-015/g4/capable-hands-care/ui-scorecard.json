@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "1.0",
+  "assignmentId": "UIX-G4-CHC-001",
+  "scoreSystem": "UIX-100-v1",
+  "scores": {
+    "visualHierarchy": 94,
+    "typography": 92,
+    "layoutSpacing": 93,
+    "componentQuality": 92,
+    "uxClarity": 96,
+    "interactionPolish": 90,
+    "responsiveExecution": 91,
+    "brandDistinction": 93,
+    "accessibility": 92,
+    "statesAndFeedback": 90
+  },
+  "weightedScore": 92.7,
+  "criticalDimensionMinimum": 90,
+  "criticalDimensionsPass": true,
+  "artifactQualityVerdict": "PASS_PRODUCTION",
+  "formalG4PromotionVerdict": "REVISE_EVIDENCE",
+  "reason": "The redesigned artifact clears UIX-100 production quality and 21/21 functional-preservation checks. Formal G4 promotion remains blocked only because the trusted runtime could not capture the mandatory live before screenshots at all three viewports.",
+  "externalActions": 0,
+  "spendCents": 0
+}
