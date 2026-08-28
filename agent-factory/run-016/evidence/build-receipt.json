@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "1.2",
+  "status": "BUILT_STAGED",
+  "governanceMode": "RUN",
+  "runId": "WORLD-TECHNOLOGY-INTELLIGENCE-016",
+  "testId": null,
+  "teamId": "WORLD-TECHNOLOGY-INTELLIGENCE-TEAM-016",
+  "runNumber": 16,
+  "a0DecisionId": "A0-WTI-016-001",
+  "requestSha256": "2e7afbf68ccf2db207d61290861df6c73b038db1871aab7900c49d792713684a",
+  "roleCount": 21,
+  "capabilityCount": 21,
+  "componentCount": 21,
+  "agentCount": 4,
+  "externalActionsPerformed": 0,
+  "spendCents": 0,
+  "builtAt": "2026-08-28T22:39:45.335Z"
+}

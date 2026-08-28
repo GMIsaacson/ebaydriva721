@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "1.0",
+  "contract": "technology_brief_package_v1",
+  "requiredSections": [
+    "urgentSinceLastBrief",
+    "topDevelopments",
+    "whoBuiltWhatWhere",
+    "pricesAndAvailability",
+    "medicineAndLifeSciences",
+    "defenseAndBattlefieldTechnology",
+    "domainCoverage",
+    "watchlist",
+    "rejectedNoiseSummary",
+    "sourceHealth",
+    "methodAndCaveats"
+  ],
+  "requiredPerItem": [
+    "headline", "whatHappened", "actor", "technology", "location", "eventAt",
+    "whyItMatters", "confidence", "claimMode", "evidenceLinks", "newSincePriorState"
+  ],
+  "conditionalPerItem": [
+    "price", "availability", "clinicalStage", "regulatoryStatus", "publicCapabilitySummary"
+  ],
+  "successRule": "Every delivered item passes independent QA and has direct evidence links; missing fields are stated as unknown rather than inferred."
+}
+

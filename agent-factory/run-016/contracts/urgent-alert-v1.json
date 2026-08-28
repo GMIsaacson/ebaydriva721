@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "1.0",
+  "contract": "technology_urgent_alert_v1",
+  "required": [
+    "eventId", "headline", "whatChanged", "whyNow", "actor", "technology", "location",
+    "publishedAt", "observedAt", "score", "confidence", "claimMode", "evidenceStatus",
+    "evidenceLinks", "caveat", "notificationAuthorized"
+  ],
+  "rule": "At G3 notificationAuthorized is always false. Activation requires the owner gate, verified recipients, connected delivery channel, and G4 end-to-end evidence."
+}
+

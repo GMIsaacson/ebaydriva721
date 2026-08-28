@@ -1,0 +1,23 @@
+{
+  "decision_id": "A0-WTI-016-001",
+  "status": "PASS",
+  "verdict": "NEW",
+  "owner": "Aberdeen Technologies",
+  "decided_at": "2026-08-28",
+  "business_outcome": "Continuously detect, verify, rank, and brief material public developments across the full technology landscape, including builders, products, capabilities, availability, pricing, medicine, robotics, AI, energy, space, manufacturing, and public battlefield technology, without flooding the owner with unsupported or repetitive noise.",
+  "existing_owner_scan": "Reviewed Factory Core v1.2.0, Run 008 Operations Core, Run 009 Publishing Engine, Run 014 Software Product Engineering Team, Run 015 UI Excellence Team, and the registered legacy opportunity, subscription, and commerce loops. Run 009 can stage publishing and Run 008 can receive operations handoffs, but no existing owner performs comprehensive technology horizon scanning, evidence verification, cross-domain synthesis, significance scoring, urgent-alert gating, and daily briefing.",
+  "reuse_candidates_checked": [
+    "Factory Core v1.2.0",
+    "OPS-CORE-008",
+    "PUB-ENG-009",
+    "SW-PROD-014",
+    "UIX-TEAM-015"
+  ],
+  "duplication_analysis": "Run016 owns intelligence collection through verified briefing only. It reuses Run009 as a publishing adapter and Run008 as an operations handoff target; it does not duplicate their runtimes. Deterministic collection, parsing, deduplication, taxonomy, scoring, coverage checks, and rendering are software/workflows rather than agents.",
+  "residual_unowned_loop": "Public technology signals -> normalized source-attributed events -> deduplicated cross-domain evidence -> specialist interpretation -> independent verification and garbage rejection -> urgent alert or comprehensive daily briefing -> staged publishing and operations receipts.",
+  "covers_paths": [
+    "agent-factory/run-016/"
+  ],
+  "evidence_ref": "agent-factory/run-016/evidence/g3-acceptance.json"
+}
+

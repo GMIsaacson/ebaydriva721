@@ -1,0 +1,48 @@
+name: Run 016 World Technology Intelligence
+
+on:
+  pull_request:
+    branches: [master]
+    paths:
+      - 'agent-factory/run-016/**'
+      - 'agent-factory/build-requests/run-016-world-technology-intelligence.json'
+      - 'agent-factory/governance/a0-decisions/A0-WTI-016-001.a0.json'
+      - '.github/workflows/run-016-world-tech-intelligence.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  run-016-g3:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out PR head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Check runtime syntax
+        run: node --check agent-factory/run-016/runtime/intelligence-gate.cjs
+
+      - name: Run G3 intelligence gate tests
+        run: node --test agent-factory/run-016/tests/*.test.cjs
+
+      - name: Validate topology and registry
+        run: |
+          node - <<'NODE'
+          const manifest = require('./agent-factory/run-016/team-manifest.json');
+          const registry = require('./agent-factory/run-016/registry/operational-registry.json');
+          if (manifest.factoryCoreVersion !== '1.2.0') throw new Error('Factory Core v1.2.0 required');
+          if (manifest.topologyMode !== 'hybrid') throw new Error('Hybrid topology required');
+          if (manifest.components.length !== 21) throw new Error('Expected 21 explicit components');
+          if (manifest.agents.length !== 4) throw new Error('Expected exactly four reasoning agents');
+          if (registry.agents.length !== 4) throw new Error('Every operational agent must be registered');
+          if (manifest.authority.maxExternalActions !== 0 || manifest.authority.maxSpendCents !== 0) throw new Error('G3 authority must remain zero');
+          console.log('Run016 topology and registry PASS');
+          NODE

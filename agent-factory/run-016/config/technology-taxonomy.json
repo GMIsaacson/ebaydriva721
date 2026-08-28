@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "1.0",
+  "domains": [
+    {"id":"ai-software","name":"AI and Software"},
+    {"id":"computing-semiconductors","name":"Computing and Semiconductors"},
+    {"id":"robotics-autonomy","name":"Robotics and Autonomy"},
+    {"id":"drones-aerospace","name":"Drones and Aerospace"},
+    {"id":"defense-dual-use","name":"Defense and Dual-Use Technology"},
+    {"id":"medicine-healthcare","name":"Medicine and Healthcare"},
+    {"id":"biotech-synthetic-biology","name":"Biotech and Synthetic Biology"},
+    {"id":"energy-storage","name":"Energy Generation and Storage"},
+    {"id":"climate-environment","name":"Climate and Environmental Technology"},
+    {"id":"manufacturing-industrial","name":"Manufacturing and Industrial Technology"},
+    {"id":"materials-nanotechnology","name":"Materials and Nanotechnology"},
+    {"id":"space-systems","name":"Space Systems"},
+    {"id":"telecom-networking","name":"Telecommunications and Networking"},
+    {"id":"quantum-photonics","name":"Quantum and Photonics"},
+    {"id":"mobility-transportation","name":"Mobility and Transportation"},
+    {"id":"agriculture-food","name":"Agriculture and Food Technology"},
+    {"id":"construction-infrastructure","name":"Construction and Infrastructure Technology"},
+    {"id":"cybersecurity-privacy","name":"Cybersecurity and Privacy"},
+    {"id":"consumer-hci","name":"Consumer Technology and Human-Computer Interaction"},
+    {"id":"science-instruments","name":"Scientific Instruments and Research Infrastructure"},
+    {"id":"emerging-unclassified","name":"Emerging or Unclassified Technology"}
+  ],
+  "coverageRule": "No finite taxonomy proves total coverage. Every run reports domain blind spots, silent sources, and the emerging-unclassified queue rather than claiming that nothing was missed."
+}
+

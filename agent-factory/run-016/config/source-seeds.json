@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "1.0",
+  "activationStatus": "STAGED_NOT_CONNECTED",
+  "subjectWatches": [
+    {
+      "id": "emad-mostaque",
+      "name": "Emad Mostaque",
+      "priority": "high",
+      "topics": ["AI", "robotics", "autonomy", "economics", "open technology"],
+      "sourceFamilies": [
+        "Direct public statements and official Intelligent Internet material",
+        "Full-length public podcast and conference appearances",
+        "Host-published transcripts and video descriptions",
+        "Independent reporting used for corroboration"
+      ],
+      "rule": "Track every attributable public appearance, but alert only on a material new claim or capability; do not repeat clips or derivative summaries without a material delta."
+    }
+  ],
+  "domainSourceFamilies": [
+    "Official vendors and project documentation",
+    "Research papers, datasets, and conference proceedings",
+    "Government, regulator, procurement, patent, and trial registries",
+    "Major independent newsrooms and specialist trade publications",
+    "Public defense and conflict statements plus independently sourced OSINT",
+    "Standards bodies, open-source repositories, and release records"
+  ],
+  "activationRule": "Every concrete source URL, feed, API, retrieval method, credentials owner, rate limit, and legal or terms-of-use constraint must be verified during G4 before collection is enabled."
+}
+

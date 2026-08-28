@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "1.0",
+  "runMetrics": [
+    "scheduled_runs", "started_runs", "completed_runs", "failed_runs", "killed_runs", "canceled_runs",
+    "run_latency_ms", "cost_cents", "model_calls", "tool_calls", "external_actions"
+  ],
+  "sourceMetrics": [
+    "sources_due", "sources_attempted", "sources_succeeded", "sources_failed", "source_silence_hours",
+    "items_captured", "extraction_failures", "stale_items", "dead_letters"
+  ],
+  "qualityMetrics": [
+    "duplicates_rejected", "unsupported_items_rejected", "items_by_decision", "items_by_domain",
+    "coverage_blind_spots", "unclassified_items", "correction_rate", "false_alert_rate", "evidence_link_failure_rate"
+  ],
+  "deliveryMetrics": [
+    "briefs_staged", "alerts_staged", "delivery_attempts", "delivery_confirmed", "delivery_failed",
+    "human_intervention_rate"
+  ],
+  "traceKeys": ["runId", "eventId", "storyClusterId", "sourceCaptureId", "evidenceHash", "policyVersion", "modelVersion", "handoffId"],
+  "alerts": [
+    "coverage collapses in any priority domain",
+    "priority source remains silent beyond its expected window",
+    "unsupported item passes QA",
+    "false urgent alert is confirmed",
+    "cost or volume ceiling is approached",
+    "external action is attempted without authority",
+    "dead-letter backlog exceeds the owner-approved threshold"
+  ],
+  "incidentOwner": "Aberdeen Technologies until OPS-CORE-008 accepts the handoff",
+  "g3EvidenceLocation": "agent-factory/run-016/evidence/"
+}
+
