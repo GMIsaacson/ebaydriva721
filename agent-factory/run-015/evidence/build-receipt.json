@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "1.0",
+  "status": "BUILT_STAGED_G3_PASS",
+  "governanceMode": "RUN",
+  "runId": "UIX-015",
+  "teamId": "UIX-TEAM-015",
+  "runNumber": 15,
+  "a0DecisionId": "A0-UIX-015-001",
+  "roleCount": 10,
+  "capabilityCount": 8,
+  "g3Tests": "14/14 PASS",
+  "externalActionsPerformed": 0,
+  "spendCents": 0,
+  "builtAt": "2026-08-28",
+  "builderBasis": "Factory 1 generic team core v1.1.0 + Run 015 bounded runtime"
+}

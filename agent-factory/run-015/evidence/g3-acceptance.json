@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "1.0",
+  "runId": "UIX-015",
+  "teamId": "UIX-TEAM-015",
+  "gate": "G3",
+  "status": "PASS",
+  "executedAt": "2026-08-28",
+  "testsPassed": 14,
+  "testsTotal": 14,
+  "externalActions": 0,
+  "spendCents": 0,
+  "validatedBehaviors": [
+    "100-point dimension weights sum correctly",
+    "production and exceptional thresholds",
+    "revision and rejection ranges",
+    "critical blocker override",
+    "critical-dimension minimum",
+    "mobile/tablet/desktop screenshot evidence requirement",
+    "functional-equivalence evidence requirement",
+    "failed functional-flow rejection",
+    "unapproved business-logic-change rejection",
+    "approved scope-change handling",
+    "self-approval prohibition",
+    "invalid score rejection"
+  ],
+  "nextGate": "G4 real UI shadow qualification"
+}
