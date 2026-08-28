@@ -1,0 +1,36 @@
+{
+  "assignmentId": "UIX-G4-CHC-001",
+  "functionalEquivalence": "PASS",
+  "summary": "21/21 PASS",
+  "checks": [
+    "primary phone preserved",
+    "primary email preserved",
+    "Champlin address preserved",
+    "Bloomington address preserved",
+    "business hours preserved",
+    "Individualized Home Supports represented",
+    "Respite represented",
+    "Homemaker represented",
+    "Night Supervision represented",
+    "Employment Services represented",
+    "Integrated Community Supports represented",
+    "official referral PDF path retained",
+    "career path retained",
+    "live contact path retained",
+    "no real form submission",
+    "semantic main/nav landmarks",
+    "keyboard skip link",
+    "visible focus treatment",
+    "responsive desktop/tablet/mobile breakpoints",
+    "primary controls at least 46px high",
+    "no live mutation code"
+  ],
+  "artifactHashes": {
+    "index.html": "9da6cd4044976d0c862684ed851d44b49948532a6beed6fbd19037408c9e26a2",
+    "after-desktop.png": "7a66fbdc119b189aa7b7c4ec242e4bd22e1f280afd4b5d580e443a78933f3d81",
+    "after-tablet.png": "b8914a802acfdd4bf89032e7ccf6b83667fef81e745c9fb9c41b796486ef5157",
+    "after-mobile.png": "10634c06e6cf66a1b4918bb3a88985cae72f192fe741e6a6ae3ef8e04b533ab0"
+  },
+  "externalActions": 0,
+  "spendCents": 0
+}
