@@ -1,0 +1,22 @@
+{
+  "decision_id": "A0-FACTORY-CORE-G25-005",
+  "status": "PASS",
+  "verdict": "EXTEND",
+  "owner": "Aberdeen Technologies",
+  "decided_at": "2026-08-29",
+  "business_outcome": "Prevent Factory teams from being treated as complete when workflow coverage hides missing professional disciplines or correctness-only QA.",
+  "existing_owner_scan": "Factory Core v1.2 already owns team compilation and topology governance; professional capability completeness is therefore an extension of the existing Factory Core rather than a new team.",
+  "reuse_candidates_checked": [
+    "Factory Core v1.2 team builder",
+    "hybrid topology compiler",
+    "existing independent assurance controls",
+    "A0 constitutional guard"
+  ],
+  "duplication_analysis": "No separate team is justified. G2.5 belongs in the existing compiler between structural design and G3 eligibility and reuses the existing governance path.",
+  "residual_unowned_loop": "Portfolio remediation remains open: legacy teams must be re-audited and missing canonical packages reconciled even after the compiler prevents new post-cutover gaps.",
+  "covers_paths": [
+    "agent-factory/core/professional-capability-gate.cjs",
+    "agent-factory/core/team-builder.cjs"
+  ],
+  "evidence_ref": "agent-factory/evidence/factory-wide-specialist-gap-audit-2026-08-29.md"
+}
