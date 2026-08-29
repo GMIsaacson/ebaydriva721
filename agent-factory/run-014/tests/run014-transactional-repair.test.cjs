@@ -1,0 +1,11 @@
+'use strict';
+const assert=require('assert');
+const R=require('../runtime/run014-web-implementation-executor.cjs');
+assert.equal(R.repairTransactionDecision({status:'PASS'}),'COMMIT');
+assert.equal(R.repairTransactionDecision({status:'REVISE'}),'ROLLBACK');
+assert.equal(R.repairTransactionDecision({status:'FAIL'}),'ROLLBACK');
+assert.equal(R.repairTransactionDecision(null),'ROLLBACK');
+const fs=require('fs');
+const src=fs.readFileSync(require.resolve('../runtime/run014-web-implementation-executor.cjs'),'utf8');
+for(const token of ['lastGoodHtml','lastGoodCss','transaction-rejected','transaction-rollback-','Repair Transaction','ROLLED_BACK']) assert(src.includes(token),`missing ${token}`);
+console.log('run014 transactional repair: 10/10 PASS');
