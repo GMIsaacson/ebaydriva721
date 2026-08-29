@@ -1,0 +1,48 @@
+{
+  "decision_id": "A0-SOFT-014-EXTEND-004",
+  "status": "PASS",
+  "verdict": "EXTEND",
+  "owner": "Aberdeen Technologies",
+  "decided_at": "2026-08-29",
+  "business_outcome": "Improve Run 014 refinement execution by conditioning each isolated implementation candidate on actual rendered screenshots of the frozen baseline and allowing one bounded screenshot-conditioned correction pass on that candidate before independent QA, while preserving Website Business as upstream commercial/creative owner and keeping Run 015 frozen.",
+  "existing_owner_scan": "Run 014 already owns coherent website implementation, calibrated visual implementation QA, source/browser/security gates, transactional preservation, specialist implementation critique, best-of-two candidate generation, and independent comparison. The latest best-of-two qualification produced two 87/100 candidates and retained the baseline; critics identified the right issues but implementation agents translated text-only guidance into only incremental or offsetting visual changes. The residual gap is implementation execution with direct visual context, not additional creative ownership or another auditor.",
+  "reuse_candidates_checked": [
+    "Website Business Team upstream commercial/creative owner",
+    "Run 014 Software Product Engineering Team",
+    "Run 014 specialist implementation critics",
+    "Run 014 existing screenshot renderer and multimodal review path",
+    "Run 014 three-way comparison and Challenger",
+    "Run 015 remains frozen and is not a candidate executor"
+  ],
+  "duplication_analysis": "EXTEND Run 014 rather than create a new visual-design team. The implementation agent may consume frozen-baseline screenshots and its own candidate screenshots solely to improve implementation choices inside the approved upstream direction. This does not transfer brand strategy, market positioning, claims, asset strategy, or replacement art-direction ownership into Run 014.",
+  "residual_unowned_loop": "Hash-locked frozen baseline -> baseline viewport/full-page screenshots -> implementation critiques/synthesis -> isolated Candidate A/B initial implementation conditioned on baseline screenshots -> deterministic source gate -> render candidate -> one candidate-local screenshot-conditioned correction -> deterministic source gate -> final candidate browser/visual/security gates -> independent baseline/A/B comparison -> final Challenger only for a >=92 materially-better agency-quality candidate; otherwise restore baseline.",
+  "evidence_ref": "Capable Hands best-of-two qualification WC-20260829032703-4a1dd1e16e: baseline retained; Candidate A 87, Candidate B 87, no materially better/agency-quality winner. The observed bottleneck was implementation translation from text critique without visual access to the baseline or self-rendered result.",
+  "covers_paths": [
+    "agent-factory/run-014",
+    "agent-factory/governance/a0-decisions/A0-SOFT-014-EXTEND-004.a0.json"
+  ],
+  "authority": {
+    "environment": "controlled-live/internal-workspace",
+    "external_actions": 0,
+    "max_spend_cents": 0,
+    "deploy": false,
+    "publish": false,
+    "production_deploy": false,
+    "production_data": false,
+    "customer_contact": false,
+    "standing_external_authority": "none"
+  },
+  "promotion_constraints": [
+    "Frozen baseline command ID and exact HTML/CSS SHA-256 must verify before visual conditioning begins.",
+    "Implementation visual input is evidence, not new creative authority; Website Business remains upstream creative owner.",
+    "Candidate A and Candidate B remain isolated and start from the same frozen baseline; no cross-candidate code, screenshots, critique, or patch reuse.",
+    "Each initial candidate must pass deterministic source integrity before its own screenshots may be used for correction.",
+    "Each candidate gets at most one screenshot-conditioned correction pass; that correction may not self-approve and must pass source integrity again before independent downstream QA.",
+    "The correction pass may use only the frozen baseline screenshots, that candidate's own screenshots, approved source/spec, and its own critique/intent; it may not use the other candidate or prior failed candidate artifacts.",
+    "Verified facts, exact links/assets, services, business journeys, semantics, accessibility invariants and zero-external-action authority must remain unchanged.",
+    "A candidate is promotable only at calibrated implementationQuality >=92, source/browser/accessibility/visual/security PASS, materially BETTER than baseline, agencyQuality=true, and final Challenger PASS.",
+    "If neither candidate qualifies, restore and retain the frozen baseline; no manual merge or rescue outside the governed loop.",
+    "Preview deployment remains a separate approval-gated action.",
+    "Run 015 remains frozen and non-runnable."
+  ]
+}
