@@ -1,0 +1,24 @@
+name: Kinetiq G2.5 Professional Capability
+
+on:
+  pull_request:
+    paths:
+      - 'agent-factory/kinetiq/**'
+      - 'agent-factory/core/professional-capability-gate.cjs'
+      - 'agent-factory/governance/a0-decisions/A0-KINETIQ-G25-001.a0.json'
+      - '.github/workflows/kinetiq-g2-5.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  kinetiq-g25:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate Kinetiq professional capability completeness
+        run: node --test agent-factory/kinetiq/tests/g2-5-professional-capability.test.cjs
