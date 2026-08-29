@@ -1,0 +1,44 @@
+name: Run 014 G2.5 Specialist Revalidation
+
+on:
+  pull_request:
+    branches: [master]
+    paths:
+      - 'agent-factory/run-014/**'
+      - 'agent-factory/core/professional-capability-gate.cjs'
+      - 'agent-factory/governance/a0-decisions/A0-SOFT-014-G25-003.a0.json'
+      - '.github/workflows/run-014-g25-revalidation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  specialist-revalidation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate G2.5 professional capability matrix
+        run: node --test agent-factory/run-014/tests/g2-5-professional-capability.test.cjs
+      - name: Execute bounded specialist revalidation assignment
+        run: |
+          rm -rf /tmp/run014-g25
+          node agent-factory/run-014/runtime/g25-revalidation-runner.cjs \
+            --assignment agent-factory/run-014/assignments/factory-core-hybrid-topology \
+            --out /tmp/run014-g25
+      - name: Validate empirical specialist receipt
+        run: node --test agent-factory/run-014/tests/g25-revalidation.test.cjs
+      - name: Verify receipt is bounded and professionally complete for assignment
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const r=JSON.parse(fs.readFileSync('/tmp/run014-g25/g25-revalidation-receipt.json','utf8'));
+          if(r.decision!=='PASS') throw new Error('G2.5 revalidation did not PASS');
+          if(r.professionalCompletenessClaim!=='PROVEN_FOR_THIS_BOUNDED_ASSIGNMENT') throw new Error('professional completeness not proven');
+          if(r.externalActionsPerformed!==0 || r.spendCents!==0 || r.deploymentsPerformed!==0) throw new Error('authority violation');
+          if(r.blockers.length!==0) throw new Error('unresolved blockers');
+          console.log(JSON.stringify({decision:r.decision,claim:r.professionalCompletenessClaim,stages:r.stageCount,applicable:r.applicableStageCount},null,2));
+          NODE
