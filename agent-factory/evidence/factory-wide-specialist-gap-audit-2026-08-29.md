@@ -20,6 +20,8 @@ The canonical `agent-factory/` tree on this branch contains run packages for **0
 
 This is itself a Factory defect: registry/history presence must not be treated as canonical capability evidence. Runs 007/010/011/012 and Alibaba→eBay therefore fail closed as `BLOCKED_CANONICAL_PACKAGE_MISSING` until reconciled.
 
+Website Business / Kinetiq now has a canonical non-numbered Factory package at `agent-factory/kinetiq/`, preserving its existing operational identity without inventing a conflicting Run number.
+
 ## Portfolio audit
 
 | Team / surface | Canonical state | Professional capability finding | G2.5 disposition |
@@ -33,33 +35,37 @@ This is itself a Factory defect: registry/history presence must not be treated a
 | Run 010 — Vendor Invoice Overcharge Recovery | Canonical package absent | Requires AP audit, contract/pricing analysis, procurement/vendor analysis, quantitative reconciliation and financial evidence QA | **BLOCKED_CANONICAL_PACKAGE_MISSING** |
 | Run 011 — Opportunity Intelligence | Canonical package absent | Generic opportunity scoring can hide market research, competitive intelligence, finance/unit economics, strategy and domain-specialist challenge | **BLOCKED_CANONICAL_PACKAGE_MISSING** |
 | Run 012 — Growth & Client Acquisition | Canonical package absent | Prospecting, qualification, diagnosis, copywriting, sales strategy, pricing/proposal and customer success are distinct professions | **BLOCKED_CANONICAL_PACKAGE_MISSING** |
-| Run 014 — Software Product Engineering | Present; remediation staged | Broad Product Spec / Implementation / Challenger roles have been demoted to coordination. Explicit product, requirements, domain, architecture, data, frontend, backend, data-engineering, integration, platform/release, test, security and independent professional-quality reviewers are now modeled; user-facing UX/UI is delegated to Run 015 | **PASS_DESIGN_PENDING_REVALIDATION** |
-| Run 015 — UI Excellence | Present | Canonical manifest already separates benchmarking, UX architecture, art direction, design systems, interaction design, frontend polish, responsive/accessibility, scoring and independent visual QA. A formal G2.5 matrix now maps those roles to evidence and professional acceptance criteria | **PASS_DESIGN_PENDING_G4_SHADOW** |
+| Run 014 — Software Product Engineering | Present; specialist runtime revalidated | Broad Product Spec / Implementation / Challenger roles are coordination-only. Explicit product, requirements, domain, architecture, data, engineering, test, security and independent professional reviewers are modeled and the specialist-aware bounded revalidation workflow passed | **PASS_BOUNDED_REVALIDATION** |
+| Run 015 — UI Excellence | Present | Canonical manifest separates benchmarking, UX architecture, art direction, design systems, interaction design, frontend polish, responsive/accessibility, scoring and independent visual QA. Formal G2.5 mapping exists; real G4 UI shadow qualification remains required | **PASS_DESIGN_PENDING_G4_SHADOW** |
 | Run 016 — World Technology Intelligence | Present | Hybrid topology is efficient, but four reasoning agents cannot demonstrate strong-human-professional expertise across a 20-domain taxonomy. Medicine, defense and “general technology” remain internally multi-disciplinary | **BLOCKED** |
 | Alibaba→eBay Public Sourcing Intelligence | Non-canonical specialist artifacts | Role split is stronger than many teams, but canonicalization plus explicit procurement, supplier qualification, freight/logistics, marketplace economics, policy/IP and category-specialist QA are still required | **BLOCKED_CANONICAL_PACKAGE_MISSING** |
-| Website Business / Kinetiq | Reference/workflow artifacts | `QUAL → DIAG → OUT → PROP → PROD → QA` is operational decomposition, not professional decomposition. Commercial diagnosis, copy, IA, UX, visual design, frontend, accessibility, performance and proposal/pricing require their own standards and review | **BLOCKED** |
+| Website Business / Kinetiq | Canonical package added; source control center preserved | Operational loops are now reclassified as coordinators where appropriate. Commercial research, diagnosis, offer strategy, conversion copy, information architecture, sales strategy and customer success have explicit specialists; website production delegates professional UI/UX to Run 015 and engineering to Run 014 | **PASS_DESIGN_PENDING_G4_SHADOW** |
 | Factory Core / A0 | Present | G2.5 is wired into new RUN manufacturing on this branch. New RUN requests must carry a passing professional capability matrix; legacy teams remain explicitly pending until remediated rather than silently grandfathered | **PASS_NEW_RUN_ENFORCEMENT / LEGACY_REMEDIATION_OPEN** |
 
 The machine-readable counterpart is `agent-factory/evidence/g2-5-portfolio-capability-matrix.json`.
 
-## Run 014 remediation record
+## Run 014 remediation and proof record
 
-Run 014 now has `agent-factory/run-014/professional-capability-matrix.json` and an updated canonical manifest. The remediation deliberately does **not** claim that the old seven-role topology was professionally complete.
+Run 014 has `agent-factory/run-014/professional-capability-matrix.json`, an updated canonical manifest, a specialist-aware execution/revalidation path, and deterministic CI. The compatibility roles `product-spec`, `implementation`, and `challenger-qa` remain for handoff compatibility but are not accepted as specialist evidence.
 
-The compatibility roles `product-spec`, `implementation`, and `challenger-qa` remain so existing handoffs do not break, but they are no longer accepted as specialist evidence. Professional ownership is explicitly split across product management, requirements engineering, domain analysis, software/data architecture, frontend/backend/data/integration/platform engineering, test engineering, application security, release/operations readiness, and independent product/architecture/engineering quality review.
+Professional ownership is explicitly split across product management, requirements engineering, domain analysis, software/data architecture, frontend/backend/data/integration/platform engineering, test engineering, application security, release/operations readiness, and independent product/architecture/engineering quality review. User-facing interface work is routed to **Run 015 UI Excellence** rather than duplicating UX, interaction, visual, design-system, accessibility and frontend-UI specialization inside Run 014.
 
-User-facing interface work is routed to **Run 015 UI Excellence** rather than duplicating UX, interaction, visual, design-system, accessibility and frontend-UI specialization inside Run 014.
+The bounded specialist revalidation workflow passed together with Run 014 G3, G4 and G6, Factory Core Acceptance, and the A0 Constitutional Guard. This proves the specialist topology for that bounded assignment without granting new standing external authority or treating historical pre-G2.5 evidence as universal proof for every future domain.
 
-A deterministic test requires:
+## Website Business / Kinetiq remediation record
 
-- executable G2.5 PASS;
-- zero accepted limitations;
-- a concrete specialist binding for every required discipline;
-- every binding to resolve to a Run 014 role or the delegated Run 015 service;
-- broad compatibility coordinators not to count as specialist evidence;
-- UI work to resolve to Run 015.
+The source `Kinetiq-Agent-Team-Control-Center.xlsx` remains the operational baseline: 13 units, typed handoffs, explicit authority restrictions, G3 structural/policy PASS, and G4/G5/G6 blocked pending real evidence and controlled infrastructure.
 
-**Remaining Run 014 proof obligation:** one bounded non-production revalidation assignment must exercise the new specialist topology and produce the domain-specific review evidence. Historical G3/G4/G5/G6 passes predate G2.5 and are not retroactively treated as proof of professional completeness.
+The new canonical package `agent-factory/kinetiq/` adds a professional capability layer without replacing those loops. In particular:
+
+- `KIN-QUAL-01` remains a qualification decision coordinator and consumes market/customer research and commercial-analysis specialist evidence;
+- `KIN-DIAG-01` remains a diagnostic coordinator and consumes commercial strategy, website diagnosis, information architecture and offer-strategy evidence;
+- `KIN-OUT-01` and `KIN-PROP-01` consume professional conversion-copy, sales-strategy and offer-strategy evidence;
+- `KIN-PROD-01` is explicitly a production coordinator, not a designer or engineer, and delegates material UI/UX to Run 015 and software implementation to Run 014;
+- `KIN-QA-01` remains compliance/correctness coordination and may not substitute for professional excellence QA;
+- `KIN-CS-01` consumes customer-success specialist evidence.
+
+The Kinetiq G2.5 matrix contains zero accepted limitations. Its next proof obligation is still the source control center's existing G4 requirement: at least 10 real shadow cases compared with human professional judgments. Website-production cases additionally depend on current Run 014/015 evidence.
 
 ## Required specialist remediation still open
 
@@ -73,7 +79,7 @@ A deterministic test requires:
 - **Run 012:** canonicalize first, then prospecting/segmentation; sales qualification; commercial diagnosis; conversion copywriting; sales strategy; pricing/proposal; customer success; discipline-specific QA.
 - **Run 016:** routed/on-demand domain specialists rather than twenty permanent agents; domain-specific evidence standards and QA for AI/computing, robotics, medicine/clinical science, biotech, defense/dual use, energy, space, manufacturing/materials and other covered domains.
 - **Alibaba→eBay:** canonicalize first, then marketplace demand; procurement/sourcing; supplier qualification; exact product equivalence; freight/logistics; landed economics; policy/IP; product-category expertise.
-- **Website Business / Kinetiq:** separate commercial research/qualification, conversion diagnosis, information architecture, conversion copy, UX, visual design, frontend, accessibility, performance and pricing/proposal quality gates.
+- **Website Business / Kinetiq:** design remediation is complete; empirical G4 shadow qualification remains open, including real professional comparisons and Run 015 qualification for material UI work.
 
 ## No fabricated acceptance
 
@@ -81,10 +87,10 @@ No unresolved specialist gap in this audit has been marked `ACCEPTED_LIMITATION`
 
 ## Audit completion state
 
-**OPEN.** The Factory now has a fail-closed G2.5 mechanism for new RUN construction and the first two canonical remediation mappings (Run 014 and Run 015), but the audit is not complete because:
+**OPEN.** The Factory has a fail-closed G2.5 mechanism for new RUN construction, Run 014 has bounded empirical specialist proof, and Run 015 plus Website Business / Kinetiq have formal specialist mappings, but the audit is not complete because:
 
-- Run 014 still needs one real specialist-topology revalidation assignment;
 - Run 015 still needs its real G4 UI shadow qualification;
+- Website Business / Kinetiq still needs 10+ real G4 shadow cases with professional comparison;
 - most other judgment-heavy teams still have unresolved professional specialist gaps;
 - Runs 007/010/011/012 and Alibaba→eBay need canonical package reconciliation;
 - promotion-time G2.5 enforcement and stale-matrix handling still need to be proven across legacy teams;
