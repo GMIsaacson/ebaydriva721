@@ -1,0 +1,15 @@
+'use strict';
+const assert=require('assert');
+const C=require('../runtime/run014-creative-refinement-executor.cjs');
+assert.equal(C.TEAM_ID,'SW-PROD-014');
+assert.equal(C.MARKER,'[CREATIVE_REFINE_V1]');
+assert(C.shouldUse({team:{id:'SW-PROD-014'},instruction:'[CREATIVE_REFINE_V1] refine'}));
+assert(!C.shouldUse({team:{id:'SW-PROD-014'},instruction:'refine'}));
+assert(!C.shouldUse({team:{id:'UIX-015'},instruction:'[CREATIVE_REFINE_V1] refine'}));
+const lock=C.parseBaseline('BASELINE_COMMAND=WC-20260829003113-18392db183 BASELINE_HTML_SHA=8ede95fd72eb01d7645bfa3b220c9b0ba5daf3b7c055ba9e7112941a5e4ed9c2 BASELINE_CSS_SHA=88e84c9a90ef1e13134fe1d325cb9ed79b8345dabced6702cd6883ae6006cf62');
+assert.equal(lock.id,'WC-20260829003113-18392db183');
+assert.equal(lock.htmlSha.length,64);assert.equal(lock.cssSha.length,64);
+assert.throws(()=>C.parseBaseline('BASELINE_COMMAND=WC-20260829003113-18392db183'),/BASELINE_LOCK_REQUIRED/);
+const fs=require('fs'),src=fs.readFileSync(require.resolve('../runtime/run014-creative-refinement-executor.cjs'),'utf8');
+for(const token of ['full-before','Before / After Comparison Reviewer','premiumTarget','BASELINE_HASH_MISMATCH','candidate-rejection.json'])assert(src.includes(token),`missing ${token}`);
+console.log('run014 creative refinement executor: 14/14 PASS');
