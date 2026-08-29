@@ -1,0 +1,57 @@
+{
+  "decision_id": "A0-SOFT-014-EXTEND-002",
+  "status": "PASS",
+  "verdict": "EXTEND",
+  "owner": "Aberdeen Technologies",
+  "decided_at": "2026-08-28T20:16:00-05:00",
+  "business_outcome": "Improve existing Run 014 website implementation quality from a protected accepted baseline toward premium/Lovable-quality output by correcting evaluator calibration and adding one bounded before-vs-after implementation-refinement pass, without moving upstream commercial strategy or new art-direction ownership into Run 014.",
+  "existing_owner_scan": "Website Business remains the upstream commercial/creative owner. Run 014 already owns implementation fidelity, browser evidence, visual implementation QA, security review, repair and release-candidate packaging. Run 015 remains frozen. The residual gap is calibrated implementation-quality judgment and the ability to refine an already-approved implementation baseline without regenerating the site from zero.",
+  "reuse_candidates_checked": [
+    "Website Business Team commercial/creative capability",
+    "Run 014 Software Product Engineering Team",
+    "Run 014 Visual Implementation QA Agent",
+    "Run 014 Challenger / QA Reviewer",
+    "existing Factory Playwright renderer/auditor",
+    "Run 015 remains frozen and is not a candidate executor"
+  ],
+  "duplication_analysis": "EXTEND Run 014 rather than reactivate Run 015 or create another team. The new refinement mode starts from a hash-locked accepted implementation baseline and may improve composition, hierarchy, spacing, component presentation, responsive polish and use of already-approved assets within the upstream creative direction. It may not invent a replacement brand strategy, market positioning, unapproved content, new external assets, or a new art direction.",
+  "residual_unowned_loop": "Frozen approved implementation baseline -> calibrated before score/evidence -> one bounded implementation-refinement candidate -> deterministic source/function preservation -> after screenshots -> independent before-vs-after comparison -> PASS only if materially improved and premium threshold is satisfied; otherwise retain frozen baseline and report REVISE/FAIL.",
+  "evidence_ref": "Capable Hands Run 014 v0.4 WC-20260829003113-18392db183; owner-approved recommendation to freeze the visible baseline and improve evaluator/refinement capability; baseline CHC-R014-V04-20260829.",
+  "covers_paths": [
+    "agent-factory/run-014",
+    "agent-factory/governance/a0-decisions/A0-SOFT-014-EXTEND-002.a0.json"
+  ],
+  "authority": {
+    "environment": "controlled-live/internal-workspace",
+    "external_actions": 0,
+    "max_spend_cents": 0,
+    "deploy": false,
+    "publish": false,
+    "production_deploy": false,
+    "production_data": false,
+    "customer_contact": false,
+    "standing_external_authority": "none"
+  },
+  "calibration_policy": {
+    "scoreScale": "0-100 only",
+    "anchors": {
+      "60": "usable/coherent but visibly generic or flawed",
+      "75": "credible modern commercial site with meaningful repetition or polish gaps",
+      "85": "strong production-quality commercial implementation with only a few material polish gaps",
+      "92": "premium agency/Lovable-quality implementation with refined composition, varied visual storytelling, excellent responsive behavior and no material visual defects",
+      "96": "exceptional distinctive portfolio/reference quality with meticulous detail"
+    },
+    "singleDigitFallback": "If a model emits a non-zero score <=10, runtime normalizes it to the corresponding 0-100 value and records the raw score."
+  },
+  "promotion_constraints": [
+    "The frozen baseline must be verified by exact HTML/CSS SHA-256 before refinement begins.",
+    "Refinement must fork; ordinary repair may not overwrite the frozen baseline.",
+    "Verified facts, approved links/assets, semantic/accessibility invariants and business functionality must remain unchanged unless the approved upstream handoff explicitly permits a change.",
+    "Before and after viewport plus full-page screenshots are mandatory.",
+    "Independent comparison must judge before versus after, not only an abstract score.",
+    "A refinement candidate that regresses deterministic invariants is rejected and the frozen baseline remains authoritative.",
+    "Premium target is >=92 on the calibrated 0-100 scale plus no material browser/accessibility/security/challenger blockers.",
+    "Preview deployment remains a separate approval-gated action.",
+    "Run 015 remains frozen and non-runnable."
+  ]
+}
