@@ -1,12 +1,12 @@
 {
-  "schemaVersion": "1.3",
+  "schemaVersion": "1.4",
   "runNumber": 14,
   "runLabel": "014",
   "runId": "SW-PROD-014",
   "teamName": "Software Product Engineering Team",
   "lifecycle": "Controlled Live",
   "currentGate": "G6",
-  "operatingState": "Ready for controlled operation — production implementation v2 extension in governed qualification",
+  "operatingState": "Ready for controlled operation — production implementation v2.1 with calibrated frozen-baseline refinement in governed qualification",
   "externalAuthority": "Approval-gated",
   "authority": {
     "maxExternalActions": 0,
@@ -19,7 +19,8 @@
     "rule": "Standing external authority is zero. Every external action requires fresh bounded owner approval."
   },
   "a0Extensions": [
-    "A0-SOFT-014-EXTEND-001"
+    "A0-SOFT-014-EXTEND-001",
+    "A0-SOFT-014-EXTEND-002"
   ],
   "roles": [
     {
@@ -45,12 +46,27 @@
     {
       "id": "visual-implementation-qa",
       "name": "Visual Implementation QA Agent",
-      "responsibility": "Inspect rendered mobile/tablet/desktop implementation evidence for fidelity to the approved design brief, layout/spacing/contrast/image/interaction defects, and production polish; may not create a new art direction or self-approve implementation."
+      "responsibility": "Inspect rendered mobile/tablet/desktop implementation evidence for fidelity to the approved design brief, layout/spacing/contrast/image/interaction defects, calibrated quality, and production polish; may not create a new art direction or self-approve implementation."
+    },
+    {
+      "id": "implementation-refinement-planner",
+      "name": "Implementation Refinement Planner",
+      "responsibility": "For a hash-locked accepted baseline only, create one bounded presentation-refinement plan inside the approved upstream creative direction; may not create replacement brand strategy, claims, or unapproved assets."
+    },
+    {
+      "id": "implementation-refinement",
+      "name": "Implementation Refinement Agent",
+      "responsibility": "Fork a hash-locked accepted baseline and produce one coherent HTML/CSS refinement candidate while preserving verified content, links/assets, functionality, semantics, accessibility and upstream creative direction."
+    },
+    {
+      "id": "before-after-comparison",
+      "name": "Before / After Comparison Reviewer",
+      "responsibility": "Independently compare frozen baseline and candidate screenshots and classify BETTER/SAME/WORSE, material improvement, regressions, remaining gaps, and agency-quality status."
     },
     {
       "id": "security-dependency",
       "name": "Security & Dependency Reviewer",
-      "responsibility": "Review secrets, auth boundaries, dependencies, data exposure, network code, external scripts, live form behavior, and dangerous defaults; cannot waive failures."
+      "responsibility": "Review secrets, auth boundaries, dependencies, data exposure, network code, external scripts, live form behavior, and dangerous defaults; approved navigation destinations and image assets are not findings merely because remote."
     },
     {
       "id": "release-handoff",
@@ -60,7 +76,7 @@
     {
       "id": "challenger-qa",
       "name": "Challenger / QA Reviewer",
-      "responsibility": "Independently verify acceptance criteria, creative-fidelity evidence, source integrity, browser/responsive behavior, visual implementation QA, security, scope, freshness, regressions, authority, and readiness claims."
+      "responsibility": "Independently verify acceptance criteria, creative-fidelity evidence, source integrity, browser/responsive behavior, visual implementation QA, security, scope, freshness, regressions, authority, comparative improvement, and readiness claims."
     }
   ],
   "handoffs": [
@@ -74,34 +90,51 @@
     "browser_qa_v1",
     "visual_implementation_qa_v1",
     "repair_receipt_v1",
+    "frozen_implementation_baseline_v1",
+    "creative_refinement_plan_v1",
+    "before_after_comparison_v1",
     "security_review_v1",
     "release_candidate_v1",
     "ops_handoff_v1"
   ],
   "webImplementationV2": {
     "marker": "[WEB_IMPL_V2]",
-    "runtimeExecutorVersion": "2026-08-28.2",
+    "runtimeExecutorVersion": "2026-08-29.5",
     "requiresApprovedCreativeHandoff": true,
     "creativeOwner": "Upstream approved Website Business/product design owner",
-    "run014CreativeAuthority": "Implementation fidelity only; no silent art-direction reinterpretation",
+    "run014CreativeAuthority": "Implementation fidelity and approved-direction presentation refinement only; no silent art-direction reinterpretation",
     "artifactMode": "complete coherent files; no response-fragment assembly",
-    "requiredFiles": [
-      "index.html",
-      "styles.css"
-    ],
+    "requiredFiles": ["index.html", "styles.css"],
     "requiredGates": [
       "source integrity",
       "exact approved links/assets",
       "DOM/CSS consistency",
-      "browser mobile/tablet/desktop",
-      "navigation/overflow/images",
-      "screenshot-aware visual implementation QA",
+      "browser mobile/tablet/desktop viewport and full-page evidence",
+      "navigation/overflow/images/native disclosure/runtime focus",
+      "screenshot-aware calibrated visual implementation QA",
       "contrast",
       "creative fidelity",
       "security/dependency",
       "independent challenger"
     ],
-    "maxRepairCycles": 2,
+    "maxSourceRepairCycles": 2,
+    "maxRenderedRepairCycles": 4,
+    "transactionalRepair": true,
+    "previewDeploymentAuthority": "separate approval-gated action"
+  },
+  "creativeRefinementV1": {
+    "marker": "[CREATIVE_REFINE_V1]",
+    "runtimeExecutorVersion": "2026-08-29.1",
+    "requiresFrozenBaseline": true,
+    "baselineLock": ["commandId", "indexHtmlSha256", "stylesCssSha256"],
+    "maxRefinementPasses": 1,
+    "comparisonRequired": true,
+    "qualityScale": "0-100 calibrated",
+    "qualityAnchors": {"60":"usable/coherent but visibly generic or flawed","75":"credible modern commercial site with meaningful repetition/polish gaps","85":"strong production-quality commercial implementation with only a few material polish gaps","92":"premium agency/Lovable-quality implementation","96":"exceptional distinctive portfolio/reference quality"},
+    "premiumThreshold": 92,
+    "requiredPremiumConditions": ["source integrity PASS","browser/accessibility PASS","visual QA PASS","contrast PASS","creative fidelity PASS","responsive quality PASS","security PASS","comparison BETTER","materially improved","agency quality true","independent Challenger PASS"],
+    "creativeOwner": "Upstream Website Business/product design owner",
+    "run014Boundary": "May refine approved implementation presentation; may not invent new market positioning, brand strategy, unapproved claims/assets, or replacement art direction",
     "previewDeploymentAuthority": "separate approval-gated action"
   },
   "g3": {
@@ -152,5 +185,5 @@
     "Legacy Vercel production-target deployment dpl_BmozPBKih1MDQgYi6HY4JRtBLGHx is quarantined and should be removed when deletion control is available."
   ],
   "nextGateOnPass": null,
-  "nextGateScope": "Normal controlled operation. Production implementation v2 must qualify on a real approved website brief before being considered the default website implementation path. Reopen governance for material architecture/authority changes, failed revalidation, or security/operational incidents."
+  "nextGateScope": "Normal controlled operation. Production implementation v2.1 and creative refinement v1 must qualify on the frozen Capable Hands baseline before creative refinement is considered reusable beyond controlled qualification. Reopen governance for material architecture/authority changes, failed revalidation, or security/operational incidents."
 }
