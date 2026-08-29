@@ -13,6 +13,7 @@ Current structural extensions:
 - **A0-SOFT-014-EXTEND-001 — production implementation v2**
 - **A0-SOFT-014-EXTEND-002 — calibrated frozen-baseline refinement**
 - **A0-SOFT-014-EXTEND-003 — best-of-two implementation refinement**
+- **A0-SOFT-014-EXTEND-004 — vision-conditioned implementation refinement**
 
 Run 014 is the canonical Factory 1 team for turning an approved software/product brief into a tested, security-reviewed, versioned release candidate with rollback evidence and a typed operations handoff.
 
@@ -42,6 +43,12 @@ Best-of-two frozen-baseline refinement v2:
 
 The dedicated governed executor is selected with `[CREATIVE_REFINE_V2]`.
 
+Vision-conditioned frozen-baseline refinement v3:
+
+`frozen_implementation_baseline_v1` → calibrated baseline evidence → specialist implementation critiques → synthesis → isolated Candidate A/B implementation agents directly consume frozen-baseline viewport/full-page screenshots → source integrity → candidate render → exactly one candidate-local visual correction using baseline + that candidate’s own screenshots → post-correction source/browser/visual/security gates → independent baseline/A/B comparison → Challenger only for a qualifying winner.
+
+The dedicated governed executor is selected with `[CREATIVE_REFINE_V3]`.
+
 ## Required roles
 
 1. Product Spec Agent
@@ -60,6 +67,8 @@ The dedicated governed executor is selected with `[CREATIVE_REFINE_V2]`.
 15. Commercial Polish Critic — implementation critique only
 16. Refinement Synthesis Planner — baseline-bound implementation synthesis
 17. Three-way Baseline / Candidate Selection Reviewer — independent
+18. Vision-Conditioned Implementation Agent — baseline-bound implementation only
+19. Candidate-Local Visual Correction Agent — one bounded correction, cannot self-approve
 
 Implementation cannot self-verify. Visual Implementation QA, Security, comparative selection, and Challenger/QA failures cannot be waived by implementation roles.
 
@@ -133,6 +142,20 @@ A synthesis planner creates two meaningfully different implementation intents. C
 Each candidate must independently pass source/link/asset preservation before browser, visual and security evidence counts. The independent three-way reviewer compares baseline, A and B and must default to the baseline unless a candidate is materially `BETTER`.
 
 A candidate qualifies only when it reaches calibrated implementation quality **>=92**, visual QA/contrast/creative fidelity/responsive quality PASS, production gate PASS, browser/accessibility PASS, security PASS, relative `BETTER`, `materiallyImproved=true`, and `agencyQuality=true`. A final independent Challenger must also PASS. If neither candidate qualifies, the frozen baseline is restored as the authoritative artifact and the run terminally reports REVISE/FAIL.
+
+## Vision-conditioned frozen-baseline refinement v3 requirements
+
+`[CREATIVE_REFINE_V3]` requires A0-SOFT-014-EXTEND-004, the exact frozen-baseline command and HTML/CSS hashes, and the same approved upstream Product Spec/Architecture evidence. Website Business remains the commercial/creative owner.
+
+Each isolated Candidate A/B starts from the same frozen baseline. Its initial HTML and CSS implementation agents receive the baseline mobile/tablet/desktop viewport and full-page screenshots as direct visual implementation evidence. The screenshots may condition hierarchy, spacing, cropping, responsive composition, service presentation and micro-polish only inside the approved upstream direction; they do not transfer brand strategy, positioning, claims, asset strategy or art-direction ownership into Run 014.
+
+After an initial candidate passes deterministic source integrity, the candidate is rendered. That candidate alone then receives exactly one bounded visual-correction pass using the frozen-baseline screenshots plus its own rendered screenshots and complete source. It may not see or reuse the other candidate, prior failed candidates, or unapproved assets. The correction cannot self-approve.
+
+After correction, source integrity is rerun. Any source-regressing correction is rejected/rolled back. Independent browser/accessibility, calibrated visual implementation QA, production, security, baseline/A/B selection and Challenger gates still apply.
+
+Promotion remains fail-closed: a corrected candidate must reach calibrated implementation quality **>=92**, preserve source/browser/accessibility/security/fidelity, be independently judged materially `BETTER` than the frozen baseline with `agencyQuality=true`, and receive final Challenger PASS. Otherwise the frozen baseline remains authoritative.
+
+The Capable Hands V3 qualification `WC-20260829035033-ba4169eef4` produced Candidate A 90 and Candidate B 89 with source/browser/production/security gates PASS; independent selection retained the baseline and Challenger rejected promotion. This evidence proves the capability executes but does not prove >=92 reusable premium output.
 
 ## Visual Implementation QA
 
