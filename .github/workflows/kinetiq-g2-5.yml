@@ -20,5 +20,19 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Validate Kinetiq professional capability completeness
-        run: node --test agent-factory/kinetiq/tests/g2-5-professional-capability.test.cjs
+      - name: Validate active Kinetiq professional capability or confirm paused state
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const manifest = JSON.parse(fs.readFileSync('agent-factory/kinetiq/team-manifest.json', 'utf8'));
+          if (manifest.lifecycle === 'Paused') {
+            if (manifest.authority?.externalActions !== 0 || manifest.authority?.deploy !== false || manifest.authority?.publish !== false || manifest.authority?.message !== false) {
+              throw new Error('Paused Kinetiq must retain zero execution authority');
+            }
+            console.log('Kinetiq is Paused; active G2.5 promotion test is not applicable. Historical design evidence is preserved.');
+            process.exit(0);
+          }
+          NODE
+          if [ "$(node -p "require('./agent-factory/kinetiq/team-manifest.json').lifecycle")" != "Paused" ]; then
+            node --test agent-factory/kinetiq/tests/g2-5-professional-capability.test.cjs
+          fi
