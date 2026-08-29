@@ -14,6 +14,7 @@ Current structural extensions:
 - **A0-SOFT-014-EXTEND-002 — calibrated frozen-baseline refinement**
 - **A0-SOFT-014-EXTEND-003 — best-of-two implementation refinement**
 - **A0-SOFT-014-EXTEND-004 — vision-conditioned implementation refinement**
+- **A0-SOFT-014-EXTEND-005 — plan-to-structure implementation refinement**
 
 Run 014 is the canonical Factory 1 team for turning an approved software/product brief into a tested, security-reviewed, versioned release candidate with rollback evidence and a typed operations handoff.
 
@@ -49,6 +50,12 @@ Vision-conditioned frozen-baseline refinement v3:
 
 The dedicated governed executor is selected with `[CREATIVE_REFINE_V3]`.
 
+Plan-to-structure frozen-baseline refinement v4:
+
+`frozen_implementation_baseline_v1` → calibrated baseline evidence → specialist critiques → synthesis → Structural Composition Agent produces materially recomposed HTML → deterministic normalized DOM structural-delta gate → independent Structure Fidelity Reviewer → CSS styling → candidate render → one candidate-local visual correction that must preserve structural delta → independent source/browser/visual/security gates → baseline/A/B comparison → Challenger only for a qualifying winner.
+
+The dedicated governed executor is selected with `[CREATIVE_REFINE_V4]`.
+
 ## Required roles
 
 1. Product Spec Agent
@@ -69,6 +76,8 @@ The dedicated governed executor is selected with `[CREATIVE_REFINE_V3]`.
 17. Three-way Baseline / Candidate Selection Reviewer — independent
 18. Vision-Conditioned Implementation Agent — baseline-bound implementation only
 19. Candidate-Local Visual Correction Agent — one bounded correction, cannot self-approve
+20. Structural Composition Agent — plan-bound DOM/layout recomposition only
+21. Structure Fidelity Reviewer — independent plan-to-DOM verification
 
 Implementation cannot self-verify. Visual Implementation QA, Security, comparative selection, and Challenger/QA failures cannot be waived by implementation roles.
 
@@ -156,6 +165,20 @@ After correction, source integrity is rerun. Any source-regressing correction is
 Promotion remains fail-closed: a corrected candidate must reach calibrated implementation quality **>=92**, preserve source/browser/accessibility/security/fidelity, be independently judged materially `BETTER` than the frozen baseline with `agencyQuality=true`, and receive final Challenger PASS. Otherwise the frozen baseline remains authoritative.
 
 The Capable Hands V3 qualification `WC-20260829035033-ba4169eef4` produced Candidate A 90 and Candidate B 89 with source/browser/production/security gates PASS; independent selection retained the baseline and Challenger rejected promotion. This evidence proves the capability executes but does not prove >=92 reusable premium output.
+
+## Plan-to-structure frozen-baseline refinement v4 requirements
+
+`[CREATIVE_REFINE_V4]` requires A0-SOFT-014-EXTEND-005, the exact frozen-baseline command and HTML/CSS hashes, and the same approved upstream Product Spec/Architecture evidence. Website Business remains the commercial/creative owner.
+
+The Structural Composition Agent executes an already-approved implementation composition plan before styling. It may regroup existing verified content, approved links and approved assets into materially different semantic/layout groupings, but it may not add or rewrite claims, services, positioning, brand strategy, imagery strategy or replacement art direction.
+
+A deterministic normalized DOM structural-delta gate runs before CSS styling evidence counts. For controlled qualification, a candidate must have edit distance >=6 and normalized structural ratio >=0.025 relative to the frozen baseline. The actual V3 Candidate A is a negative calibration specimen and must fail this gate because its HTML changed only 5 added and 3 removed lines despite a synthesis that explicitly required service, about and contact recomposition.
+
+An independent Structure Fidelity Reviewer must also PASS the candidate as materially structural, plan-faithful and content-preserving. If either the deterministic delta or reviewer fails, the candidate receives at most one bounded structural repair; if it still fails, it is rejected before CSS styling.
+
+After styling and render, one candidate-local visual correction is permitted. That correction may not collapse a previously passing structural delta; a structure-regressing correction is rolled back transactionally.
+
+Promotion remains fail-closed: the final candidate must preserve structural delta and structure-fidelity evidence, reach calibrated implementation quality **>=92**, pass source/browser/accessibility/visual/security gates, be independently judged materially `BETTER` than the frozen baseline with `agencyQuality=true`, and receive final Challenger PASS. Otherwise the frozen baseline remains authoritative.
 
 ## Visual Implementation QA
 
