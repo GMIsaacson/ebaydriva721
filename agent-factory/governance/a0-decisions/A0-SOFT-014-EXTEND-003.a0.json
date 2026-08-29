@@ -1,0 +1,46 @@
+{
+  "decision_id": "A0-SOFT-014-EXTEND-003",
+  "status": "PASS",
+  "verdict": "EXTEND",
+  "owner": "Aberdeen Technologies",
+  "decided_at": "2026-08-29",
+  "business_outcome": "Increase Run 014's probability of improving an already-strong approved website implementation from the high-80s into premium/Lovable-quality territory by adding bounded specialist critique and best-of-two implementation refinement, while preserving Website Business as the upstream commercial/creative owner and keeping Run 015 frozen.",
+  "existing_owner_scan": "Run 014 already owns website implementation fidelity, complete coherent artifact generation, deterministic source/browser/security gates, calibrated visual implementation QA, transactional preservation, and independent before-versus-after comparison. The latest official Capable Hands refinement preserved all invariants but scored 87 versus the frozen 89 baseline and was correctly rejected. The residual gap is implementation refinement capability, not evaluation or authority.",
+  "reuse_candidates_checked": [
+    "Website Business Team upstream commercial/creative owner",
+    "Run 014 Software Product Engineering Team",
+    "Run 014 Visual Implementation QA Agent",
+    "Run 014 Challenger / QA Reviewer",
+    "Run 014 calibrated browser/screenshot evidence",
+    "Run 015 remains frozen and is not a candidate executor"
+  ],
+  "duplication_analysis": "EXTEND Run 014 rather than create a new UI/design team or reactivate Run 015. Specialist critics are implementation-review roles only: composition/hierarchy, responsive systems, and commercial polish. They may identify implementation opportunities within the already-approved creative direction but may not create a new brand, positioning, asset strategy, claims, or art direction. One synthesis planner turns their critiques into a bounded implementation brief. Two complete coherent implementation candidates are generated independently from the same frozen baseline and compared against each other and the baseline.",
+  "residual_unowned_loop": "Hash-locked approved baseline -> calibrated baseline evidence -> three independent implementation critiques -> synthesis plan -> candidate A complete HTML/CSS -> candidate B complete HTML/CSS -> deterministic source/browser/security/visual gates for each -> independent three-way comparison -> winner only if >=92 and materially better than baseline; otherwise retain baseline.",
+  "evidence_ref": "Capable Hands frozen baseline CHC-R014-V04-20260829 and official refinement WC-20260829014009-797fcc35a2, which scored baseline 89, candidate 87, relative WORSE, source/browser/security preserved, Challenger REJECT.",
+  "covers_paths": [
+    "agent-factory/run-014",
+    "agent-factory/governance/a0-decisions/A0-SOFT-014-EXTEND-003.a0.json"
+  ],
+  "authority": {
+    "environment": "controlled-live/internal-workspace",
+    "external_actions": 0,
+    "max_spend_cents": 0,
+    "deploy": false,
+    "publish": false,
+    "production_deploy": false,
+    "production_data": false,
+    "customer_contact": false,
+    "standing_external_authority": "none"
+  },
+  "promotion_constraints": [
+    "The approved frozen baseline must be verified by exact HTML/CSS SHA-256 before any critique or candidate generation begins.",
+    "Website Business remains the upstream commercial/creative owner; Run 014 specialist critics are implementation critics, not art directors.",
+    "Candidate A and Candidate B must each be complete coherent HTML/CSS packages generated from the same frozen baseline; no fragment stitching or cross-candidate patching.",
+    "Both candidates must preserve all verified facts, exact approved links/assets, business journeys, semantics, accessibility invariants, and zero-external-action authority.",
+    "Each candidate must independently pass deterministic source integrity before browser/security/visual comparison evidence can count.",
+    "The baseline must remain immutable and authoritative unless a candidate is independently judged materially BETTER and reaches >=92 calibrated implementation quality with no material browser/accessibility/security/fidelity blockers.",
+    "If neither candidate qualifies, retain the frozen baseline and terminally report REVISE/FAIL; do not average, merge, or manually repair candidates outside the governed loop.",
+    "Preview deployment remains a separate approval-gated action.",
+    "Run 015 remains frozen and non-runnable."
+  ]
+}
