@@ -1,0 +1,68 @@
+{
+  "schemaVersion": "1.0",
+  "runId": "SW-PROD-014",
+  "capability": "CREATIVE_REFINE_V2",
+  "executorVersion": "2026-08-29.3",
+  "a0DecisionId": "A0-SOFT-014-EXTEND-003",
+  "qualificationCommandId": "WC-20260829032703-4a1dd1e16e",
+  "target": "Capable Hands Care frozen implementation baseline",
+  "baseline": {
+    "commandId": "WC-20260829003113-18392db183",
+    "indexHtmlSha256": "8ede95fd72eb01d7645bfa3b220c9b0ba5daf3b7c055ba9e7112941a5e4ed9c2",
+    "stylesCssSha256": "88e84c9a90ef1e13134fe1d325cb9ed79b8345dabced6702cd6883ae6006cf62",
+    "authoritative": true
+  },
+  "result": "FAIL_RETAIN_BASELINE",
+  "terminalState": "FAILED",
+  "modelCostCents": 6.3,
+  "externalActions": 0,
+  "spendCents": 0,
+  "productionMutation": false,
+  "stagesProven": [
+    "baseline source integrity",
+    "calibrated baseline visual QA",
+    "Composition & Hierarchy Critic",
+    "Responsive Systems Critic",
+    "Commercial Polish Critic",
+    "Refinement Synthesis Planner",
+    "independent Candidate A complete HTML/CSS",
+    "Candidate A source/browser/visual/security review",
+    "independent Candidate B complete HTML/CSS",
+    "Candidate B source/browser/visual/security review",
+    "three-way baseline/A/B comparison"
+  ],
+  "scores": {
+    "baselineThisRun": 84,
+    "candidateA": 87,
+    "candidateB": 87
+  },
+  "selection": {
+    "winner": "BASELINE",
+    "materiallyBetterThanBaseline": false,
+    "agencyQuality": false,
+    "qualifiedWinner": null,
+    "challenger": "REJECT",
+    "premiumTargetMet": false
+  },
+  "candidateA": {
+    "sourceValid": true,
+    "score": 87,
+    "mainResiduals": [
+      "services presentation remained repetitive",
+      "mobile brand/header remained cramped",
+      "desktop hero retained excess vertical space",
+      "not materially superior to baseline"
+    ]
+  },
+  "candidateB": {
+    "sourceValid": true,
+    "score": 87,
+    "mainResiduals": [
+      "warmer mobile image emphasis",
+      "less balanced service/CTA layouts at other widths",
+      "not materially superior to baseline"
+    ]
+  },
+  "qualificationFinding": "Best-of-two planning/critique improves governance and prevents weak promotion, but text-driven implementation generation remains the quality bottleneck. Additional critics alone are not sufficient to cross the >=92 target. The next capability experiment should make implementation itself screenshot/vision-conditioned and allow a bounded rendered correction inside each isolated candidate, while preserving the same upstream creative ownership and frozen baseline.",
+  "baselineScoreCaveat": "The frozen baseline has previously calibrated at 89. This run scored it 84 because the visual reviewer also penalized non-visual evidence scope. The three-way relative decision and hard >=92 candidate threshold remain the governing result; the 84 baseline score is not promoted as a new canonical quality truth."
+}
