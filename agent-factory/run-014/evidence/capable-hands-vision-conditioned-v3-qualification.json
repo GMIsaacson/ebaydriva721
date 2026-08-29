@@ -1,0 +1,53 @@
+{
+  "schemaVersion": "1.0",
+  "qualification": "Run 014 vision-conditioned frozen-baseline refinement v3",
+  "commandId": "WC-20260829035033-ba4169eef4",
+  "executorVersion": "2026-08-29.4",
+  "profileVersion": "1.4",
+  "a0DecisionId": "A0-SOFT-014-EXTEND-004",
+  "baseline": {
+    "commandId": "WC-20260829003113-18392db183",
+    "indexHtmlSha256": "8ede95fd72eb01d7645bfa3b220c9b0ba5daf3b7c055ba9e7112941a5e4ed9c2",
+    "stylesCssSha256": "88e84c9a90ef1e13134fe1d325cb9ed79b8345dabced6702cd6883ae6006cf62",
+    "runScore": 87,
+    "retained": true
+  },
+  "candidateA": {
+    "finalScore": 90,
+    "visionConditionedInitialImplementation": true,
+    "candidateLocalVisualCorrection": "COMMITTED",
+    "sourceIntegrity": "PASS",
+    "browserAudit": "PASS",
+    "productionGate": "PASS",
+    "security": "PASS",
+    "qualifiedAt92": false,
+    "indexHtmlSha256": "cff16fcc08766361402c4b8632e02c832b15156ce5ceb90271d3ae66c4ead046",
+    "stylesCssSha256": "a1495e49a43d872d224665940bbc2333615f997ed15475dbaaddfb44a0578af7"
+  },
+  "candidateB": {
+    "finalScore": 89,
+    "visionConditionedInitialImplementation": true,
+    "candidateLocalVisualCorrection": "COMMITTED",
+    "sourceIntegrity": "PASS",
+    "browserAudit": "PASS",
+    "productionGate": "PASS",
+    "security": "PASS",
+    "qualifiedAt92": false,
+    "indexHtmlSha256": "40965ff3fc5557ccdf9ca4a6caa658689493b7a9d2806994d888de63ba3f0ef8",
+    "stylesCssSha256": "7afdc94758826c11fc881039a578b3296756a1a34418c8a223723f327ad27b3c"
+  },
+  "selection": {
+    "winner": "BASELINE",
+    "materiallyBetterThanBaseline": false,
+    "agencyQuality": false,
+    "challenger": "REJECT",
+    "premiumTargetMet": false
+  },
+  "terminalState": "FAILED",
+  "modelCostCents": 10.15,
+  "externalActionsPerformed": 0,
+  "spendCents": 0,
+  "productionMutation": false,
+  "interpretation": "Vision conditioning materially improved implementation execution versus the prior text-only best-of-two qualification (which produced two 87 candidates), with Candidate A reaching 90 while preserving all hard implementation gates. It did not cross the >=92 promotion threshold or become materially better than the frozen baseline, so baseline remains authoritative. Do not promote, merge, or treat either candidate as approved.",
+  "nextResearchQuestion": "What implementation-level capability, beyond direct visual conditioning and one self-render correction, is required to create material compositional differentiation and premium visual variety without moving upstream creative ownership into Run 014?"
+}
