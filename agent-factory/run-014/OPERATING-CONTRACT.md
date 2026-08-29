@@ -12,6 +12,7 @@ Current structural extensions:
 
 - **A0-SOFT-014-EXTEND-001 — production implementation v2**
 - **A0-SOFT-014-EXTEND-002 — calibrated frozen-baseline refinement**
+- **A0-SOFT-014-EXTEND-003 — best-of-two implementation refinement**
 
 Run 014 is the canonical Factory 1 team for turning an approved software/product brief into a tested, security-reviewed, versioned release candidate with rollback evidence and a typed operations handoff.
 
@@ -29,11 +30,17 @@ Website implementation v2:
 
 The dedicated governed executor is selected with `[WEB_IMPL_V2]`.
 
-Frozen-baseline refinement:
+Frozen-baseline refinement v1:
 
 `frozen_implementation_baseline_v1` → calibrated BEFORE evidence → `creative_refinement_plan_v1` → one bounded implementation-refinement candidate → deterministic preservation gate → calibrated AFTER evidence → `before_after_comparison_v1` → security → Challenger/QA.
 
 The dedicated governed executor is selected with `[CREATIVE_REFINE_V1]`.
+
+Best-of-two frozen-baseline refinement v2:
+
+`frozen_implementation_baseline_v1` → calibrated baseline evidence → Composition & Hierarchy Critic + Responsive Systems Critic + Commercial Polish Critic → `refinement_synthesis_v1` → independent Candidate A + Candidate B complete HTML/CSS packages → independent deterministic/browser/visual/security gates → `three_way_comparison_v1` → final Challenger/QA only for a qualifying winner.
+
+The dedicated governed executor is selected with `[CREATIVE_REFINE_V2]`.
 
 ## Required roles
 
@@ -48,8 +55,13 @@ The dedicated governed executor is selected with `[CREATIVE_REFINE_V1]`.
 9. Implementation Refinement Planner — baseline-bound only
 10. Implementation Refinement Agent — baseline-bound only
 11. Before / After Comparison Reviewer — independent
+12. Composition & Hierarchy Critic — implementation critique only
+14. Responsive Systems Critic — implementation critique only
+15. Commercial Polish Critic — implementation critique only
+16. Refinement Synthesis Planner — baseline-bound implementation synthesis
+17. Three-way Baseline / Candidate Selection Reviewer — independent
 
-Implementation cannot self-verify. Visual Implementation QA, Security, Before/After Comparison, and Challenger/QA failures cannot be waived by implementation roles.
+Implementation cannot self-verify. Visual Implementation QA, Security, comparative selection, and Challenger/QA failures cannot be waived by implementation roles.
 
 ## Website creative boundary
 
@@ -104,57 +116,27 @@ Anchors:
 
 A competent modern site must never be assigned a single-digit 0–100 score merely because the evaluator used the wrong scale.
 
-## Frozen-baseline refinement requirements
+## Frozen-baseline refinement v1 requirements
 
-`[CREATIVE_REFINE_V1]` is allowed only when all of the following are present:
+`[CREATIVE_REFINE_V1]` is allowed only with exact baseline Work Control command ID, exact SHA-256 for baseline `index.html` and `styles.css`, the baseline's approved Product Spec and Architecture evidence, and current A0 coverage. The executor verifies hashes before model work. The candidate gets exactly one bounded pass; before/after viewport plus full-page evidence and independent comparison are mandatory.
 
-- exact baseline Work Control command ID;
-- exact SHA-256 for baseline `index.html`;
-- exact SHA-256 for baseline `styles.css`;
-- the baseline's approved Product Spec and Architecture evidence;
-- a current A0 decision covering the structural refinement capability.
+Premium PASS requires deterministic source integrity, browser/accessibility, security, visual QA, contrast, creative fidelity and responsive quality PASS; calibrated implementation quality **>=92**; comparison `BETTER`, `materiallyImproved=true`, `agencyQuality=true`; and final independent Challenger PASS. Otherwise the frozen baseline remains authoritative.
 
-The executor must verify the baseline hashes before model work. A mismatch blocks execution.
+## Best-of-two frozen-baseline refinement v2 requirements
 
-The baseline is copied into a protected evidence subdirectory and is never overwritten by the candidate. The candidate gets exactly **one** bounded implementation-refinement pass. It must preserve verified facts, destinations, approved assets, service/contact information, semantics, accessibility primitives, and business journeys.
+`[CREATIVE_REFINE_V2]` requires the same exact baseline hash lock and approved upstream evidence. The frozen baseline is immutable.
 
-Before and after evidence must include viewport plus full-page mobile/tablet/desktop screenshots. An independent comparison reviewer must classify the candidate `BETTER`, `SAME`, or `WORSE` against the baseline.
+Before code generation, three independent implementation critics must inspect the rendered baseline: Composition & Hierarchy, Responsive Systems, and Commercial Polish. They are not art directors and cannot change brand, positioning, claims, services, external assets, or business journeys.
 
-Premium PASS requires all of:
+A synthesis planner creates two meaningfully different implementation intents. Candidate A and Candidate B must each be generated independently as **complete coherent HTML/CSS packages from the same frozen baseline**. No cross-candidate patching, averaging, or manual merging is permitted.
 
-- deterministic source integrity PASS;
-- browser/accessibility audit PASS;
-- security PASS;
-- visual implementation QA PASS;
-- contrast PASS;
-- creative fidelity PASS;
-- responsive quality PASS;
-- calibrated implementation quality **>=92**;
-- comparison `BETTER` and `materiallyImproved=true`;
-- comparison `agencyQuality=true`;
-- final independent Challenger PASS.
+Each candidate must independently pass source/link/asset preservation before browser, visual and security evidence counts. The independent three-way reviewer compares baseline, A and B and must default to the baseline unless a candidate is materially `BETTER`.
 
-If the candidate is worse or fails preservation, the frozen baseline remains authoritative.
+A candidate qualifies only when it reaches calibrated implementation quality **>=92**, visual QA/contrast/creative fidelity/responsive quality PASS, production gate PASS, browser/accessibility PASS, security PASS, relative `BETTER`, `materiallyImproved=true`, and `agencyQuality=true`. A final independent Challenger must also PASS. If neither candidate qualifies, the frozen baseline is restored as the authoritative artifact and the run terminally reports REVISE/FAIL.
 
 ## Visual Implementation QA
 
-The Visual Implementation QA Agent is **not an Art Director**.
-
-It may identify implementation defects such as:
-
-- broken or missing images;
-- bad crops;
-- merged labels;
-- weak or invisible contrast;
-- excessive/awkward whitespace;
-- unfinished/sparse sections or footers;
-- oversized empty cards;
-- inconsistent density;
-- broken responsive composition;
-- navigation/interaction defects;
-- divergence from the approved creative handoff.
-
-It may issue surgical repair directives. It may not invent a new creative concept.
+The Visual Implementation QA Agent is **not an Art Director**. It may identify broken or missing images, bad crops, merged labels, contrast defects, awkward whitespace, unfinished/sparse sections, oversized empty cards, inconsistent density, broken responsive composition, navigation/interaction defects, and divergence from the approved creative handoff. It may issue surgical repair directives but may not invent a new creative concept.
 
 ## Default authority
 
@@ -168,23 +150,7 @@ Every external action requires a fresh bounded owner approval. Any requested/act
 
 ## Release gate
 
-A release candidate is not ready unless all applicable evidence is PASS:
-
-- acceptance-criteria traceability;
-- approved creative/design handoff where applicable;
-- coherent artifact package;
-- deterministic source-integrity tests;
-- exact link/asset verification;
-- browser mobile/tablet/desktop evidence;
-- responsive/navigation/overflow/focus evidence;
-- screenshot-aware visual implementation QA;
-- contrast and creative-fidelity checks;
-- independent security/dependency review;
-- artifact hashes;
-- release notes;
-- rollback instructions;
-- Challenger/QA review;
-- clean authority accounting.
+A release candidate is not ready unless all applicable evidence is PASS: acceptance-criteria traceability; approved creative/design handoff; coherent artifact package; deterministic source-integrity tests; exact link/asset verification; browser mobile/tablet/desktop evidence; responsive/navigation/overflow/focus evidence; screenshot-aware visual implementation QA; contrast/creative-fidelity; security/dependency review; artifact hashes; release/rollback evidence; Challenger/QA; and clean authority accounting.
 
 ## Deployment gate
 
