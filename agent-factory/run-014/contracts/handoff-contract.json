@@ -1,15 +1,19 @@
 {
-  "schemaVersion": "1.0",
+  "schemaVersion": "1.1",
   "runId": "SW-PROD-014",
   "requiredHandoffs": [
-    {"type":"product_brief_v1","owner":"Product Spec Agent"},
-    {"type":"software_spec_v1","owner":"Product Spec Agent"},
-    {"type":"architecture_plan_v1","owner":"Software Architect Agent"},
-    {"type":"implementation_change_set_v1","owner":"Implementation Agent"},
-    {"type":"test_evidence_v1","owner":"Test Engineering Agent"},
-    {"type":"security_review_v1","owner":"Security & Dependency Reviewer"},
-    {"type":"release_candidate_v1","owner":"Release & Handoff Agent"},
-    {"type":"ops_handoff_v1","owner":"Release & Handoff Agent"}
+    {"type":"product_brief_v1","owner":"Product Definition Coordinator"},
+    {"type":"product_definition_review_v1","owner":"Independent Product Quality Reviewer"},
+    {"type":"software_spec_v1","owner":"Requirements Engineer"},
+    {"type":"architecture_plan_v1","owner":"Software Architect"},
+    {"type":"architecture_quality_review_v1","owner":"Independent Architecture Quality Reviewer"},
+    {"type":"uix_assignment_v1_when_applicable","owner":"UI Excellence Team"},
+    {"type":"implementation_change_set_v1","owner":"Implementation Coordinator"},
+    {"type":"test_evidence_v1","owner":"Test Engineering Specialist"},
+    {"type":"security_review_v1","owner":"Application Security & Dependency Specialist"},
+    {"type":"engineering_quality_review_v1","owner":"Independent Engineering Quality Reviewer"},
+    {"type":"release_candidate_v1","owner":"Platform & Release Engineer"},
+    {"type":"ops_handoff_v1","owner":"Release & Handoff Coordinator"}
   ],
   "requiredEnvelopeFields": [
     "sourceVersion",
@@ -21,6 +25,7 @@
     "unresolvedBlockers"
   ],
   "terminalStates": ["DELIVERED","BLOCKED_OWNER","BLOCKED_EXTERNAL","KILLED","FAILED"],
-  "deliveryRule": "Only a bounded simulation or release candidate with all required evidence, independent QA PASS, and zero authority violations can be DELIVERED.",
+  "deliveryRule": "Only a bounded release candidate with all applicable specialist evidence, independent discipline-quality PASS decisions, test/security PASS, and zero authority violations can be DELIVERED.",
+  "professionalGateRule": "A coordination role is not specialist evidence. Applicable disciplines must resolve to named specialists or a qualified delegated specialist service.",
   "g3Restriction": "Simulation only. No customer contact, deployment, publishing, paid provisioning, production mutation, destructive migration, or spend."
 }
