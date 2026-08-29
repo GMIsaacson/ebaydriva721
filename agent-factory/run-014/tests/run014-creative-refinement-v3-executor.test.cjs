@@ -1,0 +1,16 @@
+'use strict';
+const assert=require('assert');
+const V3=require('../runtime/run014-creative-refinement-v3-executor.cjs');
+let n=0; const ok=(v,m)=>{assert(v,m);n++;};
+ok(V3.TEAM_ID==='SW-PROD-014','team id');
+ok(V3.MARKER==='[CREATIVE_REFINE_V3]','marker');
+ok(V3.EXECUTOR_VERSION==='2026-08-29.4','version');
+ok(V3.shouldUse({team:{id:'SW-PROD-014'},instruction:'[CREATIVE_REFINE_V3] BASELINE_COMMAND=WC-20260829003113-18392db183'}),'accepts v3');
+ok(!V3.shouldUse({team:{id:'SW-PROD-014'},instruction:'[CREATIVE_REFINE_V2] x'}),'isolated from v2');
+ok(!V3.shouldUse({team:{id:'UIX-015'},instruction:'[CREATIVE_REFINE_V3] x'}),'wrong team blocked');
+const p=V3.parseBaseline('BASELINE_COMMAND=WC-20260829003113-18392db183 BASELINE_HTML_SHA=8ede95fd72eb01d7645bfa3b220c9b0ba5daf3b7c055ba9e7112941a5e4ed9c2 BASELINE_CSS_SHA=88e84c9a90ef1e13134fe1d325cb9ed79b8345dabced6702cd6883ae6006cf62');
+ok(p.id==='WC-20260829003113-18392db183','baseline id');
+ok(p.htmlSha.length===64&&p.cssSha.length===64,'hashes');
+assert.throws(()=>V3.parseBaseline('BASELINE_COMMAND=WC-20260829003113-18392db183'),/BASELINE_LOCK_REQUIRED/);n++;
+ok(typeof V3.processCreativeRefinementV3==='function','executor');
+console.log(`run014 creative refinement v3 executor: ${n}/${n} PASS`);
