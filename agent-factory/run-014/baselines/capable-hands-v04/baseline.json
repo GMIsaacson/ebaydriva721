@@ -1,0 +1,48 @@
+{
+  "baselineId": "CHC-R014-V04-20260829",
+  "status": "FROZEN_REFERENCE",
+  "target": "https://capablehandscare.com/",
+  "sourceCommandId": "WC-20260829003113-18392db183",
+  "runtimeExecutorVersion": "2026-08-28.4",
+  "reviewBranch": "preview/run014-capable-hands-v04-wc-20260829003113",
+  "artifact": {
+    "indexHtmlSha256": "8ede95fd72eb01d7645bfa3b220c9b0ba5daf3b7c055ba9e7112941a5e4ed9c2",
+    "stylesCssSha256": "88e84c9a90ef1e13134fe1d325cb9ed79b8345dabced6702cd6883ae6006cf62"
+  },
+  "evidence": {
+    "viewportScreenshots": {
+      "mobile": "9ae59764c385b30d725217b8fca4c1c5801c720bc818cc5274a6a9e1705800dc",
+      "tablet": "ea5302e8004632ead04ae97eb557ecc56ccca7e1c23232457ace46aa9d18b661",
+      "desktop": "661d353c60b2f1bb4aeb75f372ef477b064d524079d3e2e9ef68033ba971c5bd"
+    },
+    "fullPageScreenshots": {
+      "mobile": "0ba000b3ab5e27cb336d7e7e3618fc4d33060937cd113d15dd610a3d3a021463",
+      "tablet": "0835661e527daef43b4c65003814b639853eb90159841d4fa4e2575073ea48c9",
+      "desktop": "9f358951369b64b07414f4b874e078f9806b3dcd7cd6db66685e80b76637b1ac"
+    }
+  },
+  "reviewClassification": {
+    "status": "ACCEPTED_BASELINE_NOT_PRODUCTION_PASS",
+    "humanCalibrationAnchor": 82,
+    "qualityBand": "STRONG_75_84",
+    "targetForRefinement": 92,
+    "notes": [
+      "Materially better than prior Run 015 and earlier Run 014 attempts.",
+      "Strong coherent commercial baseline worth preserving.",
+      "Remaining gap is premium art-direction/implementation refinement rather than basic page correctness."
+    ]
+  },
+  "immutability": {
+    "ordinaryRepairMayOverwrite": false,
+    "refinementMustFork": true,
+    "hashMismatchAction": "BLOCK",
+    "rollbackTarget": "THIS_BASELINE"
+  },
+  "authority": {
+    "deploy": false,
+    "publish": false,
+    "productionMutation": false,
+    "customerContact": false,
+    "standingExternalAuthority": "none"
+  }
+}
