@@ -1,0 +1,15 @@
+'use strict';
+const assert=require('assert');
+const V2=require('../runtime/run014-creative-refinement-v2-executor.cjs');
+assert.equal(V2.TEAM_ID,'SW-PROD-014');
+assert.equal(V2.MARKER,'[CREATIVE_REFINE_V2]');
+assert(V2.shouldUse({team:{id:'SW-PROD-014'},instruction:'[CREATIVE_REFINE_V2] BASELINE_COMMAND=WC-20260829003113-18392db183'}));
+assert(!V2.shouldUse({team:{id:'SW-PROD-014'},instruction:'[CREATIVE_REFINE_V1] x'}));
+assert(!V2.shouldUse({team:{id:'UIX-015'},instruction:'[CREATIVE_REFINE_V2] x'}));
+const parsed=V2.parseBaseline('BASELINE_COMMAND=WC-20260829003113-18392db183 BASELINE_HTML_SHA=8ede95fd72eb01d7645bfa3b220c9b0ba5daf3b7c055ba9e7112941a5e4ed9c2 BASELINE_CSS_SHA=88e84c9a90ef1e13134fe1d325cb9ed79b8345dabced6702cd6883ae6006cf62');
+assert.equal(parsed.id,'WC-20260829003113-18392db183');
+assert.equal(parsed.htmlSha.length,64);
+assert.equal(parsed.cssSha.length,64);
+assert.throws(()=>V2.parseBaseline('BASELINE_COMMAND=WC-20260829003113-18392db183'),/BASELINE_LOCK_REQUIRED/);
+assert.equal(typeof V2.processCreativeRefinementV2,'function');
+console.log('run014 creative refinement v2 executor: 11/11 PASS');
