@@ -1,9 +1,9 @@
 {
-  "schemaVersion": "1.0",
+  "schemaVersion": "1.1",
   "teamId": "KINETIQ-WEBSITE-BUSINESS",
   "teamName": "Website Business / Kinetiq",
-  "lifecycle": "Testing",
-  "operatingState": "G2.5 specialist remediation staged; G4 shadow remains blocked pending real cases",
+  "lifecycle": "Paused",
+  "operatingState": "Paused by owner decision; retained as historical governance evidence and excluded from active Factory capability claims",
   "sourceBaseline": "Kinetiq-Agent-Team-Control-Center.xlsx",
   "authority": {
     "externalActions": 0,
@@ -12,13 +12,13 @@
     "publish": false,
     "message": false,
     "customerCommitment": false,
-    "rule": "External messages, proposal sends, deliveries, invoice issue, refunds, money movement, permission changes, and deletion remain approval-gated exactly as in the source control center."
+    "rule": "No Kinetiq execution or activation while lifecycle is Paused. Existing approval restrictions remain preserved if the team is ever reactivated."
   },
   "professionalCapabilityGate": {
     "gateId": "G2.5",
-    "status": "STAGED_FOR_REVALIDATION",
+    "status": "DESIGN_PASS_NOT_ACTIVATED",
     "matrix": "agent-factory/kinetiq/professional-capability-matrix.json",
-    "rule": "Operational loop ownership is not professional specialist evidence. Material commercial, copy, design, engineering, accessibility, and customer-success work must be bound to named specialists and independent excellence review."
+    "rule": "The design-level specialist matrix is retained, but G4 professional shadow validation was not pursued because the owner paused the business. This team must not be represented as an active professional capability."
   },
   "legacyOperationalUnits": [
     "KIN-MGR-01",
@@ -53,13 +53,13 @@
       "serviceRunId": "UIX-015",
       "serviceName": "UI Excellence Team",
       "requiredDisciplines": ["ux-architecture","interaction-design","visual-design","design-systems","responsive-design","accessibility","frontend-ui-engineering"],
-      "activationRule": "Every material customer-facing website interface must be reviewed/produced through Run 015 rather than KIN-PROD-01 or generic QA standing in for design expertise."
+      "activationRule": "Only applies after an explicit owner reactivation decision."
     },
     {
       "serviceRunId": "SW-PROD-014",
       "serviceName": "Software Product Engineering Team",
       "requiredDisciplines": ["requirements-engineering","software-architecture","frontend-engineering","backend-engineering","data-engineering","integration-engineering","test-engineering","application-security","release-engineering"],
-      "activationRule": "Every material software implementation must be handed to Run 014; KIN-PROD-01 coordinates the approved production brief but is not engineering specialist evidence."
+      "activationRule": "Only applies after an explicit owner reactivation decision."
     }
   ],
   "legacyRoleReclassification": {
@@ -72,9 +72,10 @@
     "KIN-CS-01": "customer-success coordinator using customer-success specialist evidence"
   },
   "promotionBoundary": {
-    "g4": "BLOCKED_PENDING_REAL_SHADOW_CASES",
-    "g5": "BLOCKED_PENDING_CONFIGURED_CONTROLLED_ACTION_INFRASTRUCTURE",
-    "g6": "BLOCKED_PENDING_PASSING_LIVE_E2E_AND_OWNER_PROMOTION",
-    "acceptedLimitations": []
+    "g4": "NOT_PURSUED_WHILE_PAUSED",
+    "g5": "NOT_PURSUED_WHILE_PAUSED",
+    "g6": "NOT_PURSUED_WHILE_PAUSED",
+    "acceptedLimitations": [],
+    "reactivationRule": "Owner must explicitly reactivate Kinetiq, restore G4/G5/G6 proof obligations, and re-run current G2.5 validation before any capability claim or execution."
   }
 }
