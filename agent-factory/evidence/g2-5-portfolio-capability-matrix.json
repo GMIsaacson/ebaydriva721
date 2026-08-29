@@ -1,0 +1,138 @@
+{
+  "schemaVersion": "1.0",
+  "gateId": "G2.5",
+  "auditDate": "2026-08-29",
+  "status": "OPEN",
+  "acceptanceRule": "Every material judgment-heavy stage must have explicit professional disciplines, specialist coverage, evidence standards, and independent discipline-specific professional-excellence QA, or a documented owner-accepted limitation.",
+  "ownerAcceptedLimitations": [],
+  "teams": [
+    {
+      "team": "Run 004 — DataScout Source-to-Marketplace",
+      "canonicalPackageStatus": "PRESENT",
+      "disposition": "BLOCKED",
+      "requiredSpecialistCoverage": ["marketplace-demand-research", "procurement-sourcing", "product-identity-and-equivalence", "landed-cost-and-logistics", "marketplace-economics", "product-category-risk", "ip-policy-compliance"],
+      "currentGap": "The package is strong on deterministic economics, evidence integrity, authority and safe-stop behavior, but those controls do not establish senior procurement, logistics, marketplace, category-risk, or IP/compliance judgment for opportunity recommendations.",
+      "qaRequirement": "Independent sourcing/economics/category-risk review against exact product equivalence, freight/fulfillment, marketplace economics and policy/IP standards."
+    },
+    {
+      "team": "Run 005 — Zero-Cost Controlled Notification Pilot",
+      "canonicalPackageStatus": "PRESENT",
+      "disposition": "PASS_NOT_APPLICABLE",
+      "requiredSpecialistCoverage": [],
+      "currentGap": "No material professional judgment product is produced: the lane validates and executes one fixed, owner-approved self-addressed notification packet with zero AI calls.",
+      "qaRequirement": "Correctness/authority QA is sufficient for this deterministic execution-only pilot; any future authored communication content would trigger G2.5."
+    },
+    {
+      "team": "Run 006 — Subscription Operations",
+      "canonicalPackageStatus": "PRESENT",
+      "disposition": "BLOCKED",
+      "requiredSpecialistCoverage": ["subscription-billing-operations", "invoice-and-charge-reconciliation", "contract-and-renewal-terms", "usage-entitlement-analysis", "commercial-spend-optimization"],
+      "currentGap": "Evidence Discovery, Reconciliation, Renewal/Spend Watcher and generic Evidence/QA roles cover the workflow, but do not prove specialist competence across billing operations, commercial terms, usage/entitlement and spend optimization.",
+      "qaRequirement": "Independent billing/commercial review able to reject financially or contractually weak recommendations, not only stale/duplicate/unsafe evidence."
+    },
+    {
+      "team": "Run 007 — Systems Intelligence & Development",
+      "canonicalPackageStatus": "MISSING",
+      "disposition": "BLOCKED_CANONICAL_PACKAGE_MISSING",
+      "requiredSpecialistCoverage": ["systems-architecture", "software-engineering", "security-engineering", "infrastructure-and-reliability", "integration-engineering", "technical-quality-assurance"],
+      "currentGap": "The team is referenced by Factory history/registry but no canonical run-007 package exists on the audited Factory branch. Professional completeness cannot be established from a label or historical summary.",
+      "qaRequirement": "Canonicalize the team, then map each material output to the relevant independent technical discipline QA."
+    },
+    {
+      "team": "Run 008 — Operations Core",
+      "canonicalPackageStatus": "PRESENT",
+      "disposition": "BLOCKED",
+      "requiredSpecialistCoverage": ["systems-architecture", "data-architecture", "security-and-privacy-engineering", "site-reliability-and-recovery", "workflow-and-integration-engineering", "governance-and-control-design"],
+      "currentGap": "The proposed core spans source identity, provenance, approvals, notifications, health, cost, retention, recovery and dependency management. That is several professional engineering/control disciplines, while current acceptance is primarily structural and operational.",
+      "qaRequirement": "Independent architecture, security/privacy and reliability review with discipline-specific acceptance criteria before downstream teams depend on the core."
+    },
+    {
+      "team": "Run 009 — Municipal Development Intelligence / Project Radar",
+      "canonicalPackageStatus": "PRESENT_BUT_INCOMPLETE_METADATA",
+      "disposition": "BLOCKED",
+      "requiredSpecialistCoverage": ["municipal-planning-and-land-use", "public-records-research", "development-and-construction-intelligence", "procurement-and-project-stage-analysis", "entity-location-resolution"],
+      "currentGap": "A canonical implementation directory exists, but it lacks a top-level canonical README/team capability contract on the audited branch. Software publishing/telemetry tests cannot substitute for professional interpretation of planning, development stage or procurement signals.",
+      "qaRequirement": "Independent municipal-development specialist review tied to authoritative records, stage interpretation, freshness and claim scope."
+    },
+    {
+      "team": "Run 010 — Vendor Invoice Overcharge Recovery",
+      "canonicalPackageStatus": "MISSING",
+      "disposition": "BLOCKED_CANONICAL_PACKAGE_MISSING",
+      "requiredSpecialistCoverage": ["accounts-payable-audit", "contract-pricing-analysis", "procurement-vendor-analysis", "quantitative-reconciliation", "financial-evidence-quality-assurance"],
+      "currentGap": "Registry/history references exist but no canonical run-010 package exists on the audited Factory branch.",
+      "qaRequirement": "Canonicalize the team and require independent financial/contract audit standards before any recovery claim is considered professionally complete."
+    },
+    {
+      "team": "Run 011 — Opportunity Intelligence",
+      "canonicalPackageStatus": "MISSING",
+      "disposition": "BLOCKED_CANONICAL_PACKAGE_MISSING",
+      "requiredSpecialistCoverage": ["market-research", "competitive-intelligence", "unit-economics-and-finance", "business-model-strategy", "domain-specialist-challenge"],
+      "currentGap": "A broad opportunity-scoring rubric is not equivalent to professional coverage across market, finance, strategy and the opportunity's underlying domain; the canonical run package is absent from the audited branch.",
+      "qaRequirement": "Canonicalize and require independent challenge by the disciplines material to each opportunity rather than one generic opportunity QA."
+    },
+    {
+      "team": "Run 012 — Growth & Client Acquisition",
+      "canonicalPackageStatus": "MISSING",
+      "disposition": "BLOCKED_CANONICAL_PACKAGE_MISSING",
+      "requiredSpecialistCoverage": ["prospecting-and-market-segmentation", "sales-qualification", "commercial-diagnosis", "conversion-copywriting", "sales-strategy", "pricing-and-proposal", "customer-success"],
+      "currentGap": "The team label spans multiple distinct commercial professions and its canonical run package is absent from the audited branch.",
+      "qaRequirement": "Canonicalize and split professional QA across research/qualification, copy, sales/pricing and customer-success outputs."
+    },
+    {
+      "team": "Run 014 — Software Product Engineering",
+      "canonicalPackageStatus": "PRESENT",
+      "disposition": "BLOCKED",
+      "requiredSpecialistCoverage": ["product-management", "requirements-engineering", "software-architecture", "frontend-engineering", "backend-engineering", "data-engineering", "integration-engineering", "test-engineering", "security-engineering", "release-devops", "accessibility-when-ui-is-present"],
+      "currentGap": "The seven-role chain is operationally complete, but Product Spec, Implementation and Challenger/QA remain too broad to prove senior capability in every applicable software discipline.",
+      "qaRequirement": "Independent engineering QA must be routed by discipline and cannot treat passing tests/security checks as proof of senior product/UX/engineering quality."
+    },
+    {
+      "team": "Run 015 — UI Excellence",
+      "canonicalPackageStatus": "PRESENT",
+      "disposition": "BLOCKED",
+      "requiredSpecialistCoverage": ["ux-architecture", "interaction-design", "visual-design-and-art-direction", "design-systems", "typography", "responsive-design", "accessibility", "frontend-ui-implementation"],
+      "currentGap": "The team explicitly combines benchmarking, UX architecture, art direction, design systems, interaction design, frontend polish, responsive/accessibility review and visual QA; that breadth must be backed by named specialist coverage rather than a generic UI specialist identity or score alone.",
+      "qaRequirement": "Independent UX, visual-design and accessibility excellence review with evidence-backed acceptance criteria in addition to UIX-100 scoring."
+    },
+    {
+      "team": "Run 016 — World Technology Intelligence",
+      "canonicalPackageStatus": "PRESENT",
+      "disposition": "BLOCKED",
+      "requiredSpecialistCoverage": ["ai-and-computing", "robotics-and-automation", "medicine-and-clinical-science", "biotechnology", "defense-and-dual-use", "energy", "space", "manufacturing-and-materials", "domain-specific-source-verification"],
+      "currentGap": "The hybrid topology is structurally efficient, but four reasoning agents cannot by themselves demonstrate strong-human-professional expertise across the 20-domain taxonomy. General technology, medicine, defense and cross-domain synthesis are still broader than the disciplines they judge.",
+      "qaRequirement": "Use routed/on-demand domain specialists and domain-specific evidence/QA rubrics; a single generic independent QA role is insufficient for all 20 domains."
+    },
+    {
+      "team": "Alibaba to eBay Public Sourcing Intelligence",
+      "canonicalPackageStatus": "NON_CANONICAL_EXTERNAL_ARTIFACT",
+      "disposition": "BLOCKED_CANONICAL_PACKAGE_MISSING",
+      "requiredSpecialistCoverage": ["ebay-marketplace-demand", "procurement-sourcing", "supplier-qualification", "product-equivalence", "freight-logistics", "landed-economics", "marketplace-policy-ip-risk", "category-product-expertise"],
+      "currentGap": "Specialized design artifacts exist outside the canonical Factory run tree, but no canonical package was found on the audited branch. Its role split is stronger than many teams, yet procurement/logistics/category expertise still requires explicit G2.5 coverage.",
+      "qaRequirement": "Canonicalize the package and require independent sourcing, logistics/economics, policy/IP and category-specific QA."
+    },
+    {
+      "team": "Website Business / Kinetiq",
+      "canonicalPackageStatus": "REFERENCE_IMPLEMENTATION_AND_WORKFLOW_ARTIFACTS",
+      "disposition": "BLOCKED",
+      "requiredSpecialistCoverage": ["market-and-customer-research", "commercial-qualification", "website-and-conversion-diagnosis", "information-architecture", "conversion-copywriting", "ux-design", "visual-design", "frontend-engineering", "accessibility", "web-performance", "pricing-and-proposal"],
+      "currentGap": "QUAL -> DIAG -> OUT -> PROP -> PROD -> QA is operational decomposition, not professional decomposition. Production and QA especially hide several independent disciplines.",
+      "qaRequirement": "Separate commercial/copy/design/engineering excellence gates; generic asset QA cannot approve all of them."
+    },
+    {
+      "team": "Factory Core / A0",
+      "canonicalPackageStatus": "PRESENT",
+      "disposition": "BLOCKED_SYSTEMIC",
+      "requiredSpecialistCoverage": ["capability-taxonomy-and-profession-mapping", "evidence-standard-governance", "qa-discipline-matching", "accepted-limitation-governance", "portfolio-audit-enforcement"],
+      "currentGap": "The new G2.5 evaluator exists, but the current team-builder still exposes gates A0/B0/G0/G1/G2/G3 and does not invoke G2.5. The professional gate is therefore not yet on the mandatory compilation path and can be bypassed.",
+      "qaRequirement": "Wire G2.5 fail-closed into build/promotion contracts and make portfolio audit status a governed Factory invariant."
+    }
+  ],
+  "summary": {
+    "auditedSurfaces": 15,
+    "passNotApplicable": 1,
+    "blocked": 9,
+    "blockedCanonicalPackageMissingOrNonCanonical": 5,
+    "acceptedLimitations": 0,
+    "auditComplete": false
+  }
+}
