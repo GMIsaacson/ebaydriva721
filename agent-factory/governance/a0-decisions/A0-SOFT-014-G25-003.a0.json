@@ -1,0 +1,29 @@
+{
+  "decision_id": "A0-SOFT-014-G25-003",
+  "status": "PASS",
+  "verdict": "EXTEND",
+  "owner": "Aberdeen Technologies",
+  "decided_at": "2026-08-29",
+  "business_outcome": "Remediate canonical Run 014 so professional capability completeness is explicit: broad coordination roles may no longer stand in for product, requirements, domain, engineering, release, UX/UI, security, and discipline-specific quality specialists.",
+  "existing_owner_scan": "Run 014 remains the canonical Software Product Engineering Team. Run 015 is the canonical UI Excellence Team and is reused for user-facing UX/UI work. No duplicate software team is created.",
+  "reuse_candidates_checked": [
+    "Run 014 existing seven-role software engineering team and typed handoffs",
+    "Run 015 UI Excellence specialist topology",
+    "Factory Core G2.5 professional capability gate",
+    "Run 008 Operations Core handoff boundary"
+  ],
+  "duplication_analysis": "The change extends Run 014 in place and delegates UI/UX specialization to Run 015. Existing Product Spec, Implementation, and Challenger roles remain for compatibility but become coordination roles rather than evidence of specialist coverage.",
+  "residual_unowned_loop": "Run 014 currently has broad roles that span multiple professional disciplines, and its existing QA proves correctness/readiness more strongly than profession-specific excellence. The G2.5 remediation must bind each material discipline to a specialist and independent professional-quality review.",
+  "covers_paths": [
+    "agent-factory/run-014/"
+  ],
+  "authority": {
+    "external_actions": 0,
+    "max_spend_cents": 0,
+    "deploy": false,
+    "publish": false,
+    "production_mutation": false,
+    "customer_contact": false
+  },
+  "evidence_ref": "agent-factory/evidence/factory-wide-specialist-gap-audit-2026-08-29.md; PR #70 G2.5 remediation branch"
+}
