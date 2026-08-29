@@ -1,0 +1,49 @@
+{
+  "decision_id": "A0-SOFT-014-EXTEND-005",
+  "status": "PASS",
+  "verdict": "EXTEND",
+  "owner": "Aberdeen Technologies",
+  "decided_at": "2026-08-29",
+  "business_outcome": "Close the observed Run 014 premium-quality gap by adding a bounded plan-to-structure execution stage that converts approved implementation composition plans into materially recomposed HTML/layout structure before CSS styling, while preserving Website Business as upstream commercial/creative owner and keeping Run 015 frozen.",
+  "existing_owner_scan": "Run 014 already owns implementation refinement, visual conditioning, source/browser/security gates, and candidate-local visual correction. Capable Hands V3 reached Candidate A 90/100 with all hard gates PASS, but Candidate A changed only 5 HTML lines and removed 3 even though the approved synthesis explicitly called for structural service grouping, stronger contact composition, and a more intentional about module. The residual gap is faithful structural execution of an already-approved composition plan, not another creative owner or another general critic.",
+  "reuse_candidates_checked": [
+    "Website Business Team upstream commercial/creative owner",
+    "Run 014 Refinement Synthesis Planner",
+    "Run 014 Vision-Conditioned Implementation Agent",
+    "Run 014 Visual Implementation QA",
+    "Run 014 source/browser/security/selection/Challenger gates",
+    "Run 015 remains frozen and non-runnable"
+  ],
+  "duplication_analysis": "EXTEND Run 014 rather than create a new design team. The new structural-composition capability may regroup and recompose already-approved content, links, journeys and approved assets to execute an existing implementation plan; it may not create new brand strategy, positioning, claims, services, assets, or replacement art direction.",
+  "residual_unowned_loop": "Frozen baseline + rendered evidence + approved synthesis -> candidate-specific structural composition blueprint -> isolated Structural Composition Agent produces complete HTML -> deterministic structural-delta gate + independent structure-fidelity review -> complete CSS styling against the transformed DOM -> render -> one candidate-local visual correction -> source/browser/visual/security gates -> independent baseline/A/B comparison -> Challenger only for a >=92 materially-better winner; otherwise restore baseline.",
+  "evidence_ref": "Capable Hands V3 qualification WC-20260829035033-ba4169eef4: Candidate A 90, Candidate B 89, baseline retained. Candidate A final HTML differed from baseline by only 5 added and 3 removed lines; the only substantive DOM additions were a mobile-menu span and founder wrapper, despite synthesis requirements for structural service hierarchy and stronger section composition.",
+  "covers_paths": [
+    "agent-factory/run-014",
+    "agent-factory/governance/a0-decisions/A0-SOFT-014-EXTEND-005.a0.json"
+  ],
+  "authority": {
+    "environment": "controlled-live/internal-workspace",
+    "external_actions": 0,
+    "max_spend_cents": 0,
+    "deploy": false,
+    "publish": false,
+    "production_deploy": false,
+    "production_data": false,
+    "customer_contact": false,
+    "standing_external_authority": "none"
+  },
+  "promotion_constraints": [
+    "Exact frozen baseline command ID and HTML/CSS SHA-256 must verify before candidate work begins.",
+    "Website Business remains upstream commercial/creative owner; structural composition is implementation execution only.",
+    "Structural Composition Agent may regroup existing verified content and approved assets but may not add or rewrite claims, services, destinations, imagery strategy, market positioning or brand direction.",
+    "Each candidate must show a non-trivial normalized DOM structural delta and independently demonstrate fidelity to its approved structural blueprint before CSS styling evidence counts.",
+    "A candidate that merely restyles essentially unchanged markup when its plan requires structural recomposition must fail the structure gate.",
+    "Candidate A and Candidate B remain isolated and start from the same frozen baseline; no cross-candidate code, screenshots, critique or patch reuse.",
+    "All verified facts, exact links/assets, services, business journeys, semantics, accessibility invariants and zero-external-action authority remain mandatory.",
+    "Post-structure CSS and candidate-local correction remain bounded and cannot self-approve.",
+    "Promotion still requires calibrated implementationQuality >=92, source/browser/accessibility/visual/security PASS, materially BETTER than baseline, agencyQuality=true, and final Challenger PASS.",
+    "If neither candidate qualifies, restore and retain the frozen baseline; no manual merge or rescue outside the governed loop.",
+    "Preview deployment remains a separate approval-gated action.",
+    "Run 015 remains frozen and non-runnable."
+  ]
+}
