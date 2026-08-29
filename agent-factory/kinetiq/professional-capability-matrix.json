@@ -1,0 +1,83 @@
+{
+  "schemaVersion": "1.0",
+  "gateId": "G2.5",
+  "teamId": "KINETIQ-WEBSITE-BUSINESS",
+  "status": "STAGED_FOR_REVALIDATION",
+  "professionalCapabilities": [
+    {
+      "stageId": "prospect-qualification",
+      "workProduct": "Evidence-backed prospect qualification and prioritization decision",
+      "requiredDisciplines": ["market-research","customer-research","commercial-analysis"],
+      "assignedSpecialists": ["market-research","customer-research","commercial-analysis"],
+      "specialistBindings": [
+        {"discipline":"market-research","specialistId":"kin-market-research-01"},
+        {"discipline":"customer-research","specialistId":"kin-market-research-01"},
+        {"discipline":"commercial-analysis","specialistId":"kin-commercial-strategy-01"}
+      ],
+      "evidenceStandards": ["source-linked public evidence","explicit qualification rubric","observed facts separated from inference","confidence level and missing evidence recorded","no invented revenue or demand claims"],
+      "qa": {"type":"professional_excellence","disciplines":["market-research","customer-research","commercial-analysis"],"acceptanceCriteria":["qualification is evidence-backed and decision-useful","commercial reasoning is proportionate to available evidence","high-value or low-confidence cases remain human-reviewable","output meets strong professional market-research standard"],"independent":true,"reviewer":"kin-commercial-quality-01"}
+    },
+    {
+      "stageId": "diagnosis-and-offer",
+      "workProduct": "Professionally grounded website/business diagnosis and suitable offer recommendation",
+      "requiredDisciplines": ["commercial-strategy","website-diagnosis","information-architecture","offer-strategy"],
+      "assignedSpecialists": ["commercial-strategy","website-diagnosis","information-architecture","offer-strategy"],
+      "specialistBindings": [
+        {"discipline":"commercial-strategy","specialistId":"kin-commercial-strategy-01"},
+        {"discipline":"website-diagnosis","specialistId":"kin-domain-diagnostician-01"},
+        {"discipline":"information-architecture","specialistId":"kin-information-architecture-01"},
+        {"discipline":"offer-strategy","specialistId":"kin-offer-strategy-01"}
+      ],
+      "evidenceStandards": ["visible issue inventory with source references","impact hypotheses clearly labeled as hypotheses","recommended intervention tied to observed problem","page/content requirements derived from evidence","offer/package fit with assumptions and exclusions","no guaranteed sales-result claims"],
+      "qa": {"type":"professional_excellence","disciplines":["commercial-strategy","website-diagnosis","information-architecture","offer-strategy"],"acceptanceCriteria":["diagnosis distinguishes symptom, cause hypothesis, and intervention","offer is neither under-scoped nor inflated beyond evidence","website brief is coherent enough for professional production","output meets strong consultant/strategist standard"],"independent":true,"reviewer":"kin-commercial-quality-01"}
+    },
+    {
+      "stageId": "outreach-and-proposal",
+      "workProduct": "Evidence-grounded outreach and versioned commercial proposal",
+      "requiredDisciplines": ["conversion-copywriting","sales-strategy","offer-strategy"],
+      "assignedSpecialists": ["conversion-copywriting","sales-strategy","offer-strategy"],
+      "specialistBindings": [
+        {"discipline":"conversion-copywriting","specialistId":"kin-conversion-copy-01"},
+        {"discipline":"sales-strategy","specialistId":"kin-sales-strategy-01"},
+        {"discipline":"offer-strategy","specialistId":"kin-offer-strategy-01"}
+      ],
+      "evidenceStandards": ["recipient and opportunity evidence linked","specific observed issue referenced without overclaiming","approved brand voice","scope, price/package source, assumptions, exclusions and acceptance path versioned","no unauthorized discount or guarantee"],
+      "qa": {"type":"dual","disciplines":["conversion-copywriting","sales-strategy","offer-strategy"],"acceptanceCriteria":["message is specific rather than templated/generic","claims are supportable from evidence","proposal is commercially coherent and understandable","tone and CTA fit the prospect context","output meets strong professional copy/sales standard"],"independent":true,"reviewer":"kin-copy-quality-01"}
+    },
+    {
+      "stageId": "website-production",
+      "workProduct": "Production-grade customer website or website improvement package",
+      "requiredDisciplines": ["ux-architecture","interaction-design","visual-design","design-systems","responsive-design","accessibility","frontend-ui-engineering","requirements-engineering","software-engineering","test-engineering","application-security"],
+      "assignedSpecialists": ["ux-architecture","interaction-design","visual-design","design-systems","responsive-design","accessibility","frontend-ui-engineering","requirements-engineering","software-engineering","test-engineering","application-security"],
+      "specialistBindings": [
+        {"discipline":"ux-architecture","specialistId":"uix-ux-architect-015","serviceRunId":"UIX-015"},
+        {"discipline":"interaction-design","specialistId":"uix-interaction-designer-015","serviceRunId":"UIX-015"},
+        {"discipline":"visual-design","specialistId":"uix-art-director-015","serviceRunId":"UIX-015"},
+        {"discipline":"design-systems","specialistId":"uix-design-system-015","serviceRunId":"UIX-015"},
+        {"discipline":"responsive-design","specialistId":"uix-responsive-accessibility-015","serviceRunId":"UIX-015"},
+        {"discipline":"accessibility","specialistId":"uix-responsive-accessibility-015","serviceRunId":"UIX-015"},
+        {"discipline":"frontend-ui-engineering","specialistId":"uix-frontend-polish-015","serviceRunId":"UIX-015"},
+        {"discipline":"requirements-engineering","specialistId":"requirements-engineer-014","serviceRunId":"SW-PROD-014"},
+        {"discipline":"software-engineering","specialistId":"frontend-engineer-014","serviceRunId":"SW-PROD-014"},
+        {"discipline":"test-engineering","specialistId":"test-engineering","serviceRunId":"SW-PROD-014"},
+        {"discipline":"application-security","specialistId":"security-dependency","serviceRunId":"SW-PROD-014"}
+      ],
+      "evidenceStandards": ["approved production brief and traceable scope","Run 015 design/UX evidence where UI is material","Run 014 requirements and implementation evidence","responsive and accessibility evidence","functional and failure-path tests","security review","artifact/version hashes","no unlicensed assets"],
+      "qa": {"type":"dual","disciplines":["ux-architecture","interaction-design","visual-design","accessibility","software-engineering","test-engineering","application-security"],"acceptanceCriteria":["Run 015 professional excellence criteria pass for material UI","Run 014 professional engineering criteria pass","website satisfies approved commercial brief without scope drift","no critical accessibility/security/functionality blocker","customer-facing output meets strong professional agency standard"],"independent":true,"reviewer":"uix-qa-015","serviceRunId":"UIX-015"}
+    },
+    {
+      "stageId": "delivery-and-customer-success",
+      "workProduct": "Controlled delivery, acceptance, issue routing, and follow-up package",
+      "requiredDisciplines": ["customer-success","customer-experience"],
+      "assignedSpecialists": ["customer-success","customer-experience"],
+      "specialistBindings": [
+        {"discipline":"customer-success","specialistId":"kin-customer-success-01"},
+        {"discipline":"customer-experience","specialistId":"kin-customer-success-01"}
+      ],
+      "evidenceStandards": ["exact approved artifact/version identified","recipient verification required before delivery","acceptance criteria and known limitations surfaced","issues classified and routed","follow-up/expansion recommendation does not alter price/scope without approval"],
+      "qa": {"type":"professional_excellence","disciplines":["customer-success","customer-experience"],"acceptanceCriteria":["handoff is clear and low-friction for customer","issues are routed with ownership and next action","follow-up is useful rather than spammy","commercial adjustments remain approval-gated","output meets strong professional customer-success standard"],"independent":true,"reviewer":"kin-customer-quality-01"}
+    }
+  ],
+  "acceptedLimitations": [],
+  "revalidationRule": "Design PASS is necessary but not sufficient. G4 requires at least 10 real shadow cases compared with human professional judgments across qualification, diagnosis, outreach/proposal and production; production claims also require current Run 014 and Run 015 evidence."
+}
