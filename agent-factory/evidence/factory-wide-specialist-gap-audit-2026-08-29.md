@@ -1,6 +1,6 @@
 # Factory-wide Specialist-Gap Audit — 2026-08-29
 
-Status: **OPEN — portfolio scan complete; remediation and enforcement remain incomplete**
+Status: **OPEN — portfolio scan complete; remediation in progress**
 
 ## Acceptance rule
 
@@ -29,20 +29,39 @@ This is itself a Factory defect: registry/history presence must not be treated a
 | Run 006 — Subscription Operations | Present | Evidence Discovery, Reconciliation, Renewal/Spend Watcher and generic QA do not prove billing-ops, charge reconciliation, contract/renewal, entitlement/usage and spend-optimization expertise | **BLOCKED** |
 | Run 007 — Systems Intelligence & Development | Canonical package absent | Broad label spans systems architecture, software, security, infrastructure/reliability, integration and technical QA; no canonical package exists to establish coverage | **BLOCKED_CANONICAL_PACKAGE_MISSING** |
 | Run 008 — Operations Core | Present | Source identity, provenance, approvals, notifications, health, cost, retention, recovery and dependency management span systems/data architecture, security/privacy, SRE and governance; current criteria are primarily structural/operational | **BLOCKED** |
-| Run 009 — Municipal Development Intelligence / Project Radar | Present but canonical metadata incomplete | Implementation exists, but no top-level canonical team README/capability contract was found. Publishing/telemetry correctness does not prove municipal planning, land-use, public-record, development-stage or procurement interpretation | **BLOCKED** |
+| Run 009 — Municipal Development Intelligence / Project Radar | Present but canonical metadata incomplete | Implementation exists, but publishing/telemetry correctness does not prove municipal planning, land-use, public-record, development-stage or procurement interpretation | **BLOCKED** |
 | Run 010 — Vendor Invoice Overcharge Recovery | Canonical package absent | Requires AP audit, contract/pricing analysis, procurement/vendor analysis, quantitative reconciliation and financial evidence QA | **BLOCKED_CANONICAL_PACKAGE_MISSING** |
 | Run 011 — Opportunity Intelligence | Canonical package absent | Generic opportunity scoring can hide market research, competitive intelligence, finance/unit economics, strategy and domain-specialist challenge | **BLOCKED_CANONICAL_PACKAGE_MISSING** |
 | Run 012 — Growth & Client Acquisition | Canonical package absent | Prospecting, qualification, diagnosis, copywriting, sales strategy, pricing/proposal and customer success are distinct professions | **BLOCKED_CANONICAL_PACKAGE_MISSING** |
-| Run 014 — Software Product Engineering | Present | Seven-role workflow is operationally complete but Product Spec, Implementation and Challenger/QA are too broad to prove senior product, requirements, frontend, backend, data, integration, testing, security, release and applicable accessibility competence | **BLOCKED** |
-| Run 015 — UI Excellence | Present | Team explicitly combines benchmarking, UX architecture, art direction, design systems, interaction design, frontend polish, responsive/accessibility review, scoring and visual QA. A UIX score does not itself prove independent senior coverage of those disciplines | **BLOCKED** |
+| Run 014 — Software Product Engineering | Present; remediation staged | Broad Product Spec / Implementation / Challenger roles have been demoted to coordination. Explicit product, requirements, domain, architecture, data, frontend, backend, data-engineering, integration, platform/release, test, security and independent professional-quality reviewers are now modeled; user-facing UX/UI is delegated to Run 015 | **PASS_DESIGN_PENDING_REVALIDATION** |
+| Run 015 — UI Excellence | Present | Canonical manifest already separates benchmarking, UX architecture, art direction, design systems, interaction design, frontend polish, responsive/accessibility, scoring and independent visual QA. A formal G2.5 matrix now maps those roles to evidence and professional acceptance criteria | **PASS_DESIGN_PENDING_G4_SHADOW** |
 | Run 016 — World Technology Intelligence | Present | Hybrid topology is efficient, but four reasoning agents cannot demonstrate strong-human-professional expertise across a 20-domain taxonomy. Medicine, defense and “general technology” remain internally multi-disciplinary | **BLOCKED** |
 | Alibaba→eBay Public Sourcing Intelligence | Non-canonical specialist artifacts | Role split is stronger than many teams, but canonicalization plus explicit procurement, supplier qualification, freight/logistics, marketplace economics, policy/IP and category-specialist QA are still required | **BLOCKED_CANONICAL_PACKAGE_MISSING** |
 | Website Business / Kinetiq | Reference/workflow artifacts | `QUAL → DIAG → OUT → PROP → PROD → QA` is operational decomposition, not professional decomposition. Commercial diagnosis, copy, IA, UX, visual design, frontend, accessibility, performance and proposal/pricing require their own standards and review | **BLOCKED** |
-| Factory Core / A0 | Present | **Systemic blocker:** the G2.5 evaluator exists on this branch, but `team-builder.cjs` still lists A0/B0/G0/G1/G2/G3 and does not invoke G2.5. The new professional gate is therefore not yet mandatory and can be bypassed | **BLOCKED_SYSTEMIC** |
+| Factory Core / A0 | Present | G2.5 is wired into new RUN manufacturing on this branch. New RUN requests must carry a passing professional capability matrix; legacy teams remain explicitly pending until remediated rather than silently grandfathered | **PASS_NEW_RUN_ENFORCEMENT / LEGACY_REMEDIATION_OPEN** |
 
 The machine-readable counterpart is `agent-factory/evidence/g2-5-portfolio-capability-matrix.json`.
 
-## Required specialist remediation by team
+## Run 014 remediation record
+
+Run 014 now has `agent-factory/run-014/professional-capability-matrix.json` and an updated canonical manifest. The remediation deliberately does **not** claim that the old seven-role topology was professionally complete.
+
+The compatibility roles `product-spec`, `implementation`, and `challenger-qa` remain so existing handoffs do not break, but they are no longer accepted as specialist evidence. Professional ownership is explicitly split across product management, requirements engineering, domain analysis, software/data architecture, frontend/backend/data/integration/platform engineering, test engineering, application security, release/operations readiness, and independent product/architecture/engineering quality review.
+
+User-facing interface work is routed to **Run 015 UI Excellence** rather than duplicating UX, interaction, visual, design-system, accessibility and frontend-UI specialization inside Run 014.
+
+A deterministic test requires:
+
+- executable G2.5 PASS;
+- zero accepted limitations;
+- a concrete specialist binding for every required discipline;
+- every binding to resolve to a Run 014 role or the delegated Run 015 service;
+- broad compatibility coordinators not to count as specialist evidence;
+- UI work to resolve to Run 015.
+
+**Remaining Run 014 proof obligation:** one bounded non-production revalidation assignment must exercise the new specialist topology and produce the domain-specific review evidence. Historical G3/G4/G5/G6 passes predate G2.5 and are not retroactively treated as proof of professional completeness.
+
+## Required specialist remediation still open
 
 - **Run 004:** marketplace-demand research; procurement/sourcing; product identity/equivalence; freight/logistics; marketplace economics; category/product risk; IP/policy compliance; independent multi-discipline sourcing QA.
 - **Run 006:** subscription/billing operations; invoice/charge reconciliation; contract and renewal terms; usage/entitlement analysis; commercial spend optimization; independent billing/commercial QA.
@@ -52,38 +71,23 @@ The machine-readable counterpart is `agent-factory/evidence/g2-5-portfolio-capab
 - **Run 010:** canonicalize first, then AP audit; contract/pricing; procurement/vendor analysis; quantitative reconciliation; financial QA.
 - **Run 011:** canonicalize first, then market research; competitive intelligence; finance/unit economics; business-model strategy; dynamically routed domain specialist challenge.
 - **Run 012:** canonicalize first, then prospecting/segmentation; sales qualification; commercial diagnosis; conversion copywriting; sales strategy; pricing/proposal; customer success; discipline-specific QA.
-- **Run 014:** product management; requirements engineering; architecture; frontend/backend/data/integration engineering as applicable; test engineering; security; DevOps/release; accessibility when a UI exists; discipline-routed engineering/design QA.
-- **Run 015:** UX architecture; interaction design; visual design/art direction; design systems; typography; responsive design; accessibility; frontend UI implementation; independent UX/visual/accessibility excellence QA.
 - **Run 016:** routed/on-demand domain specialists rather than twenty permanent agents; domain-specific evidence standards and QA for AI/computing, robotics, medicine/clinical science, biotech, defense/dual use, energy, space, manufacturing/materials and other covered domains.
 - **Alibaba→eBay:** canonicalize first, then marketplace demand; procurement/sourcing; supplier qualification; exact product equivalence; freight/logistics; landed economics; policy/IP; product-category expertise.
 - **Website Business / Kinetiq:** separate commercial research/qualification, conversion diagnosis, information architecture, conversion copy, UX, visual design, frontend, accessibility, performance and pricing/proposal quality gates.
 
 ## No fabricated acceptance
 
-No unresolved specialist gap in this audit has been marked `ACCEPTED_LIMITATION`. The audit contains **zero owner-accepted limitations** because no corresponding explicit owner acceptance record was found or created. A limitation must never be inferred from silence or from an older team being allowed to operate.
-
-## Factory Core enforcement blocker
-
-`agent-factory/core/professional-capability-gate.cjs` implements the evaluator, but the current Factory compiler does not yet call it. Therefore this PR must not claim that G2.5 is enforced Factory-wide until the builder/promotion path is wired fail-closed and tests prove a professionally incomplete RUN request cannot be manufactured or promoted.
-
-Required integration:
-
-1. `team-builder.cjs` imports the G2.5 assertion/evaluator.
-2. RUN-mode team requests carry a professional capability matrix.
-3. G2.5 executes after structural design and before G3 eligibility.
-4. The manifest records `G2.5` and its result; contracts/receipts expose the professional-capability status.
-5. Missing or blocked G2.5 prevents a new RUN build from being represented as G3-eligible.
-6. Existing legacy teams remain explicitly `G2.5_PENDING` until audited/remediated; they are not silently grandfathered.
-7. Promotion logic must fail closed if G2.5 is missing, blocked, or stale.
+No unresolved specialist gap in this audit has been marked `ACCEPTED_LIMITATION`. The audit contains **zero owner-accepted limitations**. A limitation must never be inferred from silence or from an older team being allowed to operate.
 
 ## Audit completion state
 
-**OPEN.** The portfolio scan is now broad enough to expose the Factory-wide pattern, including canonical-package drift. The work is not complete because:
+**OPEN.** The Factory now has a fail-closed G2.5 mechanism for new RUN construction and the first two canonical remediation mappings (Run 014 and Run 015), but the audit is not complete because:
 
-- G2.5 is not yet mandatory in Factory Core;
-- most judgment-heavy teams still have unresolved professional specialist gaps;
+- Run 014 still needs one real specialist-topology revalidation assignment;
+- Run 015 still needs its real G4 UI shadow qualification;
+- most other judgment-heavy teams still have unresolved professional specialist gaps;
 - Runs 007/010/011/012 and Alibaba→eBay need canonical package reconciliation;
-- no owner has explicitly accepted the remaining limitations;
-- remediated team matrices and discipline-specific QA evidence have not yet been proven in shadow work.
+- promotion-time G2.5 enforcement and stale-matrix handling still need to be proven across legacy teams;
+- no owner has explicitly accepted the remaining limitations.
 
-Do not mark this audit complete until every material team/stage is `PASS` or has an explicit, deliberate `ACCEPTED_LIMITATION` with owner and rationale.
+Do not mark this audit complete until every material team/stage is `PASS` with evidence or has an explicit, deliberate `ACCEPTED_LIMITATION` with owner and rationale.
