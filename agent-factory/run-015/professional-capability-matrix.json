@@ -5,70 +5,14 @@
   "status": "PASS_DESIGN_PENDING_G4_SHADOW",
   "basis": "Formalizes specialist roles already present in the canonical Run 015 manifest; does not grant new authority.",
   "professionalCapabilities": [
-    {
-      "stageId": "benchmarking",
-      "workProduct": "Evidence-backed interface benchmark brief",
-      "requiredDisciplines": ["ui-benchmark-research"],
-      "assignedSpecialists": ["uix-benchmark-scout-015"],
-      "evidenceStandards": ["relevant best-in-class references", "non-copying benchmark criteria", "traceable benchmark rationale"],
-      "qa": {"type":"professional_excellence","disciplines":["ui-benchmark-research"],"acceptanceCriteria":["benchmarks are relevant, traceable, non-derivative and actionable"],"independent":true,"reviewer":"uix-qa-015"}
-    },
-    {
-      "stageId": "ux-architecture",
-      "workProduct": "Information architecture and task-flow diagnosis",
-      "requiredDisciplines": ["ux-architecture"],
-      "assignedSpecialists": ["uix-ux-architect-015"],
-      "evidenceStandards": ["task-flow rationale", "navigation and hierarchy analysis", "friction/cognitive-load findings"],
-      "qa": {"type":"professional_excellence","disciplines":["ux-architecture"],"acceptanceCriteria":["senior-practitioner task clarity and information-architecture standard", "critical UX dimension >= 90"],"independent":true,"reviewer":"uix-qa-015"}
-    },
-    {
-      "stageId": "visual-direction",
-      "workProduct": "Art direction, typography and composition system",
-      "requiredDisciplines": ["visual-design", "art-direction", "typography"],
-      "assignedSpecialists": ["uix-art-director-015"],
-      "evidenceStandards": ["documented visual direction", "typography approach", "composition and density rationale", "viewport evidence"],
-      "qa": {"type":"professional_excellence","disciplines":["visual-design", "art-direction", "typography"],"acceptanceCriteria":["coherent distinctive visual hierarchy", "production score >= 92", "critical visual hierarchy >= 90"],"independent":true,"reviewer":"uix-qa-015"}
-    },
-    {
-      "stageId": "design-system",
-      "workProduct": "Reusable token and component-rule delta",
-      "requiredDisciplines": ["design-systems"],
-      "assignedSpecialists": ["uix-design-system-015"],
-      "evidenceStandards": ["type/spacing/surface/control/state token rules", "responsive component rules", "consistency evidence"],
-      "qa": {"type":"professional_excellence","disciplines":["design-systems"],"acceptanceCriteria":["systematic reusable rules without local one-off drift"],"independent":true,"reviewer":"uix-qa-015"}
-    },
-    {
-      "stageId": "interaction-design",
-      "workProduct": "Interaction and state specification",
-      "requiredDisciplines": ["interaction-design"],
-      "assignedSpecialists": ["uix-interaction-designer-015"],
-      "evidenceStandards": ["hover/focus/pressed states", "loading/empty/success/error states", "motion and feedback rationale"],
-      "qa": {"type":"professional_excellence","disciplines":["interaction-design"],"acceptanceCriteria":["complete, predictable and accessible interaction states"],"independent":true,"reviewer":"uix-qa-015"}
-    },
-    {
-      "stageId": "frontend-ui-implementation",
-      "workProduct": "Function-preserving frontend UI change set",
-      "requiredDisciplines": ["frontend-ui-engineering"],
-      "assignedSpecialists": ["uix-frontend-polish-015"],
-      "evidenceStandards": ["functional-equivalence tests", "approved source diff", "mobile/tablet/desktop implementation evidence"],
-      "qa": {"type":"dual","disciplines":["frontend-ui-engineering"],"acceptanceCriteria":["business logic and data contracts preserved", "implementation matches approved design intent"],"independent":true,"reviewer":"uix-qa-015"}
-    },
-    {
-      "stageId": "responsive-accessibility",
-      "workProduct": "Responsive and accessibility acceptance report",
-      "requiredDisciplines": ["responsive-design", "accessibility"],
-      "assignedSpecialists": ["uix-responsive-accessibility-015"],
-      "evidenceStandards": ["mobile/tablet/desktop screenshots", "keyboard/focus evidence", "contrast/readability evidence", "reduced-motion and semantic review"],
-      "qa": {"type":"professional_excellence","disciplines":["responsive-design", "accessibility"],"acceptanceCriteria":["critical responsive and accessibility dimensions >= 90", "no unresolved critical accessibility blocker"],"independent":true,"reviewer":"uix-qa-015"}
-    },
-    {
-      "stageId": "visual-acceptance",
-      "workProduct": "UIX-100 scorecard and independent final decision",
-      "requiredDisciplines": ["visual-quality-assurance", "ux-quality-assurance", "accessibility-quality-assurance"],
-      "assignedSpecialists": ["uix-visual-acceptance-015", "uix-qa-015"],
-      "evidenceStandards": ["viewport evidence", "repairable defect list", "score calculation", "functional-preservation evidence"],
-      "qa": {"type":"professional_excellence","disciplines":["visual-quality-assurance", "ux-quality-assurance", "accessibility-quality-assurance"],"acceptanceCriteria":["UIX-100 >= 92", "all critical dimensions >= 90", "no unresolved critical blocker"],"independent":true,"reviewer":"uix-qa-015"}
-    }
+    {"stageId":"benchmarking","workProduct":"Evidence-backed interface benchmark brief","requiredDisciplines":["ui-benchmark-research"],"assignedSpecialists":["ui-benchmark-research"],"specialistRoleIds":["uix-benchmark-scout-015"],"evidenceStandards":["relevant best-in-class references","non-copying benchmark criteria","traceable benchmark rationale"],"qa":{"type":"professional_excellence","disciplines":["ui-benchmark-research"],"acceptanceCriteria":["benchmarks are relevant, traceable, non-derivative and actionable"],"independent":true,"reviewer":"uix-qa-015"}},
+    {"stageId":"ux-architecture","workProduct":"Information architecture and task-flow diagnosis","requiredDisciplines":["ux-architecture"],"assignedSpecialists":["ux-architecture"],"specialistRoleIds":["uix-ux-architect-015"],"evidenceStandards":["task-flow rationale","navigation and hierarchy analysis","friction/cognitive-load findings"],"qa":{"type":"professional_excellence","disciplines":["ux-architecture"],"acceptanceCriteria":["senior-practitioner task clarity and information-architecture standard","critical UX dimension >= 90"],"independent":true,"reviewer":"uix-qa-015"}},
+    {"stageId":"visual-direction","workProduct":"Art direction, typography and composition system","requiredDisciplines":["visual-design","art-direction","typography"],"assignedSpecialists":["visual-design","art-direction","typography"],"specialistRoleIds":["uix-art-director-015"],"evidenceStandards":["documented visual direction","typography approach","composition and density rationale","viewport evidence"],"qa":{"type":"professional_excellence","disciplines":["visual-design","art-direction","typography"],"acceptanceCriteria":["coherent distinctive visual hierarchy","production score >= 92","critical visual hierarchy >= 90"],"independent":true,"reviewer":"uix-qa-015"}},
+    {"stageId":"design-system","workProduct":"Reusable token and component-rule delta","requiredDisciplines":["design-systems"],"assignedSpecialists":["design-systems"],"specialistRoleIds":["uix-design-system-015"],"evidenceStandards":["type/spacing/surface/control/state token rules","responsive component rules","consistency evidence"],"qa":{"type":"professional_excellence","disciplines":["design-systems"],"acceptanceCriteria":["systematic reusable rules without local one-off drift"],"independent":true,"reviewer":"uix-qa-015"}},
+    {"stageId":"interaction-design","workProduct":"Interaction and state specification","requiredDisciplines":["interaction-design"],"assignedSpecialists":["interaction-design"],"specialistRoleIds":["uix-interaction-designer-015"],"evidenceStandards":["hover/focus/pressed states","loading/empty/success/error states","motion and feedback rationale"],"qa":{"type":"professional_excellence","disciplines":["interaction-design"],"acceptanceCriteria":["complete, predictable and accessible interaction states"],"independent":true,"reviewer":"uix-qa-015"}},
+    {"stageId":"frontend-ui-implementation","workProduct":"Function-preserving frontend UI change set","requiredDisciplines":["frontend-ui-engineering"],"assignedSpecialists":["frontend-ui-engineering"],"specialistRoleIds":["uix-frontend-polish-015"],"evidenceStandards":["functional-equivalence tests","approved source diff","mobile/tablet/desktop implementation evidence"],"qa":{"type":"dual","disciplines":["frontend-ui-engineering"],"acceptanceCriteria":["business logic and data contracts preserved","implementation matches approved design intent"],"independent":true,"reviewer":"uix-qa-015"}},
+    {"stageId":"responsive-accessibility","workProduct":"Responsive and accessibility acceptance report","requiredDisciplines":["responsive-design","accessibility"],"assignedSpecialists":["responsive-design","accessibility"],"specialistRoleIds":["uix-responsive-accessibility-015"],"evidenceStandards":["mobile/tablet/desktop screenshots","keyboard/focus evidence","contrast/readability evidence","reduced-motion and semantic review"],"qa":{"type":"professional_excellence","disciplines":["responsive-design","accessibility"],"acceptanceCriteria":["critical responsive and accessibility dimensions >= 90","no unresolved critical accessibility blocker"],"independent":true,"reviewer":"uix-qa-015"}},
+    {"stageId":"visual-acceptance","workProduct":"UIX-100 scorecard and independent final decision","requiredDisciplines":["visual-quality-assurance","ux-quality-assurance","accessibility-quality-assurance"],"assignedSpecialists":["visual-quality-assurance","ux-quality-assurance","accessibility-quality-assurance"],"specialistRoleIds":["uix-visual-acceptance-015","uix-qa-015"],"evidenceStandards":["viewport evidence","repairable defect list","score calculation","functional-preservation evidence"],"qa":{"type":"professional_excellence","disciplines":["visual-quality-assurance","ux-quality-assurance","accessibility-quality-assurance"],"acceptanceCriteria":["UIX-100 >= 92","all critical dimensions >= 90","no unresolved critical blocker"],"independent":true,"reviewer":"uix-qa-015"}}
   ],
   "remainingGate": "G4 must still prove these roles on one real UI transformation; G2.5 design completeness is not a substitute for shadow evidence."
 }
