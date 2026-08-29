@@ -27,3 +27,11 @@ assert(Gate.extractCssClasses('.a{color:red}.b:hover{}').includes('b'));
 assert.equal(Gate.cssBraceBalance('.a{color:red}'),true);
 assert.equal(Gate.cssBraceBalance('.a{color:red'),false);
 console.log('production-implementation-gate: 8/8 PASS');
+
+const rollbackHeavy=[
+  {type:'rendered-qa'},{type:'transaction-rejected'},{type:'rendered-qa'},{type:'transaction-rejected'},
+  {type:'rendered-qa'},{type:'transaction-rejected'},{type:'rendered-qa'},{type:'transaction-rejected'}
+];
+r=Gate.result({files:{'index.html':goodHtml,'styles.css':goodCss},approvedLinks:approved,requiredStrings:['Since 2017'],browserEvidence:browser,visualQa:visual,repairReceipts:rollbackHeavy});
+assert(!r.failed.some(x=>x.id==='repair-receipts-bounded'));
+console.log('production-implementation-gate transactional receipt bound: PASS');
