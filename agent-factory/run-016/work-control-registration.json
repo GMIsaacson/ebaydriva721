@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "1.0",
+  "teamId": "WTI-016",
+  "runNumber": 16,
+  "run": "Run 016",
+  "name": "World Technology Intelligence",
+  "kind": "reusable-team",
+  "runnable": true,
+  "readiness": "G4 professional shadow",
+  "live": "Testing / no external actions",
+  "authority": {
+    "maxExternalActions": 0,
+    "maxExternalSpendCents": 0,
+    "maxAggregateModelComputeCents": 200,
+    "maxModelComputeCentsPerAssignment": 2
+  },
+  "capability": "Evidence-bounded world technology intelligence with on-demand domain specialist routing and independent professional review.",
+  "source": {
+    "repository": "GMIsaacson/ebaydriva721",
+    "branch": "factory/professional-capability-gate",
+    "manifestPath": "agent-factory/run-016/team-manifest.json",
+    "routingPath": "agent-factory/run-016/config/domain-specialist-routing.json",
+    "providerAdapterPath": "agent-factory/run-016/runtime/work-control-provider.cjs"
+  }
+}
