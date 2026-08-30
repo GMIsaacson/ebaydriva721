@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "asOf": "2026-08-22T22:01:00-05:00",
+  "asOf": "2026-08-29T00:00:00Z",
   "sourcePolicy": "Canonical team/run identity is backed by Factory records. This registry is a read model with source references, not a new authority store.",
   "reservedRuns": [13],
   "teams": [
@@ -16,6 +16,7 @@
     {"id":"INV-010","runNumber":10,"run":"Run 010","name":"Vendor Invoice Overcharge Recovery","kind":"reusable-team","runnable":true,"icon":"I","readiness":"Review","live":"Record-backed","authority":"Approval-gated","capability":"Invoice matching, discrepancy detection, evidence reconstruction and recovery-ready output.","notionUrl":"https://app.notion.com/p/3bfe161eac8a81e090bdcd13d7bcdbcd?pvs=204"},
     {"id":"OPP-011","runNumber":11,"run":"Run 011","name":"Opportunity Intelligence","kind":"reusable-team","runnable":true,"icon":"O","readiness":"Testing","live":"Supervised calibration","authority":"Internal analysis only","capability":"Maps, compares and challenges revenue opportunities before resources are committed.","notionUrl":"https://app.notion.com/p/3c0e161eac8a81959956c146f771831d?pvs=204"},
     {"id":"GROWTH-012","runNumber":12,"run":"Run 012","name":"Growth & Client Acquisition","kind":"reusable-team","runnable":true,"icon":"G","readiness":"Review","live":"Record-backed","authority":"Approval-gated","capability":"Coordinates prospecting, acquisition workflows, evidence, delivery control and growth.","notionUrl":"https://app.notion.com/p/3c0e161eac8a81d7bd0bf1c20ef0979a?pvs=204"},
-    {"id":"SW-PROD-014","runNumber":14,"run":"Run 014","name":"Software Product Engineering","kind":"reusable-team","runnable":true,"icon":"W","readiness":"Ready","live":"Controlled Live","authority":"Approval-gated","capability":"Turns approved software briefs into tested, security-reviewed release candidates with typed handoff.","notionUrl":"https://app.notion.com/p/3c1e161eac8a81509c3fc617bde343bd?pvs=204","githubPath":"agent-factory/run-014/OPERATING-CONTRACT.md"}
+    {"id":"SW-PROD-014","runNumber":14,"run":"Run 014","name":"Software Product Engineering","kind":"reusable-team","runnable":true,"icon":"W","readiness":"Ready","live":"Controlled Live","authority":"Approval-gated","capability":"Turns approved software briefs into tested, security-reviewed release candidates with typed handoff.","notionUrl":"https://app.notion.com/p/3c1e161eac8a81509c3fc617bde343bd?pvs=204","githubPath":"agent-factory/run-014/OPERATING-CONTRACT.md"},
+    {"id":"WTI-016","runNumber":16,"run":"Run 016","name":"World Technology Intelligence","kind":"reusable-team","runnable":true,"icon":"T","readiness":"G4 professional shadow","live":"Testing / no external actions","authority":"Internal model execution only; 2 cents per assignment; 200 cents aggregate shadow ceiling","capability":"Evidence-bounded world technology intelligence with on-demand domain specialist routing and independent professional review.","githubPath":"agent-factory/run-016/work-control-registration.json","sourceBranch":"factory/professional-capability-gate"}
   ]
 }
