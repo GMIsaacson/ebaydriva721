@@ -1,0 +1,14 @@
+{
+  "schemaVersion": "1.0",
+  "teamId": "WTI-016",
+  "sourceRepository": "GMIsaacson/ebaydriva721",
+  "sourceBranch": "factory/professional-capability-gate",
+  "sourcePath": "agent-factory/run-016/work-control-registration.json",
+  "status": "PENDING_REGISTRY_UPDATE",
+  "authority": {
+    "maxExternalActions": 0,
+    "maxExternalSpendCents": 0,
+    "maxAggregateModelComputeCents": 200,
+    "maxModelComputeCentsPerAssignment": 2
+  }
+}
