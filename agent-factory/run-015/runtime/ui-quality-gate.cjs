@@ -16,6 +16,19 @@ const DIMENSIONS = Object.freeze({
 const REQUIRED_VIEWPORTS = Object.freeze(['mobile', 'tablet', 'desktop']);
 const CRITICAL_DIMENSIONS = Object.freeze(['visualHierarchy', 'uxClarity', 'responsiveExecution', 'accessibility']);
 const NEAR_PASS_PROTECTION_THRESHOLD = 90;
+const REPAIR_POLICIES = Object.freeze({
+  'RUN015-NJIA-20260831': Object.freeze({
+    baselineArtifactHash: null,
+    baselineOverallScore: 92.0,
+    baselineVisualScore: 91.8,
+    allowedSurfaces: Object.freeze([
+      'desktop-ledger-alignment',
+      'tablet-decision-strip-layout',
+      'keyboard-filter-aria',
+    ]),
+    requiredPassingCheckIds: Object.freeze(['nav', 'primary-flow', 'persistence']),
+  }),
+});
 
 function asFiniteScore(value, key) {
   const n = Number(value);
@@ -62,41 +75,40 @@ function calculateWeightedScore(scores) {
   return Math.round(total * 10) / 10;
 }
 
-function validateRepairControl(packet, score) {
+function validateRepairControlAgainstPolicy(packet, score, policy) {
   const control = packet.repairControl;
-  if (control == null) return { active: false, failures: [], allDimensionsAtLeast90: true };
-  if (!control || typeof control !== 'object' || Array.isArray(control)) throw new Error('REPAIR_CONTROL_INVALID');
-  if (!control.baseline || typeof control.baseline !== 'object') throw new Error('REPAIR_BASELINE_REQUIRED');
+  if (!policy || typeof policy !== 'object') throw new Error('REPAIR_POLICY_NOT_APPROVED');
 
-  const baseline = control.baseline;
-  const artifactHash = String(baseline.artifactHash || '');
-  if (!/^[a-f0-9]{64}$/i.test(artifactHash)) throw new Error('REPAIR_BASELINE_FULL_HASH_REQUIRED');
+  const artifactHash = String(policy.baselineArtifactHash || '');
+  if (!artifactHash) throw new Error('REPAIR_POLICY_BASELINE_UNBOUND');
+  if (!/^[a-f0-9]{64}$/i.test(artifactHash)) throw new Error('REPAIR_POLICY_BASELINE_HASH_INVALID');
+
   const parentArtifactHash = String(control.parentArtifactHash || '');
   if (!/^[a-f0-9]{64}$/i.test(parentArtifactHash)) throw new Error('REPAIR_PARENT_FULL_HASH_REQUIRED');
 
-  const baselineOverall = asFiniteScore(baseline.overallScore, 'baseline.overallScore');
-  const baselineVisual = asFiniteScore(baseline.visualScore, 'baseline.visualScore');
+  const baselineOverall = asFiniteScore(policy.baselineOverallScore, 'policy.baselineOverallScore');
+  const baselineVisual = asFiniteScore(policy.baselineVisualScore, 'policy.baselineVisualScore');
   const candidateVisual = asFiniteScore(packet.review.visualScore, 'review.visualScore');
 
-  if (!Array.isArray(control.authorizedSurfaces) || control.authorizedSurfaces.length === 0) {
-    throw new Error('REPAIR_AUTHORIZED_SURFACES_REQUIRED');
-  }
   if (!Array.isArray(control.changedSurfaces) || control.changedSurfaces.length === 0) {
     throw new Error('REPAIR_CHANGED_SURFACES_REQUIRED');
   }
-  if (!Array.isArray(baseline.passingCheckIds) || baseline.passingCheckIds.length < 3) {
-    throw new Error('REPAIR_BASELINE_PASSING_CHECKS_REQUIRED');
+  if (!Array.isArray(policy.allowedSurfaces) || policy.allowedSurfaces.length === 0) {
+    throw new Error('REPAIR_POLICY_SURFACES_REQUIRED');
+  }
+  if (!Array.isArray(policy.requiredPassingCheckIds) || policy.requiredPassingCheckIds.length < 3) {
+    throw new Error('REPAIR_POLICY_PASSING_CHECKS_REQUIRED');
   }
 
   const failures = [];
   if (parentArtifactHash.toLowerCase() !== artifactHash.toLowerCase()) failures.push('REPAIR_PARENT_NOT_BASELINE');
 
-  const allowed = new Set(control.authorizedSurfaces.map(String));
+  const allowed = new Set(policy.allowedSurfaces.map(String));
   const outOfScope = control.changedSurfaces.map(String).filter((surface) => !allowed.has(surface));
   if (outOfScope.length) failures.push(`REPAIR_OUT_OF_SCOPE:${outOfScope.join(',')}`);
 
   const currentChecks = new Map(packet.evidence.functionalChecks.map((check) => [String(check.id || ''), check.status]));
-  const droppedChecks = baseline.passingCheckIds.map(String).filter((id) => currentChecks.get(id) !== 'PASS');
+  const droppedChecks = policy.requiredPassingCheckIds.map(String).filter((id) => currentChecks.get(id) !== 'PASS');
   if (droppedChecks.length) failures.push(`REPAIR_PREVIOUS_CHECK_REGRESSION:${droppedChecks.join(',')}`);
 
   if (baselineOverall >= NEAR_PASS_PROTECTION_THRESHOLD) {
@@ -109,14 +121,28 @@ function validateRepairControl(packet, score) {
 
   return {
     active: true,
+    policyId: String(control.policyId),
+    baselineArtifactHash: artifactHash,
     baselineOverall,
     baselineVisual,
     candidateVisual,
+    allowedSurfaces: [...policy.allowedSurfaces],
     failures,
     allDimensionsAtLeast90: dimensionFailures.length === 0,
     improvesBaseline: score > baselineOverall,
     parentMatchesBaseline: parentArtifactHash.toLowerCase() === artifactHash.toLowerCase(),
   };
+}
+
+function validateRepairControl(packet, score) {
+  const control = packet.repairControl;
+  if (control == null) return { active: false, failures: [], allDimensionsAtLeast90: true };
+  if (!control || typeof control !== 'object' || Array.isArray(control)) throw new Error('REPAIR_CONTROL_INVALID');
+  const policyId = String(control.policyId || '');
+  if (!policyId) throw new Error('REPAIR_POLICY_ID_REQUIRED');
+  const policy = REPAIR_POLICIES[policyId];
+  if (!policy) throw new Error('REPAIR_POLICY_NOT_APPROVED');
+  return validateRepairControlAgainstPolicy(packet, score, policy);
 }
 
 function evaluate(packet) {
@@ -134,7 +160,7 @@ function evaluate(packet) {
   else verdict = 'PASS_EXCEPTIONAL';
 
   return {
-    schemaVersion: '1.1',
+    schemaVersion: '1.2',
     teamId: 'UIX-TEAM-015',
     runId: 'UIX-015',
     score,
@@ -154,8 +180,10 @@ module.exports = {
   REQUIRED_VIEWPORTS,
   CRITICAL_DIMENSIONS,
   NEAR_PASS_PROTECTION_THRESHOLD,
+  REPAIR_POLICIES,
   validatePacket,
   validateRepairControl,
+  validateRepairControlAgainstPolicy,
   calculateWeightedScore,
   evaluate,
 };
