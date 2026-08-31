@@ -15,6 +15,7 @@ const DIMENSIONS = Object.freeze({
 
 const REQUIRED_VIEWPORTS = Object.freeze(['mobile', 'tablet', 'desktop']);
 const CRITICAL_DIMENSIONS = Object.freeze(['visualHierarchy', 'uxClarity', 'responsiveExecution', 'accessibility']);
+const NEAR_PASS_PROTECTION_THRESHOLD = 90;
 
 function asFiniteScore(value, key) {
   const n = Number(value);
@@ -61,20 +62,79 @@ function calculateWeightedScore(scores) {
   return Math.round(total * 10) / 10;
 }
 
+function validateRepairControl(packet, score) {
+  const control = packet.repairControl;
+  if (control == null) return { active: false, failures: [], allDimensionsAtLeast90: true };
+  if (!control || typeof control !== 'object' || Array.isArray(control)) throw new Error('REPAIR_CONTROL_INVALID');
+  if (!control.baseline || typeof control.baseline !== 'object') throw new Error('REPAIR_BASELINE_REQUIRED');
+
+  const baseline = control.baseline;
+  const artifactHash = String(baseline.artifactHash || '');
+  if (!/^[a-f0-9]{64}$/i.test(artifactHash)) throw new Error('REPAIR_BASELINE_FULL_HASH_REQUIRED');
+  const parentArtifactHash = String(control.parentArtifactHash || '');
+  if (!/^[a-f0-9]{64}$/i.test(parentArtifactHash)) throw new Error('REPAIR_PARENT_FULL_HASH_REQUIRED');
+
+  const baselineOverall = asFiniteScore(baseline.overallScore, 'baseline.overallScore');
+  const baselineVisual = asFiniteScore(baseline.visualScore, 'baseline.visualScore');
+  const candidateVisual = asFiniteScore(packet.review.visualScore, 'review.visualScore');
+
+  if (!Array.isArray(control.authorizedSurfaces) || control.authorizedSurfaces.length === 0) {
+    throw new Error('REPAIR_AUTHORIZED_SURFACES_REQUIRED');
+  }
+  if (!Array.isArray(control.changedSurfaces) || control.changedSurfaces.length === 0) {
+    throw new Error('REPAIR_CHANGED_SURFACES_REQUIRED');
+  }
+  if (!Array.isArray(baseline.passingCheckIds) || baseline.passingCheckIds.length < 3) {
+    throw new Error('REPAIR_BASELINE_PASSING_CHECKS_REQUIRED');
+  }
+
+  const failures = [];
+  if (parentArtifactHash.toLowerCase() !== artifactHash.toLowerCase()) failures.push('REPAIR_PARENT_NOT_BASELINE');
+
+  const allowed = new Set(control.authorizedSurfaces.map(String));
+  const outOfScope = control.changedSurfaces.map(String).filter((surface) => !allowed.has(surface));
+  if (outOfScope.length) failures.push(`REPAIR_OUT_OF_SCOPE:${outOfScope.join(',')}`);
+
+  const currentChecks = new Map(packet.evidence.functionalChecks.map((check) => [String(check.id || ''), check.status]));
+  const droppedChecks = baseline.passingCheckIds.map(String).filter((id) => currentChecks.get(id) !== 'PASS');
+  if (droppedChecks.length) failures.push(`REPAIR_PREVIOUS_CHECK_REGRESSION:${droppedChecks.join(',')}`);
+
+  if (baselineOverall >= NEAR_PASS_PROTECTION_THRESHOLD) {
+    if (score < baselineOverall) failures.push('REPAIR_OVERALL_SCORE_REGRESSION');
+    if (candidateVisual < baselineVisual) failures.push('REPAIR_VISUAL_SCORE_REGRESSION');
+  }
+
+  const dimensionFailures = Object.keys(DIMENSIONS).filter((key) => Number(packet.scores[key]) < 90);
+  if (dimensionFailures.length) failures.push(`REPAIR_DIMENSION_UNDER_90:${dimensionFailures.join(',')}`);
+
+  return {
+    active: true,
+    baselineOverall,
+    baselineVisual,
+    candidateVisual,
+    failures,
+    allDimensionsAtLeast90: dimensionFailures.length === 0,
+    improvesBaseline: score > baselineOverall,
+    parentMatchesBaseline: parentArtifactHash.toLowerCase() === artifactHash.toLowerCase(),
+  };
+}
+
 function evaluate(packet) {
   validatePacket(packet);
   const score = calculateWeightedScore(packet.scores);
   const blockers = Array.isArray(packet.review.blockers) ? packet.review.blockers.filter(Boolean) : [];
   const criticalFailures = CRITICAL_DIMENSIONS.filter((key) => Number(packet.scores[key]) < 90);
+  const repair = validateRepairControl(packet, score);
 
   let verdict;
-  if (blockers.length || criticalFailures.length || score < 85) verdict = 'REJECT';
+  if (blockers.length || criticalFailures.length || repair.failures.length || score < 85) verdict = 'REJECT';
+  else if (repair.active && !repair.improvesBaseline) verdict = 'REVISE';
   else if (score < 92) verdict = 'REVISE';
   else if (score < 96) verdict = 'PASS_PRODUCTION';
   else verdict = 'PASS_EXCEPTIONAL';
 
   return {
-    schemaVersion: '1.0',
+    schemaVersion: '1.1',
     teamId: 'UIX-TEAM-015',
     runId: 'UIX-015',
     score,
@@ -83,9 +143,19 @@ function evaluate(packet) {
     criticalMinimum: 90,
     criticalFailures,
     blockers,
+    repairControl: repair,
     functionalityPreserved: packet.artifact.businessLogicChanged !== true || packet.artifact.businessLogicChangeApproved === true,
     requiredViewports: REQUIRED_VIEWPORTS,
   };
 }
 
-module.exports = { DIMENSIONS, REQUIRED_VIEWPORTS, CRITICAL_DIMENSIONS, validatePacket, calculateWeightedScore, evaluate };
+module.exports = {
+  DIMENSIONS,
+  REQUIRED_VIEWPORTS,
+  CRITICAL_DIMENSIONS,
+  NEAR_PASS_PROTECTION_THRESHOLD,
+  validatePacket,
+  validateRepairControl,
+  calculateWeightedScore,
+  evaluate,
+};
