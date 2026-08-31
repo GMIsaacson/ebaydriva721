@@ -1,6 +1,11 @@
 'use strict';
 const assert = require('assert');
-const { DIMENSIONS, calculateWeightedScore, evaluate } = require('../runtime/ui-quality-gate.cjs');
+const {
+  DIMENSIONS,
+  calculateWeightedScore,
+  evaluate,
+  validateRepairControlAgainstPolicy,
+} = require('../runtime/ui-quality-gate.cjs');
 
 const GOOD_HASH = '39209fe600000000000000000000000000000000000000000000000000000000';
 const FAILED_HASH = '83a4000000000000000000000000000000000000000000000000000000000000';
@@ -9,6 +14,13 @@ const AUTHORIZED_SURFACES = [
   'tablet-decision-strip-layout',
   'keyboard-filter-aria',
 ];
+const BOUND_TEST_POLICY = Object.freeze({
+  baselineArtifactHash: GOOD_HASH,
+  baselineOverallScore: 92.0,
+  baselineVisualScore: 91.8,
+  allowedSurfaces: AUTHORIZED_SURFACES,
+  requiredPassingCheckIds: ['nav', 'primary-flow', 'persistence'],
+});
 
 function packet(overrides = {}) {
   const base = {
@@ -35,22 +47,17 @@ function packet(overrides = {}) {
 }
 
 function repairControl(overrides = {}) {
-  const base = {
-    baseline: {
-      artifactHash: GOOD_HASH,
-      overallScore: 92.0,
-      visualScore: 91.8,
-      passingCheckIds: ['nav', 'primary-flow', 'persistence'],
-    },
-    parentArtifactHash: GOOD_HASH,
-    authorizedSurfaces: AUTHORIZED_SURFACES,
-    changedSurfaces: ['desktop-ledger-alignment'],
-  };
   return {
-    ...base,
+    policyId: 'RUN015-NJIA-20260831',
+    parentArtifactHash: GOOD_HASH,
+    changedSurfaces: ['desktop-ledger-alignment'],
     ...overrides,
-    baseline: { ...base.baseline, ...(overrides.baseline || {}) },
   };
+}
+
+function evaluateAgainstBoundFixture(p) {
+  const score = calculateWeightedScore(p.scores);
+  return validateRepairControlAgainstPolicy(p, score, BOUND_TEST_POLICY);
 }
 
 const tests = [
@@ -72,9 +79,13 @@ const tests = [
   ['self approval is forbidden', () => assert.throws(() => evaluate(packet({ review: { sameAgentAsImplementer: true } })), /SELF_APPROVAL_FORBIDDEN/)],
   ['invalid score is rejected', () => assert.throws(() => calculateWeightedScore({ ...packet().scores, typography: 101 }), /INVALID_SCORE:typography/)],
 
-  ['repair requires full immutable baseline hash', () => {
-    const p = packet({ repairControl: repairControl({ baseline: { artifactHash: '39209fe6' } }) });
-    assert.throws(() => evaluate(p), /REPAIR_BASELINE_FULL_HASH_REQUIRED/);
+  ['unknown repair policy fails closed', () => {
+    const p = packet({ repairControl: repairControl({ policyId: 'NOT-APPROVED' }) });
+    assert.throws(() => evaluate(p), /REPAIR_POLICY_NOT_APPROVED/);
+  }],
+  ['current Njia repair policy cannot run until exact baseline hash is bound', () => {
+    const p = packet({ repairControl: repairControl() });
+    assert.throws(() => evaluate(p), /REPAIR_POLICY_BASELINE_UNBOUND/);
   }],
   ['83.4 repair cannot replace 92.0 baseline', () => {
     const p = packet({
@@ -82,52 +93,54 @@ const tests = [
       review: { visualScore: 83.4 },
       repairControl: repairControl(),
     });
-    const result = evaluate(p);
-    assert.equal(result.verdict, 'REJECT');
-    assert(result.repairControl.failures.includes('REPAIR_OVERALL_SCORE_REGRESSION'));
-    assert(result.repairControl.failures.includes('REPAIR_VISUAL_SCORE_REGRESSION'));
+    const result = evaluateAgainstBoundFixture(p);
+    assert(result.failures.includes('REPAIR_OVERALL_SCORE_REGRESSION'));
+    assert(result.failures.includes('REPAIR_VISUAL_SCORE_REGRESSION'));
+    assert(result.failures.some(x => x.startsWith('REPAIR_DIMENSION_UNDER_90:')));
   }],
   ['failed repair descendant cannot become next repair parent', () => {
-    const result = evaluate(packet({ repairControl: repairControl({ parentArtifactHash: FAILED_HASH }) }));
-    assert.equal(result.verdict, 'REJECT');
-    assert(result.repairControl.failures.includes('REPAIR_PARENT_NOT_BASELINE'));
+    const result = evaluateAgainstBoundFixture(packet({ repairControl: repairControl({ parentArtifactHash: FAILED_HASH }) }));
+    assert(result.failures.includes('REPAIR_PARENT_NOT_BASELINE'));
+  }],
+  ['repair candidate cannot self-authorize a global UI mutation', () => {
+    const result = evaluateAgainstBoundFixture(packet({ repairControl: repairControl({
+      authorizedSurfaces: ['global-typography-system'],
+      changedSurfaces: ['global-typography-system'],
+    }) }));
+    assert(result.failures.some(x => x.startsWith('REPAIR_OUT_OF_SCOPE:')));
   }],
   ['repair cannot mutate an unauthorized UI surface', () => {
-    const result = evaluate(packet({ repairControl: repairControl({ changedSurfaces: ['desktop-ledger-alignment', 'global-typography-system'] }) }));
-    assert.equal(result.verdict, 'REJECT');
-    assert(result.repairControl.failures.some(x => x.startsWith('REPAIR_OUT_OF_SCOPE:')));
+    const result = evaluateAgainstBoundFixture(packet({ repairControl: repairControl({ changedSurfaces: ['desktop-ledger-alignment', 'global-typography-system'] }) }));
+    assert(result.failures.some(x => x.startsWith('REPAIR_OUT_OF_SCOPE:')));
   }],
-  ['repair cannot silently drop a previously passing check', () => {
-    const result = evaluate(packet({ repairControl: repairControl({ baseline: { passingCheckIds: ['nav','primary-flow','persistence','keyboard-filter'] } }) }));
-    assert.equal(result.verdict, 'REJECT');
-    assert(result.repairControl.failures.some(x => x.includes('keyboard-filter')));
+  ['repair cannot silently drop a policy-required passing check', () => {
+    const policy = { ...BOUND_TEST_POLICY, requiredPassingCheckIds: ['nav','primary-flow','persistence','keyboard-filter'] };
+    const result = validateRepairControlAgainstPolicy(packet({ repairControl: repairControl() }), 94, policy);
+    assert(result.failures.some(x => x.includes('keyboard-filter')));
   }],
   ['repair cannot reduce independent visual score', () => {
-    const result = evaluate(packet({ review: { visualScore: 91.7 }, repairControl: repairControl() }));
-    assert.equal(result.verdict, 'REJECT');
-    assert(result.repairControl.failures.includes('REPAIR_VISUAL_SCORE_REGRESSION'));
+    const result = evaluateAgainstBoundFixture(packet({ review: { visualScore: 91.7 }, repairControl: repairControl() }));
+    assert(result.failures.includes('REPAIR_VISUAL_SCORE_REGRESSION'));
   }],
   ['repair must bring every dimension to at least 90', () => {
-    const result = evaluate(packet({ scores: { typography: 89 }, repairControl: repairControl() }));
-    assert.equal(result.verdict, 'REJECT');
-    assert(result.repairControl.failures.some(x => x.includes('typography')));
+    const p = packet({ scores: { typography: 89 }, repairControl: repairControl() });
+    const result = evaluateAgainstBoundFixture(p);
+    assert(result.failures.some(x => x.includes('typography')));
   }],
-  ['equal-score repair does not replace current best', () => {
+  ['equal-score repair does not improve current best', () => {
     const scores = Object.fromEntries(Object.keys(DIMENSIONS).map(k=>[k,92]));
-    const result = evaluate(packet({ scores, review: { visualScore: 91.8 }, repairControl: repairControl() }));
-    assert.equal(result.score, 92);
-    assert.equal(result.verdict, 'REVISE');
-    assert.equal(result.repairControl.improvesBaseline, false);
+    const p = packet({ scores, review: { visualScore: 91.8 }, repairControl: repairControl() });
+    const result = evaluateAgainstBoundFixture(p);
+    assert.equal(result.improvesBaseline, false);
+    assert.deepEqual(result.failures, []);
   }],
-  ['strictly improved bounded repair can pass', () => {
-    const result = evaluate(packet({
+  ['strictly improved bounded repair clears repair-control checks', () => {
+    const result = evaluateAgainstBoundFixture(packet({
       review: { visualScore: 92.1 },
       repairControl: repairControl({ changedSurfaces: AUTHORIZED_SURFACES }),
     }));
-    assert.equal(result.score, 94);
-    assert.equal(result.verdict, 'PASS_PRODUCTION');
-    assert.equal(result.repairControl.improvesBaseline, true);
-    assert.deepEqual(result.repairControl.failures, []);
+    assert.equal(result.improvesBaseline, true);
+    assert.deepEqual(result.failures, []);
   }],
 ];
 
