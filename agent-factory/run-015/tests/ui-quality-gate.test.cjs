@@ -3,7 +3,7 @@ const assert = require('assert');
 const { DIMENSIONS, calculateWeightedScore, evaluate } = require('../runtime/ui-quality-gate.cjs');
 
 const GOOD_HASH = '39209fe600000000000000000000000000000000000000000000000000000000';
-const FAILED_HASH = '83a40000000000000000000000000000000000000000000000000000000000';
+const FAILED_HASH = '83a4000000000000000000000000000000000000000000000000000000000000';
 const AUTHORIZED_SURFACES = [
   'desktop-ledger-alignment',
   'tablet-decision-strip-layout',
