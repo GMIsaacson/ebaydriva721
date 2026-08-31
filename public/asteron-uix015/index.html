@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ASTERON — Run 015 review preview</title>
+<style>html,body{margin:0;min-height:100%;font-family:system-ui,sans-serif;background:#f5f0e6;color:#172522}.loading{min-height:100vh;display:grid;place-items:center;padding:2rem;text-align:center}</style>
+</head>
+<body>
+<div class="loading">Loading ASTERON Run 015 review…<br><small>Make consequential work observable.</small></div>
+<script>
+(async()=>{
+  const source='https://raw.githubusercontent.com/GMIsaacson/ebaydriva721/preview/asteron-uix015-20260831/previews/asteron-uix015/index.html';
+  try{
+    const r=await fetch(source,{cache:'no-store'});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const html=await r.text();
+    if(!html.includes('Make consequential work observable.')) throw new Error('Unexpected artifact');
+    document.open(); document.write(html); document.close();
+  }catch(e){
+    document.body.innerHTML='<div class="loading"><div><strong>Preview artifact could not be loaded.</strong><br><small>'+String(e.message||e)+'</small></div></div>';
+  }
+})();
+</script>
+</body>
+</html>
