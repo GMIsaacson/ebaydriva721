@@ -1,15 +1,136 @@
 <!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#241056" />
-    <meta name="description" content="DataScout product sourcing intelligence workspace for online resellers." />
-    <title>DataScout — Product Sourcing Intelligence</title>
-  </head>
-  <body>
-    <noscript>You need to enable JavaScript to run DataScout.</noscript>
-    <div id="root"></div>
-    <script type="module" src="/src/index.jsx"></script>
-  </body>
+<html lang="en-KE">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A premium Kenyan commercial-intelligence terminal showing movement, demand and supply shifts, and actionable opportunities.">
+  <title>Njia Market Intelligence — Kenya</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="site-header" id="top">
+    <div class="masthead">
+      <a class="wordmark" href="#command-center" aria-label="Njia Market Intelligence home"><span class="wordmark-mark" aria-hidden="true">N/</span><span>njia<span class="wordmark-dot">.</span></span></a>
+      <p class="masthead-kicker">KENYA / COMMERCIAL INTELLIGENCE</p>
+      <p class="masthead-status"><span class="status-dot" aria-hidden="true"></span>READ-ONLY MARKET VIEW</p>
+    </div>
+    <nav class="desktop-nav" aria-label="Primary navigation">
+      <a href="#command-center">Command Center</a>
+      <a href="#opportunities">Opportunity Feed</a>
+      <a href="#product-detail">Product Detail</a>
+      <a href="#radar">Buyer-Intent Radar</a>
+      <a href="#trends">Consumer Trend Engine</a>
+      <a href="#ask-market">Ask the Market</a>
+      <a href="#evidence">Evidence</a>
+    </nav>
+    <details class="mobile-nav">
+      <summary>Open market navigation</summary>
+      <nav aria-label="Mobile navigation">
+        <a href="#command-center">Command Center</a>
+        <a href="#opportunities">Opportunity Feed</a>
+        <a href="#product-detail">Product Detail</a>
+        <a href="#radar">Buyer-Intent Radar</a>
+        <a href="#trends">Consumer Trend Engine</a>
+        <a href="#ask-market">Ask the Market</a>
+        <a href="#evidence">Evidence</a>
+      </nav>
+    </details>
+  </header>
+
+  <main>
+    <section class="hero section-shell" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <p class="eyebrow">THE MARKET, READ BETWEEN THE LINES</p>
+        <h1 id="hero-title">See what is moving in Kenya.<br><em>Find the shift. Act next.</em></h1>
+        <p class="hero-lede">See what is moving in Kenya. Find where demand and supply are shifting. Act on the next opportunity.</p>
+        <p class="disclosure"><strong>DEMO / ILLUSTRATIVE</strong> &nbsp; A static market view for exploring the signal-to-opportunity workflow. Figures are not live or verified.</p>
+      </div>
+      <aside class="hero-aside" aria-label="Market view summary">
+        <p class="aside-label">TODAY'S READING / DEMO</p>
+        <div class="hero-signal"><span class="signal-line" aria-hidden="true"></span><span>Demand is moving<br><strong>north and coastward</strong></span></div>
+        <dl class="hero-stats">
+          <div><dt>Signals indexed</dt><dd>42 <small>ILLUSTRATIVE</small></dd></div>
+          <div><dt>Routes surfaced</dt><dd>08 <small>DEMO</small></dd></div>
+          <div><dt>Evidence freshness</dt><dd>2–6 hrs <small>ILLUSTRATIVE</small></dd></div>
+        </dl>
+      </aside>
+    </section>
+
+    <section class="ask-strip section-shell" id="ask-market" aria-labelledby="ask-title">
+      <div class="ask-heading"><p class="eyebrow">QUERY THE SIGNAL</p><h2 id="ask-title">Ask the Market</h2><p>Start with a commercial question. Njia maps the answer to movement, margin, and evidence.</p></div>
+      <div class="question-list">
+        <details class="question" open>
+          <summary><span class="question-number">01</span><span>What can I trade with KES 300,000 this week?</span><span class="summary-arrow" aria-hidden="true">↗</span></summary>
+          <div class="answer"><p class="answer-label">DEMO ANSWER / ILLUSTRATIVE</p><p><strong>Potatoes</strong> from Nyandarua to Nairobi: a tight route with room for a small, fast-turning position.</p><dl class="answer-metrics"><div><dt>Illustrative capital</dt><dd>KES 300,000 <small>DEMO</small></dd></div><div><dt>Illustrative contribution</dt><dd>KES 42,600 <small>DEMO</small></dd></div><div><dt>Confidence</dt><dd>78% <small>ILLUSTRATIVE</small></dd></div></dl><a class="text-link" href="#opportunities">Inspect ranked opportunity →</a></div>
+        </details>
+        <details class="question">
+          <summary><span class="question-number">02</span><span>Where are potatoes cheapest relative to Nairobi demand?</span><span class="summary-arrow" aria-hidden="true">↗</span></summary>
+          <div class="answer"><p class="answer-label">DEMO ANSWER / ILLUSTRATIVE</p><p><strong>Nyandarua</strong> is the strongest illustrative source signal against Nairobi buyer intent. Inspect price, route, and evidence together.</p><a class="text-link" href="#product-detail">Open Product Detail →</a></div>
+        </details>
+      </div>
+    </section>
+
+    <section class="section-shell command-center" id="command-center" aria-labelledby="command-title">
+      <div class="section-head"><div><p class="eyebrow">01 / MARKET COMMAND CENTER</p><h2 id="command-title">What is changing now?</h2></div><p class="section-note">Five signal classes. One connected view.<br><strong>ALL FIGURES DEMO / ILLUSTRATIVE</strong></p></div>
+      <div class="signal-grid">
+        <article class="signal-card rising"><div class="signal-top"><span class="signal-index">01</span><span class="direction">↑ RISING</span></div><h3>Demand Rising</h3><p>Nairobi hospitality pull is lifting potato and egg enquiries.</p><dl><div><dt>Illustrative demand change</dt><dd>+18% <small>DEMO</small></dd></div><div><dt>Geography</dt><dd>Nairobi</dd></div></dl><a href="#radar" class="card-link">See buyer intent →</a></article>
+        <article class="signal-card tightening"><div class="signal-top"><span class="signal-index">02</span><span class="direction">↗ TIGHTENING</span></div><h3>Supply Tightening</h3><p>Tomato availability is narrowing along the Nakuru–Nairobi corridor.</p><dl><div><dt>Illustrative supply change</dt><dd>−11% <small>ILLUSTRATIVE</small></dd></div><div><dt>Geography</dt><dd>Nakuru → Nairobi</dd></div></dl><a href="#opportunities" class="card-link">Read route signal →</a></article>
+        <article class="signal-card dislocation"><div class="signal-top"><span class="signal-index">03</span><span class="direction">↕ DISLOCATED</span></div><h3>Price Dislocation</h3><p>Potato source and destination indications are separating.</p><dl><div><dt>Illustrative spread</dt><dd>KES 14/kg <small>DEMO</small></dd></div><div><dt>Route</dt><dd>Nyandarua → Nairobi</dd></div></dl><a href="#product-detail" class="card-link">Inspect product →</a></article>
+        <article class="signal-card intent"><div class="signal-top"><span class="signal-index">04</span><span class="direction">• INTENT</span></div><h3>New Buyer Intent</h3><p>Small appliance enquiries are clustering in Mombasa and Kisumu.</p><dl><div><dt>Illustrative enquiries</dt><dd>31 <small>DEMO</small></dd></div><div><dt>Geography</dt><dd>Mombasa / Kisumu</dd></div></dl><a href="#radar" class="card-link">Open radar →</a></article>
+        <article class="signal-card trend"><div class="signal-top"><span class="signal-index">05</span><span class="direction">↗ EMERGING</span></div><h3>Emerging Consumer Trend</h3><p>Value packs in cooking oil, detergent, and tissue are gaining attention.</p><dl><div><dt>Illustrative signal lift</dt><dd>+23% <small>ILLUSTRATIVE</small></dd></div><div><dt>Geography</dt><dd>Eldoret / Nairobi</dd></div></dl><a href="#trends" class="card-link">Read trend engine →</a></article>
+      </div>
+    </section>
+
+    <section class="section-shell workspace" id="opportunities" aria-labelledby="opportunities-title">
+      <div class="section-head"><div><p class="eyebrow">02 / RANKED SIGNALS</p><h2 id="opportunities-title">Opportunity Feed</h2></div><p class="section-note">Ranked by route fit, contribution, confidence, and freshness.<br><strong>ILLUSTRATIVE / DEMO ONLY</strong></p></div>
+      <div class="table-wrap">
+        <table class="opportunity-table">
+          <caption>Illustrative opportunity feed. Every value is DEMO or ILLUSTRATIVE.</caption>
+          <thead><tr><th scope="col">Rank / product</th><th scope="col">Source → destination</th><th scope="col">Signal</th><th scope="col">Transport estimate</th><th scope="col">Spread / contribution</th><th scope="col">Capital</th><th scope="col">Confidence</th><th scope="col">Freshness / evidence</th></tr></thead>
+          <tbody>
+            <tr><th scope="row"><span class="rank">01</span><strong>Potatoes</strong><small>Grade II / 50kg</small></th><td>Nyandarua <b>→</b> Nairobi</td><td><span class="buy">BUY / SELL</span><small>Dislocation</small></td><td>KES 28,000 <small>DEMO</small></td><td>KES 14/kg · KES 42,600 <small>ILLUSTRATIVE</small></td><td>KES 300,000 <small>DEMO</small></td><td>78% <small>ILLUSTRATIVE</small></td><td><time datetime="2025-01-01T09:00">2 hrs ago</time> <small>DEMO EVIDENCE</small></td></tr>
+            <tr><th scope="row"><span class="rank">02</span><strong>Onions</strong><small>Dry red / 25kg</small></th><td>Kajiado <b>→</b> Nairobi</td><td><span class="buy">BUY / SELL</span><small>Supply tightening</small></td><td>KES 19,500 <small>ILLUSTRATIVE</small></td><td>KES 9/kg · KES 26,200 <small>DEMO</small></td><td>KES 220,000 <small>ILLUSTRATIVE</small></td><td>71% <small>DEMO</small></td><td><time datetime="2025-01-01T07:00">4 hrs ago</time> <small>ILLUSTRATIVE</small></td></tr>
+            <tr><th scope="row"><span class="rank">03</span><strong>Eggs</strong><small>Trays / 30</small></th><td>Kirinyaga <b>→</b> Mombasa</td><td><span class="buy">BUY / SELL</span><small>Demand rising</small></td><td>KES 34,000 <small>DEMO</small></td><td>KES 12/tray · KES 31,800 <small>ILLUSTRATIVE</small></td><td>KES 280,000 <small>DEMO</small></td><td>66% <small>ILLUSTRATIVE</small></td><td><time datetime="2025-01-01T05:00">6 hrs ago</time> <small>DEMO EVIDENCE</small></td></tr>
+            <tr><th scope="row"><span class="rank">04</span><strong>Cooking oil</strong><small>Value pack / unit</small></th><td>Nairobi <b>→</b> Eldoret</td><td><span class="buy">BUY / SELL</span><small>Consumer trend</small></td><td>KES 22,000 <small>ILLUSTRATIVE</small></td><td>KES 68/unit · KES 18,400 <small>DEMO</small></td><td>KES 180,000 <small>ILLUSTRATIVE</small></td><td>63% <small>DEMO</small></td><td><time datetime="2025-01-01T06:00">5 hrs ago</time> <small>ILLUSTRATIVE</small></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="table-footnote">Fields are deliberately shown together: product · route · buy/sell indication · transport estimate · spread/contribution · capital · confidence · freshness/evidence.</p>
+    </section>
+
+    <section class="section-shell detail-grid" id="product-detail" aria-labelledby="product-title">
+      <div class="product-panel">
+        <div class="section-head compact"><div><p class="eyebrow">03 / INVESTIGATE A SIGNAL</p><h2 id="product-title">Product Detail <span class="detail-product">/ POTATOES</span></h2></div><span class="tag">DEMO PROFILE</span></div>
+        <p class="product-intro">Grade II potatoes · 50kg unit · Nyandarua → Nairobi. A connected view of price, demand, supply, geography, and evidence.</p>
+        <div class="trend-panels">
+          <article class="trend-panel"><h3>Price trend</h3><p class="metric">KES 58/kg <small>ILLUSTRATIVE</small></p><span class="trend-word dislocation-text">↕ dislocated</span><div class="sparkline price-line" role="img" aria-label="Illustrative price trend: dislocated across five observations"><i></i><i></i><i></i><i></i><i></i><i></i></div><p class="axis-label">Past 6 illustrative observations</p></article>
+          <article class="trend-panel"><h3>Demand trend</h3><p class="metric">+18% <small>DEMO</small></p><span class="trend-word rising-text">↑ rising</span><div class="sparkline demand-line" role="img" aria-label="Demo demand trend rising across five observations"><i></i><i></i><i></i><i></i><i></i><i></i></div><p class="axis-label">Past 6 demo observations</p></article>
+          <article class="trend-panel"><h3>Supply trend</h3><p class="metric">−9% <small>ILLUSTRATIVE</small></p><span class="trend-word tightening-text">↗ tightening</span><div class="sparkline supply-line" role="img" aria-label="Illustrative supply trend tightening across five observations"><i></i><i></i><i></i><i></i><i></i><i></i></div><p class="axis-label">Past 6 illustrative observations</p></article>
+        </div>
+        <div class="geography"><h3>Geography / illustrative route map</h3><div class="geo-route"><span>Nyandarua<small>source</small></span><b aria-hidden="true">→</b><span class="geo-focus">Nairobi<small>demand</small></span><b aria-hidden="true">→</b><span>Mombasa<small>secondary pull</small></span></div><p class="geo-list">Also monitored: Nakuru · Kajiado · Kirinyaga · Kisumu · Eldoret</p></div>
+      </div>
+      <aside class="timeline-panel" aria-labelledby="timeline-title"><div class="section-head compact"><div><p class="eyebrow">EVIDENCE CHAIN</p><h2 id="timeline-title">Evidence timeline</h2></div><span class="tag">ILLUSTRATIVE</span></div><ol class="timeline"><li><time datetime="2025-01-01T09:00">09:00 / DEMO</time><h3>Buyer pull observed</h3><p>Nairobi demand signal attached to potatoes; confidence 78% <small>ILLUSTRATIVE</small>.</p></li><li><time datetime="2025-01-01T07:00">07:00 / ILLUSTRATIVE</time><h3>Source indication updated</h3><p>Nyandarua source indication moved against the Nairobi demand signal.</p></li><li><time datetime="2025-01-01T05:00">05:00 / DEMO</time><h3>Route estimate refreshed</h3><p>Transport estimate KES 28,000 <small>DEMO</small> joined the opportunity record.</p></li></ol><a class="text-link" href="#evidence">Inspect all evidence →</a></aside>
+    </section>
+
+    <section class="section-shell intelligence-grid" id="radar" aria-labelledby="radar-title">
+      <article class="radar-panel"><div class="section-head compact"><div><p class="eyebrow">04 / BUYER SIGNALS</p><h2 id="radar-title">Buyer-Intent Radar</h2></div><span class="tag">DEMO</span></div><p class="panel-lede">Where buyers are forming intent before a route becomes obvious.</p><ul class="signal-list"><li><span class="radar-mark high" aria-hidden="true">●</span><div><strong>Small appliance</strong><p>Mombasa · Kisumu <span class="intent-label">NEW INTENT</span></p></div><b>31 <small>ILLUSTRATIVE ENQUIRIES</small></b></li><li><span class="radar-mark medium" aria-hidden="true">●</span><div><strong>Eggs</strong><p>Nairobi · Mombasa <span class="intent-label">RISING</span></p></div><b>+12% <small>DEMO</small></b></li><li><span class="radar-mark medium" aria-hidden="true">●</span><div><strong>Detergent</strong><p>Eldoret · Nairobi <span class="intent-label">EMERGING</span></p></div><b>24 <small>ILLUSTRATIVE ENQUIRIES</small></b></li></ul><p class="panel-foot">Confidence range: 63–78% <small>ILLUSTRATIVE</small> · Freshness: 2–6 hrs <small>DEMO</small></p></article>
+      <article class="trend-engine" id="trends" aria-labelledby="trends-title"><div class="section-head compact"><div><p class="eyebrow">05 / CONSUMER SIGNALS</p><h2 id="trends-title">Consumer Trend Engine</h2></div><span class="tag">ILLUSTRATIVE</span></div><p class="panel-lede">Small changes in what people seek, grouped by product and geography.</p><div class="trend-row"><div><strong>Value packs</strong><p>Cooking oil · detergent · tissue</p></div><div class="bar" aria-label="Illustrative trend strength 73 percent"><span style="width:73%"></span></div><b>+23% <small>DEMO</small></b></div><div class="trend-row"><div><strong>Convenience cooking</strong><p>Small appliance · Nairobi · Kisumu</p></div><div class="bar" aria-label="Demo trend strength 61 percent"><span style="width:61%"></span></div><b>+16% <small>ILLUSTRATIVE</small></b></div><div class="trend-row"><div><strong>Staple replenishment</strong><p>Maize · potatoes · onions · Eldoret</p></div><div class="bar" aria-label="Illustrative trend strength 48 percent"><span style="width:48%"></span></div><b>+9% <small>DEMO</small></b></div><p class="panel-foot">Directional labels are paired with figures; no signal is presented as live or verified.</p></article>
+    </section>
+
+    <section class="section-shell evidence-section" id="evidence" aria-labelledby="evidence-title">
+      <div class="section-head"><div><p class="eyebrow">06 / INSPECT THE GRAPH</p><h2 id="evidence-title">Evidence</h2></div><p class="section-note">Product · grade · unit · location · supply · demand · price · quantity · time · intent · confidence.</p></div>
+      <div class="evidence-grid">
+        <details class="evidence-item" open><summary><span class="evidence-type">OBSERVATION</span><strong>Potato buyer pull / Nairobi</strong><span class="evidence-confidence">78% <small>DEMO CONFIDENCE</small></span></summary><dl><div><dt>Source type</dt><dd>Buyer-intent observation / ILLUSTRATIVE</dd></div><div><dt>Observation time</dt><dd><time datetime="2025-01-01T09:00">09:00 / DEMO</time></dd></div><div><dt>Geography</dt><dd>Nairobi</dd></div><div><dt>Supports</dt><dd>Demand Rising and the Nyandarua → Nairobi opportunity.</dd></div></dl></details>
+        <details class="evidence-item"><summary><span class="evidence-type">ROUTE</span><strong>Potato source / Nyandarua</strong><span class="evidence-confidence">71% <small>ILLUSTRATIVE CONFIDENCE</small></span></summary><dl><div><dt>Source type</dt><dd>Supply indication / DEMO</dd></div><div><dt>Observation time</dt><dd><time datetime="2025-01-01T07:00">07:00 / ILLUSTRATIVE</time></dd></div><div><dt>Geography</dt><dd>Nyandarua → Nairobi</dd></div><div><dt>Supports</dt><dd>Price Dislocation and Supply Tightening.</dd></div></dl></details>
+        <details class="evidence-item"><summary><span class="evidence-type">INTENT</span><strong>Small appliance enquiries / Coast &amp; Lake</strong><span class="evidence-confidence">63% <small>DEMO CONFIDENCE</small></span></summary><dl><div><dt>Source type</dt><dd>Buyer-intent observation / ILLUSTRATIVE</dd></div><div><dt>Observation time</dt><dd><time datetime="2025-01-01T06:00">06:00 / DEMO</time></dd></div><div><dt>Geography</dt><dd>Mombasa · Kisumu</dd></div><div><dt>Supports</dt><dd>New Buyer Intent category.</dd></div></dl></details>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div><a class="wordmark" href="#top"><span class="wordmark-mark" aria-hidden="true">N/</span><span>njia<span class="wordmark-dot">.</span></span></a><p>Commercial intelligence for Kenyan traders and operators.</p></div>
+    <p class="footer-disclosure"><strong>DEMO / ILLUSTRATIVE</strong><br>All figures and observations on this page are illustrative and not live or verified.</p>
+    <a class="back-top" href="#top">Back to top ↑</a>
+  </footer>
+</body>
 </html>
