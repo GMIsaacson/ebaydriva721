@@ -1,0 +1,27 @@
+{
+  "schemaVersion":"1.0",
+  "runId":"SW-PROD-014",
+  "assignmentId":"SW-PROD-014-DECISION-TIMER-001",
+  "role":"product-spec",
+  "handoffType":"software_spec_v1",
+  "requirements":[
+    {"id":"REQ-01","mapsTo":["AC-01","AC-02"],"statement":"Render two editable option names and exactly three editable criterion rows."},
+    {"id":"REQ-02","mapsTo":["AC-03"],"statement":"Compute each option total as sum(score × weight) using bounded numeric inputs."},
+    {"id":"REQ-03","mapsTo":["AC-04","AC-05"],"statement":"Provide a 180-second local timer with idle/running/paused/expired states; expiry locks comparison inputs until reset."},
+    {"id":"REQ-04","mapsTo":["AC-06"],"statement":"Require an explicit user choice; create a local receipt with selected option, both totals, UTC timestamp and deterministic rationale."},
+    {"id":"REQ-05","mapsTo":["AC-07"],"statement":"Copy receipt via Clipboard API with a graceful manual-copy fallback message."},
+    {"id":"REQ-06","mapsTo":["AC-08"],"statement":"Use semantic controls, visible focus styles, live timer/receipt status and responsive layout with no page-level horizontal overflow."},
+    {"id":"REQ-07","mapsTo":["AC-09"],"statement":"Use only browser-native APIs and existing Vite build tooling; no new runtime dependencies, network requests, storage or secrets."}
+  ],
+  "edgeCases":[
+    "weights of zero",
+    "tied totals",
+    "empty option labels",
+    "timer start while already running",
+    "pause while idle",
+    "receipt before expiry",
+    "clipboard permission rejection"
+  ],
+  "nonFunctional":{"target":"Vercel preview only","spendCents":0,"dataEgress":"none","persistence":"none"},
+  "status":"PASS"
+}
