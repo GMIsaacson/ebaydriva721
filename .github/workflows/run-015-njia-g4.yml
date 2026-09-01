@@ -1,0 +1,61 @@
+name: Run 015 Njia G4 Browser Evidence
+
+on:
+  push:
+    branches:
+      - run015/njia-real-uix-20260831
+    paths:
+      - 'index.html'
+      - 'styles.css'
+      - 'agent-factory/run-015/**'
+      - 'agent-factory/build-requests/run-015-njia-ui-excellence.json'
+      - '.github/workflows/run-015-njia-g4.yml'
+  workflow_dispatch:
+
+jobs:
+  njia-g4-browser-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Prepare immutable Run 014 parent
+        run: |
+          mkdir -p /tmp/njia-before
+          git show e06cc5c76d8c64d04f72df5e915c66508864c2fd:index.html > /tmp/njia-before/index.html
+          git show e06cc5c76d8c64d04f72df5e915c66508864c2fd:styles.css > /tmp/njia-before/styles.css
+
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save --package-lock=false playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Start before and after static servers
+        run: |
+          python3 -m http.server 4173 --directory /tmp/njia-before >/tmp/njia-before.log 2>&1 &
+          python3 -m http.server 4174 --directory "$GITHUB_WORKSPACE" >/tmp/njia-after.log 2>&1 &
+          sleep 2
+          curl --fail http://127.0.0.1:4173/ >/dev/null
+          curl --fail http://127.0.0.1:4174/ >/dev/null
+
+      - name: Capture viewport evidence and run functional checks
+        env:
+          NJIA_BEFORE_URL: http://127.0.0.1:4173
+          NJIA_AFTER_URL: http://127.0.0.1:4174
+          NJIA_EVIDENCE_DIR: agent-factory/run-015/evidence/runtime-njia-g4
+        run: node agent-factory/run-015/tests/njia-g4-playwright.mjs
+
+      - name: Upload immutable G4 viewport evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: run015-njia-g4-evidence-${{ github.sha }}
+          path: agent-factory/run-015/evidence/runtime-njia-g4/
+          if-no-files-found: error
+          retention-days: 30

@@ -1,0 +1,85 @@
+{
+  "schemaVersion": "1.0",
+  "runId": "UIX-015",
+  "teamId": "UIX-TEAM-015",
+  "requestId": "UIX-015-NJIA-20260831",
+  "gate": "G4",
+  "assignment": "Njia UI Excellence final acceptance",
+  "artifact": {
+    "branch": "run015/njia-real-uix-20260831",
+    "lockedParentCommit": "e06cc5c76d8c64d04f72df5e915c66508864c2fd",
+    "uiSourceCommit": "e90d02f3b6890dbe358b1a5f9b3fdc0fcb4411a8",
+    "qualificationCommit": "ef70c650c246751501fc36c5bde725bd399fd974",
+    "indexBlobSha1": "ad61d531a10174df3f554a0c2bd410c89b891ae9",
+    "stylesBlobSha1": "986d57aee9d7b6281148aa8f969e7114f1838251",
+    "businessLogicChanged": false,
+    "htmlStructureChanged": false
+  },
+  "scores": {
+    "visualHierarchy": 94,
+    "typography": 92,
+    "layoutSpacing": 93,
+    "componentQuality": 93,
+    "uxClarity": 95,
+    "interactionPolish": 91,
+    "responsiveExecution": 94,
+    "brandDistinction": 95,
+    "accessibility": 94,
+    "statesAndFeedback": 91
+  },
+  "weights": {
+    "visualHierarchy": 15,
+    "typography": 10,
+    "layoutSpacing": 10,
+    "componentQuality": 10,
+    "uxClarity": 15,
+    "interactionPolish": 10,
+    "responsiveExecution": 10,
+    "brandDistinction": 10,
+    "accessibility": 5,
+    "statesAndFeedback": 5
+  },
+  "weightedScore": 93.4,
+  "criticalDimensions": {
+    "visualHierarchy": 94,
+    "uxClarity": 95,
+    "responsiveExecution": 94,
+    "accessibility": 94
+  },
+  "criticalMinimum": 90,
+  "criticalFailures": [],
+  "dimensionFindings": {
+    "visualHierarchy": "The first viewport now establishes a clear market-intelligence hierarchy: Njia identity, market thesis, bounded reading card, then query and command surfaces. Downstream sections are differentiated without losing continuity.",
+    "typography": "Editorial serif display type and compact sans data type remain distinctive while micro-labels were raised into a more legible range. The dense intelligence aesthetic still uses intentionally compact metadata, keeping this below exceptional.",
+    "layoutSpacing": "Section rhythm, panel gutters, market cards and evidence groups are substantially more consistent. The long mobile page is inherent to the preserved information architecture rather than overflow.",
+    "componentQuality": "Signal cards, opportunity table, product panels, evidence timeline, buyer radar and evidence disclosures now share a coherent border, surface, state and density system.",
+    "uxClarity": "The journey reads signal -> question -> ranked opportunity -> investigation -> evidence. Sticky navigation maintains orientation on the long intelligence page and all original destinations are preserved.",
+    "interactionPolish": "Native details behavior, clearer open/hover treatment, keyboard-visible focus and sticky navigation improve feedback without introducing fragile custom interaction logic. Static-prototype scope limits richer application states.",
+    "responsiveExecution": "Real Chromium renders at 390, 820 and 1440 pixels show exact viewport-width documents with no page overflow; signal cards step through 5/3/2/1-column behavior and complex panels stack without structural loss.",
+    "brandDistinction": "Warm mineral paper, deep green-black ink, restrained rust signals, editorial typography and evidence-led composition create a recognizable Kenyan commercial-intelligence identity rather than generic SaaS styling.",
+    "accessibility": "Keyboard focus, native details controls, semantic headings/table structure, mobile keyboard navigation, reduced-motion handling and normal-text contrast all pass the browser evidence suite. Repaired small-text token contrasts range from 5.07:1 to 6.08:1 on tested surfaces.",
+    "statesAndFeedback": "Hover, focus, disclosure-open and mobile-navigation states are explicit and restrained. Broader loading/empty/error states are outside the static artifact's preserved behavior and therefore prevent an exceptional score."
+  },
+  "evidence": {
+    "browserWorkflowRunId": 33461782665,
+    "browserEvidenceArtifactId": 9783447396,
+    "browserEvidenceDigest": "sha256:309dc4099a7e976d1fd533dc2ae4657cdc280ca5cb2d96be0c77388f1fc8804f",
+    "browserEvidenceRecord": "agent-factory/run-015/evidence/njia-g4-browser-evidence.json",
+    "standardRun015AcceptanceRunId": 33461782668,
+    "standardRun015AcceptanceConclusion": "success",
+    "viewportEvidence": ["mobile","tablet","desktop"],
+    "functionalEquivalence": "PASS"
+  },
+  "review": {
+    "reviewerRole": "uix-visual-acceptance-015",
+    "implementerRole": "uix-frontend-polish-015",
+    "sameAgentAsImplementer": false,
+    "blockers": [],
+    "decision": "PASS",
+    "gateVerdict": "PASS_PRODUCTION"
+  },
+  "productionThreshold": 92,
+  "exceptionalThreshold": 96,
+  "result": "PASS_PRODUCTION",
+  "productionMutationAuthorized": false
+}

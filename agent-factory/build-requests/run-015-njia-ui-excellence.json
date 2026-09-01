@@ -1,0 +1,60 @@
+{
+  "schemaVersion": "1.4",
+  "requestId": "UIX-015-NJIA-20260831",
+  "teamId": "UIX-TEAM-015",
+  "teamName": "UI Excellence Team",
+  "governanceMode": "RUN",
+  "issue": 81,
+  "status": "COMPLETE",
+  "assignment": "Run the exact Run 014 Njia market-intelligence artifact through Run 015 UI Excellence",
+  "lockedParent": {
+    "branch": "preview/kenya-market-graph-20260831",
+    "commit": "e06cc5c76d8c64d04f72df5e915c66508864c2fd",
+    "entry": "index.html",
+    "stylesheet": "styles.css",
+    "deploymentId": "dpl_C4sA2iueBa8bFSf9VbPmh3rDZV62",
+    "deploymentUrl": "https://datascout-live-sourcing-preview-fqiplfskl.vercel.app"
+  },
+  "workspace": {
+    "branch": "run015/njia-real-uix-20260831",
+    "uiSourceCommit": "e90d02f3b6890dbe358b1a5f9b3fdc0fcb4411a8",
+    "qualificationCommit": "ef70c650c246751501fc36c5bde725bd399fd974",
+    "productionMutation": false,
+    "functionalPreservationRequired": true,
+    "functionalPreservationResult": "PASS"
+  },
+  "handoffSequence": [
+    "ui_intake_v1",
+    "benchmark_brief_v1",
+    "ux_diagnosis_v1",
+    "art_direction_v1",
+    "design_system_delta_v1",
+    "interaction_spec_v1",
+    "frontend_change_set_v1",
+    "responsive_accessibility_report_v1",
+    "visual_scorecard_v1",
+    "independent_qa_decision_v1"
+  ],
+  "handoffsCompleted": 10,
+  "result": {
+    "scoreSystem": "UIX-100-v1",
+    "finalScore": 93.4,
+    "verdict": "PASS_PRODUCTION",
+    "criticalMinimumMet": true,
+    "functionalEquivalence": "PASS",
+    "independentQa": "PASS",
+    "browserWorkflowRunId": 33461782665,
+    "browserEvidenceArtifactId": 9783447396,
+    "standardAcceptanceRunId": 33461782668
+  },
+  "preview": {
+    "provider": "vercel",
+    "verifiedDeploymentId": "dpl_FRkLwovXCQp5HYRSaUwFYGh8tiac",
+    "verifiedDeploymentState": "READY",
+    "verifiedDeploymentUrl": "https://datascout-live-sourcing-preview-lmme28xxt.vercel.app",
+    "stableBranchPreview": "https://datascout-live-sourcing-pre-git-a54370-damaebay8-1237s-projects.vercel.app",
+    "production": false
+  },
+  "terminalReceipt": "agent-factory/run-015/evidence/njia-g4-terminal-receipt.json",
+  "productionPromotion": "NOT_REQUESTED"
+}

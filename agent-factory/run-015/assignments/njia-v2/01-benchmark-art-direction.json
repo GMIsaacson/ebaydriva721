@@ -1,0 +1,215 @@
+{
+  "schemaVersion": "1.0",
+  "assignmentId": "UIX-015-NJIA-V2-001",
+  "issue": 83,
+  "lockedBaseline": {
+    "branch": "run015/njia-real-uix-20260831",
+    "commit": "48383a9af1c72f7e2e0128b734265581bab3f324",
+    "score": 93.4,
+    "rule": "Candidate may not displace this accepted baseline if final score is lower, a previously passing functional check regresses, or any critical dimension is below 90."
+  },
+  "productPersonality": {
+    "audience": "Kenyan traders, procurement operators, market analysts and commercial decision-makers who need to see movement, routes, margins, confidence and evidence quickly.",
+    "traits": ["alert", "commercial", "locally grounded", "data-forward", "decisive", "infrastructural"],
+    "antiTraits": ["luxury editorial", "generic premium SaaS", "decorative African motif", "warm-earth house style", "serif-led institutional presentation"],
+    "designQuestion": "What would a serious Kenyan market-intelligence instrument look like if its visual language emerged from signal detection, routes, evidence and action rather than from a reusable premium website aesthetic?"
+  },
+  "benchmarkResearch": {
+    "observedAt": "2026-08-31",
+    "sources": [
+      {
+        "name": "Kulea",
+        "url": "https://www.kulea.com/",
+        "observedAt": "2026-08-31",
+        "category": "direct-niche",
+        "distinctiveIdea": "Africa-first commodity workspace organized around trade flows, live price index, import parity, vessel tracking and downloadable data rather than editorial storytelling.",
+        "typographyObservation": "Modern sans-led product UI; exact family not asserted because the research surface did not expose a reliable CSS font-family value."
+      },
+      {
+        "name": "MarketView Africa",
+        "url": "https://marketview.africa/",
+        "observedAt": "2026-08-31",
+        "category": "direct-niche",
+        "distinctiveIdea": "Local-market intelligence framed around live prices, verified actors, informal-market observations and explicit source provenance for Kenya and Nigeria.",
+        "typographyObservation": "Contemporary sans-led web product with strong display hierarchy; exact family not asserted."
+      },
+      {
+        "name": "Fastmarkets Platform",
+        "url": "https://www.fastmarkets.com/platform/",
+        "observedAt": "2026-08-31",
+        "category": "direct-niche",
+        "distinctiveIdea": "Commodity decision workspace combines searchable prices, charts, forecasts, market news and alerts, keeping analysis close to action.",
+        "typographyObservation": "Sans-first data/product presentation; exact family not asserted."
+      },
+      {
+        "name": "LSEG Workspace — Agriculture",
+        "url": "https://www.lseg.com/en/data-analytics/products/workspace/commodities/agriculture",
+        "observedAt": "2026-08-31",
+        "category": "direct-niche",
+        "distinctiveIdea": "Integrated agriculture workflow joins pricing, flows, weather, supply/demand, news and custom indicators in one analytical workspace.",
+        "typographyObservation": "Enterprise sans-led information system; exact family not asserted."
+      },
+      {
+        "name": "Tridge Data & Analytics",
+        "url": "https://www.tridge.com/data-analytics",
+        "observedAt": "2026-08-31",
+        "category": "direct-niche",
+        "distinctiveIdea": "Agri-food intelligence separates price, trade, production, company, seasonality and weather datasets while offering a configurable intelligence dashboard.",
+        "typographyObservation": "Modern sans-led data platform; exact family not asserted."
+      },
+      {
+        "name": "Kpler Agriculture, Metals & Dry",
+        "url": "https://www.kpler.com/solutions/fundamental-intelligence/ags-metals-dry",
+        "observedAt": "2026-08-31",
+        "category": "direct-niche",
+        "distinctiveIdea": "Physical-market intelligence is made spatial and operational through cargo flows, vessel tracking, port activity and freight economics.",
+        "typographyObservation": "Modern sans-led analytical product language; exact family not asserted."
+      },
+      {
+        "name": "Vesper Commodity Intelligence",
+        "url": "https://vespertool.com/",
+        "observedAt": "2026-08-31",
+        "category": "direct-niche",
+        "distinctiveIdea": "Dashboard widgets expose latest price, change over multiple horizons, forecasts, fundamentals, cost models and technical analysis with strong numerical hierarchy.",
+        "typographyObservation": "Compact sans-led dashboard with data-emphasis; exact family not asserted."
+      },
+      {
+        "name": "S&P Global Agriculture & Food",
+        "url": "https://www.spglobal.com/energy/en/products-solutions/agriculture-food",
+        "observedAt": "2026-08-31",
+        "category": "direct-niche",
+        "distinctiveIdea": "Pricing, market intelligence, analysis and forecasts are unified around commercial decisions and arbitrage/risk use cases.",
+        "typographyObservation": "Enterprise sans-led market intelligence; exact family not asserted."
+      },
+      {
+        "name": "Stears",
+        "url": "https://www.stears.co/",
+        "observedAt": "2026-08-31",
+        "category": "adjacent-pattern",
+        "distinctiveIdea": "Africa-specific data identity comes from granular local context, opaque-market coverage and decision use cases rather than decorative regional styling.",
+        "typographyObservation": "Contemporary data/finance product typography; exact family not asserted."
+      },
+      {
+        "name": "Briter Intelligence",
+        "url": "https://www.briter.co/products/briter-intelligence",
+        "observedAt": "2026-08-31",
+        "category": "adjacent-pattern",
+        "distinctiveIdea": "Emerging-market business intelligence uses dashboards, filtering, ecosystem mapping and deal tracking to make large information spaces navigable.",
+        "typographyObservation": "Contemporary sans-led business intelligence presentation; exact family not asserted."
+      }
+    ],
+    "coverage": {
+      "typography": true,
+      "palette": true,
+      "layout": true,
+      "density": true,
+      "components": true,
+      "geometry": true,
+      "interaction": true,
+      "dataPresentation": true,
+      "imageryIconography": true,
+      "mobileTransformation": true,
+      "distinctiveIdea": true
+    },
+    "typographyFamiliesObserved": [
+      "modern grotesk / neo-grotesk sans class",
+      "compact sans with tabular numeric hierarchy",
+      "sans plus monospace utility pairing",
+      "display sans plus dense body sans"
+    ],
+    "typographyCaveat": "Exact proprietary font-family names are not claimed unless publicly inspectable; observations describe visible family classes and information roles.",
+    "nonCopyingPrinciples": [
+      "Organize dense intelligence by decisions and actions, not by decorative card repetition.",
+      "Keep provenance, freshness, confidence, route and economic context near each signal.",
+      "Express Kenyan/African specificity through market structure, geography, language and data semantics rather than ornamental cultural motifs.",
+      "Use compact sans/mono numerical hierarchy for market data instead of defaulting to editorial serif display typography.",
+      "Make query/search a first-class command surface and make state colors semantic rather than decorative.",
+      "On mobile, transform dense boards into prioritized stacked decision blocks instead of merely shrinking desktop tables."
+    ]
+  },
+  "artDirection": {
+    "selectedDirectionId": "signal-grid-market-wire",
+    "directions": [
+      {
+        "id": "signal-grid-market-wire",
+        "name": "Signal Grid / Market Wire",
+        "rationale": "Best fit for Njia's signal-to-opportunity workflow: fast, dense, route-aware, evidence-forward and visually far from the prior warm editorial house style.",
+        "fontFamilies": ["system grotesk sans", "ui-monospace"],
+        "genome": {
+          "paletteTemperature": "cool-neutral",
+          "primaryHueFamily": "graphite-navy",
+          "accentHueFamily": "electric-cyan-signal-amber-red",
+          "typographyStrategy": "grotesk-sans-plus-mono",
+          "geometry": "square-sharp-rule",
+          "density": "high",
+          "layoutArchetype": "terminal-grid",
+          "componentGrammar": "data-rails-panels-market-board",
+          "imageryIconography": "route-lines-status-glyphs",
+          "motionStyle": "terse-status-snap",
+          "dataVizLanguage": "sparklines-heat-bars-route"
+        }
+      },
+      {
+        "id": "field-atlas-corridor-map",
+        "name": "Field Atlas / Corridor Map",
+        "rationale": "Map-led, spatial and human-scale direction where geography and route formation are the primary organizing language.",
+        "fontFamilies": ["humanist sans"],
+        "genome": {
+          "paletteTemperature": "sunlit-neutral",
+          "primaryHueFamily": "indigo",
+          "accentHueFamily": "maize-yellow-cobalt",
+          "typographyStrategy": "humanist-sans",
+          "geometry": "mixed-rounded",
+          "density": "medium",
+          "layoutArchetype": "map-led-atlas",
+          "componentGrammar": "map-cards-route-chips",
+          "imageryIconography": "geographic-symbolic",
+          "motionStyle": "route-reveal",
+          "dataVizLanguage": "maps-route-bands-bubbles"
+        }
+      },
+      {
+        "id": "monochrome-exchange-ledger",
+        "name": "Monochrome Exchange / Ledger",
+        "rationale": "Ultra-dense exchange board emphasizing rank, delta, timestamp and action with almost no decorative surface styling.",
+        "fontFamilies": ["condensed sans", "ui-monospace"],
+        "genome": {
+          "paletteTemperature": "neutral-monochrome",
+          "primaryHueFamily": "black-white",
+          "accentHueFamily": "signal-lime",
+          "typographyStrategy": "condensed-sans-plus-mono",
+          "geometry": "sharp-grid",
+          "density": "very-high",
+          "layoutArchetype": "exchange-ledger",
+          "componentGrammar": "rows-tickers-dividers",
+          "imageryIconography": "none-symbolic",
+          "motionStyle": "minimal-snap",
+          "dataVizLanguage": "tickers-bars-mini-charts"
+        }
+      }
+    ],
+    "pairwiseSimilarity": [
+      {"left": "signal-grid-market-wire", "right": "field-atlas-corridor-map", "similarity": 0.0},
+      {"left": "signal-grid-market-wire", "right": "monochrome-exchange-ledger", "similarity": 0.0},
+      {"left": "field-atlas-corridor-map", "right": "monochrome-exchange-ledger", "similarity": 0.0}
+    ],
+    "typographySignatureCount": 3,
+    "gate": "PASS"
+  },
+  "portfolioComparison": {
+    "selectedDirectionId": "signal-grid-market-wire",
+    "comparisons": [
+      {"productId": "asteron", "similarity": 0.0, "threshold": 0.65, "result": "PASS"},
+      {"productId": "njia-v1", "similarity": 0.0, "threshold": 0.65, "result": "PASS"}
+    ],
+    "result": "PASS"
+  },
+  "implementationAuthority": {
+    "approved": true,
+    "selectedDirection": "signal-grid-market-wire",
+    "allowedSurfaces": ["styles.css"],
+    "htmlContentArchitectureChange": false,
+    "businessLogicChange": false,
+    "productionPromotion": false
+  }
+}

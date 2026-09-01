@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "1.0",
+  "runId": "UIX-015",
+  "requestId": "UIX-015-NJIA-20260831",
+  "assignment": "Njia real G4 UI Excellence qualification",
+  "lockedParent": {
+    "commit": "e06cc5c76d8c64d04f72df5e915c66508864c2fd",
+    "indexBlobSha1": "ad61d531a10174df3f554a0c2bd410c89b891ae9"
+  },
+  "candidate": {
+    "qualificationCommit": "ef70c650c246751501fc36c5bde725bd399fd974",
+    "uiSourceCommit": "e90d02f3b6890dbe358b1a5f9b3fdc0fcb4411a8",
+    "indexBlobSha1": "ad61d531a10174df3f554a0c2bd410c89b891ae9",
+    "stylesBlobSha1": "986d57aee9d7b6281148aa8f969e7114f1838251",
+    "businessLogicChanged": false,
+    "htmlStructureChanged": false
+  },
+  "githubActions": {
+    "workflow": "Run 015 Njia G4 Browser Evidence",
+    "runId": 33461782665,
+    "jobId": 99713248345,
+    "conclusion": "success",
+    "artifactId": 9783447396,
+    "artifactName": "run015-njia-g4-evidence-ef70c650c246751501fc36c5bde725bd399fd974",
+    "artifactDigest": "sha256:309dc4099a7e976d1fd533dc2ae4657cdc280ca5cb2d96be0c77388f1fc8804f",
+    "expiresAt": "2026-10-01T02:16:24Z"
+  },
+  "viewports": {
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "documentWidth": 390,
+      "pageOverflow": false,
+      "beforeScreenshotSha256": "f68177f492b1928aeba005f6a401ffd92bf0a6f694973a7bd08a7b5fcd4bf51c",
+      "afterScreenshotSha256": "e68f124048f65e0aca6d7b4601838d97614c918c2c745465e532b9a301f86664"
+    },
+    "tablet": {
+      "width": 820,
+      "height": 1180,
+      "documentWidth": 820,
+      "pageOverflow": false,
+      "beforeScreenshotSha256": "2ba4a3e60f5cba2dd9d6f28066fd1107d3b8b6fe03df34922f99677c09912d40",
+      "afterScreenshotSha256": "7179f6f450e1de5bf3b975ad9a732cb8b59b75dc547aeccc4fb55d8850e7e65d"
+    },
+    "desktop": {
+      "width": 1440,
+      "height": 1000,
+      "documentWidth": 1440,
+      "pageOverflow": false,
+      "beforeScreenshotSha256": "6a7204dfd5db01e75e945a991039f15a91432857ef9d9231e6cb3f71d3711afc",
+      "afterScreenshotSha256": "baf8490fa4ad46523eeb613fb7570294b032972e183e0a425a8f822a2fa8f2e1"
+    }
+  },
+  "functionalChecks": [
+    {"id":"viewport-mobile-no-page-overflow","status":"PASS"},
+    {"id":"viewport-tablet-no-page-overflow","status":"PASS"},
+    {"id":"viewport-desktop-no-page-overflow","status":"PASS"},
+    {"id":"anchor-integrity","status":"PASS","detail":{"total":25,"missing":[]}},
+    {"id":"semantic-structure","status":"PASS","detail":{"lang":"en-KE","h1Count":1,"primaryNavLabel":"Primary navigation","tablesWithCaptions":1,"scopedHeaders":12,"evidenceDetails":3}},
+    {"id":"ask-market-details-toggle","status":"PASS","detail":{"questionCount":2}},
+    {"id":"keyboard-focus-visible","status":"PASS","detail":{"outlineStyle":"solid","outlineWidth":"3px"}},
+    {"id":"small-text-token-contrast","status":"PASS","detail":{"inkFaintOnPaper":5.0716861550561,"inkFaintOnSurface":5.631174729742881,"ochreOnPaper":6.078419374224289,"rustOnPaper":5.76265050006773}},
+    {"id":"sticky-command-header","status":"PASS"},
+    {"id":"mobile-navigation-keyboard-toggle","status":"PASS","detail":{"visible":true,"open":true,"linkCount":7}},
+    {"id":"reduced-motion","status":"PASS","detail":{"scrollBehavior":"auto","transitionDuration":"1e-05s"}}
+  ],
+  "status": "PASS",
+  "completedAt": "2026-09-01T02:16:24.348Z"
+}
