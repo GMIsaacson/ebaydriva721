@@ -1,11 +1,11 @@
 {
-  "schemaVersion": "1.0",
+  "schemaVersion": "1.1",
   "requestId": "UIX-015-NJIA-20260831",
   "teamId": "UIX-TEAM-015",
   "teamName": "UI Excellence Team",
   "governanceMode": "RUN",
   "issue": 81,
-  "status": "IN_PROGRESS",
+  "status": "G4_ACCEPTED",
   "assignment": "Run the exact Run 014 Njia market-intelligence artifact through Run 015 UI Excellence",
   "lockedParent": {
     "branch": "preview/kenya-market-graph-20260831",
@@ -17,8 +17,11 @@
   },
   "workspace": {
     "branch": "run015/njia-real-uix-20260831",
+    "uiSourceCommit": "e90d02f3b6890dbe358b1a5f9b3fdc0fcb4411a8",
+    "qualificationCommit": "ef70c650c246751501fc36c5bde725bd399fd974",
     "productionMutation": false,
-    "functionalPreservationRequired": true
+    "functionalPreservationRequired": true,
+    "functionalPreservationResult": "PASS"
   },
   "benchmarkBrief": {
     "sources": [
@@ -47,11 +50,25 @@
     "visual_scorecard_v1",
     "independent_qa_decision_v1"
   ],
+  "handoffsCompleted": 10,
   "promotionRule": {
     "minimumOverall": 92,
     "criticalMinimum": 90,
     "criticalDimensions": ["visualHierarchy", "uxClarity", "responsiveExecution", "accessibility"],
     "functionalEquivalenceRequired": true,
     "independentQaRequired": true
-  }
+  },
+  "result": {
+    "scoreSystem": "UIX-100-v1",
+    "finalScore": 93.4,
+    "verdict": "PASS_PRODUCTION",
+    "criticalMinimumMet": true,
+    "functionalEquivalence": "PASS",
+    "independentQa": "PASS",
+    "browserWorkflowRunId": 33461782665,
+    "browserEvidenceArtifactId": 9783447396,
+    "standardAcceptanceRunId": 33461782668
+  },
+  "terminalReceipt": "agent-factory/run-015/evidence/njia-g4-terminal-receipt.json",
+  "nextGate": "G5 controlled preview deployment"
 }
