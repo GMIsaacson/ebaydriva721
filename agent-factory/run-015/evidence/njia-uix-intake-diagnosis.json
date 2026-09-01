@@ -1,0 +1,119 @@
+{
+  "schemaVersion": "1.0",
+  "requestId": "UIX-015-NJIA-20260831",
+  "artifactLock": {
+    "commit": "e06cc5c76d8c64d04f72df5e915c66508864c2fd",
+    "entry": "index.html",
+    "stylesheet": "styles.css",
+    "substitutionAllowed": false
+  },
+  "ui_intake_v1": {
+    "owner": "uix-lead-015",
+    "functionalBoundary": [
+      "preserve all anchor destinations and section IDs",
+      "preserve Ask the Market details interactions",
+      "preserve Opportunity Feed data and semantics",
+      "preserve Product Detail, Buyer-Intent Radar, Consumer Trend Engine and Evidence content",
+      "do not introduce live-data claims or remove demo disclosures"
+    ],
+    "sourceMutationScope": ["styles.css"],
+    "businessLogicChangeAuthorized": false
+  },
+  "benchmark_brief_v1": {
+    "owner": "uix-benchmark-scout-015",
+    "benchmarks": [
+      {
+        "name": "Kpler",
+        "observedPrinciple": "The product narrative separates foundational market data, derived insight and decision tools, creating a monitor-understand-act path.",
+        "applicationToNjia": "Make Njia's hierarchy read as signal -> ranked opportunity -> investigation -> evidence rather than a sequence of equally loud sections."
+      },
+      {
+        "name": "Palantir Foundry/AIP",
+        "observedPrinciple": "Operational intelligence is organized around decisions and real-world objects, with evidence and context attached to action.",
+        "applicationToNjia": "Keep route, product, confidence, freshness and evidence visually connected to the decision surface."
+      }
+    ],
+    "copyingAllowed": false
+  },
+  "ux_diagnosis_v1": {
+    "owner": "uix-ux-architect-015",
+    "strengths": [
+      "Strong signal-to-opportunity information architecture already exists.",
+      "Ask the Market creates an intuitive commercial entry point.",
+      "Evidence and demo/illustrative labeling are explicit.",
+      "Semantic details, tables, headings and navigation preserve understandable structure without JavaScript."
+    ],
+    "defects": [
+      {
+        "id": "NJIA-015-A11Y-CONTRAST",
+        "severity": "critical",
+        "surface": "design-system-color",
+        "finding": "Current --ink-faint (#77817b) is approximately 3.54:1 on --paper and --ochre (#a77942) is approximately 3.38:1 on --paper, while both are used for small text or text-adjacent UI. This is below the 4.5:1 target for normal text.",
+        "repair": "Darken muted/ochre text tokens while retaining Njia's mineral/rust identity."
+      },
+      {
+        "id": "NJIA-015-A11Y-TYPE",
+        "severity": "high",
+        "surface": "micro-typography",
+        "finding": "Several labels use 0.58rem-0.66rem type, creating avoidable legibility and density problems in an intelligence product.",
+        "repair": "Raise minimum micro-label sizes and line-height, particularly evidence, captions, tags and table metadata."
+      },
+      {
+        "id": "NJIA-015-RESP-DENSITY",
+        "severity": "high",
+        "surface": "signal-grid-breakpoints",
+        "finding": "Five signal cards remain in one row until 1050px, compressing headings, metrics and decision links through common laptop widths.",
+        "repair": "Move the 3-column transition to a wider breakpoint and normalize card borders/min-heights."
+      },
+      {
+        "id": "NJIA-015-HIERARCHY",
+        "severity": "medium",
+        "surface": "hero-and-section-rhythm",
+        "finding": "The hero can dominate the first viewport while downstream command surfaces have similar visual weight, delaying the market-state read.",
+        "repair": "Tighten hero scale/spacing and increase separation between narrative, command and evidence surfaces."
+      },
+      {
+        "id": "NJIA-015-INTERACTION",
+        "severity": "medium",
+        "surface": "interactive-state-language",
+        "finding": "Links/details are functional but visual feedback is understated relative to the information density.",
+        "repair": "Strengthen hover/open/focus states without adding ornamental motion or changing behavior."
+      },
+      {
+        "id": "NJIA-015-NAV",
+        "severity": "medium",
+        "surface": "header-navigation",
+        "finding": "Seven desktop navigation items create a long horizontal rail and the header loses context during a very long intelligence page.",
+        "repair": "Use a sticky, bounded command header with clearer active/hover affordance while preserving all links."
+      }
+    ]
+  },
+  "art_direction_v1": {
+    "owner": "uix-art-director-015",
+    "direction": "Kenyan market-intelligence field journal meets professional trading desk: warm mineral paper, deep green-black ink, restrained rust signal accents, compact evidence typography, crisp rules, minimal radius, and stronger spatial hierarchy.",
+    "avoid": ["generic purple SaaS", "glassmorphism", "decorative gradients that reduce data legibility", "large ornamental cards", "copying benchmark UI"]
+  },
+  "design_system_delta_v1": {
+    "owner": "uix-design-system-015",
+    "approvedSurfaces": [
+      "design-system-color",
+      "micro-typography",
+      "signal-grid-breakpoints",
+      "hero-and-section-rhythm",
+      "interactive-state-language",
+      "header-navigation",
+      "panel-and-table-polish"
+    ],
+    "outOfScope": ["content claims", "data values", "section IDs", "routing", "business logic"]
+  },
+  "interaction_spec_v1": {
+    "owner": "uix-interaction-designer-015",
+    "requirements": [
+      "Focus indicators remain high-contrast and visible.",
+      "Details/open states remain native and keyboard-operable.",
+      "Hover states may increase contrast or surface emphasis but may not hide information.",
+      "Reduced-motion preference must continue to disable non-essential transitions."
+    ]
+  },
+  "status": "APPROVED_FOR_FRONTEND_POLISH"
+}
