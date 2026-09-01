@@ -1,0 +1,46 @@
+name: Run 014 Decision Timer Acceptance
+
+on:
+  push:
+    branches:
+      - run014/decision-timer-20260831
+    paths:
+      - 'index.html'
+      - 'decision-timer.css'
+      - 'decision-timer.js'
+      - 'decision-timer-core.mjs'
+      - 'agent-factory/run-014/assignments/decision-timer/**'
+      - '.github/workflows/run-014-decision-timer.yml'
+  workflow_dispatch:
+
+jobs:
+  run014-decision-timer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+      - name: Install existing repository dependencies
+        run: npm ci --ignore-scripts
+      - name: Verify no dependency manifest change
+        run: git diff --exit-code origin/master...HEAD -- package.json package-lock.json
+      - name: Run independent Decision Timer tests
+        run: node --test agent-factory/run-014/assignments/decision-timer/tests.test.mjs
+      - name: Build release candidate
+        run: npm run build
+      - name: Verify preview authority boundary
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const brief = JSON.parse(fs.readFileSync('agent-factory/run-014/assignments/decision-timer/01-product-brief.json','utf8'));
+          const release = JSON.parse(fs.readFileSync('agent-factory/run-014/assignments/decision-timer/07-release-candidate.json','utf8'));
+          if (brief.authority.environment !== 'preview') throw new Error('PREVIEW_AUTHORITY_REQUIRED');
+          if (brief.authority.maxSpendCents !== 0) throw new Error('ZERO_SPEND_REQUIRED');
+          if (release.environment !== 'preview' || release.productionPromotion !== false) throw new Error('PRODUCTION_BOUNDARY_FAILED');
+          console.log('PASS preview-only authority boundary');
+          NODE

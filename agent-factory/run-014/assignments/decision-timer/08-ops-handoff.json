@@ -1,0 +1,13 @@
+{
+  "schemaVersion":"1.0",
+  "runId":"SW-PROD-014",
+  "assignmentId":"SW-PROD-014-DECISION-TIMER-001",
+  "role":"release-handoff",
+  "handoffType":"ops_handoff_v1",
+  "targetOperationsRun":"OPS-CORE-008",
+  "requestedAction":"none",
+  "environment":"preview",
+  "productionAuthority":false,
+  "rollback":"Discard preview deployment and branch; no production state was mutated.",
+  "status":"PREPARED_NOT_SUBMITTED"
+}

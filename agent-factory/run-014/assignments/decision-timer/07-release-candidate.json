@@ -1,0 +1,13 @@
+{
+  "schemaVersion":"1.0",
+  "runId":"SW-PROD-014",
+  "assignmentId":"SW-PROD-014-DECISION-TIMER-001",
+  "role":"release-handoff",
+  "handoffType":"release_candidate_v1",
+  "release":"decision-timer-preview-001",
+  "environment":"preview",
+  "productionPromotion":false,
+  "releaseNotes":["New isolated Decision Timer micro-app","180-second local countdown","two-option weighted comparison","local decision receipt","responsive zero-backend build"],
+  "rollback":"Discard branch preview; master is unchanged.",
+  "status":"CANDIDATE_PENDING_CI_AND_PREVIEW_READY"
+}

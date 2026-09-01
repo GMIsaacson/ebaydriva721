@@ -1,0 +1,12 @@
+{
+  "schemaVersion":"1.0",
+  "runId":"SW-PROD-014",
+  "assignmentId":"SW-PROD-014-DECISION-TIMER-001",
+  "role":"test-engineering",
+  "handoffType":"test_evidence_v1",
+  "testFile":"agent-factory/run-014/assignments/decision-timer/tests.test.mjs",
+  "workflow":".github/workflows/run-014-decision-timer.yml",
+  "requiredChecks":["weighted calculation","timer bounds","receipt semantics","exact UI shell","no network or persistence surface","responsive/accessibility safeguards","Vite production build","no package manifest delta"],
+  "status":"PENDING_INDEPENDENT_CI",
+  "passRule":"All workflow steps must conclude success; implementation role may not self-approve."
+}

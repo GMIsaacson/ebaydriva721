@@ -1,15 +1,129 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#241056" />
-    <meta name="description" content="DataScout product sourcing intelligence workspace for online resellers." />
-    <title>DataScout — Product Sourcing Intelligence</title>
-  </head>
-  <body>
-    <noscript>You need to enable JavaScript to run DataScout.</noscript>
-    <div id="root"></div>
-    <script type="module" src="/src/index.jsx"></script>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#ff5a1f" />
+  <meta name="description" content="Decision Timer: compare two options, time-box the choice, and leave with a decision receipt." />
+  <title>Decision Timer — Decide in 180 seconds</title>
+  <link rel="stylesheet" href="/decision-timer.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <header class="masthead">
+      <div class="brand-block" aria-label="Decision Timer">
+        <span class="brand-mark">D/180</span>
+        <span class="brand-name">Decision Timer</span>
+      </div>
+      <p class="masthead-note">Two options. Three criteria. One decision.</p>
+    </header>
+
+    <section class="hero" aria-labelledby="page-title">
+      <div>
+        <p class="kicker">Stop circling. Start deciding.</p>
+        <h1 id="page-title">Give the decision<br />three minutes.</h1>
+      </div>
+      <div class="timer-panel" aria-label="Decision countdown">
+        <span class="timer-label">Time remaining</span>
+        <output id="timer" class="timer" aria-live="off">03:00</output>
+        <div class="timer-meta">
+          <span id="timer-mode">Ready</span>
+          <span>180 sec</span>
+        </div>
+        <div class="timer-actions">
+          <button id="start-timer" class="button button-dark" type="button">Start</button>
+          <button id="pause-timer" class="button button-plain" type="button" disabled>Pause</button>
+          <button id="reset-timer" class="button button-plain" type="button">Reset</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="comparison" aria-labelledby="compare-title">
+      <div class="section-heading">
+        <span class="section-number">01</span>
+        <div>
+          <p class="eyebrow">Name the choice</p>
+          <h2 id="compare-title">Put both options on the table.</h2>
+        </div>
+      </div>
+
+      <div class="option-grid">
+        <label class="option-card option-a">
+          <span class="option-tag">Option A</span>
+          <input id="option-a" data-lockable type="text" value="Take the offer" maxlength="50" autocomplete="off" />
+          <span class="option-total">Weighted score <strong id="total-a">0</strong></span>
+        </label>
+        <label class="option-card option-b">
+          <span class="option-tag">Option B</span>
+          <input id="option-b" data-lockable type="text" value="Keep looking" maxlength="50" autocomplete="off" />
+          <span class="option-total">Weighted score <strong id="total-b">0</strong></span>
+        </label>
+      </div>
+
+      <div class="section-heading criteria-heading">
+        <span class="section-number">02</span>
+        <div>
+          <p class="eyebrow">Score what matters</p>
+          <h2>Weight three criteria. Score each option 1–5.</h2>
+        </div>
+      </div>
+
+      <div class="criteria-table" role="group" aria-label="Decision criteria">
+        <div class="criteria-header" aria-hidden="true">
+          <span>Criterion</span><span>Weight</span><span>A</span><span>B</span>
+        </div>
+
+        <div class="criterion-row">
+          <label><span class="sr-only">Criterion 1 name</span><input data-lockable class="criterion-name" type="text" value="Upside" maxlength="32" /></label>
+          <label><span class="sr-only">Criterion 1 weight</span><select data-lockable class="weight"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></label>
+          <label><span class="sr-only">Option A score for criterion 1</span><select data-lockable class="score-a"><option>1</option><option>2</option><option>3</option><option selected>4</option><option>5</option></select></label>
+          <label><span class="sr-only">Option B score for criterion 1</span><select data-lockable class="score-b"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></label>
+        </div>
+
+        <div class="criterion-row">
+          <label><span class="sr-only">Criterion 2 name</span><input data-lockable class="criterion-name" type="text" value="Risk" maxlength="32" /></label>
+          <label><span class="sr-only">Criterion 2 weight</span><select data-lockable class="weight"><option>1</option><option>2</option><option>3</option><option selected>4</option><option>5</option></select></label>
+          <label><span class="sr-only">Option A score for criterion 2</span><select data-lockable class="score-a"><option>1</option><option selected>2</option><option>3</option><option>4</option><option>5</option></select></label>
+          <label><span class="sr-only">Option B score for criterion 2</span><select data-lockable class="score-b"><option>1</option><option>2</option><option>3</option><option selected>4</option><option>5</option></select></label>
+        </div>
+
+        <div class="criterion-row">
+          <label><span class="sr-only">Criterion 3 name</span><input data-lockable class="criterion-name" type="text" value="Energy" maxlength="32" /></label>
+          <label><span class="sr-only">Criterion 3 weight</span><select data-lockable class="weight"><option>1</option><option selected>2</option><option>3</option><option>4</option><option>5</option></select></label>
+          <label><span class="sr-only">Option A score for criterion 3</span><select data-lockable class="score-a"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></label>
+          <label><span class="sr-only">Option B score for criterion 3</span><select data-lockable class="score-b"><option>1</option><option selected>2</option><option>3</option><option>4</option><option>5</option></select></label>
+        </div>
+      </div>
+    </section>
+
+    <section class="commit-zone" aria-labelledby="commit-title">
+      <div class="section-heading light-heading">
+        <span class="section-number">03</span>
+        <div>
+          <p class="eyebrow">Commit</p>
+          <h2 id="commit-title">When the clock hits zero, choose.</h2>
+        </div>
+      </div>
+      <p id="decision-prompt" class="decision-prompt" aria-live="polite">Start the timer when both options are ready.</p>
+      <div class="choice-grid">
+        <button class="choice-button" data-choice="a" type="button" disabled><span>Choose A</span><strong id="choice-a-name">Take the offer</strong></button>
+        <button class="choice-button" data-choice="b" type="button" disabled><span>Choose B</span><strong id="choice-b-name">Keep looking</strong></button>
+      </div>
+
+      <section id="receipt" class="receipt" aria-labelledby="receipt-title" hidden>
+        <div class="receipt-topline"><span>Decision receipt</span><span>Local-only record</span></div>
+        <h3 id="receipt-title">Choice recorded.</h3>
+        <pre id="receipt-text"></pre>
+        <button id="copy-receipt" class="button button-orange" type="button">Copy receipt</button>
+        <span id="copy-status" class="copy-status" aria-live="polite"></span>
+      </section>
+    </section>
+
+    <footer class="footer">
+      <span>D/180</span>
+      <p>No account. No cloud. No algorithm makes the choice for you.</p>
+    </footer>
+  </main>
+  <script type="module" src="/decision-timer.js"></script>
+</body>
 </html>

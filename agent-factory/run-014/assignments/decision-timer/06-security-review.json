@@ -1,0 +1,16 @@
+{
+  "schemaVersion":"1.0",
+  "runId":"SW-PROD-014",
+  "assignmentId":"SW-PROD-014-DECISION-TIMER-001",
+  "role":"security-dependency",
+  "handoffType":"security_review_v1",
+  "findings":[],
+  "dependencyDelta":0,
+  "secretsRequired":false,
+  "authSurface":false,
+  "networkSurface":false,
+  "persistenceSurface":false,
+  "unsafeHtmlRendering":false,
+  "review":"Static review finds no new dependency, secret, network, storage or injection surface. Final PASS is contingent on the independent manifest-diff and source tests in CI.",
+  "status":"PASS_STATIC_PENDING_CI"
+}

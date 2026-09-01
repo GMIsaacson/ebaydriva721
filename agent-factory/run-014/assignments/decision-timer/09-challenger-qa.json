@@ -1,0 +1,9 @@
+{
+  "schemaVersion":"1.0",
+  "runId":"SW-PROD-014",
+  "assignmentId":"SW-PROD-014-DECISION-TIMER-001",
+  "role":"challenger-qa",
+  "checks":["scope unchanged","acceptance criteria traceable","implementation cannot self-verify","zero package delta","preview-only authority","master unchanged"],
+  "status":"PENDING_INDEPENDENT_CI_AND_DEPLOYMENT_EVIDENCE",
+  "terminalRule":"PASS only after workflow success and the final branch deployment reports READY with target != production."
+}
