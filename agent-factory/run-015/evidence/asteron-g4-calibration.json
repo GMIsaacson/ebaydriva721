@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "1.0",
+  "runId": "UIX-015",
+  "teamId": "UIX-TEAM-015",
+  "artifactCommit": "d715f1d8fdc596c78192813ea07896b749fa67b0",
+  "artifactBlob": "5b4176f4f12669624cab0cb970bbd56731620e78",
+  "purpose": "Calibration evidence kept separate from UIX-100 acceptance scoring.",
+  "domainAppropriateness": {
+    "assessment": "STRONG",
+    "notes": [
+      "Visual tone is restrained, evidence-oriented and appropriate for consequential B2B operating work.",
+      "The route, evidence packet, decision-owner and closure concepts materially support the product thesis rather than functioning as decorative copy.",
+      "Claims are bounded: the page distinguishes candidate signals, validated findings, authorized actions and verified outcomes."
+    ]
+  },
+  "portfolioSimilarity": {
+    "assessment": "LOW_TO_MODERATE",
+    "notes": [
+      "The field/bone/brass palette, route-rail motif and evidence-led information architecture create a distinct identity.",
+      "The layout still uses familiar landing-page primitives such as a hero, section bands and CTA form, but composition and content model reduce generic-template resemblance."
+    ]
+  },
+  "scoringBoundary": {
+    "includedInUIXWeightedScore": false,
+    "reason": "Issue #78 requires domain and similarity calibration to remain separate from acceptance scoring."
+  }
+}
