@@ -1,0 +1,80 @@
+{
+  "schemaVersion": "2.0",
+  "assignmentId": "UIX-015-NJIA-V2-001",
+  "workflow": {
+    "runId": 33468509424,
+    "conclusion": "SUCCESS",
+    "artifactId": 9785726855,
+    "artifactName": "run015-njia-v2-evidence-d436831d74a05543260f1740703eae3ad6df35db",
+    "artifactDigest": "sha256:5524e2442d5ce8f593f1f6932f3995af4951f19dc155c9a1309524489156ee5c",
+    "candidateCommit": "d436831d74a05543260f1740703eae3ad6df35db"
+  },
+  "lockedParent": {
+    "commit": "48383a9af1c72f7e2e0128b734265581bab3f324",
+    "score": 93.4,
+    "indexHtmlUnchanged": true
+  },
+  "viewports": {
+    "mobile": {
+      "viewport": "390x844",
+      "beforeScreenshot": "before-mobile.png",
+      "beforeSha256": "e68f124048f65e0aca6d7b4601838d97614c918c2c745465e532b9a301f86664",
+      "afterScreenshot": "after-mobile.png",
+      "afterSha256": "3e166ceae472204c50307d79110c2d3b9734bdff492ce6dd26ee6b3425e31815",
+      "documentWidth": 390,
+      "documentHeight": 8621,
+      "noPageOverflow": true
+    },
+    "tablet": {
+      "viewport": "820x1180",
+      "beforeScreenshot": "before-tablet.png",
+      "beforeSha256": "7179f6f450e1de5bf3b975ad9a732cb8b59b75dc547aeccc4fb55d8850e7e65d",
+      "afterScreenshot": "after-tablet.png",
+      "afterSha256": "58b6f7faeb909508cfed6a5078ae25ba236225717e116cb4577501ab6faeda21",
+      "documentWidth": 820,
+      "documentHeight": 6023,
+      "noPageOverflow": true
+    },
+    "desktop": {
+      "viewport": "1440x1000",
+      "beforeScreenshot": "before-desktop.png",
+      "beforeSha256": "baf8490fa4ad46523eeb613fb7570294b032972e183e0a425a8f822a2fa8f2e1",
+      "afterScreenshot": "after-desktop.png",
+      "afterSha256": "232538a46841df2d133da6018354e58efce755fce2e86091005887425a21b25e",
+      "documentWidth": 1440,
+      "documentHeight": 4603,
+      "noPageOverflow": true
+    }
+  },
+  "functionalChecks": [
+    {"id":"viewport-mobile-no-page-overflow","status":"PASS"},
+    {"id":"viewport-tablet-no-page-overflow","status":"PASS"},
+    {"id":"viewport-desktop-no-page-overflow","status":"PASS"},
+    {"id":"anchor-integrity","status":"PASS","detail":{"total":25,"missing":[]}},
+    {"id":"semantic-structure","status":"PASS","detail":{"lang":"en-KE","h1Count":1,"primaryNavLabel":"Primary navigation","tablesWithCaptions":1,"scopedHeaders":12,"evidenceDetails":3}},
+    {"id":"ask-market-details-toggle","status":"PASS","detail":{"questionCount":2}},
+    {"id":"keyboard-focus-visible","status":"PASS","detail":{"outlineWidth":"3px","outlineColor":"rgb(34, 178, 255)"}},
+    {"id":"small-text-token-contrast","status":"PASS","detail":{"minimumObservedRatio":4.719988436444091,"requiredMinimum":4.5}},
+    {"id":"selected-direction-rendered-typography","status":"PASS","detail":{"body":"Arial / Helvetica / system sans","h1":"Arial / Helvetica / system sans","utility":"SFMono / Consolas / Liberation Mono / Menlo / monospace"}},
+    {"id":"semantic-signal-color-differentiation","status":"PASS","detail":{"distinctSemanticColors":4}},
+    {"id":"sticky-command-header","status":"PASS"},
+    {"id":"mobile-navigation-keyboard-toggle","status":"PASS","detail":{"mobileNavVisible":true,"mobileNavOpen":true,"mobileLinkCount":7}},
+    {"id":"mobile-density-transformation","status":"PASS","detail":{"signalGridDisplay":"block","tableOverflowX":"auto"}},
+    {"id":"reduced-motion","status":"PASS","detail":{"scrollBehavior":"auto","transitionDuration":"1e-05s"}}
+  ],
+  "firstRunFailure": {
+    "workflowRunId": 33468258051,
+    "artifactId": 9785644922,
+    "status": "FAIL_CLOSED",
+    "measuredDefects": [
+      "ink-faint on canvas contrast measured 4.39:1, below required 4.5:1",
+      "typography harness falsely matched the substring serif inside sans-serif"
+    ],
+    "repairs": [
+      "darkened --ink-faint from #64748b to #5f6f86; resulting canvas contrast 4.72:1",
+      "corrected typography assertion to distinguish explicit serif faces from sans-serif"
+    ],
+    "otherFunctionalChecksRegressed": false
+  },
+  "status": "PASS"
+}
