@@ -1,0 +1,76 @@
+{
+  "schemaVersion": "2.0",
+  "runId": "UIX-015",
+  "teamId": "UIX-TEAM-015",
+  "assignmentId": "UIX-015-NJIA-V2-001",
+  "issue": 83,
+  "terminalState": "G4_ACCEPTED",
+  "qualityVerdict": "PASS_PRODUCTION",
+  "qualityTierMeaning": "Meets RUN-015 production-quality UI threshold; this is not deployment authority.",
+  "currentBestNonProductionArtifact": true,
+  "artifact": {
+    "branch": "run015/njia-v2-canonical-exec-20260831",
+    "uiQualificationCommit": "d436831d74a05543260f1740703eae3ad6df35db",
+    "stylesBlobSha1": "fa9d02553e6de45716591e00ffe9aed002355601",
+    "lockedIndexBlobSha1": "ad61d531a10174df3f554a0c2bd410c89b891ae9",
+    "selectedDirection": "signal-grid-market-wire"
+  },
+  "baseline": {
+    "branch": "run015/njia-real-uix-20260831",
+    "commit": "48383a9af1c72f7e2e0128b734265581bab3f324",
+    "score": 93.4,
+    "retainedForRollback": true
+  },
+  "result": {
+    "score": 94.8,
+    "baselineScore": 93.4,
+    "delta": 1.4,
+    "criticalDimensionsAtOrAbove90": true,
+    "nicheAppropriateness": 97,
+    "portfolioDistinction": 99,
+    "functionalEquivalence": "PASS",
+    "independentVisualQA": "PASS",
+    "unresolvedBlockers": 0
+  },
+  "safeguardEvidence": {
+    "firstBrowserRun": {
+      "runId": 33468258051,
+      "result": "FAIL_CLOSED",
+      "reason": "4.39:1 faint-text contrast plus typography harness false-positive; accepted v1 baseline remained current best"
+    },
+    "passingBrowserRun": {
+      "runId": 33468509424,
+      "artifactId": 9785726855,
+      "artifactDigest": "sha256:5524e2442d5ce8f593f1f6932f3995af4951f19dc155c9a1309524489156ee5c",
+      "result": "SUCCESS"
+    },
+    "canonicalRun015Acceptance": {
+      "runId": 33468509555,
+      "result": "SUCCESS"
+    },
+    "executableTerminalAcceptance": {
+      "runId": 33468949298,
+      "result": "SUCCESS",
+      "test": "agent-factory/run-015/assignments/njia-v2/njia-v2-final-acceptance.test.cjs"
+    }
+  },
+  "records": {
+    "benchmarkAndArtDirection": "agent-factory/run-015/assignments/njia-v2/01-benchmark-art-direction.json",
+    "browserEvidence": "agent-factory/run-015/assignments/njia-v2/02-browser-evidence.json",
+    "scorecard": "agent-factory/run-015/assignments/njia-v2/03-uix-scorecard.json",
+    "independentQA": "agent-factory/run-015/assignments/njia-v2/04-independent-qa.json",
+    "terminalAcceptanceTest": "agent-factory/run-015/assignments/njia-v2/njia-v2-final-acceptance.test.cjs"
+  },
+  "authority": {
+    "productionDeploymentAuthorized": false,
+    "masterProductMergeAuthorized": false,
+    "productionMutationAuthorized": false,
+    "customerContactAuthorized": false,
+    "spendAuthorizedCents": 0,
+    "previewReviewAuthorized": true
+  },
+  "promotion": {
+    "productionPromotion": "NOT_REQUESTED",
+    "ownerReviewRequiredBeforeAnyProductionAction": true
+  }
+}
