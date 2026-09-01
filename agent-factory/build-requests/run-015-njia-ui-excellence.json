@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "1.2",
+  "schemaVersion": "1.3",
   "requestId": "UIX-015-NJIA-20260831",
   "teamId": "UIX-TEAM-015",
   "teamName": "UI Excellence Team",
@@ -19,6 +19,7 @@
     "branch": "run015/njia-real-uix-20260831",
     "uiSourceCommit": "e90d02f3b6890dbe358b1a5f9b3fdc0fcb4411a8",
     "qualificationCommit": "ef70c650c246751501fc36c5bde725bd399fd974",
+    "evidenceHeadCommit": "48264765bdba2dd60045b1f57e75029f58ca6133",
     "productionMutation": false,
     "functionalPreservationRequired": true,
     "functionalPreservationResult": "PASS"
