@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "1.0",
+  "schemaVersion": "1.1",
   "runId": "UIX-015",
   "teamId": "UIX-TEAM-015",
   "requestId": "UIX-015-NJIA-20260831",
@@ -37,12 +37,23 @@
     "browserArtifactDigest": "sha256:309dc4099a7e976d1fd533dc2ae4657cdc280ca5cb2d96be0c77388f1fc8804f",
     "standardAcceptanceRunId": 33461782668
   },
+  "preview": {
+    "provider": "vercel",
+    "generation": "automatic Git-linked non-production branch preview",
+    "deploymentId": "dpl_FRkLwovXCQp5HYRSaUwFYGh8tiac",
+    "deploymentCommit": "84787e415e3c3793da8a8b2181f02a8d90de0ccf",
+    "deploymentState": "READY",
+    "url": "https://datascout-live-sourcing-preview-lmme28xxt.vercel.app",
+    "branchAlias": "https://datascout-live-sourcing-pre-git-a54370-damaebay8-1237s-projects.vercel.app",
+    "production": false
+  },
   "authority": {
     "productionMutationPerformed": false,
     "productionMutationAuthorized": false,
-    "productionDeploymentAuthorized": false
+    "productionDeploymentAuthorized": false,
+    "manualDeploymentPerformedByRun015": false
   },
-  "terminalState": "G4_ACCEPTED",
-  "nextGate": "G5 controlled preview deployment",
-  "completedAt": "2026-09-01T02:16:24.348Z"
+  "terminalState": "G4_ACCEPTED_PREVIEW_AVAILABLE",
+  "productionPromotionState": "NOT_REQUESTED",
+  "completedAt": "2026-09-01T02:19:08Z"
 }
