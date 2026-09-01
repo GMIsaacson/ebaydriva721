@@ -16,19 +16,11 @@ const DIMENSIONS = Object.freeze({
 const REQUIRED_VIEWPORTS = Object.freeze(['mobile', 'tablet', 'desktop']);
 const CRITICAL_DIMENSIONS = Object.freeze(['visualHierarchy', 'uxClarity', 'responsiveExecution', 'accessibility']);
 const NEAR_PASS_PROTECTION_THRESHOLD = 90;
-const REPAIR_POLICIES = Object.freeze({
-  'RUN015-NJIA-20260831': Object.freeze({
-    baselineArtifactHash: null,
-    baselineOverallScore: 92.0,
-    baselineVisualScore: 91.8,
-    allowedSurfaces: Object.freeze([
-      'desktop-ledger-alignment',
-      'tablet-decision-strip-layout',
-      'keyboard-filter-aria',
-    ]),
-    requiredPassingCheckIds: Object.freeze(['nav', 'primary-flow', 'persistence']),
-  }),
-});
+
+// Incident policies must be backed by a durable artifact plus an independently
+// verified scorecard. Do not register a real assignment from chat-only or
+// otherwise unpersisted scoring claims.
+const REPAIR_POLICIES = Object.freeze({});
 
 function asFiniteScore(value, key) {
   const n = Number(value);
