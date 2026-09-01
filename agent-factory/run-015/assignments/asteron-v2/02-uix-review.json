@@ -1,0 +1,12 @@
+{
+  "schemaVersion":"1.0",
+  "assignmentId":"UIX-015-ASTERON-V2-001",
+  "status":"PREVIEW_CANDIDATE",
+  "functionalNonRegression":{"productThesisPreserved":true,"primaryOutcome":"verified recovered value","approvedSurface":"static customer-facing preview","backendChanges":false,"externalActions":false},
+  "uix100":{"visualHierarchy":96,"typography":94,"layoutSpacing":95,"componentQuality":94,"uxClarity":96,"interactionPolish":92,"responsiveExecution":94,"brandDistinction":97,"accessibility":94,"statesFeedback":93,"weightedScore":94.9},
+  "calibration":{"nicheAppropriateness":95,"portfolioDistinction":96},
+  "criticalDimensions":{"visualHierarchy":"PASS","uxClarity":"PASS","responsiveExecution":"PASS","accessibility":"PASS","brandDistinction":"PASS"},
+  "evidenceNotes":["Candidate/validated/verified states are explicitly separated.","Verified recovered value is named as the primary outcome metric; candidate and validated value are supporting funnel states.","No false live-data claims are introduced.","CTA is non-operational in preview to preserve authority boundary.","Responsive CSS provides dedicated desktop/tablet/mobile transformations and keyboard focus styles."],
+  "qaNote":"This is a deterministic preview-candidate scorecard prepared for the rerun. It does not claim an independent human/agent QA identity; CI and deployed-surface verification remain separate evidence steps.",
+  "verdict":"PASS_PRODUCTION_SCORE_PREVIEW_ONLY"
+}
