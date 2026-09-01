@@ -1,0 +1,62 @@
+{
+  "schemaVersion": "1.0",
+  "purpose": "Durable memory of completed Run 015 visual systems used to detect accidental cross-product convergence. This registry is not a style library and must not be used as a default source of design tokens.",
+  "genomeKeys": [
+    "paletteTemperature",
+    "primaryHueFamily",
+    "accentHueFamily",
+    "typographyStrategy",
+    "geometry",
+    "density",
+    "layoutArchetype",
+    "componentGrammar",
+    "imageryIconography",
+    "motionStyle",
+    "dataVizLanguage"
+  ],
+  "entries": [
+    {
+      "productId": "asteron",
+      "productName": "ASTERON — Verified business outcomes",
+      "relationshipFamily": "asteron",
+      "artifactRef": "preview/asteron-uix015-20260831@d715f1d8fdc596c78192813ea07896b749fa67b0",
+      "uixScore": 92.6,
+      "genome": {
+        "paletteTemperature": "warm-neutral",
+        "primaryHueFamily": "desaturated-green-teal",
+        "accentHueFamily": "earth-metal-brass",
+        "typographyStrategy": "institutional-sans-plus-mono",
+        "geometry": "square-low-radius-thin-rule",
+        "density": "moderate-dense",
+        "layoutArchetype": "editorial-enterprise",
+        "componentGrammar": "border-led-panels-rails-ledgers",
+        "imageryIconography": "minimal-symbolic-no-photography",
+        "motionStyle": "restrained-minimal-native",
+        "dataVizLanguage": "process-rails-ledgers"
+      },
+      "evidence": "agent-factory/run-015/evidence/asteron-g4-scorecard.json"
+    },
+    {
+      "productId": "njia",
+      "productName": "Njia Market Intelligence — Kenya",
+      "relationshipFamily": "njia",
+      "artifactRef": "run015/njia-real-uix-20260831@e90d02f3b6890dbe358b1a5f9b3fdc0fcb4411a8",
+      "uixScore": 93.4,
+      "genome": {
+        "paletteTemperature": "warm-neutral",
+        "primaryHueFamily": "desaturated-green-teal",
+        "accentHueFamily": "earth-metal-rust-ochre",
+        "typographyStrategy": "editorial-serif-display-plus-sans",
+        "geometry": "square-low-radius-thin-rule",
+        "density": "moderate-dense",
+        "layoutArchetype": "editorial-enterprise",
+        "componentGrammar": "border-led-panels-rails-ledgers",
+        "imageryIconography": "minimal-symbolic-no-photography",
+        "motionStyle": "restrained-minimal-native",
+        "dataVizLanguage": "sparklines-bars-evidence"
+      },
+      "evidence": "agent-factory/run-015/evidence/njia-g4-scorecard.json",
+      "note": "Seeded because owner review identified material cross-product visual convergence with Asteron despite distinct products. The registry exists to prevent repetition of this pattern."
+    }
+  ]
+}
