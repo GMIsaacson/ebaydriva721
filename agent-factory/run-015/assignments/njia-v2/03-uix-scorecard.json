@@ -1,0 +1,103 @@
+{
+  "schemaVersion": "2.0",
+  "runId": "UIX-015",
+  "teamId": "UIX-TEAM-015",
+  "assignmentId": "UIX-015-NJIA-V2-001",
+  "gate": "G4",
+  "assignment": "Njia v2 benchmark-diversity and non-regression qualification",
+  "artifact": {
+    "branch": "run015/njia-v2-canonical-exec-20260831",
+    "lockedBaselineCommit": "48383a9af1c72f7e2e0128b734265581bab3f324",
+    "lockedBaselineScore": 93.4,
+    "candidateCommit": "d436831d74a05543260f1740703eae3ad6df35db",
+    "indexHtmlUnchanged": true,
+    "businessLogicChanged": false,
+    "htmlContentArchitectureChanged": false,
+    "selectedDirection": "signal-grid-market-wire"
+  },
+  "scores": {
+    "visualHierarchy": 96,
+    "typography": 95,
+    "layoutSpacing": 94,
+    "componentQuality": 94,
+    "uxClarity": 95,
+    "interactionPolish": 92,
+    "responsiveExecution": 95,
+    "brandDistinction": 98,
+    "accessibility": 94,
+    "statesAndFeedback": 93
+  },
+  "weights": {
+    "visualHierarchy": 15,
+    "typography": 10,
+    "layoutSpacing": 10,
+    "componentQuality": 10,
+    "uxClarity": 15,
+    "interactionPolish": 10,
+    "responsiveExecution": 10,
+    "brandDistinction": 10,
+    "accessibility": 5,
+    "statesAndFeedback": 5
+  },
+  "weightedScore": 94.8,
+  "baselineWeightedScore": 93.4,
+  "scoreDelta": 1.4,
+  "criticalDimensions": {
+    "visualHierarchy": 96,
+    "uxClarity": 95,
+    "responsiveExecution": 95,
+    "accessibility": 94,
+    "brandDistinction": 98
+  },
+  "criticalMinimum": 90,
+  "criticalFailures": [],
+  "calibration": {
+    "nicheAppropriateness": 97,
+    "portfolioDistinction": 99,
+    "minimum": 90,
+    "failures": []
+  },
+  "dimensionFindings": {
+    "visualHierarchy": "The candidate replaces the prior editorial hierarchy with an explicit commercial signal hierarchy: command header -> market thesis -> query surface -> five signal classes -> ranked feed -> product investigation -> intent/trend -> provenance. Desktop and mobile both preserve this sequence with stronger numerical and action emphasis than v1.",
+    "typography": "Rendered headings and body copy use a modern sans system while utility, timestamps, metrics and labels use a mono family. This directly breaks the prior serif-led house style and creates a clearer analytical hierarchy without sacrificing legibility.",
+    "layoutSpacing": "The market-wire grid uses disciplined rules, section bands and denser information grouping. Desktop density is high but intentional; mobile changes the grid into stacked decision blocks and the long opportunity table into a horizontally inspectable board with an explicit swipe cue.",
+    "componentQuality": "Signal rails, market-board rows, metric panels, route blocks, evidence timeline, radar rows and provenance ledger share a coherent sharp-rule grammar. Semantic colors are attached to market meaning rather than used as decorative accents.",
+    "uxClarity": "The preserved product journey remains clear and the new visual hierarchy makes movement, route, confidence, freshness and evidence easier to scan. Ask-the-Market remains a first-class query surface and all 25 internal navigation anchors resolve.",
+    "interactionPolish": "Native disclosure controls, sticky navigation, clear focus outlines, semantic status colors and mobile keyboard navigation all pass. The static-demo scope still limits richer loading, empty, success and error-state choreography, keeping this dimension below exceptional.",
+    "responsiveExecution": "Real Chromium renders at 390x844, 820x1180 and 1440x1000 have zero page overflow. The signal grid, product panels, route map, evidence layout and navigation transform rather than merely shrink, and the market board uses intentional internal horizontal scrolling on phone.",
+    "brandDistinction": "The selected cool graphite/navy, electric cyan and semantic signal palette; sans/mono type system; sharp grid geometry; terminal-like command header; market-board table; and route/evidence language are materially distinct from both Asteron and Njia v1. Canonical genome comparison reports 0.0 similarity to both seeded prior genomes.",
+    "accessibility": "Keyboard focus, semantic headings/navigation/table structure, native details, mobile keyboard navigation and reduced-motion behavior all pass. Tested small-text token contrast now bottoms at 4.72:1 after the first run correctly failed at 4.39:1.",
+    "statesAndFeedback": "Open disclosures, navigation focus, hover states, semantic rising/tightening/dislocation/intent colors, and mobile transformation provide clear feedback. Static-prototype scope remains the reason this does not score exceptional."
+  },
+  "evidence": {
+    "browserWorkflowRunId": 33468509424,
+    "browserEvidenceArtifactId": 9785726855,
+    "browserEvidenceDigest": "sha256:5524e2442d5ce8f593f1f6932f3995af4951f19dc155c9a1309524489156ee5c",
+    "browserEvidenceRecord": "agent-factory/run-015/assignments/njia-v2/02-browser-evidence.json",
+    "standardRun015AcceptanceRunId": 33468509555,
+    "standardRun015AcceptanceConclusion": "success",
+    "viewportEvidence": ["mobile", "tablet", "desktop"],
+    "functionalEquivalence": "PASS",
+    "benchmarkArtDirectionRecord": "agent-factory/run-015/assignments/njia-v2/01-benchmark-art-direction.json"
+  },
+  "review": {
+    "reviewerRole": "uix-visual-acceptance-015",
+    "implementerRole": "uix-frontend-polish-015",
+    "sameAgentAsImplementer": false,
+    "blockers": [],
+    "visualScore": 94.8,
+    "decision": "PASS",
+    "gateVerdict": "PASS_PRODUCTION"
+  },
+  "nonRegression": {
+    "candidateScoreAtLeastBaseline": true,
+    "candidateScoreDelta": 1.4,
+    "allPreviouslyPassingFunctionalChecksRemainPass": true,
+    "allCriticalDimensionsAtLeast90": true,
+    "baselineRetainedIfCandidateFails": true
+  },
+  "productionThreshold": 92,
+  "exceptionalThreshold": 96,
+  "result": "PASS_PRODUCTION",
+  "productionMutationAuthorized": false
+}
