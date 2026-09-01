@@ -1,0 +1,48 @@
+{
+  "schemaVersion": "1.0",
+  "runId": "UIX-015",
+  "teamId": "UIX-TEAM-015",
+  "requestId": "UIX-015-NJIA-20260831",
+  "issue": 81,
+  "artifact": {
+    "name": "Njia Market Intelligence — Kenya",
+    "branch": "run015/njia-real-uix-20260831",
+    "lockedParentCommit": "e06cc5c76d8c64d04f72df5e915c66508864c2fd",
+    "uiSourceCommit": "e90d02f3b6890dbe358b1a5f9b3fdc0fcb4411a8",
+    "qualificationCommit": "ef70c650c246751501fc36c5bde725bd399fd974",
+    "indexBlobSha1": "ad61d531a10174df3f554a0c2bd410c89b891ae9",
+    "stylesBlobSha1": "986d57aee9d7b6281148aa8f969e7114f1838251"
+  },
+  "quality": {
+    "scoreSystem": "UIX-100-v1",
+    "finalScore": 93.4,
+    "verdict": "PASS_PRODUCTION",
+    "criticalDimensions": {
+      "visualHierarchy": 94,
+      "uxClarity": 95,
+      "responsiveExecution": 94,
+      "accessibility": 94
+    },
+    "criticalFailures": [],
+    "functionalEquivalence": "PASS",
+    "independentQa": "PASS"
+  },
+  "evidence": {
+    "intakeDiagnosis": "agent-factory/run-015/evidence/njia-uix-intake-diagnosis.json",
+    "browserEvidence": "agent-factory/run-015/evidence/njia-g4-browser-evidence.json",
+    "scorecard": "agent-factory/run-015/evidence/njia-g4-scorecard.json",
+    "independentQa": "agent-factory/run-015/evidence/njia-g4-independent-qa.json",
+    "browserWorkflowRunId": 33461782665,
+    "browserArtifactId": 9783447396,
+    "browserArtifactDigest": "sha256:309dc4099a7e976d1fd533dc2ae4657cdc280ca5cb2d96be0c77388f1fc8804f",
+    "standardAcceptanceRunId": 33461782668
+  },
+  "authority": {
+    "productionMutationPerformed": false,
+    "productionMutationAuthorized": false,
+    "productionDeploymentAuthorized": false
+  },
+  "terminalState": "G4_ACCEPTED",
+  "nextGate": "G5 controlled preview deployment",
+  "completedAt": "2026-09-01T02:16:24.348Z"
+}
