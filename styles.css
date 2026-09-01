@@ -6,7 +6,7 @@
   --panel-alt: #eaf0f7;
   --ink: #111827;
   --ink-soft: #4d5d72;
-  --ink-faint: #64748b;
+  --ink-faint: #5f6f86;
   --line: #c9d4e2;
   --line-strong: #91a2b7;
   --night: #0b1220;
@@ -77,7 +77,6 @@ small {
   text-transform: uppercase;
 }
 
-/* Global shell */
 main { max-width: var(--max-width); margin: 0 auto; background: var(--panel); border-inline: 1px solid var(--line); }
 .section-shell { padding: clamp(3rem, 5.5vw, 5.2rem) var(--gutter); }
 .eyebrow, .aside-label, .signal-index, .direction, .tag, .evidence-type, .answer-label,
@@ -91,7 +90,6 @@ main { max-width: var(--max-width); margin: 0 auto; background: var(--panel); bo
 }
 .eyebrow { margin: 0 0 .85rem; color: var(--accent); }
 
-/* Persistent command header */
 .site-header {
   position: sticky;
   top: 0;
@@ -187,7 +185,6 @@ main { max-width: var(--max-width); margin: 0 auto; background: var(--panel); bo
 .desktop-nav a:hover::after, .desktop-nav a:focus-visible::after { transform: scaleX(1); }
 .mobile-nav { display: none; }
 
-/* Hero: command wire, not editorial brochure */
 .hero {
   position: relative;
   display: grid;
@@ -237,7 +234,6 @@ main { max-width: var(--max-width); margin: 0 auto; background: var(--panel); bo
 .hero-stats dd { color: #fff; font-family: var(--mono); font-size: .82rem; }
 .hero-stats small { display: block; color: #8fa1b7; text-align: right; }
 
-/* Ask the Market = command console */
 .ask-strip {
   display: grid;
   grid-template-columns: minmax(220px, .6fr) minmax(0, 1.4fr);
@@ -286,7 +282,6 @@ main { max-width: var(--max-width); margin: 0 auto; background: var(--panel); bo
 }
 .text-link:hover, .card-link:hover { color: var(--night); }
 
-/* Section framing */
 .section-head { display: flex; justify-content: space-between; align-items: end; gap: 2rem; margin-bottom: 1.8rem; }
 .section-head.compact { margin-bottom: 1.35rem; }
 .section-head h2 { margin-bottom: 0; }
@@ -301,7 +296,6 @@ main { max-width: var(--max-width); margin: 0 auto; background: var(--panel); bo
   color: var(--ink-soft);
 }
 
-/* Market Command Center */
 .command-center { background: var(--canvas); }
 .signal-grid {
   display: grid;
@@ -342,7 +336,6 @@ main { max-width: var(--max-width); margin: 0 auto; background: var(--panel); bo
 .signal-card dl div { display: flex; justify-content: space-between; gap: .5rem; padding: .23rem 0; }
 .signal-card dd { font-family: var(--mono); font-size: .75rem; text-align: right; }
 
-/* Opportunity market board */
 .workspace { border-top: 1px solid var(--line); background: #fff; }
 .table-wrap {
   position: relative;
@@ -367,7 +360,6 @@ main { max-width: var(--max-width); margin: 0 auto; background: var(--panel); bo
 .opportunity-table td small { display: block; margin-top: .22rem; }
 .table-footnote { margin: .75rem 0 0; color: var(--ink-faint); font-family: var(--mono); font-size: .64rem; }
 
-/* Product investigation workspace */
 .detail-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.38fr) minmax(300px, .62fr);
@@ -422,7 +414,6 @@ main { max-width: var(--max-width); margin: 0 auto; background: var(--panel); bo
 .timeline h3 { margin: .3rem 0; font-size: .92rem; }
 .timeline p { margin: 0; color: var(--ink-soft); font-size: .78rem; }
 
-/* Radar and consumer intelligence */
 .intelligence-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; padding: 0; background: var(--line-strong); }
 .radar-panel, .trend-engine { padding: clamp(2.7rem, 5vw, 4.6rem) var(--gutter); background: #fff; }
 .trend-engine { background: var(--canvas); }
@@ -447,7 +438,6 @@ main { max-width: var(--max-width); margin: 0 auto; background: var(--panel); bo
 .bar { height: 8px; overflow: hidden; background: #dce5ef; }
 .bar span { display: block; height: 100%; background: var(--accent); }
 
-/* Evidence = inspectable provenance ledger */
 .evidence-section { border-top: 1px solid var(--line-strong); background: var(--night); color: var(--night-text); }
 .evidence-section .eyebrow { color: var(--accent-bright); }
 .evidence-section .section-note { color: #9fb0c5; }
@@ -474,7 +464,6 @@ main { max-width: var(--max-width); margin: 0 auto; background: var(--panel); bo
 .evidence-item dt { color: #90a3ba; font-family: var(--mono); font-size: .61rem; text-transform: uppercase; }
 .evidence-item dd { margin-top: .25rem; color: #e7eff8; font-size: .76rem; font-weight: 600; }
 
-/* Footer */
 .site-footer {
   display: grid;
   grid-template-columns: 1fr 1fr auto;
@@ -495,7 +484,6 @@ main { max-width: var(--max-width); margin: 0 auto; background: var(--panel); bo
 .back-top { color: #dce8f6; font-family: var(--mono); font-size: .68rem; font-weight: 800; text-decoration: none; }
 .back-top:hover { color: var(--accent-bright); }
 
-/* Laptop */
 @media (max-width: 1180px) {
   .signal-grid { grid-template-columns: repeat(3, 1fr); }
   .signal-card:nth-child(n+4) { border-top: 1px solid var(--line); }
@@ -503,7 +491,6 @@ main { max-width: var(--max-width); margin: 0 auto; background: var(--panel); bo
   .desktop-nav { gap: .85rem; }
 }
 
-/* Tablet */
 @media (max-width: 900px) {
   [id] { scroll-margin-top: 5rem; }
   .site-header { padding-top: .6rem; }
@@ -530,7 +517,6 @@ main { max-width: var(--max-width); margin: 0 auto; background: var(--panel); bo
   .site-footer .footer-disclosure { grid-column: 1; }
 }
 
-/* Mobile */
 @media (max-width: 620px) {
   html { scroll-behavior: auto; }
   body { font-size: 14px; }
