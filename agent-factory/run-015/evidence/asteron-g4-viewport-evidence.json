@@ -1,0 +1,76 @@
+{
+  "schemaVersion": "1.0",
+  "runId": "UIX-015",
+  "teamId": "UIX-TEAM-015",
+  "assignment": "Asteron UI Excellence G4 qualification",
+  "artifactLock": {
+    "sourceCommit": "d715f1d8fdc596c78192813ea07896b749fa67b0",
+    "path": "public/asteron-uix015/index.html",
+    "byteLength": 26719,
+    "gitBlobSha1": "5b4176f4f12669624cab0cb970bbd56731620e78",
+    "deploymentId": "dpl_F7LB4a5BieisDKj3uhJgcaj7cbAX",
+    "deploymentState": "READY",
+    "deploymentCommit": "d715f1d8fdc596c78192813ea07896b749fa67b0"
+  },
+  "renderEvidence": {
+    "method": "headless Chromium render of the exact locked Git blob; source-lock SHA recomputation matched the repository blob before capture",
+    "mobile": {
+      "viewport": {"width": 390, "height": 844},
+      "documentHeight": 7880,
+      "horizontalOverflow": false,
+      "primaryNavVisible": false,
+      "mobileMenuVisible": true,
+      "screenshot": "mobile.png",
+      "screenshotSha256": "011830123d7c9d0753902317d6722ec71da19e0a23ef1a7facb22377de16cc48"
+    },
+    "tablet": {
+      "viewport": {"width": 820, "height": 1180},
+      "documentHeight": 5237,
+      "horizontalOverflow": false,
+      "primaryNavVisible": true,
+      "mobileMenuVisible": false,
+      "screenshot": "tablet.png",
+      "screenshotSha256": "10acaa7d0b953feb05421921d5af251869006c53d5ff164dd15876edeb445458"
+    },
+    "desktop": {
+      "viewport": {"width": 1440, "height": 1100},
+      "documentHeight": 4521,
+      "horizontalOverflow": false,
+      "primaryNavVisible": true,
+      "mobileMenuVisible": false,
+      "screenshot": "desktop.png",
+      "screenshotSha256": "b082d74ba5fd8dd99c390e2bd04eb50748f39918e64b801c8bac48c7c697414c"
+    }
+  },
+  "functionalChecks": [
+    {"id": "mobile-menu-visible", "status": "PASS"},
+    {"id": "mobile-menu-opens", "status": "PASS"},
+    {"id": "mobile-menu-escape-closes", "status": "PASS"},
+    {"id": "details-toggle", "status": "PASS"},
+    {"id": "form-boundary-required", "status": "PASS"},
+    {"id": "form-invalid-focus", "status": "PASS"},
+    {"id": "form-valid-local-status", "status": "PASS"},
+    {"id": "skip-link-first-tab", "status": "PASS"},
+    {"id": "skip-link-target-main", "status": "PASS"},
+    {"id": "labels-complete", "status": "PASS"},
+    {"id": "ids-unique", "status": "PASS"}
+  ],
+  "semanticEvidence": {
+    "landmarksPresent": ["header", "nav", "main", "footer"],
+    "unlabeledInputs": [],
+    "duplicateIds": [],
+    "focusVisibleRulePresent": true,
+    "reducedMotionRulePresent": true,
+    "ariaLiveFormStatus": true
+  },
+  "contrastSpotChecks": [
+    {"foreground": "#172522", "background": "#f5f0e6", "ratio": 13.96, "status": "PASS"},
+    {"foreground": "#52645d", "background": "#f5f0e6", "ratio": 5.54, "status": "PASS"},
+    {"foreground": "#f5f0e6", "background": "#123c3a", "ratio": 10.67, "status": "PASS"},
+    {"foreground": "#c8d8cf", "background": "#123c3a", "ratio": 8.18, "status": "PASS"},
+    {"foreground": "#a48652", "background": "#f5f0e6", "ratio": 3.03, "status": "PASS_NON_TEXT_FOCUS"},
+    {"foreground": "#a48652", "background": "#123c3a", "ratio": 3.53, "status": "PASS_NON_TEXT_FOCUS"}
+  ],
+  "consoleErrors": {"mobile": [], "tablet": [], "desktop": []},
+  "captureStatus": "COMPLETE"
+}

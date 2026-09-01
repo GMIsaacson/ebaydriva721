@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "1.0",
+  "runId": "UIX-015",
+  "teamId": "UIX-TEAM-015",
+  "gate": "G4",
+  "assignment": "Asteron UI Excellence final acceptance",
+  "issue": 78,
+  "artifact": {
+    "sourceCommit": "d715f1d8fdc596c78192813ea07896b749fa67b0",
+    "gitBlobSha1": "5b4176f4f12669624cab0cb970bbd56731620e78",
+    "deploymentId": "dpl_F7LB4a5BieisDKj3uhJgcaj7cbAX"
+  },
+  "evidence": {
+    "viewportEvidence": "agent-factory/run-015/evidence/asteron-g4-viewport-evidence.json",
+    "scorecard": "agent-factory/run-015/evidence/asteron-g4-scorecard.json",
+    "calibration": "agent-factory/run-015/evidence/asteron-g4-calibration.json"
+  },
+  "finalScore": 92.6,
+  "criticalDimensionsAtOrAbove90": true,
+  "functionalEquivalence": "PASS",
+  "independentVisualQA": "PASS",
+  "blockers": [],
+  "decision": "PASS_PRODUCTION",
+  "terminalState": "G4_ACCEPTED",
+  "repairRequired": false,
+  "repairSurfaces": [],
+  "authority": {
+    "deploymentAuthorized": false,
+    "productionMutationAuthorized": false,
+    "uiMutationAuthorized": false
+  },
+  "nextState": "Run 015 qualification complete for the locked Asteron artifact. Any later UI change is a new descendant and must be re-qualified under normal Factory controls."
+}

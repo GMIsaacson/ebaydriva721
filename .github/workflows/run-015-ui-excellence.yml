@@ -22,6 +22,8 @@ jobs:
           node-version: '22'
       - name: UI quality gate acceptance
         run: node agent-factory/run-015/tests/ui-quality-gate.test.cjs
+      - name: Asteron G4 final acceptance
+        run: node agent-factory/run-015/tests/asteron-g4-final-acceptance.test.cjs
       - name: Verify governance and manifest boundaries
         run: |
           node - <<'NODE'
