@@ -14,7 +14,7 @@
   "purpose": "Transform approved existing interfaces into distinctive production-grade UI by researching the current niche, deriving product-specific art direction, preserving functionality, preventing unexplained cross-product visual convergence, and proving quality with independent evidence.",
   "lifecycle": "Testing",
   "currentGate": "G4",
-  "operatingState": "G4 qualified; diversity/benchmark extension under deterministic acceptance",
+  "operatingState": "G4 qualified; benchmark/diversity extension deterministic acceptance PASS",
   "externalAuthority": "None",
   "authority": {
     "maxExternalActions": 0,
@@ -85,11 +85,11 @@
   ],
   "g3": {
     "status": "PASS",
-    "testsPassed": 25,
-    "testsTotal": 25,
+    "testsPassed": 41,
+    "testsTotal": 41,
     "externalActions": 0,
     "spendCents": 0,
-    "evidence": "agent-factory/run-015/evidence/g3-acceptance.json"
+    "evidence": "GitHub Actions Run 015 UI Excellence Acceptance run 33467245303"
   },
   "g4": {
     "status": "QUALIFIED",
