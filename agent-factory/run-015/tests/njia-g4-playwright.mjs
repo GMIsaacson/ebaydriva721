@@ -5,7 +5,7 @@ import path from 'node:path';
 
 const BEFORE_URL = process.env.NJIA_BEFORE_URL || 'http://127.0.0.1:4173';
 const AFTER_URL = process.env.NJIA_AFTER_URL || 'http://127.0.0.1:4174';
-const OUT = process.env.NJIA_EVIDENCE_DIR || 'agent-factory/run-015/evidence/runtime-njia-g4';
+const OUT = process.env.NJIA_EVIDENCE_DIR || 'agent-factory/run-015/evidence/runtime-njia-v2';
 fs.mkdirSync(OUT, { recursive: true });
 
 const viewports = {
@@ -33,10 +33,11 @@ function contrast(a,b) {
 
 const browser = await chromium.launch({ headless: true });
 const evidence = {
-  schemaVersion: '1.0',
+  schemaVersion: '2.0',
   runId: 'UIX-015',
-  assignment: 'Njia real G4 UI Excellence qualification',
-  lockedParentCommit: 'e06cc5c76d8c64d04f72df5e915c66508864c2fd',
+  assignment: 'Njia v2 benchmark-diversity non-regression qualification',
+  lockedParentCommit: '48383a9af1c72f7e2e0128b734265581bab3f324',
+  lockedParentScore: 93.4,
   candidateCommit: process.env.GITHUB_SHA || null,
   viewports: {},
   functionalChecks: [],
@@ -101,7 +102,6 @@ if (detailsPass) {
 }
 evidence.functionalChecks.push({ id: 'ask-market-details-toggle', status: detailsPass ? 'PASS' : 'FAIL', detail: { questionCount } });
 
-// Use an actual keyboard traversal so :focus-visible is evaluated under keyboard modality.
 await desktop.keyboard.press('Tab');
 const focusStyle = await desktop.evaluate(() => {
   const el = document.activeElement;
@@ -120,21 +120,48 @@ evidence.functionalChecks.push({ id: 'keyboard-focus-visible', status: focusPass
 const tokens = await desktop.evaluate(() => {
   const s = getComputedStyle(document.documentElement);
   return {
-    paper: s.getPropertyValue('--paper').trim(),
-    surface: s.getPropertyValue('--surface').trim(),
+    canvas: s.getPropertyValue('--canvas').trim(),
+    panel: s.getPropertyValue('--panel').trim(),
     inkFaint: s.getPropertyValue('--ink-faint').trim(),
-    ochre: s.getPropertyValue('--ochre').trim(),
-    rust: s.getPropertyValue('--rust').trim(),
+    accent: s.getPropertyValue('--accent').trim(),
+    accentBright: s.getPropertyValue('--accent-bright').trim(),
+    positive: s.getPropertyValue('--positive').trim(),
+    warning: s.getPropertyValue('--warning').trim(),
+    danger: s.getPropertyValue('--danger').trim(),
+    night: s.getPropertyValue('--night').trim(),
+    nightMuted: s.getPropertyValue('--night-muted').trim(),
   };
 });
 const contrastChecks = {
-  inkFaintOnPaper: contrast(tokens.inkFaint, tokens.paper),
-  inkFaintOnSurface: contrast(tokens.inkFaint, tokens.surface),
-  ochreOnPaper: contrast(tokens.ochre, tokens.paper),
-  rustOnPaper: contrast(tokens.rust, tokens.paper),
+  inkFaintOnCanvas: contrast(tokens.inkFaint, tokens.canvas),
+  inkFaintOnPanel: contrast(tokens.inkFaint, tokens.panel),
+  accentOnCanvas: contrast(tokens.accent, tokens.canvas),
+  positiveOnCanvas: contrast(tokens.positive, tokens.canvas),
+  warningOnCanvas: contrast(tokens.warning, tokens.canvas),
+  dangerOnCanvas: contrast(tokens.danger, tokens.canvas),
+  nightMutedOnNight: contrast(tokens.nightMuted, tokens.night),
+  accentBrightOnNight: contrast(tokens.accentBright, tokens.night),
 };
 const contrastPass = Object.values(contrastChecks).every(v => v >= 4.5);
 evidence.functionalChecks.push({ id: 'small-text-token-contrast', status: contrastPass ? 'PASS' : 'FAIL', detail: { tokens, contrastChecks } });
+
+const typography = await desktop.evaluate(() => ({
+  body: getComputedStyle(document.body).fontFamily,
+  h1: getComputedStyle(document.querySelector('h1')).fontFamily,
+  utility: getComputedStyle(document.querySelector('.eyebrow')).fontFamily,
+}));
+const serifPattern = /Georgia|Times New Roman|serif/i;
+const typographyPass = !serifPattern.test(typography.h1) && !serifPattern.test(typography.body) && /mono|Consolas|Menlo|Liberation/i.test(typography.utility);
+evidence.functionalChecks.push({ id: 'selected-direction-rendered-typography', status: typographyPass ? 'PASS' : 'FAIL', detail: typography });
+
+const semanticSignalColors = await desktop.evaluate(() => ({
+  rising: getComputedStyle(document.querySelector('.rising .direction')).color,
+  tightening: getComputedStyle(document.querySelector('.tightening .direction')).color,
+  dislocation: getComputedStyle(document.querySelector('.dislocation .direction')).color,
+  intent: getComputedStyle(document.querySelector('.intent .direction')).color,
+}));
+const distinctSignalColors = new Set(Object.values(semanticSignalColors)).size === 4;
+evidence.functionalChecks.push({ id: 'semantic-signal-color-differentiation', status: distinctSignalColors ? 'PASS' : 'FAIL', detail: semanticSignalColors });
 
 const stickyHeader = await desktop.locator('.site-header').evaluate(el => getComputedStyle(el).position === 'sticky');
 evidence.functionalChecks.push({ id: 'sticky-command-header', status: stickyHeader ? 'PASS' : 'FAIL' });
@@ -149,6 +176,13 @@ await mobile.keyboard.press('Enter');
 const mobileNavOpen = await mobileNav.evaluate(el => el.open === true);
 const mobileLinkCount = await mobileNav.locator('nav a').count();
 evidence.functionalChecks.push({ id: 'mobile-navigation-keyboard-toggle', status: mobileNavVisible && mobileNavOpen && mobileLinkCount === 7 ? 'PASS' : 'FAIL', detail: { mobileNavVisible, mobileNavOpen, mobileLinkCount } });
+const mobileTransformation = await mobile.evaluate(() => ({
+  signalGridDisplay: getComputedStyle(document.querySelector('.signal-grid')).display,
+  geoRouteColumns: getComputedStyle(document.querySelector('.geo-route')).gridTemplateColumns,
+  tableOverflowX: getComputedStyle(document.querySelector('.table-wrap')).overflowX,
+}));
+const mobileTransformPass = mobileTransformation.signalGridDisplay === 'block' && mobileTransformation.tableOverflowX === 'auto';
+evidence.functionalChecks.push({ id: 'mobile-density-transformation', status: mobileTransformPass ? 'PASS' : 'FAIL', detail: mobileTransformation });
 await mobile.close();
 
 const reduced = await browser.newContext({ reducedMotion: 'reduce', viewport: viewports.desktop });
