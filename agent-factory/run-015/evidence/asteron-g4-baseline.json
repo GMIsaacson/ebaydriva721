@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "1.0",
+  "schemaVersion": "1.1",
   "runId": "UIX-015",
   "teamId": "UIX-TEAM-015",
   "assignment": "Asteron UI Excellence G4 qualification",
@@ -14,7 +14,8 @@
   "preview": {
     "provider": "vercel",
     "deploymentId": "dpl_F7LB4a5BieisDKj3uhJgcaj7cbAX",
-    "url": "https://datascout-live-sourcing-preview-npg63bmt7.vercel.app"
+    "url": "https://datascout-live-sourcing-preview-npg63bmt7.vercel.app",
+    "stateAtAcceptance": "READY"
   },
   "lineage": {
     "initialPreviewCommit": "5c61887246f8fa99e0b5941f99927431ebe655fd",
@@ -23,16 +24,23 @@
   },
   "quality": {
     "scoreSystem": "UIX-100-v1",
-    "finalScoreState": "PENDING_INDEPENDENT_G4_ACCEPTANCE",
-    "finalScore": null,
-    "finalVisualScore": null,
-    "currentBest": false,
-    "reason": "The artifact is durably identified, but no persisted independent final UIX-100 scorecard proving a production pass was recovered. A score must not be inferred from chat history or intermediate calibration notes."
+    "finalScoreState": "INDEPENDENT_G4_ACCEPTED",
+    "finalScore": 92.6,
+    "finalVisualScore": 92.6,
+    "currentBest": true,
+    "verdict": "PASS_PRODUCTION",
+    "criticalDimensionsAtOrAbove90": true,
+    "functionalEquivalence": "PASS",
+    "independentVisualQA": "PASS",
+    "scorecard": "agent-factory/run-015/evidence/asteron-g4-scorecard.json",
+    "viewportEvidence": "agent-factory/run-015/evidence/asteron-g4-viewport-evidence.json",
+    "calibration": "agent-factory/run-015/evidence/asteron-g4-calibration.json",
+    "terminalReceipt": "agent-factory/run-015/evidence/asteron-g4-terminal-receipt.json"
   },
   "authority": {
     "deploymentAuthorizedByThisRecord": false,
     "productionMutationAuthorized": false,
     "uiMutationAuthorized": false
   },
-  "status": "DURABLE_BASELINE_ARTIFACT_IDENTIFIED_SCORE_PENDING"
+  "status": "G4_ACCEPTED_PASS_PRODUCTION"
 }
