@@ -101,13 +101,20 @@ if (detailsPass) {
 }
 evidence.functionalChecks.push({ id: 'ask-market-details-toggle', status: detailsPass ? 'PASS' : 'FAIL', detail: { questionCount } });
 
-const focusTarget = desktop.locator('.desktop-nav a').first();
-await focusTarget.focus();
-const focusStyle = await focusTarget.evaluate(el => {
+// Use an actual keyboard traversal so :focus-visible is evaluated under keyboard modality.
+await desktop.keyboard.press('Tab');
+const focusStyle = await desktop.evaluate(() => {
+  const el = document.activeElement;
   const s = getComputedStyle(el);
-  return { outlineStyle: s.outlineStyle, outlineWidth: s.outlineWidth, outlineColor: s.outlineColor };
+  return {
+    tagName: el?.tagName || null,
+    href: el?.getAttribute?.('href') || null,
+    outlineStyle: s.outlineStyle,
+    outlineWidth: s.outlineWidth,
+    outlineColor: s.outlineColor,
+  };
 });
-const focusPass = focusStyle.outlineStyle !== 'none' && parseFloat(focusStyle.outlineWidth) >= 2;
+const focusPass = focusStyle.tagName === 'A' && focusStyle.outlineStyle !== 'none' && parseFloat(focusStyle.outlineWidth) >= 2;
 evidence.functionalChecks.push({ id: 'keyboard-focus-visible', status: focusPass ? 'PASS' : 'FAIL', detail: focusStyle });
 
 const tokens = await desktop.evaluate(() => {
@@ -151,7 +158,7 @@ const reducedMotion = await reducedPage.evaluate(() => ({
   scrollBehavior: getComputedStyle(document.documentElement).scrollBehavior,
   transitionDuration: getComputedStyle(document.querySelector('.summary-arrow')).transitionDuration,
 }));
-const reducedPass = reducedMotion.scrollBehavior === 'auto' && (reducedMotion.transitionDuration === '0s' || reducedMotion.transitionDuration === '0.00001s');
+const reducedPass = reducedMotion.scrollBehavior === 'auto' && parseFloat(reducedMotion.transitionDuration) <= 0.001;
 evidence.functionalChecks.push({ id: 'reduced-motion', status: reducedPass ? 'PASS' : 'FAIL', detail: reducedMotion });
 await reduced.close();
 
