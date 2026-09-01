@@ -1,0 +1,22 @@
+{
+  "sourceArtifactBlob": "5b4176f4f12669624cab0cb970bbd56731620e78",
+  "viewports": {
+    "mobile": {"width": 390, "height": 844, "scrollWidth": 390, "clientWidth": 390, "documentHeight": 7880, "horizontalOverflow": false, "navVisible": false, "menuVisible": true, "consoleErrors": []},
+    "tablet": {"width": 820, "height": 1180, "scrollWidth": 820, "clientWidth": 820, "documentHeight": 5237, "horizontalOverflow": false, "navVisible": true, "menuVisible": false, "consoleErrors": []},
+    "desktop": {"width": 1440, "height": 1100, "scrollWidth": 1440, "clientWidth": 1440, "documentHeight": 4521, "horizontalOverflow": false, "navVisible": true, "menuVisible": false, "consoleErrors": []}
+  },
+  "checks": [
+    {"id": "mobile-menu-visible", "status": "PASS"},
+    {"id": "mobile-menu-opens", "status": "PASS"},
+    {"id": "mobile-menu-escape-closes", "status": "PASS"},
+    {"id": "details-toggle", "status": "PASS"},
+    {"id": "form-boundary-required", "status": "PASS"},
+    {"id": "form-invalid-focus", "status": "PASS"},
+    {"id": "form-valid-local-status", "status": "PASS"},
+    {"id": "skip-link-first-tab", "status": "PASS"},
+    {"id": "skip-link-target-main", "status": "PASS"},
+    {"id": "labels-complete", "status": "PASS"},
+    {"id": "ids-unique", "status": "PASS"}
+  ],
+  "result": "PASS"
+}
