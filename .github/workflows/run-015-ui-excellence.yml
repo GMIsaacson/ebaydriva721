@@ -5,11 +5,13 @@ on:
     paths:
       - 'agent-factory/run-015/**'
       - 'agent-factory/governance/a0-decisions/A0-UIX-015-001.a0.json'
+      - 'agent-factory/governance/a0-decisions/A0-UIX-015-002.a0.json'
       - '.github/workflows/run-015-ui-excellence.yml'
   push:
     paths:
       - 'agent-factory/run-015/**'
       - 'agent-factory/governance/a0-decisions/A0-UIX-015-001.a0.json'
+      - 'agent-factory/governance/a0-decisions/A0-UIX-015-002.a0.json'
       - '.github/workflows/run-015-ui-excellence.yml'
 
 jobs:
@@ -20,21 +22,36 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: UI quality gate acceptance
+      - name: UI quality gate acceptance and upgrade regression suite
         run: node agent-factory/run-015/tests/ui-quality-gate.test.cjs
-      - name: Asteron G4 final acceptance
+      - name: Historical Asteron G4 acceptance remains intact
         run: node agent-factory/run-015/tests/asteron-g4-final-acceptance.test.cjs
-      - name: Verify governance and manifest boundaries
+      - name: Verify governance, authority and upgrade boundaries
         run: |
           node - <<'NODE'
           const fs = require('fs');
           const manifest = JSON.parse(fs.readFileSync('agent-factory/run-015/team-manifest.json','utf8'));
-          const a0 = JSON.parse(fs.readFileSync('agent-factory/governance/a0-decisions/A0-UIX-015-001.a0.json','utf8'));
+          const originalA0 = JSON.parse(fs.readFileSync('agent-factory/governance/a0-decisions/A0-UIX-015-001.a0.json','utf8'));
+          const extensionA0 = JSON.parse(fs.readFileSync('agent-factory/governance/a0-decisions/A0-UIX-015-002.a0.json','utf8'));
+          const registry = JSON.parse(fs.readFileSync('agent-factory/run-015/portfolio/visual-genome-registry.json','utf8'));
           if (manifest.runNumber !== 15 || manifest.runId !== 'UIX-015') throw new Error('RUN_ID_MISMATCH');
+          if (manifest.a0DecisionId !== 'A0-UIX-015-002') throw new Error('CURRENT_A0_EXTENSION_NOT_BOUND');
           if (manifest.externalAuthority !== 'None') throw new Error('EXTERNAL_AUTHORITY_NOT_ZERO');
           if (manifest.authority.maxExternalActions !== 0 || manifest.authority.maxSpendCents !== 0) throw new Error('AUTHORITY_BUDGET_NOT_ZERO');
           if (manifest.authority.deploy || manifest.authority.publish || manifest.authority.productionMutation) throw new Error('PROTECTED_ACTION_ENABLED');
-          if (a0.status !== 'PASS' || a0.verdict !== 'NEW') throw new Error('A0_NOT_PASS_NEW');
+          if (manifest.authority.readOnlyPublicWebResearch !== true) throw new Error('READ_ONLY_BENCHMARK_RESEARCH_NOT_ENABLED');
+          if (originalA0.status !== 'PASS' || originalA0.verdict !== 'NEW') throw new Error('ORIGINAL_A0_REGRESSED');
+          if (extensionA0.status !== 'PASS' || extensionA0.verdict !== 'EXTEND') throw new Error('EXTENSION_A0_NOT_PASS_EXTEND');
           if (manifest.qualityGate.productionThreshold !== 92 || manifest.qualityGate.exceptionalThreshold !== 96) throw new Error('QUALITY_THRESHOLDS_CHANGED');
-          console.log('PASS Run 015 governance boundary');
+          for (const key of ['visualHierarchy','uxClarity','responsiveExecution','accessibility','brandDistinction']) {
+            if (!manifest.qualityGate.criticalDimensions.includes(key)) throw new Error(`CRITICAL_DIMENSION_MISSING:${key}`);
+          }
+          if (manifest.qualityGate.calibrationGates.nicheAppropriatenessMinimum !== 90) throw new Error('NICHE_GATE_WEAKENED');
+          if (manifest.qualityGate.calibrationGates.portfolioDistinctionMinimum !== 90) throw new Error('PORTFOLIO_GATE_WEAKENED');
+          if (manifest.qualityGate.benchmarkGate.minimumReferences !== 8) throw new Error('BENCHMARK_MINIMUM_CHANGED');
+          if (manifest.qualityGate.benchmarkGate.minimumDirectNicheReferences !== 4) throw new Error('DIRECT_NICHE_MINIMUM_CHANGED');
+          if (manifest.qualityGate.artDirectionGate.minimumDirections !== 3) throw new Error('ART_DIRECTION_MINIMUM_CHANGED');
+          if (manifest.qualityGate.artDirectionGate.portfolioSimilarityReviseThreshold > 0.65) throw new Error('SIMILARITY_GATE_WEAKENED');
+          if (!Array.isArray(registry.entries) || !registry.entries.some(x => x.productId === 'asteron') || !registry.entries.some(x => x.productId === 'njia')) throw new Error('VISUAL_GENOME_REGISTRY_NOT_SEEDED');
+          console.log('PASS Run 015 governance, authority, legacy non-regression, benchmark and diversity boundaries');
           NODE

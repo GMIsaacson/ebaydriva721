@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "1.0",
+  "schemaVersion": "1.1",
   "teamId": "UIX-TEAM-015",
   "runId": "UIX-015",
   "governanceMode": "RUN",
@@ -8,25 +8,32 @@
     "approved_functional_scope",
     "target_audience_and_product_context",
     "brand_constraints_if_any",
+    "relationship_to_existing_factory_products",
     "available_before_state_evidence"
   ],
   "outputs": [
-    "benchmark_brief_v1",
+    "ui_intake_v2",
+    "niche_benchmark_dossier_v2",
+    "competitive_visual_audit_v1",
+    "product_personality_v1",
     "ux_diagnosis_v1",
-    "art_direction_v1",
-    "design_system_delta_v1",
+    "art_direction_options_v2",
+    "portfolio_similarity_report_v1",
+    "selected_art_direction_v2",
+    "design_system_delta_v2",
+    "interaction_spec_v1",
     "frontend_change_set_v1",
     "responsive_accessibility_report_v1",
-    "visual_scorecard_v1",
-    "independent_qa_decision_v1",
+    "visual_scorecard_v2",
+    "independent_qa_decision_v2",
     "terminal_receipt_v1"
   ],
   "terminalStates": ["DELIVERED", "BLOCKED_OWNER", "BLOCKED_EXTERNAL", "KILLED", "FAILED"],
-  "successRule": "DELIVERED requires functional-equivalence PASS, before/after evidence at mobile/tablet/desktop, no unresolved critical blockers, independent QA, all critical UI dimensions >=90, and weighted UIX-100 score >=92.",
-  "exceptionalRule": "UIX-100 score >=96 with all normal delivery conditions satisfied is PASS_EXCEPTIONAL.",
-  "revisionRule": "Score 85.0-91.9 without critical failures is REVISE and must iterate rather than deliver.",
-  "failureRule": "Score below 85, any critical dimension below 90, missing viewport evidence, failed functionality, unauthorized logic/scope change, self-approval, missing provenance, or unresolved critical blocker fails closed.",
-  "scopeBoundary": "This team may improve presentation and user interaction inside the approved UI assignment. It may not silently redefine business rules, data ownership, permissions, billing, authentication policy, backend contracts, or product scope.",
+  "successRule": "DELIVERED requires a complete current niche benchmark dossier, at least three genuinely divergent art directions, portfolio-similarity review, functional-equivalence PASS, before/after evidence at mobile/tablet/desktop, no unresolved critical blockers, independent QA, all critical UI dimensions including brandDistinction >=90, nicheAppropriateness >=90, portfolioDistinction >=90, and weighted UIX-100 score >=92.",
+  "exceptionalRule": "UIX-100 score >=96 with all normal delivery, niche-fit and portfolio-distinction conditions satisfied is PASS_EXCEPTIONAL.",
+  "revisionRule": "Score 85.0-91.9 without critical failures, nicheAppropriateness below 90, portfolioDistinction below 90, excessive art-direction similarity, or unexplained unrelated-product portfolio similarity is REVISE and must iterate rather than deliver.",
+  "failureRule": "Score below 85, any critical dimension below 90, missing niche benchmark evidence, fewer than three valid art directions, missing viewport evidence, failed functionality, unauthorized logic/scope change, self-approval, missing provenance, or unresolved critical blocker fails closed.",
+  "scopeBoundary": "This team may improve presentation and user interaction inside the approved UI assignment. It may read public web pages for benchmark research. It may not silently redefine business rules, data ownership, permissions, billing, authentication policy, backend contracts, product scope, or perform external side effects.",
   "authority": {
     "externalActions": 0,
     "spendCents": 0,
@@ -34,6 +41,7 @@
     "publish": false,
     "productionMutation": false,
     "customerContact": false,
-    "destructiveActions": false
+    "destructiveActions": false,
+    "readOnlyPublicWebResearch": true
   }
 }

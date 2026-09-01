@@ -1,0 +1,49 @@
+{
+  "decision_id": "A0-UIX-015-002",
+  "status": "PASS",
+  "verdict": "EXTEND",
+  "owner": "Aberdeen Technologies",
+  "decided_at": "2026-08-31",
+  "business_outcome": "Extend the existing Run 015 UI Excellence Team so each assignment researches current best-in-class interfaces in the exact niche, derives product-specific art direction, compares proposed visual DNA against prior Factory outputs, and fails closed on unexplained cross-product design convergence without weakening any existing functional-preservation or independent-QA safeguard.",
+  "existing_owner_scan": "Run 015 already owns benchmark, art direction, design-system normalization, UIX-100 scoring and independent visual QA. The defect is inside that existing loop: benchmark research is underspecified, portfolio memory is absent, and brand distinction is not a critical gate. No new team is required.",
+  "reuse_candidates_checked": [
+    "Run 015 UI Benchmark Scout",
+    "Run 015 Art Director",
+    "Run 015 Design System Specialist",
+    "Run 015 Visual Acceptance Scorer",
+    "Run 015 Independent Visual Quality Auditor",
+    "existing public-web research capability",
+    "existing Run 015 functional-equivalence and repair-regression controls"
+  ],
+  "duplication_analysis": "This is a surgical extension of Run 015. Web benchmark acquisition, visual-genome extraction, divergent art-direction generation and portfolio-similarity review are added as responsibilities and deterministic gates inside the existing team rather than creating a separate design-research team.",
+  "residual_unowned_loop": "Run 015 can currently produce high-scoring interfaces that converge on a recurring house style because it lacks mandatory niche-web evidence, three meaningfully divergent directions, durable portfolio fingerprints and a fail-closed similarity gate.",
+  "evidence_ref": "Owner observation 2026-08-31; Asteron and Njia palette/geometry comparison; current Run 015 operating contract, runtime quality gate and deterministic regression suite.",
+  "covers_paths": [
+    "agent-factory/run-015",
+    "agent-factory/governance/a0-decisions/A0-UIX-015-002.a0.json",
+    ".github/workflows/run-015-ui-excellence.yml"
+  ],
+  "authority": {
+    "environment": "testing/shadow",
+    "external_actions": 0,
+    "max_spend_cents": 0,
+    "deploy": false,
+    "publish": false,
+    "production_deploy": false,
+    "production_data": false,
+    "customer_contact": false,
+    "standing_external_authority": "none",
+    "read_only_public_web_research": true
+  },
+  "promotion_constraints": [
+    "All pre-extension Run 015 functional-preservation, viewport, independent-QA and regression protections remain mandatory",
+    "Each new assignment must produce a current niche benchmark dossier before art direction",
+    "Benchmark target is 8-15 current interfaces with at least four direct-niche references and explicit typography, palette, layout, component, interaction, data-presentation, imagery/iconography and mobile observations",
+    "Art direction must present at least three meaningfully divergent visual genomes before selection",
+    "The selected direction must be compared against the durable Run 015 portfolio visual-genome registry",
+    "Brand distinction, niche appropriateness and portfolio distinction each fail closed below 90",
+    "Unrelated-product visual similarity above the configured threshold yields REVISE unless independent QA establishes a documented domain or brand reason",
+    "No existing score threshold may be lowered and no existing critical dimension may be removed",
+    "No production deployment or master mutation is authorized by this extension"
+  ]
+}
