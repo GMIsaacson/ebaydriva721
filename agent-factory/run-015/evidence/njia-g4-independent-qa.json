@@ -1,0 +1,62 @@
+{
+  "schemaVersion": "1.0",
+  "runId": "UIX-015",
+  "requestId": "UIX-015-NJIA-20260831",
+  "reviewer": {
+    "roleId": "uix-qa-015",
+    "roleName": "Independent Visual Quality Auditor",
+    "implementerRoleId": "uix-frontend-polish-015",
+    "sameAgentAsImplementer": false
+  },
+  "inputsReviewed": [
+    "agent-factory/run-015/evidence/njia-uix-intake-diagnosis.json",
+    "agent-factory/run-015/evidence/njia-g4-browser-evidence.json",
+    "agent-factory/run-015/evidence/njia-g4-scorecard.json",
+    "GitHub Actions run 33461782665",
+    "GitHub Actions evidence artifact 9783447396"
+  ],
+  "checks": {
+    "exactParentLineage": "PASS",
+    "noAsteronSubstitution": "PASS",
+    "htmlStructurePreserved": "PASS",
+    "businessLogicPreserved": "PASS",
+    "mobileViewportEvidence": "PASS",
+    "tabletViewportEvidence": "PASS",
+    "desktopViewportEvidence": "PASS",
+    "pageOverflow": "PASS",
+    "anchorIntegrity": "PASS",
+    "semanticStructure": "PASS",
+    "keyboardFocus": "PASS",
+    "mobileKeyboardNavigation": "PASS",
+    "nativeDetailsInteraction": "PASS",
+    "reducedMotion": "PASS",
+    "smallTextContrast": "PASS",
+    "standardRun015Acceptance": "PASS",
+    "scoreArithmetic": "PASS",
+    "criticalDimensionsMinimum90": "PASS",
+    "unsupportedLiveClaimsIntroduced": "PASS_NONE_FOUND",
+    "productionMutationPerformed": "PASS_NONE"
+  },
+  "scoreVerification": {
+    "reportedWeightedScore": 93.4,
+    "recomputedWeightedScore": 93.4,
+    "productionThreshold": 92,
+    "exceptionalThreshold": 96,
+    "criticalMinimum": 90,
+    "criticalFailures": []
+  },
+  "evidenceIntegrity": {
+    "browserRunId": 33461782665,
+    "browserRunConclusion": "success",
+    "artifactId": 9783447396,
+    "artifactDigest": "sha256:309dc4099a7e976d1fd533dc2ae4657cdc280ca5cb2d96be0c77388f1fc8804f",
+    "candidateQualificationCommit": "ef70c650c246751501fc36c5bde725bd399fd974",
+    "uiSourceCommit": "e90d02f3b6890dbe358b1a5f9b3fdc0fcb4411a8"
+  },
+  "blockers": [],
+  "decision": "PASS",
+  "gateVerdict": "PASS_PRODUCTION",
+  "nextGate": "G5 controlled preview deployment",
+  "deploymentAuthorizedByThisDecision": false,
+  "rationale": "The candidate is a bounded CSS-only transformation of the exact Run 014 Njia parent. Real Chromium evidence passes all required viewport and functional checks; critical dimensions exceed 90 and the independently recomputed UIX-100 score is 93.4. No blocker, functional regression, unsupported claim, or production mutation was found."
+}
