@@ -1,0 +1,50 @@
+{
+  "schemaVersion": "1.0",
+  "runId": "SW-PROD-014",
+  "assignmentId": "SW-PROD-014-DECISION-TIMER-001",
+  "role": "product-spec",
+  "product": "Decision Timer",
+  "goal": "Build a small non-production web application that helps a user compare two options under a short deadline, commit to one choice, and produce a local decision receipt.",
+  "userStory": "As a user facing two viable options, I want a time-boxed comparison so I can stop deliberating and leave with a clear choice and rationale.",
+  "scope": {
+    "in": [
+      "two editable option names",
+      "three weighted criteria with editable importance",
+      "one-to-five scoring for each option per criterion",
+      "three-minute countdown with start, pause, reset",
+      "live weighted score totals",
+      "explicit final choice",
+      "local timestamped decision receipt",
+      "copy receipt to clipboard",
+      "responsive single-page experience"
+    ],
+    "out": [
+      "accounts",
+      "backend",
+      "database",
+      "AI recommendations",
+      "analytics",
+      "network calls",
+      "production deployment"
+    ]
+  },
+  "acceptanceCriteria": [
+    {"id":"AC-01","criterion":"App loads with two default options and three criteria."},
+    {"id":"AC-02","criterion":"User can edit both option names and all criterion labels/weights."},
+    {"id":"AC-03","criterion":"Weighted totals update deterministically from score and weight inputs."},
+    {"id":"AC-04","criterion":"Timer supports start, pause and reset without going below zero."},
+    {"id":"AC-05","criterion":"At zero, the comparison inputs lock until reset and the user is prompted to choose."},
+    {"id":"AC-06","criterion":"A final choice creates a timestamped receipt containing both totals and a concise rationale string."},
+    {"id":"AC-07","criterion":"Receipt can be copied without sending data off-device."},
+    {"id":"AC-08","criterion":"Keyboard focus is visible and the app has no horizontal page overflow at 390px."},
+    {"id":"AC-09","criterion":"No runtime dependency, secret, external API, or persistent storage is required."}
+  ],
+  "authority": {
+    "approvedExternalAction":"one Vercel preview deployment",
+    "environment":"preview",
+    "maxExternalActions":1,
+    "maxSpendCents":0,
+    "productionMutation":false
+  },
+  "status":"APPROVED_FOR_RUN014_EXECUTION"
+}
