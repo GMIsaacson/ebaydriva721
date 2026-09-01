@@ -1,11 +1,11 @@
 {
-  "schemaVersion": "1.1",
+  "schemaVersion": "1.2",
   "requestId": "UIX-015-NJIA-20260831",
   "teamId": "UIX-TEAM-015",
   "teamName": "UI Excellence Team",
   "governanceMode": "RUN",
   "issue": 81,
-  "status": "G4_ACCEPTED",
+  "status": "COMPLETE",
   "assignment": "Run the exact Run 014 Njia market-intelligence artifact through Run 015 UI Excellence",
   "lockedParent": {
     "branch": "preview/kenya-market-graph-20260831",
@@ -22,21 +22,6 @@
     "productionMutation": false,
     "functionalPreservationRequired": true,
     "functionalPreservationResult": "PASS"
-  },
-  "benchmarkBrief": {
-    "sources": [
-      {
-        "name": "Kpler",
-        "url": "https://www.kpler.com/",
-        "principle": "Connect raw market data, derived insight and decision tools into an explicit monitor-understand-act path."
-      },
-      {
-        "name": "Palantir Foundry/AIP",
-        "url": "https://www.palantir.com/docs/foundry/platform-overview/overview/index.html",
-        "principle": "Organize intelligence around real operational decisions rather than presenting data as an end in itself."
-      }
-    ],
-    "copyingAllowed": false
   },
   "handoffSequence": [
     "ui_intake_v1",
@@ -69,6 +54,14 @@
     "browserEvidenceArtifactId": 9783447396,
     "standardAcceptanceRunId": 33461782668
   },
+  "preview": {
+    "provider": "vercel",
+    "verifiedDeploymentId": "dpl_FRkLwovXCQp5HYRSaUwFYGh8tiac",
+    "verifiedDeploymentState": "READY",
+    "verifiedDeploymentUrl": "https://datascout-live-sourcing-preview-lmme28xxt.vercel.app",
+    "stableBranchPreview": "https://datascout-live-sourcing-pre-git-a54370-damaebay8-1237s-projects.vercel.app",
+    "production": false
+  },
   "terminalReceipt": "agent-factory/run-015/evidence/njia-g4-terminal-receipt.json",
-  "nextGate": "G5 controlled preview deployment"
+  "productionPromotion": "NOT_REQUESTED"
 }
