@@ -1,0 +1,20 @@
+{
+  "schemaVersion":"1.0",
+  "runId":"SW-PROD-014",
+  "assignmentId":"SW-PROD-014-DECISION-TIMER-001",
+  "role":"software-architect",
+  "handoffType":"architecture_plan_v1",
+  "architecture":"Static Vite-served single-page application with a pure calculation/state core separated from DOM orchestration.",
+  "files":[
+    {"path":"index.html","purpose":"semantic application shell"},
+    {"path":"decision-timer.css","purpose":"responsive presentation and interaction states"},
+    {"path":"decision-timer-core.mjs","purpose":"pure weighted-score, timer formatting, receipt and rationale functions"},
+    {"path":"decision-timer.js","purpose":"DOM binding, countdown state machine, locking, receipt rendering and clipboard behavior"},
+    {"path":"agent-factory/run-014/assignments/decision-timer/tests.test.mjs","purpose":"deterministic core and static acceptance tests"}
+  ],
+  "reuseDecision":"Reuse existing repository Vite build and Vercel Git integration; add zero packages and zero services.",
+  "dataFlow":"Inputs remain in browser memory -> pure core functions -> DOM output. No persistence and no outbound network path.",
+  "securityBoundaries":["no secrets","no auth","no backend","no user content rendered as HTML","clipboard write only after user action"],
+  "rollback":"Revert the isolated assignment branch or discard the preview deployment; master remains unchanged.",
+  "status":"PASS"
+}
