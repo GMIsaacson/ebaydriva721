@@ -1,19 +1,18 @@
-name: Run 015 Njia G4 Browser Evidence
+name: Run 015 Njia v2 Browser Evidence
 
 on:
   push:
     branches:
-      - run015/njia-real-uix-20260831
+      - run015/njia-v2-canonical-exec-20260831
     paths:
       - 'index.html'
       - 'styles.css'
       - 'agent-factory/run-015/**'
-      - 'agent-factory/build-requests/run-015-njia-ui-excellence.json'
       - '.github/workflows/run-015-njia-g4.yml'
   workflow_dispatch:
 
 jobs:
-  njia-g4-browser-evidence:
+  njia-v2-qualification:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -25,18 +24,28 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Prepare immutable Run 014 parent
+      - name: Verify locked accepted v1 parent and unchanged HTML
         run: |
+          BASELINE=48383a9af1c72f7e2e0128b734265581bab3f324
+          test "$(git rev-parse "$BASELINE:index.html")" = "$(git rev-parse HEAD:index.html)"
+          echo "PASS index.html unchanged from accepted Njia v1 baseline"
+
+      - name: Run canonical v2 benchmark and visual-diversity gate
+        run: node agent-factory/run-015/assignments/njia-v2/njia-v2-design-gate.test.cjs
+
+      - name: Prepare immutable accepted Njia v1 baseline
+        run: |
+          BASELINE=48383a9af1c72f7e2e0128b734265581bab3f324
           mkdir -p /tmp/njia-before
-          git show e06cc5c76d8c64d04f72df5e915c66508864c2fd:index.html > /tmp/njia-before/index.html
-          git show e06cc5c76d8c64d04f72df5e915c66508864c2fd:styles.css > /tmp/njia-before/styles.css
+          git show "$BASELINE:index.html" > /tmp/njia-before/index.html
+          git show "$BASELINE:styles.css" > /tmp/njia-before/styles.css
 
       - name: Install Playwright Chromium
         run: |
           npm install --no-save --package-lock=false playwright@1.55.0
           npx playwright install --with-deps chromium
 
-      - name: Start before and after static servers
+      - name: Start baseline and candidate static servers
         run: |
           python3 -m http.server 4173 --directory /tmp/njia-before >/tmp/njia-before.log 2>&1 &
           python3 -m http.server 4174 --directory "$GITHUB_WORKSPACE" >/tmp/njia-after.log 2>&1 &
@@ -44,18 +53,18 @@ jobs:
           curl --fail http://127.0.0.1:4173/ >/dev/null
           curl --fail http://127.0.0.1:4174/ >/dev/null
 
-      - name: Capture viewport evidence and run functional checks
+      - name: Capture before-after viewport evidence and run functional checks
         env:
           NJIA_BEFORE_URL: http://127.0.0.1:4173
           NJIA_AFTER_URL: http://127.0.0.1:4174
-          NJIA_EVIDENCE_DIR: agent-factory/run-015/evidence/runtime-njia-g4
+          NJIA_EVIDENCE_DIR: agent-factory/run-015/evidence/runtime-njia-v2
         run: node agent-factory/run-015/tests/njia-g4-playwright.mjs
 
-      - name: Upload immutable G4 viewport evidence
+      - name: Upload immutable Njia v2 evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: run015-njia-g4-evidence-${{ github.sha }}
-          path: agent-factory/run-015/evidence/runtime-njia-g4/
+          name: run015-njia-v2-evidence-${{ github.sha }}
+          path: agent-factory/run-015/evidence/runtime-njia-v2/
           if-no-files-found: error
           retention-days: 30
