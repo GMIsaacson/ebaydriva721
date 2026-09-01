@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "1.1",
+  "schemaVersion": "1.2",
   "runId": "UIX-015",
   "teamId": "UIX-TEAM-015",
   "requestId": "UIX-015-NJIA-20260831",
@@ -40,11 +40,11 @@
   "preview": {
     "provider": "vercel",
     "generation": "automatic Git-linked non-production branch preview",
-    "deploymentId": "dpl_FRkLwovXCQp5HYRSaUwFYGh8tiac",
-    "deploymentCommit": "84787e415e3c3793da8a8b2181f02a8d90de0ccf",
-    "deploymentState": "READY",
-    "url": "https://datascout-live-sourcing-preview-lmme28xxt.vercel.app",
-    "branchAlias": "https://datascout-live-sourcing-pre-git-a54370-damaebay8-1237s-projects.vercel.app",
+    "verifiedDeploymentId": "dpl_FRkLwovXCQp5HYRSaUwFYGh8tiac",
+    "verifiedDeploymentCommit": "84787e415e3c3793da8a8b2181f02a8d90de0ccf",
+    "verifiedDeploymentState": "READY",
+    "verifiedDeploymentUrl": "https://datascout-live-sourcing-preview-lmme28xxt.vercel.app",
+    "stableBranchPreview": "https://datascout-live-sourcing-pre-git-a54370-damaebay8-1237s-projects.vercel.app",
     "production": false
   },
   "authority": {
