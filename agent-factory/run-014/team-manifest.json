@@ -1,12 +1,12 @@
 {
-  "schemaVersion": "1.2",
+  "schemaVersion": "1.3",
   "runNumber": 14,
   "runLabel": "014",
   "runId": "SW-PROD-014",
   "teamName": "Software Product Engineering Team",
   "lifecycle": "Controlled Live",
   "currentGate": "G6",
-  "operatingState": "Ready for controlled operation",
+  "operatingState": "G2.5 specialist remediation staged on PR; controlled-live authority unchanged",
   "externalAuthority": "Approval-gated",
   "authority": {
     "maxExternalActions": 0,
@@ -18,22 +18,54 @@
     "destructiveActions": false,
     "rule": "Standing external authority is zero. Every external action requires fresh bounded owner approval."
   },
+  "professionalCapabilityGate": {
+    "gateId": "G2.5",
+    "status": "STAGED_FOR_REVALIDATION",
+    "matrix": "agent-factory/run-014/professional-capability-matrix.json",
+    "rule": "A broad coordinator role is not specialist evidence. Every material discipline must be bound to a named specialist or delegated specialist service and independently reviewed against professional-quality criteria."
+  },
   "roles": [
-    {"id":"product-spec","name":"Product Spec Agent","responsibility":"Convert approved product briefs into bounded requirements, acceptance criteria, edge cases, and traceability."},
-    {"id":"software-architect","name":"Software Architect Agent","responsibility":"Select bounded reuse-first architecture, interfaces, data ownership, and implementation plan."},
-    {"id":"implementation","name":"Implementation Agent","responsibility":"Produce source/configuration only inside approved scope and workspace."},
-    {"id":"test-engineering","name":"Test Engineering Agent","responsibility":"Create independent automated tests, fixtures, and failure-path evidence."},
-    {"id":"security-dependency","name":"Security & Dependency Reviewer","responsibility":"Review secrets, auth boundaries, dependencies, data exposure, and dangerous defaults; cannot waive failures."},
-    {"id":"release-handoff","name":"Release & Handoff Agent","responsibility":"Package build evidence, release notes, rollback instructions, and typed operations handoff; cannot deploy externally without fresh bounded approval."},
-    {"id":"challenger-qa","name":"Challenger / QA Reviewer","responsibility":"Independently verify acceptance criteria, scope, freshness, regressions, authority, and readiness claims."}
+    {"id":"product-spec","name":"Product Definition Coordinator","responsibility":"Coordinate the product-definition packet and traceability. This compatibility role may not substitute for product management, requirements engineering, or domain analysis specialist evidence."},
+    {"id":"product-manager-014","name":"Product Manager","responsibility":"Own problem framing, user/business outcomes, scope tradeoffs, prioritization, product acceptance logic, and product-value coherence."},
+    {"id":"requirements-engineer-014","name":"Requirements Engineer","responsibility":"Convert approved product intent into unambiguous functional/non-functional requirements, acceptance criteria, edge cases, constraints, and traceability."},
+    {"id":"domain-analyst-014","name":"Domain Analyst","responsibility":"Validate domain rules, terminology, workflows, compliance-relevant assumptions, and business-process correctness for the assignment domain."},
+    {"id":"software-architect","name":"Software Architect","responsibility":"Own reuse-first system architecture, interfaces, boundaries, deployment model, operational qualities, and architectural tradeoffs."},
+    {"id":"data-architect-014","name":"Data Architect","responsibility":"Own data models, persistence boundaries, lifecycle, integrity, migration shape, privacy-aware data handling, and data-contract quality when data persistence is material."},
+    {"id":"implementation","name":"Implementation Coordinator","responsibility":"Coordinate approved engineering change sets and typed implementation handoffs. This compatibility role may not substitute for frontend, backend, data, integration, or platform specialist evidence."},
+    {"id":"frontend-engineer-014","name":"Frontend Software Engineer","responsibility":"Own client-side architecture, state, rendering, routing, performance, integration with approved UI specifications, and maintainable frontend implementation when a user interface is material."},
+    {"id":"backend-engineer-014","name":"Backend Software Engineer","responsibility":"Own server-side application logic, API behavior, authorization enforcement, reliability, error handling, and maintainable backend implementation when backend services are material."},
+    {"id":"data-engineer-014","name":"Data Engineer","responsibility":"Own data access implementation, migrations, transformations, validation, integrity controls, and recoverable data changes when data work is material."},
+    {"id":"integration-engineer-014","name":"Integration Engineer","responsibility":"Own external/internal interface integration, contract compatibility, connector failure handling, idempotency, retries, and integration observability when integrations are material."},
+    {"id":"platform-release-engineer-014","name":"Platform & Release Engineer","responsibility":"Own build/release mechanics, environment configuration, deployment safety, rollback readiness, runtime compatibility, and operational handoff packaging without independently authorizing deployment."},
+    {"id":"test-engineering","name":"Test Engineering Specialist","responsibility":"Create independent automated tests, fixtures, boundary cases, regression evidence, and failure-path coverage against the approved requirements and architecture."},
+    {"id":"security-dependency","name":"Application Security & Dependency Specialist","responsibility":"Review secrets, authentication/authorization boundaries, dependency risk, data exposure, abuse cases, insecure defaults, and material application-security failure modes; cannot waive failures."},
+    {"id":"release-handoff","name":"Release & Handoff Coordinator","responsibility":"Coordinate release evidence, release notes, rollback instructions, and typed operations handoff; cannot deploy externally without fresh bounded approval."},
+    {"id":"product-quality-reviewer-014","name":"Independent Product Quality Reviewer","responsibility":"Independently reject product definitions that are internally correct but weak in problem framing, requirements quality, domain fidelity, scope coherence, or professional product-management standard."},
+    {"id":"architecture-quality-reviewer-014","name":"Independent Architecture Quality Reviewer","responsibility":"Independently reject architectures that are technically plausible but weak in maintainability, boundaries, reliability, data design, operability, scalability fit, or reuse quality."},
+    {"id":"engineering-quality-reviewer-014","name":"Independent Engineering Quality Reviewer","responsibility":"Independently reject implementations that pass tests but fall below senior engineering standards for clarity, maintainability, robustness, observability, error handling, integration quality, or release readiness."},
+    {"id":"challenger-qa","name":"Cross-Discipline Challenger / QA Coordinator","responsibility":"Coordinate final challenge review across product, architecture, engineering, security, test, delegated UI/UX, evidence freshness, authority, and terminal-state claims. This role may not substitute for the independent discipline reviewers."}
+  ],
+  "delegatedSpecialistServices": [
+    {
+      "serviceRunId": "UIX-015",
+      "serviceName": "UI Excellence Team",
+      "appliesWhen": "The assignment contains a material user-facing interface or interaction-design requirement.",
+      "requiredDisciplines": ["ux-architecture", "interaction-design", "visual-design", "design-systems", "responsive-design", "accessibility", "frontend-ui-engineering"],
+      "activationRule": "Run 014 must hand user-facing UI work to Run 015 rather than treating Frontend Software Engineer or generic implementation as sufficient UI/UX specialization.",
+      "currentDependencyState": "Run 015 G2.5 design mapping exists; its real G4 UI shadow evidence remains a promotion dependency for claims of fully proven UI excellence."
+    }
   ],
   "handoffs": [
     "product_brief_v1",
+    "product_definition_review_v1",
     "software_spec_v1",
     "architecture_plan_v1",
+    "architecture_quality_review_v1",
+    "uix_assignment_v1_when_applicable",
     "implementation_change_set_v1",
     "test_evidence_v1",
     "security_review_v1",
+    "engineering_quality_review_v1",
     "release_candidate_v1",
     "ops_handoff_v1"
   ],
@@ -51,7 +83,8 @@
     "testsPassed": 7,
     "securityFindings": 0,
     "externalActions": 0,
-    "spendCents": 0
+    "spendCents": 0,
+    "note": "Historical G4 pass predates G2.5 and therefore does not by itself prove the newly required professional-specialist topology."
   },
   "g5": {
     "status": "PASS",
@@ -73,7 +106,8 @@
     "promotion": "CONTROLLED_LIVE_CAPABILITY",
     "terminalState": "READY_FOR_CONTROLLED_OPERATION",
     "productionAuthorityGranted": false,
-    "run008BoundaryPreserved": true
+    "run008BoundaryPreserved": true,
+    "professionalRevalidation": "Existing controlled-live status is preserved, but new professional-quality claims after this remediation require G2.5 matrix PASS and assignment evidence from the specialist topology."
   },
   "downstream": {
     "operationsRunId": "OPS-CORE-008",
@@ -85,5 +119,5 @@
     "Legacy Vercel production-target deployment dpl_BmozPBKih1MDQgYi6HY4JRtBLGHx is quarantined and should be removed when deletion control is available."
   ],
   "nextGateOnPass": null,
-  "nextGateScope": "Normal controlled operation. Reopen governance only for material architecture/authority changes, failed revalidation, or security/operational incidents."
+  "nextGateScope": "Run one bounded G2.5 revalidation assignment using the specialist topology before claiming professional-completeness proof for new work. Material architecture/authority changes still require normal governance reopening."
 }

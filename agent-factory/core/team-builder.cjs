@@ -5,8 +5,10 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { COMPONENT_TYPES, compileHybridTopology } = require('./topology-compiler.cjs');
+const { assertProfessionalCapabilityComplete } = require('./professional-capability-gate.cjs');
 
-const FACTORY_CORE_VERSION = '1.2.0';
+const FACTORY_CORE_VERSION = '1.3.0';
+const G25_CUTOVER_DATE = '2026-08-29';
 const DEFAULT_RESERVED_RUNS = [13];
 const LEAKAGE_TERMS = ['ebay', 'alibaba', 'seller scout', 'landed cost', 'source-matching', 'sourcing specialist'];
 
@@ -142,9 +144,37 @@ function allocateRunNumber({ existingRunNumbers, reservedRunNumbers, requestedRu
   return candidate;
 }
 
+function professionalGateForRequest(request, normalized) {
+  if (normalized.governance.mode !== 'RUN') {
+    return {
+      gateId: 'G2.5',
+      status: 'NOT_REQUIRED_TEST',
+      reason: 'TEST_MODE_DOES_NOT_CREATE_A_FACTORY_RUN',
+      cutoverDate: G25_CUTOVER_DATE,
+    };
+  }
+
+  const decidedAt = String(normalized.governance.a0Decision.decidedAt || '').slice(0, 10);
+  if (decidedAt < G25_CUTOVER_DATE) {
+    return {
+      gateId: 'G2.5',
+      status: 'G2.5_PENDING',
+      reason: 'LEGACY_PRE_CUTOVER_RUN_REQUIRES_PORTFOLIO_REAUDIT',
+      cutoverDate: G25_CUTOVER_DATE,
+      a0DecidedAt: decidedAt,
+    };
+  }
+
+  const result = assertProfessionalCapabilityComplete({
+    professionalCapabilities: request.professionalCapabilities,
+  });
+  return { ...result, cutoverDate: G25_CUTOVER_DATE, a0DecidedAt: decidedAt };
+}
+
 function compileTeam(request, options = {}) {
   const normalized = validateRequest(request);
   const isRun = normalized.governance.mode === 'RUN';
+  const professionalCapabilityGate = professionalGateForRequest(request, normalized);
   const runNumber = isRun ? allocateRunNumber({
     existingRunNumbers: normalized.existingRunNumbers,
     reservedRunNumbers: normalized.reservedRunNumbers,
@@ -208,7 +238,7 @@ function compileTeam(request, options = {}) {
   }
 
   const manifest = {
-    schemaVersion: '1.2',
+    schemaVersion: '1.3',
     factoryCoreVersion: FACTORY_CORE_VERSION,
     governanceMode: normalized.governance.mode,
     structuralRunCreated: isRun,
@@ -224,7 +254,7 @@ function compileTeam(request, options = {}) {
     purpose: request.purpose.trim(),
     topologyMode: normalized.topologyMode,
     lifecycle: 'Testing',
-    operatingState: 'Design/Validation',
+    operatingState: professionalCapabilityGate.status === 'G2.5_PENDING' ? 'G2.5 Pending Legacy Audit' : 'Design/Validation',
     externalAuthority: 'None',
     authority: {
       maxExternalActions: 0,
@@ -234,7 +264,8 @@ function compileTeam(request, options = {}) {
       message: false,
       destructiveActions: false,
     },
-    gates: isRun ? ['A0', 'B0', 'G0', 'G1', 'G2', 'G3'] : ['B0', 'G0', 'G1', 'G2', 'G3'],
+    gates: isRun ? ['A0', 'B0', 'G0', 'G1', 'G2', 'G2.5', 'G3'] : ['B0', 'G0', 'G1', 'G2', 'G2.5', 'G3'],
+    professionalCapabilityGate,
     components,
     agents,
     handoffs,
@@ -247,22 +278,23 @@ function compileTeam(request, options = {}) {
   };
 
   const contract = {
-    schemaVersion: '1.2',
+    schemaVersion: '1.3',
     governanceMode: normalized.governance.mode,
     runId,
     testId,
     teamId,
     topologyMode: normalized.topologyMode,
+    professionalCapabilityStatus: professionalCapabilityGate.status,
     componentTypes: [...new Set(components.map((component) => component.componentType))],
-    inputs: ['bounded_input_package_v1'],
+    inputs: isRun ? ['bounded_input_package_v1', 'professional_capability_matrix_v1'] : ['bounded_input_package_v1'],
     outputs: ['evidence_pack_v1', 'qa_decision_v1', 'terminal_receipt_v1'],
     terminalStates: ['DELIVERED', 'BLOCKED_OWNER', 'BLOCKED_EXTERNAL', 'KILLED', 'FAILED'],
-    successRule: 'DELIVERED requires every required component result, evidence references, independent assurance PASS, and zero authority violations.',
-    failureRule: 'Unknown, unsupported, ambiguous, stale, duplicate, or unauthorized conditions fail closed.',
+    successRule: 'New RUN builds on or after the G2.5 cutover require Professional Capability Completeness PASS before G3 eligibility. DELIVERED also requires every required component result, evidence references, independent assurance PASS, and zero authority violations.',
+    failureRule: 'Unknown, unsupported, ambiguous, stale, duplicate, unauthorized, or professionally incomplete post-cutover RUN conditions fail closed. Pre-cutover RUN packages remain explicitly G2.5_PENDING until re-audited.',
   };
 
   const receipt = {
-    schemaVersion: '1.2',
+    schemaVersion: '1.3',
     status: isRun ? 'BUILT_STAGED' : 'BUILT_TEST_STAGED',
     governanceMode: normalized.governance.mode,
     runId,
@@ -271,6 +303,8 @@ function compileTeam(request, options = {}) {
     runNumber,
     a0DecisionId: isRun ? normalized.governance.a0Decision.decisionId : null,
     requestSha256: requestHash,
+    professionalCapabilityStatus: professionalCapabilityGate.status,
+    professionalCapabilityGate,
     roleCount: components.length,
     capabilityCount: normalized.capabilities.length,
     componentCount: components.length,
@@ -325,6 +359,7 @@ function main() {
       runId: output.manifest.runId,
       testId: output.manifest.testId,
       teamId: output.manifest.teamId,
+      professionalCapabilityStatus: output.manifest.professionalCapabilityGate.status,
     }));
   } catch (error) {
     console.error(JSON.stringify({ status: 'BLOCKED', error: error.message }));
@@ -335,11 +370,13 @@ function main() {
 if (require.main === module) main();
 module.exports = {
   FACTORY_CORE_VERSION,
+  G25_CUTOVER_DATE,
   DEFAULT_RESERVED_RUNS,
   validateA0Decision,
   validateGovernance,
   validateRequest,
   allocateRunNumber,
+  professionalGateForRequest,
   compileTeam,
   writePackageAtomic,
 };

@@ -1,0 +1,91 @@
+{
+  "schemaVersion": "1.0",
+  "gateId": "G2.5",
+  "runId": "WORLD-TECHNOLOGY-INTELLIGENCE-016",
+  "status": "STAGED_FOR_REVALIDATION",
+  "professionalCapabilities": [
+    {
+      "stageId": "source-and-claim-verification",
+      "workProduct": "Source-attributed, claim-mode-correct technology evidence record",
+      "requiredDisciplines": ["technology-intelligence","source-criticism","commercial-evidence-verification"],
+      "assignedSpecialists": ["technology-intelligence","source-criticism","commercial-evidence-verification"],
+      "specialistBindings": [
+        {"discipline":"technology-intelligence","specialistId":"wti-technical-evidence-reviewer"},
+        {"discipline":"source-criticism","specialistId":"wti-technical-evidence-reviewer"},
+        {"discipline":"commercial-evidence-verification","specialistId":"wti-price-availability-reviewer"}
+      ],
+      "evidenceStandards": ["primary evidence preferred and source tier recorded","speaker/company statements remain attributed unless independently verified","dates and freshness recorded","price claims include currency, quantity/basis, geography, availability and observation date","uncertainty and missing evidence explicitly recorded"],
+      "qa": {"type":"professional_excellence","disciplines":["technology-intelligence","source-criticism","commercial-evidence-verification"],"acceptanceCriteria":["claim mode matches evidence","no false precision","price/availability evidence is decision-usable","unsupported promotional claims are rejected","record meets professional intelligence-research standard"],"independent":true}
+    },
+    {
+      "stageId": "domain-interpretation",
+      "workProduct": "Professionally grounded interpretation of a material technology development",
+      "requiredDisciplines": ["domain-specialist-analysis","technology-intelligence"],
+      "assignedSpecialists": ["domain-specialist-analysis","technology-intelligence"],
+      "specialistBindings": [
+        {"discipline":"domain-specialist-analysis","specialistId":"DYNAMIC_FROM_domain-specialist-routing.json"},
+        {"discipline":"technology-intelligence","specialistId":"wti-technical-evidence-reviewer"}
+      ],
+      "evidenceStandards": ["every material taxonomy domain resolves to an on-demand specialist pool","general analyst cannot count as domain specialist","technical mechanism, readiness, constraints and competing approaches separated from promotional framing","multi-domain stories route to every materially relevant domain specialist","emerging/unclassified stories identify the needed profession before deep claims"],
+      "qa": {"type":"professional_excellence","disciplines":["domain-specialist-analysis","technology-intelligence"],"acceptanceCriteria":["interpretation is technically coherent","limitations and maturity are represented accurately","domain terminology and causal claims meet strong practitioner standard","cross-domain implications do not exceed specialist evidence"],"independent":true}
+    },
+    {
+      "stageId": "clinical-life-sciences-interpretation",
+      "workProduct": "Clinically and scientifically responsible medicine/biotech intelligence",
+      "requiredDisciplines": ["clinical-medicine","clinical-trial-interpretation","biotechnology","biostatistics","health-regulation"],
+      "assignedSpecialists": ["clinical-medicine","clinical-trial-interpretation","biotechnology","biostatistics","health-regulation"],
+      "specialistBindings": [
+        {"discipline":"clinical-medicine","specialistId":"wti-clinical-medicine-specialist"},
+        {"discipline":"clinical-trial-interpretation","specialistId":"wti-clinical-medicine-specialist"},
+        {"discipline":"biotechnology","specialistId":"wti-biotech-specialist"},
+        {"discipline":"biostatistics","specialistId":"wti-clinical-evidence-reviewer"},
+        {"discipline":"health-regulation","specialistId":"wti-clinical-evidence-reviewer"}
+      ],
+      "evidenceStandards": ["study phase/design and population identified where relevant","endpoint type and effect size/context preserved","preclinical, early clinical and approved evidence never conflated","regulatory status and jurisdiction explicit","no medical advice or unsupported treatment recommendation"],
+      "qa": {"type":"dual","disciplines":["clinical-medicine","clinical-trial-interpretation","biotechnology","biostatistics","health-regulation"],"acceptanceCriteria":["clinical significance is not overstated","study limitations and uncertainty are visible","regulatory interpretation is jurisdiction-aware","biological mechanism claims are evidence-bounded","output meets strong clinical/scientific intelligence standard"],"independent":true}
+    },
+    {
+      "stageId": "defense-dual-use-interpretation",
+      "workProduct": "Evidence-bounded public defense and dual-use technology intelligence",
+      "requiredDisciplines": ["defense-technology-analysis","defense-capability-assessment","dual-use-analysis","source-criticism"],
+      "assignedSpecialists": ["defense-technology-analysis","defense-capability-assessment","dual-use-analysis","source-criticism"],
+      "specialistBindings": [
+        {"discipline":"defense-technology-analysis","specialistId":"wti-defense-dual-use-specialist"},
+        {"discipline":"defense-capability-assessment","specialistId":"wti-defense-evidence-reviewer"},
+        {"discipline":"dual-use-analysis","specialistId":"wti-defense-dual-use-specialist"},
+        {"discipline":"source-criticism","specialistId":"wti-defense-evidence-reviewer"}
+      ],
+      "evidenceStandards": ["public-source capability claims separated from demonstrated performance","battlefield anecdote, manufacturer claim and independently corroborated evidence distinguished","operationally sensitive/tactical instruction excluded","platform, payload, range, cost and deployment claims preserve uncertainty and context","counterclaims and deception risk considered"],
+      "qa": {"type":"dual","disciplines":["defense-technology-analysis","defense-capability-assessment","dual-use-analysis","source-criticism"],"acceptanceCriteria":["capability is not inferred solely from marketing or isolated anecdote","uncertainty and adversarial-information risk are explicit","analysis remains strategic/technical rather than tactical instruction","output meets strong defense-technology intelligence standard"],"independent":true}
+    },
+    {
+      "stageId": "cross-domain-synthesis-and-significance",
+      "workProduct": "Evidence-linked significance judgment and cross-domain synthesis",
+      "requiredDisciplines": ["technology-foresight","systems-analysis","technology-intelligence"],
+      "assignedSpecialists": ["technology-foresight","systems-analysis","technology-intelligence"],
+      "specialistBindings": [
+        {"discipline":"technology-foresight","specialistId":"wti-emerging-domain-triage-specialist"},
+        {"discipline":"systems-analysis","specialistId":"world-technology-intelligence-cross-domain-synthesis-016"},
+        {"discipline":"technology-intelligence","specialistId":"wti-technical-evidence-reviewer"}
+      ],
+      "evidenceStandards": ["synthesis references routed specialist findings","second-order implications labeled as analysis rather than fact","novelty compared with prior verified state","adoption constraints and competing approaches included","significance score remains traceable to deterministic dimensions"],
+      "qa": {"type":"professional_excellence","disciplines":["technology-foresight","systems-analysis","technology-intelligence"],"acceptanceCriteria":["why-it-matters section is evidence-proportionate","cross-domain connections are technically plausible","novelty is not confused with publicity","uncertainty survives summarization","output meets strong strategic technology-intelligence standard"],"independent":true}
+    },
+    {
+      "stageId": "brief-and-alert-quality",
+      "workProduct": "Scannable daily brief or urgent-alert recommendation preserving evidence quality",
+      "requiredDisciplines": ["intelligence-briefing","risk-communication","technology-intelligence"],
+      "assignedSpecialists": ["intelligence-briefing","risk-communication","technology-intelligence"],
+      "specialistBindings": [
+        {"discipline":"intelligence-briefing","specialistId":"world-technology-intelligence-brief-renderer-016"},
+        {"discipline":"risk-communication","specialistId":"world-technology-intelligence-independent-intelligence-qa-016"},
+        {"discipline":"technology-intelligence","specialistId":"wti-technical-evidence-reviewer"}
+      ],
+      "evidenceStandards": ["direct evidence links preserved","what happened, who, where, cost/availability when known, why it matters, confidence and caveats present","urgent alert requires genuinely new high-significance evidence","no duplicate/noise inflation","coverage blind spots remain visible"],
+      "qa": {"type":"dual","disciplines":["intelligence-briefing","risk-communication","technology-intelligence"],"acceptanceCriteria":["brief is concise without deleting material caveats","headline strength matches evidence strength","urgent alerts are rare and defensible","reader can distinguish fact, attributed statement and analysis","output meets strong professional intelligence-briefing standard"],"independent":true}
+    }
+  ],
+  "acceptedLimitations": [],
+  "routingConfig": "agent-factory/run-016/config/domain-specialist-routing.json",
+  "revalidationRule": "Design PASS is necessary but not sufficient. G4 shadow qualification must demonstrate correct domain routing and professional review on real public-source cases spanning ordinary technical, cross-domain, medicine/biotech, defense/dual-use, price/availability and emerging/unclassified evidence."
+}

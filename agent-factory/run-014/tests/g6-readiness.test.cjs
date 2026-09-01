@@ -14,13 +14,17 @@ const g6 = readJson(path.join(root, 'g6', 'g6-readiness-receipt.json'));
 const a0 = readJson(path.join(factoryRoot, 'governance', 'a0-decisions', 'A0-SOFT-014-G6-001.a0.json'));
 const contract = fs.readFileSync(path.join(root, 'OPERATING-CONTRACT.md'), 'utf8');
 
-test('manifest is promoted to controlled-live G6', () => {
+test('manifest remains controlled-live while G2.5 professional revalidation is staged', () => {
   assert.equal(manifest.runId, 'SW-PROD-014');
   assert.equal(manifest.currentGate, 'G6');
   assert.equal(manifest.lifecycle, 'Controlled Live');
-  assert.equal(manifest.operatingState, 'Ready for controlled operation');
+  assert.ok([
+    'Ready for controlled operation',
+    'G2.5 specialist remediation staged on PR; controlled-live authority unchanged'
+  ].includes(manifest.operatingState));
   assert.equal(manifest.g6.status, 'PASS');
   assert.equal(manifest.g6.terminalState, 'READY_FOR_CONTROLLED_OPERATION');
+  assert.equal(manifest.professionalCapabilityGate.gateId, 'G2.5');
 });
 
 test('standing external authority remains zero', () => {

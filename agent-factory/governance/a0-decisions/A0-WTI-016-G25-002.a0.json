@@ -1,0 +1,23 @@
+{
+  "decision_id": "A0-WTI-016-G25-002",
+  "status": "PASS",
+  "verdict": "EXTEND",
+  "owner": "Aberdeen Technologies",
+  "decided_at": "2026-08-29",
+  "business_outcome": "Prevent Run 016 from treating broad workflow coverage or four generic reasoning agents as proof of senior professional expertise across the full technology taxonomy; introduce fail-closed on-demand domain-specialist routing and independent domain review before G4 shadow qualification.",
+  "existing_owner_scan": "Reviewed Run 016 hybrid topology, technology taxonomy, source policy, G3 evidence, Factory G2.5 evaluator, and existing independent intelligence QA. Reuse the deterministic acquisition, normalization, deduplication, evidence, scoring, rendering, and coverage components; extend only the professional interpretation and excellence-review layer.",
+  "reuse_candidates_checked": [
+    "WORLD-TECHNOLOGY-INTELLIGENCE-016",
+    "Factory G2.5 Professional Capability Completeness",
+    "world-technology-intelligence-independent-intelligence-qa-016",
+    "world-technology-intelligence-claim-verifier-016"
+  ],
+  "duplication_analysis": "Do not create 21 permanently active analyst agents. Route material stories on demand to specialist pools keyed to the existing taxonomy. General analysts may coordinate and synthesize but do not count as domain-specialist evidence. Medicine/clinical, biotech, defense/dual-use, price/availability, and emerging/unclassified evidence receive additional independent review rules.",
+  "residual_unowned_loop": "G4 still must empirically prove correct specialist routing and professional-quality interpretation on real public-source cases across ordinary technical, cross-domain, medicine/biotech, defense/dual-use, price/availability, and emerging/unclassified evidence.",
+  "covers_paths": [
+    "agent-factory/run-016/config/domain-specialist-routing.json",
+    "agent-factory/run-016/professional-capability-matrix.json",
+    "agent-factory/run-016/tests/g2-5-professional-capability.test.cjs"
+  ],
+  "evidence_ref": "agent-factory/run-016/professional-capability-matrix.json"
+}

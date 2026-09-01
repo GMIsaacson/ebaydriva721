@@ -1,0 +1,40 @@
+{
+  "schemaVersion": "1.0",
+  "runId": "WORLD-TECHNOLOGY-INTELLIGENCE-016",
+  "mode": "on-demand",
+  "rule": "Domain routing is evidence-driven. A general analyst may normalize or coordinate, but may not substitute for a routed professional specialist on material interpretation. Multi-domain stories must invoke every materially relevant specialist pool. High-risk medical/clinical and defense/dual-use claims require dedicated independent domain review.",
+  "specialistPools": [
+    {"id":"wti-ai-software-specialist","disciplines":["ai-systems","software-engineering","machine-learning-research"],"domains":["ai-software"]},
+    {"id":"wti-compute-semiconductor-specialist","disciplines":["computer-architecture","semiconductor-engineering","compute-economics"],"domains":["computing-semiconductors"]},
+    {"id":"wti-robotics-autonomy-specialist","disciplines":["robotics-engineering","autonomous-systems","controls"],"domains":["robotics-autonomy"]},
+    {"id":"wti-aerospace-space-specialist","disciplines":["aerospace-engineering","uas-systems","space-systems"],"domains":["drones-aerospace","space-systems"]},
+    {"id":"wti-defense-dual-use-specialist","disciplines":["defense-technology-analysis","electronic-warfare-systems","military-autonomy","dual-use-analysis"],"domains":["defense-dual-use"]},
+    {"id":"wti-clinical-medicine-specialist","disciplines":["clinical-medicine","clinical-trial-interpretation","medical-device-analysis","health-regulation"],"domains":["medicine-healthcare"]},
+    {"id":"wti-biotech-specialist","disciplines":["biotechnology","molecular-biology","genomics","synthetic-biology"],"domains":["biotech-synthetic-biology"]},
+    {"id":"wti-energy-climate-specialist","disciplines":["energy-systems","electrochemistry","climate-technology","environmental-engineering"],"domains":["energy-storage","climate-environment"]},
+    {"id":"wti-industrial-materials-specialist","disciplines":["manufacturing-engineering","industrial-systems","materials-science","nanotechnology"],"domains":["manufacturing-industrial","materials-nanotechnology"]},
+    {"id":"wti-networks-quantum-cyber-specialist","disciplines":["telecommunications","network-engineering","quantum-technology","photonics","cybersecurity","privacy-engineering"],"domains":["telecom-networking","quantum-photonics","cybersecurity-privacy"]},
+    {"id":"wti-mobility-infrastructure-specialist","disciplines":["transportation-systems","automotive-technology","civil-infrastructure","construction-technology"],"domains":["mobility-transportation","construction-infrastructure"]},
+    {"id":"wti-agriculture-food-specialist","disciplines":["agricultural-technology","food-science","biosystems-engineering"],"domains":["agriculture-food"]},
+    {"id":"wti-consumer-hci-specialist","disciplines":["human-computer-interaction","consumer-electronics","product-technology"],"domains":["consumer-hci"]},
+    {"id":"wti-scientific-infrastructure-specialist","disciplines":["scientific-instrumentation","research-infrastructure","metrology"],"domains":["science-instruments"]},
+    {"id":"wti-emerging-domain-triage-specialist","disciplines":["technology-foresight","scientific-literature-analysis","domain-identification"],"domains":["emerging-unclassified"],"rule":"May classify and identify the needed profession but may not claim deep domain interpretation until a suitable specialist is routed."}
+  ],
+  "independentReviewPools": [
+    {"id":"wti-technical-evidence-reviewer","disciplines":["technical-evidence-review","source-criticism","technology-intelligence"],"covers":"all-domains"},
+    {"id":"wti-clinical-evidence-reviewer","disciplines":["clinical-evidence-review","biostatistics","health-regulation"],"covers":["medicine-healthcare","biotech-synthetic-biology"]},
+    {"id":"wti-defense-evidence-reviewer","disciplines":["defense-capability-assessment","dual-use-risk-review","source-criticism"],"covers":["defense-dual-use","drones-aerospace"]},
+    {"id":"wti-price-availability-reviewer","disciplines":["commercial-evidence-verification","price-basis-analysis","availability-verification"],"covers":"all-domains"}
+  ],
+  "routingRequirements": {
+    "materialInterpretationRequiresSpecialist": true,
+    "generalAnalystCountsAsSpecialist": false,
+    "crossDomainRequiresAllMaterialDomains": true,
+    "medicalClinicalRequiresDedicatedReview": true,
+    "defenseDualUseRequiresDedicatedReview": true,
+    "priceClaimRequiresPriceAvailabilityReview": true,
+    "emergingUnclassifiedCannotSelfCertifyExpertise": true,
+    "externalActions": 0,
+    "maxSpendCents": 0
+  }
+}

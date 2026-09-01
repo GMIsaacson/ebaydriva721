@@ -1,0 +1,23 @@
+name: Run 016 G2.5 Professional Capability
+
+on:
+  pull_request:
+    paths:
+      - 'agent-factory/run-016/**'
+      - 'agent-factory/core/professional-capability-gate.cjs'
+      - 'agent-factory/governance/a0-decisions/A0-WTI-016-G25-002.a0.json'
+      - '.github/workflows/run-016-g25-professional-capability.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  run016-g25:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate Run 016 professional capability completeness
+        run: node --test agent-factory/run-016/tests/g2-5-professional-capability.test.cjs
