@@ -26,6 +26,9 @@ jobs:
         run: node agent-factory/run-015/tests/ui-quality-gate.test.cjs
       - name: Historical Asteron G4 acceptance remains intact
         run: node agent-factory/run-015/tests/asteron-g4-final-acceptance.test.cjs
+      - name: Njia v2 terminal acceptance
+        if: ${{ hashFiles('agent-factory/run-015/assignments/njia-v2/njia-v2-final-acceptance.test.cjs') != '' }}
+        run: node agent-factory/run-015/assignments/njia-v2/njia-v2-final-acceptance.test.cjs
       - name: Verify governance, authority and upgrade boundaries
         run: |
           node - <<'NODE'
