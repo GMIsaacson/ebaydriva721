@@ -150,8 +150,10 @@ const typography = await desktop.evaluate(() => ({
   h1: getComputedStyle(document.querySelector('h1')).fontFamily,
   utility: getComputedStyle(document.querySelector('.eyebrow')).fontFamily,
 }));
-const serifPattern = /Georgia|Times New Roman|serif/i;
-const typographyPass = !serifPattern.test(typography.h1) && !serifPattern.test(typography.body) && /mono|Consolas|Menlo|Liberation/i.test(typography.utility);
+const explicitSerifFace = /(Georgia|Times New Roman|Times,)/i;
+const sansFace = /(Arial|Helvetica|system-ui|sans-serif)/i;
+const monoFace = /(SFMono|Consolas|Menlo|Liberation Mono|monospace)/i;
+const typographyPass = !explicitSerifFace.test(typography.h1) && !explicitSerifFace.test(typography.body) && sansFace.test(typography.h1) && sansFace.test(typography.body) && monoFace.test(typography.utility);
 evidence.functionalChecks.push({ id: 'selected-direction-rendered-typography', status: typographyPass ? 'PASS' : 'FAIL', detail: typography });
 
 const semanticSignalColors = await desktop.evaluate(() => ({
