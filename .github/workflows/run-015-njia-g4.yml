@@ -7,7 +7,9 @@ on:
     paths:
       - 'index.html'
       - 'styles.css'
-      - 'agent-factory/run-015/**'
+      - 'agent-factory/run-015/assignments/njia-v2/01-benchmark-art-direction.json'
+      - 'agent-factory/run-015/assignments/njia-v2/njia-v2-design-gate.test.cjs'
+      - 'agent-factory/run-015/tests/njia-g4-playwright.mjs'
       - '.github/workflows/run-015-njia-g4.yml'
   workflow_dispatch:
 
