@@ -1,40 +1,44 @@
 {
   "teamName": "UI Excellence Team",
-  "purpose": "Take an existing working user interface and transform it into a distinctive, production-grade experience while preserving approved functionality and proving quality with independent visual acceptance evidence.",
+  "purpose": "Take an existing working user interface and transform it into a distinctive, production-grade experience by researching current best-in-class interfaces in the exact niche, deriving product-specific visual directions, checking portfolio similarity, preserving approved functionality, and proving quality with independent evidence.",
   "domain": "uix",
   "requestedRunNumber": 15,
-  "existingRunNumbers": [4, 5, 6, 8, 9, 14],
+  "existingRunNumbers": [4, 5, 6, 8, 9, 14, 15, 16],
   "reservedRunNumbers": [13],
   "capabilities": [
-    {"id":"benchmark-scout","name":"UI Benchmark Scout","responsibility":"Inspect relevant best-in-class product interfaces and convert observations into bounded, non-copying benchmark criteria."},
-    {"id":"ux-architect","name":"Product UX Architect","responsibility":"Audit information architecture, task flows, navigation, hierarchy, friction, cognitive load, and user journey without altering approved business scope."},
-    {"id":"art-director","name":"Art Director","responsibility":"Define a coherent visual direction, composition language, typography approach, imagery treatment, density, and product personality appropriate to the audience."},
-    {"id":"design-system","name":"Design System Specialist","responsibility":"Create or normalize reusable tokens and component rules for typography, spacing, surfaces, controls, states, icons, and responsive behavior."},
-    {"id":"interaction-designer","name":"Interaction Designer","responsibility":"Specify feedback, transitions, motion, hover/focus/pressed behavior, loading, empty, success, and error states with restraint and accessibility."},
-    {"id":"frontend-polish","name":"Frontend Polish Engineer","responsibility":"Implement the approved visual and interaction changes in the existing frontend while preserving behavior, routes, data contracts, and testable functionality."},
-    {"id":"responsive-accessibility","name":"Responsive & Accessibility Specialist","responsibility":"Validate mobile, tablet, and desktop layouts, touch targets, keyboard behavior, focus, contrast, readable type, reduced motion, and accessible semantics."},
-    {"id":"visual-acceptance","name":"Visual Acceptance Scorer","responsibility":"Produce the structured 100-point UI scorecard and evidence packet for independent QA; cannot approve its own implementation work."}
+    {"id":"benchmark-scout","name":"Niche Visual Benchmark Scout","responsibility":"Search the current public web for strong direct-niche and adjacent interfaces and convert evidence into bounded non-copying criteria across typography, palette, layout, density, geometry, components, interaction, data presentation, imagery/iconography, mobile behavior and distinctiveness."},
+    {"id":"product-personality","name":"Product Personality Analyst","responsibility":"Define audience expectations, emotional register, brand posture, information density, accessibility constraints and visual anti-goals before art-direction choices are made."},
+    {"id":"ux-architect","name":"Product UX Architect","responsibility":"Audit information architecture, task flows, navigation, hierarchy, friction, cognitive load and user journey without altering approved business scope."},
+    {"id":"art-director","name":"Art Director","responsibility":"Produce at least three genuinely divergent visual systems before selecting one; each direction must explicitly vary typography, palette, geometry, density, layout, component grammar, imagery, motion and data-viz language."},
+    {"id":"portfolio-genome","name":"Portfolio Visual Genome Auditor","responsibility":"Persist fingerprints of completed Run 015 outputs and detect unexplained visual convergence between proposed directions and unrelated Factory products."},
+    {"id":"design-system","name":"Design System Specialist","responsibility":"Create or normalize product-specific reusable tokens and component rules for typography, spacing, surfaces, controls, states, icons and responsive behavior without importing a default Run 015 house style."},
+    {"id":"interaction-designer","name":"Interaction Designer","responsibility":"Specify feedback, transitions, motion, hover/focus/pressed behavior, loading, empty, success and error states with restraint and accessibility."},
+    {"id":"frontend-polish","name":"Frontend Polish Engineer","responsibility":"Implement the approved visual and interaction changes in the existing frontend while preserving behavior, routes, data contracts and testable functionality."},
+    {"id":"responsive-accessibility","name":"Responsive & Accessibility Specialist","responsibility":"Validate mobile, tablet and desktop layouts, touch targets, keyboard behavior, focus, contrast, readable type, reduced motion and accessible semantics."},
+    {"id":"visual-acceptance","name":"Visual Acceptance Scorer","responsibility":"Produce the structured UIX-100 scorecard plus niche-appropriateness and portfolio-distinction calibration for independent QA; cannot approve its own implementation work."},
+    {"id":"independent-qa","name":"Independent Visual Quality Auditor","responsibility":"Verify benchmark quality, art-direction divergence, portfolio similarity, functional preservation, viewport/accessibility evidence, score calculation and terminal eligibility independently of implementation."}
   ],
   "authority": {
     "maxExternalActions": 0,
     "maxSpendCents": 0,
     "deploy": false,
-    "allowedActions": ["inspect approved UI artifacts", "draft redesign plans", "edit source in approved workspace", "run local tests", "produce screenshots and scorecards"]
+    "readOnlyPublicWebResearch": true,
+    "allowedActions": ["inspect approved UI artifacts", "read public benchmark pages", "draft product-personality and redesign plans", "edit source in approved workspace", "run local tests", "produce screenshots, genome reports and scorecards"]
   },
   "governance": {
     "mode": "RUN",
     "a0Decision": {
-      "decisionId": "A0-UIX-015-001",
+      "decisionId": "A0-UIX-015-002",
       "status": "PASS",
-      "verdict": "NEW",
+      "verdict": "EXTEND",
       "owner": "Aberdeen Technologies",
-      "decidedAt": "2026-08-28",
+      "decidedAt": "2026-08-31",
       "reuseEvidence": [
-        "Run 014 owns general software product engineering but not cross-product visual excellence acceptance.",
-        "Website Business Team contains website-specific design capability but is not a reusable any-interface specialist.",
-        "Factory Quality Reviewer can judge visual quality but does not own redesign implementation."
+        "Run 015 already owns benchmarking, art direction, frontend polish and independent visual QA.",
+        "The new capability is an extension of the existing benchmark and art-direction loop, not a separate team.",
+        "Existing functional-equivalence, independent-QA and repair-regression safeguards remain in force."
       ],
-      "residualUnownedLoop": "A reusable cross-product loop that accepts any existing UI, benchmarks it, redesigns and implements visual/UX improvements, proves functional preservation, and iterates until independent visual acceptance passes."
+      "residualUnownedLoop": "Mandatory current niche-web benchmarking, explicit typography inspection, three divergent visual genomes, durable portfolio memory and fail-closed cross-product similarity review are missing from the current Run 015 loop."
     }
   }
 }
