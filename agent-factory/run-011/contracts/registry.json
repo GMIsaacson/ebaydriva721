@@ -1,0 +1,30 @@
+{
+  "run_id": "OPP-INTEL-011",
+  "gate": "G4-G5",
+  "workflow_id": "WF-OIT-011-G4-001",
+  "workflow_version": "1.1.0",
+  "boundary_contract": "B0-OIT-011-v1.0",
+  "deployment_mode": "inactive-manual-nonproduction",
+  "units": [
+    {"unit_id":"OIT-SOURCE-SCOUT-011","name":"Opportunity Source Scout","class":"agent-reasoning","authority":"Observe/Draft"},
+    {"unit_id":"OIT-NORMALIZER-011","name":"Business Model Normalizer","class":"agent-reasoning","authority":"Draft"},
+    {"unit_id":"OIT-UNDERWRITER-011","name":"Opportunity Underwriter","class":"agent-reasoning","authority":"Draft"},
+    {"unit_id":"OIT-ROUTER-011","name":"Portfolio Fit Router","class":"agent-reasoning","authority":"Organize/Recommend"},
+    {"unit_id":"WF-OIT-011-G4-001","name":"Opportunity Intelligence Workflow","class":"workflow","authority":"Internal only"},
+    {"unit_id":"SOFT-OIT-POLICY-011","name":"OIT Deterministic Policy Engine","class":"deterministic-software","authority":"Enforce boundaries and recommendation ceiling"},
+    {"unit_id":"HUM-OIT-OWNER-011","name":"Owner and Portfolio Steward Approval Boundary","class":"human-control","authority":"Consequential approvals only"}
+  ],
+  "authority": {
+    "external_actions": 0,
+    "canonical_portfolio_writes": 0,
+    "paid_tool_cost_usd": 0,
+    "ai_calls_control_run": 0,
+    "schedule_enabled": false
+  },
+  "routing_contract": {
+    "semantic_recommendation_owner": "OIT-ROUTER-011",
+    "deterministic_enforcement_owner": "SOFT-OIT-POLICY-011",
+    "material_variant_escalation_requires_explicit_improvement": true,
+    "duplicate_or_needs_review_may_not_escalate": true
+  }
+}
