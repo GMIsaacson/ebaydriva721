@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "1.0",
+  "sliceId": "AI-DEVELOPER-PLATFORM-RELEASES-001",
+  "domain": "ai-software",
+  "freshnessHours": 168,
+  "purpose": "Production proof slice for Run 016. Monitor first-party AI developer-platform release feeds with bounded source scope and no claim of complete AI/software coverage.",
+  "sources": [
+    {
+      "actor": "OpenAI",
+      "repo": "openai/openai-node",
+      "product": "OpenAI Node SDK",
+      "tier": "primary",
+      "sourceType": "official-github-release"
+    },
+    {
+      "actor": "Anthropic",
+      "repo": "anthropics/anthropic-sdk-typescript",
+      "product": "Anthropic TypeScript SDK",
+      "tier": "primary",
+      "sourceType": "official-github-release"
+    },
+    {
+      "actor": "Google",
+      "repo": "googleapis/js-genai",
+      "product": "Google Gen AI JavaScript SDK",
+      "tier": "primary",
+      "sourceType": "official-github-release"
+    }
+  ],
+  "authority": {
+    "repositoryPersistence": true,
+    "repositoryPersistenceApprovedByOwner": "2026-09-05",
+    "externalNotifications": false,
+    "publication": false,
+    "spendAuthorization": false,
+    "expansionBeyondSlice": false
+  }
+}
