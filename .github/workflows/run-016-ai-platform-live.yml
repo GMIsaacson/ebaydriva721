@@ -7,14 +7,16 @@ on:
   push:
     branches: [master]
     paths:
+      - 'api/run016-inference.js'
       - 'agent-factory/run-016/runtime/live-ai-platform-slice.cjs'
+      - 'agent-factory/run-016/runtime/live-ai-platform-slice-v2.cjs'
       - 'agent-factory/run-016/config/live-ai-platform-sources.json'
       - 'agent-factory/run-016/tests/live-ai-platform-slice.test.cjs'
       - '.github/workflows/run-016-ai-platform-live.yml'
 
 permissions:
   contents: write
-  models: read
+  id-token: write
 
 concurrency:
   group: run-016-live-ai-platform
@@ -23,9 +25,9 @@ concurrency:
 jobs:
   live-ai-platform:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
-      - name: Check out repository
+      - name: Check out governed code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -35,24 +37,50 @@ jobs:
         with:
           node-version: '24'
 
-      - name: Validate Run 016 runtime
+      - name: Validate Run 016 runtime and bridge
         run: |
+          node --check api/run016-inference.js
           node --check agent-factory/run-016/runtime/intelligence-gate.cjs
           node --check agent-factory/run-016/runtime/live-ai-platform-slice.cjs
+          node --check agent-factory/run-016/runtime/live-ai-platform-slice-v2.cjs
           node --test agent-factory/run-016/tests/*.test.cjs
+
+      - name: Load durable dedup state
+        run: |
+          git fetch origin run016-live-evidence
+          if git show origin/run016-live-evidence:agent-factory/run-016/evidence/live-ai-platform/state.json > /tmp/run016-prior-state.json 2>/dev/null; then
+            echo "Loaded prior Run 016 state from evidence branch."
+          else
+            printf '{"schemaVersion":"1.0","seenReleaseIds":[]}\n' > /tmp/run016-prior-state.json
+            echo "No prior Run 016 state found; starting bounded initial state."
+          fi
+
+      - name: Mint repository-bound GitHub OIDC identity
+        id: oidc
+        shell: bash
+        run: |
+          set -euo pipefail
+          REQUEST_URL="${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=run016-vercel-inference"
+          TOKEN_JSON=$(curl --fail --silent --show-error \
+            -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+            "$REQUEST_URL")
+          TOKEN=$(node -e 'const fs=require("fs"); const x=JSON.parse(fs.readFileSync(0,"utf8")); if(!x.value) process.exit(2); process.stdout.write(x.value);' <<< "$TOKEN_JSON")
+          echo "::add-mask::$TOKEN"
+          echo "token=$TOKEN" >> "$GITHUB_OUTPUT"
 
       - name: Execute live source → specialist → independent review → gate pipeline
         id: execute
         continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RUN016_SPECIALIST_MODEL: openai/gpt-4.1
-          RUN016_REVIEWER_MODEL: openai/gpt-4.1
+          RUN016_BRIDGE_OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
+          RUN016_INFERENCE_BRIDGE_URL: https://datascout-live-sourcing-preview.vercel.app/api/run016-inference
           RUN016_MAX_RELEASES_PER_SOURCE: '2'
           RUN016_MAX_TOTAL_CANDIDATES: '6'
+          RUN016_BRIDGE_ATTEMPTS: '6'
         run: |
-          node agent-factory/run-016/runtime/live-ai-platform-slice.cjs \
-            --state=agent-factory/run-016/evidence/live-ai-platform/state.json \
+          node agent-factory/run-016/runtime/live-ai-platform-slice-v2.cjs \
+            --state=/tmp/run016-prior-state.json \
             --state-output=/tmp/run016-state.json \
             --output=/tmp/run016-live-ai-platform.json
 
@@ -82,25 +110,38 @@ jobs:
           if (errors.length) console.error('Run 016 execution errors:', JSON.stringify(errors, null, 2));
           if (packet.terminalState !== 'DELIVERED') throw new Error(`terminal state ${packet.terminalState}`);
           if (packet.qa?.status !== 'PASS') throw new Error(`QA ${packet.qa?.status}`);
+          if (packet.execution?.provider !== 'vercel-ai-gateway-oidc') throw new Error('unexpected inference provider');
           if (packet.execution?.separateInferenceCalls !== true) throw new Error('specialist/reviewer execution is not isolated');
+          if (packet.execution?.separateModels !== true) throw new Error('specialist/reviewer models are not distinct');
+          if (packet.execution?.spendAuthorized !== false) throw new Error('spend authority expanded');
+          if (packet.execution?.zeroSpendModelGate !== true || packet.qa?.zeroSpendReceiptsVerified !== true) throw new Error('zero-spend gate not proven');
+          if (packet.execution?.spendCentsClaimed !== 0) throw new Error('nonzero or unknown spend');
           if (packet.qa?.acceptedItemsWithoutIndependentPass !== 0) throw new Error('unreviewed item reached accepted output');
           if (packet.execution?.notificationAuthorized !== false || packet.execution?.publicationAuthorized !== false) throw new Error('external delivery authority expanded');
+          for (const receipt of packet.execution?.inferenceReceipts || []) {
+            if (Number(receipt.pricingReceipt?.inputPricePerToken) !== 0 || Number(receipt.pricingReceipt?.outputPricePerToken) !== 0) {
+              throw new Error(`nonzero pricing receipt for ${receipt.role}`);
+            }
+          }
           for (const item of packet.accepted || []) {
             if (item.review?.verdict !== 'PASS') throw new Error(`accepted item ${item.event?.eventId} lacks reviewer PASS`);
             if (!item.event?.sources?.every((s) => /^https:\/\//.test(s.url))) throw new Error(`accepted item ${item.event?.eventId} lacks HTTPS evidence`);
           }
-          console.log(`Acceptance PASS: ${packet.acceptedCount} accepted / ${packet.candidateCount} candidates`);
+          console.log(`Acceptance PASS: ${packet.acceptedCount} accepted / ${packet.candidateCount} candidates; zero-spend provider gate PASS`);
           NODE
 
-      - name: Persist new intelligence and dedup state
+      - name: Persist qualified intelligence and dedup state
         if: steps.acceptance.outcome == 'success'
         run: |
+          set -euo pipefail
           CANDIDATES=$(node -p "require('/tmp/run016-live-ai-platform.json').candidateCount")
           if [ "$CANDIDATES" = "0" ]; then
-            echo "No unseen fresh releases; workflow run itself is the heartbeat. No repository write needed."
+            echo "No unseen fresh releases; workflow run itself is the heartbeat. No evidence-branch write needed."
             exit 0
           fi
 
+          git fetch origin run016-live-evidence
+          git checkout -B run016-live-evidence origin/run016-live-evidence
           mkdir -p agent-factory/run-016/evidence/live-ai-platform/history
           cp /tmp/run016-live-ai-platform.json agent-factory/run-016/evidence/live-ai-platform/latest.json
           cp /tmp/run016-state.json agent-factory/run-016/evidence/live-ai-platform/state.json
@@ -113,5 +154,5 @@ jobs:
             echo "No persistence delta."
             exit 0
           fi
-          git commit -m "chore(run016): persist live AI-platform intelligence ${GITHUB_RUN_ID}"
-          git push origin HEAD:master
+          git commit -m "chore(run016): persist qualified intelligence ${GITHUB_RUN_ID}"
+          git push origin HEAD:run016-live-evidence
