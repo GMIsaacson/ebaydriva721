@@ -30,10 +30,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Use Node.js 20
+      - name: Use Node.js 24
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
 
       - name: Validate Run 016 runtime
         run: |
@@ -42,6 +42,8 @@ jobs:
           node --test agent-factory/run-016/tests/*.test.cjs
 
       - name: Execute live source → specialist → independent review → gate pipeline
+        id: execute
+        continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RUN016_SPECIALIST_MODEL: openai/gpt-4.1
@@ -54,11 +56,30 @@ jobs:
             --state-output=/tmp/run016-state.json \
             --output=/tmp/run016-live-ai-platform.json
 
+      - name: Upload immutable execution artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: run016-live-ai-platform-${{ github.run_id }}
+          path: /tmp/run016-live-ai-platform.json
+          if-no-files-found: error
+          retention-days: 30
+
       - name: Independent packet acceptance checks
+        id: acceptance
+        if: always()
         run: |
           node - <<'NODE'
           const fs = require('fs');
           const packet = JSON.parse(fs.readFileSync('/tmp/run016-live-ai-platform.json', 'utf8'));
+          const errors = (packet.rejected || [])
+            .filter((item) => item.stage === 'execution-error')
+            .map((item) => ({
+              repository: item.sourceEvidence?.repository,
+              releaseId: item.sourceEvidence?.release?.id,
+              error: item.error,
+            }));
+          if (errors.length) console.error('Run 016 execution errors:', JSON.stringify(errors, null, 2));
           if (packet.terminalState !== 'DELIVERED') throw new Error(`terminal state ${packet.terminalState}`);
           if (packet.qa?.status !== 'PASS') throw new Error(`QA ${packet.qa?.status}`);
           if (packet.execution?.separateInferenceCalls !== true) throw new Error('specialist/reviewer execution is not isolated');
@@ -71,14 +92,8 @@ jobs:
           console.log(`Acceptance PASS: ${packet.acceptedCount} accepted / ${packet.candidateCount} candidates`);
           NODE
 
-      - name: Upload immutable execution artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: run016-live-ai-platform-${{ github.run_id }}
-          path: /tmp/run016-live-ai-platform.json
-          retention-days: 30
-
       - name: Persist new intelligence and dedup state
+        if: steps.acceptance.outcome == 'success'
         run: |
           CANDIDATES=$(node -p "require('/tmp/run016-live-ai-platform.json').candidateCount")
           if [ "$CANDIDATES" = "0" ]; then
