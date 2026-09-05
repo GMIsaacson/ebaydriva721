@@ -15,6 +15,7 @@ const ROLE_MODELS = Object.freeze({
 
 let jwksCache = { expiresAt: 0, keys: [] };
 let modelCache = { expiresAt: 0, models: new Map() };
+let aiSdkPromise = null;
 
 function json(res, status, body) {
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
@@ -125,45 +126,41 @@ function assertZeroSpendModel(model) {
   };
 }
 
+async function getAiSdk() {
+  if (!aiSdkPromise) aiSdkPromise = import('ai');
+  return aiSdkPromise;
+}
+
 async function callGateway({ role, system, schemaInstruction, payload }) {
   const modelId = ROLE_MODELS[role];
   if (!modelId) throw new Error('UNSUPPORTED_ROLE');
+
+  // Spend authority is intentionally absent. Verify the current live catalog before
+  // every cached inference window and refuse to generate if either token price is nonzero.
   const models = await getGatewayModels();
   const pricingReceipt = assertZeroSpendModel(models.get(modelId));
-  const gatewayToken = process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_OIDC_TOKEN;
-  if (!gatewayToken) throw new Error('VERCEL_OIDC_TOKEN_UNAVAILABLE');
 
-  const response = await fetch(`${GATEWAY_BASE}/chat/completions`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${gatewayToken}`,
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    },
-    body: JSON.stringify({
-      model: modelId,
-      temperature: 0.1,
-      max_tokens: role === 'specialist' ? 1200 : 900,
-      response_format: { type: 'json_object' },
-      messages: [
-        { role: 'system', content: system },
-        { role: 'user', content: JSON.stringify({ expectedSchema: schemaInstruction, payload }) },
-      ],
-    }),
+  // On Vercel, AI SDK string model IDs use AI Gateway and consume the deployment's
+  // platform OIDC identity directly. That identity is injected by the runtime and is
+  // intentionally not read from process.env here.
+  const { generateText } = await getAiSdk();
+  const result = await generateText({
+    model: modelId,
+    system,
+    prompt: JSON.stringify({ expectedSchema: schemaInstruction, payload }),
+    temperature: 0.1,
+    maxOutputTokens: role === 'specialist' ? 1200 : 900,
   });
 
-  const text = await response.text();
-  if (!response.ok) throw new Error(`AI_GATEWAY_FAILED:${response.status}:${text.slice(0, 700)}`);
-  let data;
-  try { data = JSON.parse(text); } catch (_) { throw new Error('AI_GATEWAY_INVALID_JSON'); }
-  const content = data?.choices?.[0]?.message?.content;
+  const content = String(result?.text || '').trim();
   if (!content) throw new Error('AI_GATEWAY_EMPTY_RESPONSE');
   return {
     content,
-    usage: data.usage || null,
-    model: data.model || modelId,
+    usage: result.usage || null,
+    model: result.response?.modelId || modelId,
     requestedModel: modelId,
     pricingReceipt,
+    transport: 'ai-sdk-v7-platform-oidc',
   };
 }
 
@@ -197,10 +194,12 @@ module.exports = async function handler(req, res) {
       model: result.model,
       requestedModel: result.requestedModel,
       pricingReceipt: result.pricingReceipt,
+      transport: result.transport,
       callerReceipt: identity,
       externalActionsPerformed: 0,
     });
   } catch (error) {
+    console.error('[run016-inference]', role, error?.stack || error?.message || String(error));
     return json(res, 503, { error: error.message, role });
   }
 };
