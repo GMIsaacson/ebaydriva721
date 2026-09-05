@@ -1,0 +1,68 @@
+name: Run 016 Local Openweight Demo
+
+on:
+  push:
+    branches: [run016-local-openweight-inference]
+    paths:
+      - '.github/workflows/run016-local-openweight-demo.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  demo:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      RUN016_MAX_RELEASES_PER_SOURCE: '1'
+      RUN016_MAX_TOTAL_CANDIDATES: '3'
+      RUN016_LOCAL_THREADS: '2'
+      RUN016_LOCAL_CONTEXT: '8192'
+    steps:
+      - name: Check out Run 016 demo branch
+        uses: actions/checkout@v4
+      - name: Use Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Validate Run 016 local runtime
+        run: |
+          node --check agent-factory/run-016/runtime/live-ai-platform-local.cjs
+          node --test agent-factory/run-016/tests/*.test.cjs
+      - name: Prepare cryptographically pinned local inference runtime
+        run: bash agent-factory/run-016/scripts/prepare-local-inference.sh
+      - name: Execute bounded Run 016 demo
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p /tmp/run016-demo
+          node agent-factory/run-016/runtime/live-ai-platform-local.cjs \
+            --output=/tmp/run016-demo/demo-packet.json \
+            --state-output=/tmp/run016-demo/demo-state.json
+      - name: Show demo intelligence summary
+        if: always()
+        run: |
+          if [ -f /tmp/run016-demo/demo-packet.json ]; then
+            node - <<'NODE'
+          const fs = require('fs');
+          const p = JSON.parse(fs.readFileSync('/tmp/run016-demo/demo-packet.json','utf8'));
+          console.log(JSON.stringify({
+            runId:p.runId, terminalState:p.terminalState, qa:p.qa?.status,
+            candidates:p.candidateCount, accepted:p.acceptedCount, rejected:p.rejectedCount,
+            specialistCalls:p.execution?.specialistInferenceCount, reviewerCalls:p.execution?.reviewerInferenceCount,
+            provider:p.execution?.provider, modelApiSpendCents:p.execution?.modelApiSpendCents,
+            brief:p.brief,
+            acceptedItems:(p.accepted||[]).map(x=>({title:x.event?.title, summary:x.event?.summary, significance:x.event?.analysis?.significance, decision:x.gate?.decision, score:x.gate?.score, source:x.event?.sources?.[0]?.url, review:x.review})),
+            rejectedItems:(p.rejected||[]).map(x=>({stage:x.stage, title:x.event?.title || x.sourceEvidence?.release?.name, source:x.sourceEvidence?.release?.url, gate:x.gate, review:x.review, error:x.error})),
+            packetSha256:p.packetSha256
+          }, null, 2));
+          NODE
+          fi
+      - name: Upload immutable demo receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: run016-local-openweight-demo-${{ github.run_id }}
+          path: /tmp/run016-demo
+          if-no-files-found: warn
+          retention-days: 30
