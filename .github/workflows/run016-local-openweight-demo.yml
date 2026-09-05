@@ -5,6 +5,13 @@ on:
     branches: [run016-local-openweight-inference]
     paths:
       - '.github/workflows/run016-local-openweight-demo.yml'
+  pull_request:
+    branches: [master]
+    paths:
+      - '.github/workflows/run016-local-openweight-demo.yml'
+      - 'agent-factory/run-016/config/local-openweight-models.json'
+      - 'agent-factory/run-016/scripts/prepare-local-inference.sh'
+      - 'agent-factory/run-016/runtime/live-ai-platform-local.cjs'
 
 permissions:
   contents: read
