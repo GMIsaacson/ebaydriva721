@@ -1,0 +1,60 @@
+name: Run 016 Score Calibration Temp
+
+on:
+  push:
+    branches: [run016-local-openweight-inference]
+    paths:
+      - '.github/workflows/run016-score-calibration-temp.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  calibrate:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: run016-local-openweight-inference
+      - name: Enforce explicit 0-100 integer scoring contract
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('agent-factory/run-016/runtime/live-ai-platform-local.cjs')
+          s = p.read_text()
+          old = "    'Score significance relative to technology decision-makers, not social-media novelty.',\n    'Return only the constrained JSON object requested by the schema.',"
+          new = "    'Score significance relative to technology decision-makers, not social-media novelty.',\n    'All six signals MUST be integer scores on a 0-100 scale, never 0-1 fractions: 0=no signal, 25=minor maintenance, 50=meaningful change, 75=major decision-relevant change, 90+=exceptional. Confidence means evidentiary confidence, not enthusiasm.',\n    'Return only the constrained JSON object requested by the schema.',"
+          if old not in s:
+              raise SystemExit('specialist calibration anchor not found')
+          s = s.replace(old, new, 1)
+          old = "    'PASS only when every material factual statement is defensible from the evidence and the analysis is genuinely useful to a technology decision-maker.',\n    'Return only the constrained JSON object requested by the schema. Never authorize external notification or publication.',"
+          new = "    'PASS only when every material factual statement is defensible from the evidence and the analysis is genuinely useful to a technology decision-maker.',\n    'factuality, evidenceSufficiency, and practitionerQuality MUST be integer scores on a 0-100 scale, never 0-1 fractions: 50=weak, 70=acceptable, 85=strong professional work, 95+=exceptional.',\n    'Return only the constrained JSON object requested by the schema. Never authorize external notification or publication.',"
+          if old not in s:
+              raise SystemExit('reviewer calibration anchor not found')
+          s = s.replace(old, new, 1)
+          fields = ['novelty','consequence','confidence','immediacy','adoptionReadiness','watchPriority','factuality','evidenceSufficiency','practitionerQuality']
+          for field in fields:
+              old = f"{field}: {{ type: 'number', minimum: 0, maximum: 100 }}"
+              new = f"{field}: {{ type: 'integer', minimum: 0, maximum: 100 }}"
+              if old not in s:
+                  raise SystemExit(f'schema field not found: {field}')
+              s = s.replace(old, new, 1)
+          p.write_text(s)
+          PY
+          node --check agent-factory/run-016/runtime/live-ai-platform-local.cjs
+          node - <<'NODE'
+          const r = require('./agent-factory/run-016/runtime/live-ai-platform-local.cjs');
+          const s = r.SPECIALIST_SCHEMA.properties.signals.properties;
+          for (const k of Object.keys(s)) if (s[k].type !== 'integer') throw new Error(`${k} not integer`);
+          for (const k of ['factuality','evidenceSufficiency','practitionerQuality']) if (r.REVIEWER_SCHEMA.properties[k].type !== 'integer') throw new Error(`${k} not integer`);
+          if (!r.specialistSystem().includes('never 0-1 fractions')) throw new Error('specialist scale instruction missing');
+          if (!r.reviewerSystem().includes('never 0-1 fractions')) throw new Error('reviewer scale instruction missing');
+          console.log('Run 016 score calibration contract PASS');
+          NODE
+      - name: Commit calibration fix
+        run: |
+          git config user.name "run016-calibration-bot"
+          git config user.email "run016-calibration-bot@users.noreply.github.com"
+          git add agent-factory/run-016/runtime/live-ai-platform-local.cjs
+          git commit -m "fix(run016): enforce professional 0-100 score calibration"
+          git push origin HEAD:run016-local-openweight-inference
