@@ -5,7 +5,7 @@
   "externalInferenceApiCallsAuthorized": false,
   "llamaCpp": {
     "tag": "v0.4.0",
-    "commit": "427291b5b34cd914a31b3fd3b61a68f6184f4b9f"
+    "commit": "5266f24da75dc449bd56cbed7addb9c8e4a6a73e"
   },
   "roles": {
     "specialist": {
