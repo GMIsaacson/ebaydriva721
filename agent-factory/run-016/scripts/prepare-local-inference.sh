@@ -8,7 +8,7 @@ BIN_DIR="$ROOT/bin"
 mkdir -p "$MODEL_DIR" "$SRC_DIR" "$BIN_DIR"
 
 LLAMA_TAG="v0.4.0"
-LLAMA_COMMIT="427291b5b34cd914a31b3fd3b61a68f6184f4b9f"
+LLAMA_COMMIT="5266f24da75dc449bd56cbed7addb9c8e4a6a73e"
 LLAMA_SRC="$SRC_DIR/llama.cpp"
 LLAMA_SERVER="$BIN_DIR/llama-server"
 
