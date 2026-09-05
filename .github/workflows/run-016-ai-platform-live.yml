@@ -1,0 +1,102 @@
+name: Run 016 Live AI Platform Slice
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 */6 * * *'
+  push:
+    branches: [master]
+    paths:
+      - 'agent-factory/run-016/runtime/live-ai-platform-slice.cjs'
+      - 'agent-factory/run-016/config/live-ai-platform-sources.json'
+      - 'agent-factory/run-016/tests/live-ai-platform-slice.test.cjs'
+      - '.github/workflows/run-016-ai-platform-live.yml'
+
+permissions:
+  contents: write
+  models: read
+
+concurrency:
+  group: run-016-live-ai-platform
+  cancel-in-progress: false
+
+jobs:
+  live-ai-platform:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Validate Run 016 runtime
+        run: |
+          node --check agent-factory/run-016/runtime/intelligence-gate.cjs
+          node --check agent-factory/run-016/runtime/live-ai-platform-slice.cjs
+          node --test agent-factory/run-016/tests/*.test.cjs
+
+      - name: Execute live source → specialist → independent review → gate pipeline
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN016_SPECIALIST_MODEL: openai/gpt-4.1
+          RUN016_REVIEWER_MODEL: openai/gpt-4.1
+          RUN016_MAX_RELEASES_PER_SOURCE: '2'
+          RUN016_MAX_TOTAL_CANDIDATES: '6'
+        run: |
+          node agent-factory/run-016/runtime/live-ai-platform-slice.cjs \
+            --state=agent-factory/run-016/evidence/live-ai-platform/state.json \
+            --state-output=/tmp/run016-state.json \
+            --output=/tmp/run016-live-ai-platform.json
+
+      - name: Independent packet acceptance checks
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const packet = JSON.parse(fs.readFileSync('/tmp/run016-live-ai-platform.json', 'utf8'));
+          if (packet.terminalState !== 'DELIVERED') throw new Error(`terminal state ${packet.terminalState}`);
+          if (packet.qa?.status !== 'PASS') throw new Error(`QA ${packet.qa?.status}`);
+          if (packet.execution?.separateInferenceCalls !== true) throw new Error('specialist/reviewer execution is not isolated');
+          if (packet.qa?.acceptedItemsWithoutIndependentPass !== 0) throw new Error('unreviewed item reached accepted output');
+          if (packet.execution?.notificationAuthorized !== false || packet.execution?.publicationAuthorized !== false) throw new Error('external delivery authority expanded');
+          for (const item of packet.accepted || []) {
+            if (item.review?.verdict !== 'PASS') throw new Error(`accepted item ${item.event?.eventId} lacks reviewer PASS`);
+            if (!item.event?.sources?.every((s) => /^https:\/\//.test(s.url))) throw new Error(`accepted item ${item.event?.eventId} lacks HTTPS evidence`);
+          }
+          console.log(`Acceptance PASS: ${packet.acceptedCount} accepted / ${packet.candidateCount} candidates`);
+          NODE
+
+      - name: Upload immutable execution artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: run016-live-ai-platform-${{ github.run_id }}
+          path: /tmp/run016-live-ai-platform.json
+          retention-days: 30
+
+      - name: Persist new intelligence and dedup state
+        run: |
+          CANDIDATES=$(node -p "require('/tmp/run016-live-ai-platform.json').candidateCount")
+          if [ "$CANDIDATES" = "0" ]; then
+            echo "No unseen fresh releases; workflow run itself is the heartbeat. No repository write needed."
+            exit 0
+          fi
+
+          mkdir -p agent-factory/run-016/evidence/live-ai-platform/history
+          cp /tmp/run016-live-ai-platform.json agent-factory/run-016/evidence/live-ai-platform/latest.json
+          cp /tmp/run016-state.json agent-factory/run-016/evidence/live-ai-platform/state.json
+          cp /tmp/run016-live-ai-platform.json "agent-factory/run-016/evidence/live-ai-platform/history/${GITHUB_RUN_ID}.json"
+
+          git config user.name "run016-intelligence-bot"
+          git config user.email "run016-intelligence-bot@users.noreply.github.com"
+          git add agent-factory/run-016/evidence/live-ai-platform
+          if git diff --cached --quiet; then
+            echo "No persistence delta."
+            exit 0
+          fi
+          git commit -m "chore(run016): persist live AI-platform intelligence ${GITHUB_RUN_ID}"
+          git push origin HEAD:master
