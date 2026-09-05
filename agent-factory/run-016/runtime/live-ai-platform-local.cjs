@@ -56,6 +56,7 @@ function specialistSystem() {
     'An official SDK release is primary evidence of the SDK/API change stated there; it is not proof of broad adoption, production reliability, performance, or business impact.',
     'Separate observation from inference. Thin evidence must reduce confidence and consequence rather than invite speculation.',
     'Score significance relative to technology decision-makers, not social-media novelty.',
+    'All six signals MUST be integer scores on a 0-100 scale, never 0-1 fractions: 0=no signal, 25=minor maintenance, 50=meaningful change, 75=major decision-relevant change, 90+=exceptional. Confidence means evidentiary confidence, not enthusiasm.',
     'Return only the constrained JSON object requested by the schema.',
   ].join(' ');
 }
@@ -70,6 +71,7 @@ function reviewerSystem() {
     'Reject unsupported inference, exaggerated significance, incorrect actors or objects, stale framing, or scores that overstate the evidence.',
     'A factually true but vague, promotional, or decision-useless packet is not excellent practitioner work and should score accordingly.',
     'PASS only when every material factual statement is defensible from the evidence and the analysis is genuinely useful to a technology decision-maker.',
+    'factuality, evidenceSufficiency, and practitionerQuality MUST be integer scores on a 0-100 scale, never 0-1 fractions: 50=weak, 70=acceptable, 85=strong professional work, 95+=exceptional.',
     'Return only the constrained JSON object requested by the schema. Never authorize external notification or publication.',
   ].join(' ');
 }
@@ -88,12 +90,12 @@ const SPECIALIST_SCHEMA = {
       additionalProperties: false,
       required: ['novelty', 'consequence', 'confidence', 'immediacy', 'adoptionReadiness', 'watchPriority'],
       properties: {
-        novelty: { type: 'number', minimum: 0, maximum: 100 },
-        consequence: { type: 'number', minimum: 0, maximum: 100 },
-        confidence: { type: 'number', minimum: 0, maximum: 100 },
-        immediacy: { type: 'number', minimum: 0, maximum: 100 },
-        adoptionReadiness: { type: 'number', minimum: 0, maximum: 100 },
-        watchPriority: { type: 'number', minimum: 0, maximum: 100 }
+        novelty: { type: 'integer', minimum: 0, maximum: 100 },
+        consequence: { type: 'integer', minimum: 0, maximum: 100 },
+        confidence: { type: 'integer', minimum: 0, maximum: 100 },
+        immediacy: { type: 'integer', minimum: 0, maximum: 100 },
+        adoptionReadiness: { type: 'integer', minimum: 0, maximum: 100 },
+        watchPriority: { type: 'integer', minimum: 0, maximum: 100 }
       }
     },
     alertEligible: { type: 'boolean' }
@@ -106,9 +108,9 @@ const REVIEWER_SCHEMA = {
   required: ['verdict', 'factuality', 'evidenceSufficiency', 'practitionerQuality', 'reasons', 'unsupportedClaims', 'sameExecutionAsSpecialist'],
   properties: {
     verdict: { type: 'string', enum: ['PASS', 'FAIL'] },
-    factuality: { type: 'number', minimum: 0, maximum: 100 },
-    evidenceSufficiency: { type: 'number', minimum: 0, maximum: 100 },
-    practitionerQuality: { type: 'number', minimum: 0, maximum: 100 },
+    factuality: { type: 'integer', minimum: 0, maximum: 100 },
+    evidenceSufficiency: { type: 'integer', minimum: 0, maximum: 100 },
+    practitionerQuality: { type: 'integer', minimum: 0, maximum: 100 },
     reasons: { type: 'array', minItems: 1, maxItems: 8, items: { type: 'string', minLength: 3, maxLength: 300 } },
     unsupportedClaims: { type: 'array', maxItems: 8, items: { type: 'string', minLength: 3, maxLength: 300 } },
     sameExecutionAsSpecialist: { type: 'boolean', const: false }
