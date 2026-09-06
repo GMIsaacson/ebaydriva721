@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "1.0",
+  "standardId": "FACTORY-G2.5-PROFESSIONAL-CAPABILITY",
+  "status": "ENFORCED_ON_BRANCH",
+  "purpose": "Prevent workflow, test, or evidence completeness from being mistaken for professional capability completeness.",
+  "qualityLayers": {
+    "Q1": "Deterministic and operational correctness",
+    "Q2": "Evidence, provenance, calculation, policy, authority and compliance correctness",
+    "Q3": "Independent professional-excellence review by the disciplines materially required by the deliverable"
+  },
+  "rules": [
+    "Q1 or Q2 PASS never substitutes for Q3.",
+    "Every material RUN requires a Professional Capability Manifest before consequential execution.",
+    "Every material or gating discipline must map to an explicitly registered specialist capability.",
+    "A generic agent does not inherit a profession merely because it can reason about the subject.",
+    "Multiple professions may be covered by one component only when each discipline is separately qualified.",
+    "A material author cannot serve as the independent Q3 reviewer for the same discipline.",
+    "A missing or unproven gating discipline sets professionalReadiness=BLOCKED.",
+    "A provisional gating specialist sets professionalReadiness=BLOCKED until calibrated.",
+    "A missing material non-gating discipline may be CONDITIONAL only with an explicit owner-accepted limitation.",
+    "Overall READY requires Operational READY, Evidence READY, and Professional READY with PE_PASS or an allowed conditional PE_PASS_WITH_LIMITATION.",
+    "Execution-only workflows with no material professional judgment may declare Q3_NOT_APPLICABLE, but the exemption must be explicit and scoped to the deterministic action only."
+  ],
+  "professionalReviewResults": ["PE_PASS", "PE_PASS_WITH_LIMITATION", "PE_RETURN", "PE_ESCALATE", "PE_FAIL"],
+  "readinessDimensions": ["operationalReadiness", "evidenceReadiness", "professionalReadiness"],
+  "overallRule": "overallReadiness is READY only when all required dimensions are READY; otherwise BLOCKED.",
+  "auditClosureRule": "The specialist-gap audit is closed when every active/material team is mapped, missing capability is blocked or explicitly accepted as a visible limitation, generic role conflation is removed or registered separately, Q1/Q2/Q3 are distinct, and core completion enforcement prevents false READY claims. Individual blocked teams may remain blocked after audit closure; they must pass calibration before professional promotion."
+}
