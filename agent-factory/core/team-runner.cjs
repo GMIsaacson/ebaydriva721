@@ -4,6 +4,7 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const { completionAttestation } = require('./professional-capability.cjs');
 
 const SUPPORTED_CHECKS = new Set(['required_fields', 'cross_document_equal', 'required_url', 'regex', 'freshness', 'array_min_length', 'selected_max_score']);
 
@@ -50,19 +51,45 @@ function executeCheck(check, packet, context = {}) {
   }
   throw new Error(`unsupported check type: ${check.type}`);
 }
+
+function requireProfessionalEnvelope(manifest, packet) {
+  const mode = manifest.governanceMode || (manifest.runId ? 'RUN' : 'TEST');
+  if (mode !== 'RUN') return null;
+  const envelope = manifest.professionalCapability;
+  if (!envelope || typeof envelope !== 'object') throw new Error('RUN mode requires manifest.professionalCapability; operational QA may not substitute for professional readiness');
+  if (!envelope.pcm || !Array.isArray(envelope.registrySnapshot)) throw new Error('professionalCapability requires pcm and registrySnapshot');
+  if (!packet.professionalReview) throw new Error('RUN mode requires packet.professionalReview for Q3 Professional Excellence QA');
+  return envelope;
+}
+
 function runTeam(manifest, packet, options = {}) {
   if(!manifest||typeof manifest!=='object')throw new Error('manifest is required');
   if(manifest.topologyMode==='hybrid')throw new Error('hybrid topologies require a run-specific runtime; the generic runner is synthetic legacy validation only');
   if(manifest.externalAuthority!=='None')throw new Error('synthetic runner requires externalAuthority=None');
   if(!manifest.authority||Number(manifest.authority.maxExternalActions)!==0||Number(manifest.authority.maxSpendCents)!==0)throw new Error('synthetic runner requires zero external-action and spend authority');
+  const professionalEnvelope = requireProfessionalEnvelope(manifest, packet);
   const capabilityAgents=(manifest.agents||[]).filter(a=>a.role==='capability'),qaAgents=(manifest.agents||[]).filter(a=>a.role==='qa');
   if(capabilityAgents.length<2)throw new Error('at least two capability agents are required'); if(qaAgents.length!==1)throw new Error('exactly one independent QA agent is required');
   const startedAt=options.now||new Date().toISOString(),packetHash=sha256(JSON.stringify(packet)),label=evidenceLabel(manifest);
   const results=capabilityAgents.map((agent,index)=>{const result=executeCheck(agent.check,packet,options);return {agentId:agent.id,capabilityId:agent.capabilityId,status:result.status,evidenceId:`EV-${label}-${String(index+1).padStart(3,'0')}`,observed:result.observed,externalActionsPerformed:0,spendCents:0};});
   const evidenceComplete=results.every(r=>typeof r.evidenceId==='string'&&r.evidenceId.length>0),authorityClean=results.every(r=>r.externalActionsPerformed===0&&r.spendCents===0),allPassed=results.every(r=>r.status==='PASS');
   const qa={agentId:qaAgents[0].id,status:evidenceComplete&&authorityClean?'PASS':'FAIL',evidenceComplete,authorityClean,unsupportedSuccessClaims:0};
-  return {schemaVersion:'1.1',governanceMode:manifest.governanceMode||(manifest.runId?'RUN':'TEST'),runId:manifest.runId||null,testId:manifest.testId||null,teamId:manifest.teamId,packetSha256:packetHash,startedAt,terminalState:allPassed&&qa.status==='PASS'?'DELIVERED':'FAILED',capabilityResults:results,qa,externalActionsPerformed:0,spendCents:0};
+
+  let professionalAttestation = null;
+  if (professionalEnvelope) {
+    professionalAttestation = completionAttestation({
+      operationalReady: allPassed,
+      evidenceReady: qa.status === 'PASS',
+      pcm: professionalEnvelope.pcm,
+      registry: professionalEnvelope.registrySnapshot,
+      professionalReview: packet.professionalReview,
+      acceptedLimitations: professionalEnvelope.acceptedLimitations || [],
+    });
+  }
+  const professionallyReady = professionalEnvelope ? professionalAttestation.overallReadiness === 'READY' : true;
+  const terminalState=allPassed&&qa.status==='PASS'&&professionallyReady?'DELIVERED':'FAILED';
+  return {schemaVersion:'1.3',governanceMode:manifest.governanceMode||(manifest.runId?'RUN':'TEST'),runId:manifest.runId||null,testId:manifest.testId||null,teamId:manifest.teamId,packetSha256:packetHash,startedAt,terminalState,capabilityResults:results,qa,professionalAttestation,externalActionsPerformed:0,spendCents:0};
 }
 function writeRunAtomic(manifest,packet,outFile,options={}){const result=runTeam(manifest,packet,options),target=path.resolve(outFile),dir=path.dirname(target);fs.mkdirSync(dir,{recursive:true});const temp=`${target}.tmp-${process.pid}-${Date.now()}`;try{fs.writeFileSync(temp,`${JSON.stringify(result,null,2)}\n`);fs.renameSync(temp,target);return result;}catch(error){fs.rmSync(temp,{force:true});throw error;}}
-function main(){const argv=process.argv.slice(2),mi=argv.indexOf('--manifest'),pi=argv.indexOf('--packet'),oi=argv.indexOf('--out');if(mi<0||pi<0||oi<0||!argv[mi+1]||!argv[pi+1]||!argv[oi+1]){console.error('Usage: node team-runner.cjs --manifest <team-manifest.json> --packet <packet.json> --out <run-receipt.json>');process.exit(2);}try{const manifest=JSON.parse(fs.readFileSync(argv[mi+1],'utf8')),packet=JSON.parse(fs.readFileSync(argv[pi+1],'utf8')),result=writeRunAtomic(manifest,packet,argv[oi+1]);console.log(JSON.stringify({status:result.terminalState==='DELIVERED'?'PASS':'FAIL',terminalState:result.terminalState,runId:result.runId,testId:result.testId}));process.exit(result.terminalState==='DELIVERED'?0:1);}catch(error){console.error(JSON.stringify({status:'BLOCKED',error:error.message}));process.exit(2);}}
-if(require.main===module)main();module.exports={SUPPORTED_CHECKS,getPath,evidenceLabel,executeCheck,runTeam,writeRunAtomic};
+function main(){const argv=process.argv.slice(2),mi=argv.indexOf('--manifest'),pi=argv.indexOf('--packet'),oi=argv.indexOf('--out');if(mi<0||pi<0||oi<0||!argv[mi+1]||!argv[pi+1]||!argv[oi+1]){console.error('Usage: node team-runner.cjs --manifest <team-manifest.json> --packet <packet.json> --out <run-receipt.json>');process.exit(2);}try{const manifest=JSON.parse(fs.readFileSync(argv[mi+1],'utf8')),packet=JSON.parse(fs.readFileSync(argv[pi+1],'utf8')),result=writeRunAtomic(manifest,packet,argv[oi+1]);console.log(JSON.stringify({status:result.terminalState==='DELIVERED'?'PASS':'FAIL',terminalState:result.terminalState,runId:result.runId,testId:result.testId,professionalReadiness:result.professionalAttestation?.professionalReadiness||null}));process.exit(result.terminalState==='DELIVERED'?0:1);}catch(error){console.error(JSON.stringify({status:'BLOCKED',error:error.message}));process.exit(2);}}
+if(require.main===module)main();module.exports={SUPPORTED_CHECKS,getPath,evidenceLabel,executeCheck,requireProfessionalEnvelope,runTeam,writeRunAtomic};
