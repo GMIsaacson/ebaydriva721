@@ -1,0 +1,27 @@
+{
+  "decision_id": "A0-FACTORY-CORE-005",
+  "status": "PASS",
+  "verdict": "EXTEND",
+  "owner": "Aberdeen Technologies",
+  "decided_at": "2026-09-06",
+  "business_outcome": "Prevent Factory teams from being promoted or reported as ready when workflows and evidence are complete but required professional disciplines are missing, conflated behind generic agents, or not independently reviewed for expert-practitioner quality.",
+  "existing_owner_scan": "Reviewed Factory Core v1.2 hybrid topology and generic runner, A0 governance, Run 004 DataScout sourcing, Run 005 deterministic notification pilot, Run 006 Subscription Operations, Run 008 Operations Core, Run 009 publishing/telemetry surfaces, Run 014 Software Product Engineering, Run 015 UI Excellence, Run 016 World Technology Intelligence, Work Control readiness records, the Alibaba-to-eBay sourcing team, and the existing Run 011/012 operating concepts. Existing controls cover mechanism classification, authority, evidence, deterministic QA, and independent assurance, but no canonical Factory component owns professional-discipline declaration, specialist qualification/routing, or independent Professional Excellence QA as a completion gate.",
+  "reuse_candidates_checked": [
+    "Factory Core v1.2 hybrid topology compiler",
+    "A0 Constitutional Guard",
+    "Run 014 Software Product Engineering",
+    "Run 015 UI Excellence",
+    "Run 016 World Technology Intelligence",
+    "Alibaba-to-eBay Independent Evidence QA",
+    "Work Control readiness model"
+  ],
+  "duplication_analysis": "EXTEND reuses the existing Factory Core manifest, topology, assurance, authority, provenance, and terminal-state machinery. It does not create a competing Factory or duplicate individual professional teams. It adds the missing cross-Factory professional capability contract: Professional Capability Manifest, shared specialist registry, professional readiness dimension, reviewer independence, and Q3 completion attestation. Existing Q1 deterministic QA and Q2 evidence/compliance QA remain separate and unchanged in purpose.",
+  "residual_unowned_loop": "Material Factory job -> decompose professional judgments -> declare required disciplines -> bind separately qualified specialists -> identify missing or provisional gating capability -> independent discipline-appropriate Professional Excellence review -> combine Q1, Q2, and Q3 into fail-closed overall readiness without generic-agent substitution.",
+  "covers_paths": [
+    "agent-factory/core/professional-capability.cjs",
+    "agent-factory/core/professional-team-builder.cjs",
+    "agent-factory/core/team-runner.cjs",
+    "agent-factory/core/tests/professional-capability.test.cjs"
+  ],
+  "evidence_ref": "agent-factory/governance/team-professional-retrofit-v1.0.json"
+}
