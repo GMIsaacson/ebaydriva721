@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { useNavigate, Link } from "react-router-dom";
-import { auth } from "./firebase-config"; // Ensure the path to your Firebase config is correct
+import { useNavigate, Link, useLocation } from "react-router-dom";
+import { auth } from "./firebase-config";
 import "./login.css";
 
 const Login = () => {
@@ -11,16 +11,17 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const requestedPath = location.state?.from?.pathname;
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError(""); // Clear any previous errors
+    setError("");
     setLoading(true);
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      console.log("User logged in successfully!");
-      navigate("/products"); // Redirect to the dashboard after login
+      navigate(requestedPath || "/products", { replace: true });
     } catch (error) {
       setError("Invalid email or password. If you're new, please sign up!");
       console.error("Login error:", error);
@@ -36,6 +37,7 @@ const Login = () => {
   return (
     <div className="login-form">
       <h2>Login</h2>
+      {requestedPath === "/factory-control" && <p>Sign in to open Factory Work Control.</p>}
       {error && <p style={{ color: "red" }}>{error}</p>}
       <form onSubmit={handleLogin}>
         <div className="form-group">
@@ -80,4 +82,3 @@ const Login = () => {
 };
 
 export default Login;
-
