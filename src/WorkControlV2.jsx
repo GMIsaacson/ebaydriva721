@@ -5,7 +5,13 @@ import {
   subscribeEvents,
   subscribeItems,
   transitionItem,
+  updateItemFields,
 } from "./workControlLedger";
+import {
+  dispatchWorkOrder,
+  fetchExecution,
+  fetchGatewayHealth,
+} from "./workControlDispatch";
 import "./work-control-v2.css";
 import "./work-control-ledger.css";
 
@@ -27,7 +33,7 @@ const qaDescriptions = [
 function nextAllowedActions(status) {
   switch (status) {
     case "BACKLOG": return [["Make ready", "READY"]];
-    case "READY": return [["Start work", "IN_PROGRESS"], ["Block", "BLOCKED"]];
+    case "READY": return [["Start manually", "IN_PROGRESS"], ["Block", "BLOCKED"]];
     case "IN_PROGRESS": return [["Send to QA", "QA"], ["Block", "BLOCKED"]];
     case "QA": return [["Return for revision", "IN_PROGRESS"], ["QA pass → done", "DONE"], ["Block", "BLOCKED"]];
     case "WAITING_APPROVAL": return [["Approve → done", "DONE"], ["Return", "IN_PROGRESS"]];
@@ -43,6 +49,14 @@ function formatEventTime(value) {
   return date.toLocaleString();
 }
 
+function remoteExecutionStatus(payload) {
+  if (payload?.receipt?.terminalState) return payload.receipt.terminalState;
+  if (payload?.claim && !payload?.receipt) return "CLAIMED";
+  if (payload?.command?.executorState) return payload.command.executorState;
+  if (payload?.work?.status) return String(payload.work.status).toUpperCase();
+  return "QUEUED_GOVERNED";
+}
+
 export default function WorkControlV2() {
   const { currentUser } = useAuth();
   const [section, setSection] = useState("overview");
@@ -52,6 +66,8 @@ export default function WorkControlV2() {
   const [events, setEvents] = useState([]);
   const [ledgerState, setLedgerState] = useState("CONNECTING");
   const [ledgerError, setLedgerError] = useState("");
+  const [adapterState, setAdapterState] = useState("CHECKING");
+  const [adapterError, setAdapterError] = useState("");
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -100,6 +116,25 @@ export default function WorkControlV2() {
     };
   }, [currentUser?.uid]);
 
+  useEffect(() => {
+    let cancelled = false;
+    const check = async () => {
+      setAdapterState("CHECKING");
+      setAdapterError("");
+      try {
+        const health = await fetchGatewayHealth();
+        if (!cancelled) setAdapterState(health?.status === "READY" ? "READY" : "ERROR");
+      } catch (error) {
+        if (!cancelled) {
+          setAdapterState("ERROR");
+          setAdapterError(error?.message || "Execution gateway unavailable.");
+        }
+      }
+    };
+    check();
+    return () => { cancelled = true; };
+  }, []);
+
   const objectives = useMemo(() => items.filter((item) => item.level === "objective"), [items]);
   const milestones = useMemo(() => items.filter((item) => item.level === "milestone"), [items]);
   const workOrders = useMemo(() => items.filter((item) => item.level === "work_order"), [items]);
@@ -108,12 +143,13 @@ export default function WorkControlV2() {
   const activeMilestone = milestones.find((item) => item.status === "IN_PROGRESS") || milestones.find((item) => item.status === "READY");
   const doneCount = milestones.filter((item) => item.status === "DONE").length;
   const progress = milestones.length ? Math.round((doneCount / milestones.length) * 100) : 0;
+  const activeExecution = workOrders.find((item) => item.executionCommandId && item.status === "IN_PROGRESS");
 
   const filteredWork = useMemo(() => {
     const needle = query.trim().toLowerCase();
     if (!needle) return workOrders;
     return workOrders.filter((item) =>
-      [item.id, item.title, item.owner, item.executor, item.status].join(" ").toLowerCase().includes(needle)
+      [item.id, item.title, item.owner, item.executor, item.status, item.executionCommandId].join(" ").toLowerCase().includes(needle)
     );
   }, [query, workOrders]);
 
@@ -128,6 +164,54 @@ export default function WorkControlV2() {
     return { id, label, status: item?.status || "BACKLOG" };
   }), [milestones]);
 
+  useEffect(() => {
+    if (!activeExecution?.executionCommandId || !currentUser?.uid) return undefined;
+    let cancelled = false;
+    let timer;
+
+    const refresh = async () => {
+      try {
+        const payload = await fetchExecution(currentUser, activeExecution.executionCommandId);
+        if (cancelled) return;
+        const executionStatus = remoteExecutionStatus(payload);
+        const receipt = payload?.receipt || null;
+        const patch = {};
+
+        if (executionStatus !== activeExecution.executionStatus) patch.executionStatus = executionStatus;
+        if (receipt?.summary && receipt.summary !== activeExecution.executionResultSummary) patch.executionResultSummary = receipt.summary;
+        if (receipt?.terminalState && receipt.terminalState !== activeExecution.executionTerminalState) patch.executionTerminalState = receipt.terminalState;
+        if (receipt?.completedAt && receipt.completedAt !== activeExecution.executionCompletedAt) patch.executionCompletedAt = receipt.completedAt;
+
+        if (Object.keys(patch).length) {
+          await updateItemFields(currentUser.uid, activeExecution.id, patch, "execution-monitor");
+        }
+
+        if (receipt?.terminalState === "DELIVERED" && activeExecution.status === "IN_PROGRESS") {
+          await transitionItem(currentUser.uid, activeExecution, "QA", "execution-monitor");
+          return;
+        }
+        if (["BLOCKED_OWNER", "BLOCKED_EXTERNAL", "FAILED"].includes(receipt?.terminalState) && activeExecution.status === "IN_PROGRESS") {
+          await transitionItem(currentUser.uid, activeExecution, "BLOCKED", "execution-monitor");
+          return;
+        }
+        if (receipt?.terminalState === "KILLED" && activeExecution.status === "IN_PROGRESS") {
+          await transitionItem(currentUser.uid, activeExecution, "KILLED", "execution-monitor");
+          return;
+        }
+      } catch (error) {
+        console.error("Execution polling failed", error);
+        if (!cancelled) setAdapterError(error?.message || "Could not refresh execution state.");
+      }
+      if (!cancelled) timer = setTimeout(refresh, 8000);
+    };
+
+    refresh();
+    return () => {
+      cancelled = true;
+      if (timer) clearTimeout(timer);
+    };
+  }, [activeExecution?.executionCommandId, activeExecution?.id, activeExecution?.status, activeExecution?.executionStatus, activeExecution?.executionTerminalState, activeExecution?.executionResultSummary, activeExecution?.executionCompletedAt, currentUser]);
+
   const handleTransition = async (nextStatus) => {
     if (!selected || !currentUser?.uid || busy) return;
     setBusy(true);
@@ -141,6 +225,47 @@ export default function WorkControlV2() {
       setBusy(false);
     }
   };
+
+  const handleDispatch = async () => {
+    if (!selected || !currentUser?.uid || busy) return;
+    if (selected.status !== "READY") {
+      setAdapterError("Only READY work orders can be dispatched.");
+      return;
+    }
+    if (selected.executionCommandId) {
+      setAdapterError(`This work order is already linked to ${selected.executionCommandId}.`);
+      return;
+    }
+
+    setBusy(true);
+    setAdapterError("");
+    try {
+      const response = await dispatchWorkOrder(currentUser, selected);
+      const commandId = response?.command?.commandId;
+      if (!commandId) throw new Error("DISPATCH_RECEIPT_MISSING_COMMAND_ID");
+      await updateItemFields(currentUser.uid, selected.id, {
+        executionCommandId: commandId,
+        executionTeamId: response?.command?.team?.id || "SW-PROD-014",
+        executionStatus: response?.command?.status || "QUEUED_GOVERNED",
+        executionDispatchedAt: response?.command?.requestedAt || new Date().toISOString(),
+      }, currentUser.email || "owner");
+      await transitionItem(currentUser.uid, selected, "IN_PROGRESS", currentUser.email || "owner");
+    } catch (error) {
+      console.error("Work Control dispatch failed", error);
+      setAdapterError(error?.message || "Dispatch failed.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const canDispatch = Boolean(
+    selected &&
+    selected.status === "READY" &&
+    !selected.executionCommandId &&
+    ledgerState === "CONNECTED" &&
+    adapterState === "READY" &&
+    !busy
+  );
 
   const nav = [
     ["overview", "Overview"],
@@ -190,12 +315,14 @@ export default function WorkControlV2() {
         </header>
 
         <div className={`wc-ledger-banner wc-ledger-banner-${ledgerState.toLowerCase()}`}>
-          <strong>{ledgerState === "CONNECTED" ? "Persistent mode." : ledgerState === "ERROR" ? "Persistence needs attention." : "Connecting persistent ledger."}</strong>{" "}
-          {ledgerState === "CONNECTED"
-            ? "Objectives, work orders and status transitions now persist under your authenticated account. Dispatch remains disabled until WO-002B connects n8n / Factory."
+          <strong>{ledgerState === "CONNECTED" && adapterState === "READY" ? "Operating mode." : ledgerState === "ERROR" || adapterState === "ERROR" ? "Connection needs attention." : "Connecting control plane."}</strong>{" "}
+          {ledgerState === "CONNECTED" && adapterState === "READY"
+            ? "Persistent ledger and authenticated Factory gateway are connected. READY work orders can dispatch to the governed Run 014 worker; delivered results move to QA automatically."
             : ledgerState === "ERROR"
               ? ledgerError
-              : "The control surface is initializing your owner ledger."}
+              : adapterState === "ERROR"
+                ? adapterError || "Execution gateway unavailable."
+                : "The control surface is checking persistent state and execution connectivity."}
         </div>
 
         {(section === "overview" || section === "today") && (
@@ -229,7 +356,11 @@ export default function WorkControlV2() {
                 <div className="wc-next-row"><span>Current work order</span><strong>{selected?.id || "WO-002A"}</strong></div>
                 <div className="wc-next-row"><span>Accountable owner</span><strong>{selected?.owner || "Run 014"}</strong></div>
                 <div className="wc-next-row"><span>Definition of done</span><strong>{selected?.definitionOfDone || "Persistent state verified"}</strong></div>
-                <button className="wc-primary-button" disabled title="Execution adapter not connected">Dispatch disabled until WO-002B</button>
+                {selected?.executionCommandId && <div className="wc-next-row"><span>Execution</span><strong>{selected.executionCommandId} · {selected.executionStatus || "QUEUED"}</strong></div>}
+                <button className="wc-primary-button" disabled={!canDispatch} onClick={handleDispatch} title={!canDispatch ? "Select a READY work order with connected ledger and gateway" : "Dispatch through authenticated governed queue"}>
+                  {busy ? "Working…" : selected?.executionCommandId ? `Linked: ${selected.executionCommandId}` : canDispatch ? "Dispatch to governed Run 014" : "Dispatch available when READY"}
+                </button>
+                {adapterError && <p className="wc-action-error">{adapterError}</p>}
               </article>
 
               <article className="wc-panel">
@@ -302,9 +433,13 @@ export default function WorkControlV2() {
                     <div><dt>Dependency</dt><dd>{selected.dependency}</dd></div>
                     <div><dt>Next action</dt><dd>{selected.nextAction}</dd></div>
                     <div><dt>Definition of done</dt><dd>{selected.definitionOfDone}</dd></div>
+                    {selected.executionCommandId && <div><dt>Command</dt><dd>{selected.executionCommandId}</dd></div>}
+                    {selected.executionStatus && <div><dt>Execution state</dt><dd>{selected.executionStatus}</dd></div>}
+                    {selected.executionResultSummary && <div><dt>Execution result</dt><dd>{selected.executionResultSummary}</dd></div>}
                   </dl>
                   <div className="wc-qa-row"><span>Required QA</span><div>{(selected.qaRequired || []).map((qa) => <b key={qa}>{qa}</b>)}</div></div>
                   <div className="wc-transition-row">
+                    {canDispatch && <button onClick={handleDispatch}>Dispatch to Run 014</button>}
                     {nextAllowedActions(selected.status).map(([label, target]) => (
                       <button key={target} disabled={busy || ledgerState !== "CONNECTED"} onClick={() => handleTransition(target)}>{busy ? "Saving…" : label}</button>
                     ))}
@@ -335,8 +470,9 @@ export default function WorkControlV2() {
             {[
               ["Work Control", "Managerial layer", "READY", "Objectives, ownership, sequencing and QA"],
               ["Persistent ledger", "State + evidence", ledgerState === "CONNECTED" ? "READY" : "BLOCKED", ledgerState === "CONNECTED" ? "Authenticated Firestore ledger connected" : "Waiting for Firestore access"],
-              ["Execution adapter", "Factory bridge", "BLOCKED", "WO-002B — next after ledger verification"],
-              ["n8n", "Orchestration", "READY", "Scheduled / on-demand workflow engine"],
+              ["Authenticated gateway", "Factory bridge", adapterState === "READY" ? "READY" : "BLOCKED", adapterState === "READY" ? "Firebase-authenticated bounded dispatch path is reachable" : adapterError || "Checking gateway"],
+              ["Governed Factory queue", "Execution", adapterState === "READY" ? "READY" : "BLOCKED", "Run 014 bounded worker queue; zero external-action authority ceiling"],
+              ["n8n", "Orchestration", "READY", "Healthy nonproduction workflow engine; universal pipeline is M-003"],
             ].map(([title, kind, status, detail]) => (
               <article className="wc-panel wc-machine-card" key={title}><div className="wc-panel-head"><span className="wc-section-kicker">{kind}</span><StatusPill status={status} /></div><h3>{title}</h3><p>{detail}</p></article>
             ))}
