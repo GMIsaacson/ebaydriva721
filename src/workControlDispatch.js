@@ -18,6 +18,20 @@ function instructionFor(item) {
   ].filter(Boolean).join(" ");
 }
 
+async function parseResponse(response) {
+  const text = await response.text();
+  let payload = {};
+  try { payload = text ? JSON.parse(text) : {}; }
+  catch { payload = { error: "INVALID_GATEWAY_RESPONSE" }; }
+  if (!response.ok) {
+    const error = new Error(payload.error || `GATEWAY_${response.status}`);
+    error.status = response.status;
+    error.payload = payload;
+    throw error;
+  }
+  return payload;
+}
+
 async function request(user, path, options = {}) {
   if (!user?.getIdToken) throw new Error("AUTH_REQUIRED");
   const token = await user.getIdToken();
@@ -30,17 +44,15 @@ async function request(user, path, options = {}) {
       ...(options.headers || {}),
     },
   });
-  const text = await response.text();
-  let payload = {};
-  try { payload = text ? JSON.parse(text) : {}; }
-  catch { payload = { error: "INVALID_GATEWAY_RESPONSE" }; }
-  if (!response.ok) {
-    const error = new Error(payload.error || `GATEWAY_${response.status}`);
-    error.status = response.status;
-    error.payload = payload;
-    throw error;
-  }
-  return payload;
+  return parseResponse(response);
+}
+
+export async function fetchGatewayHealth() {
+  const response = await fetch(`${GATEWAY_BASE}/health`, {
+    method: "GET",
+    headers: { accept: "application/json" },
+  });
+  return parseResponse(response);
 }
 
 export async function dispatchWorkOrder(user, item) {
