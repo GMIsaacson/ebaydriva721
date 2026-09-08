@@ -31,7 +31,7 @@ const App = () => {
     <AuthProvider>
       <Router>
         <Routes>
-          <Route path="/factory-control" element={<ErrorBoundary><WorkControlV2 /></ErrorBoundary>} />
+          <Route path="/factory-control" element={<ProtectedRoute><ErrorBoundary><WorkControlV2 /></ErrorBoundary></ProtectedRoute>} />
 
           <Route element={<PublicLayout />}>
             <Route path="/" element={<ErrorBoundary><Home /></ErrorBoundary>} />
