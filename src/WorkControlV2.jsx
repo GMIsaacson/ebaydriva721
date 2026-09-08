@@ -1,90 +1,113 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { useAuth } from "./AuthProvider";
+import {
+  ensureLedger,
+  subscribeEvents,
+  subscribeItems,
+  transitionItem,
+} from "./workControlLedger";
 import "./work-control-v2.css";
+import "./work-control-ledger.css";
 
-const milestones = [
-  { id: "M-001", title: "Formalize Work Control v2", status: "DONE", owner: "Agent 000", sequence: "1.1" },
-  { id: "M-002", title: "Connect real execution/state", status: "READY", owner: "Agent 000", sequence: "1.2" },
-  { id: "M-003", title: "Universal n8n → AI → data pipeline", status: "BACKLOG", owner: "Agent 000", sequence: "1.3" },
-  { id: "M-004", title: "Run SourceMargin", status: "BACKLOG", owner: "Agent 000", sequence: "2" },
-  { id: "M-005", title: "Run Acquisition Radar", status: "BACKLOG", owner: "Agent 000", sequence: "3" },
-  { id: "M-006", title: "Run 016 / Nembra", status: "BACKLOG", owner: "Agent 000", sequence: "4" },
-  { id: "M-007", title: "Economics decision gate", status: "BACKLOG", owner: "Owner", sequence: "5" },
-];
-
-const workOrders = [
-  {
-    id: "WO-002A",
-    parent: "M-002",
-    title: "Define execution adapter contract",
-    status: "READY",
-    priority: "P0",
-    owner: "Run 014",
-    executor: "Software engineering specialists",
-    next: "Implement adapter against one low-risk test workflow",
-    done: "Input/output/state/error/idempotency contract accepted",
-    qa: ["Q1", "Q3"],
-    dependency: "Work Control v1 request/state model",
-  },
-  {
-    id: "WO-002B",
-    parent: "M-002",
-    title: "Add persistent execution ledger",
-    status: "BACKLOG",
-    priority: "P0",
-    owner: "Run 014",
-    executor: "Backend/data specialists",
-    next: "Wire adapter events into ledger",
-    done: "Requests, transitions, evidence, QA, approvals and results persist",
-    qa: ["Q1", "Q3"],
-    dependency: "WO-002A",
-  },
-  {
-    id: "WO-002C",
-    parent: "M-002",
-    title: "Prove one live governed work order",
-    status: "BACKLOG",
-    priority: "P0",
-    owner: "Agent 000",
-    executor: "Run 014 / Operations Core",
-    next: "Release M-003 after QA pass",
-    done: "READY → IN_PROGRESS → QA → DONE occurs with evidence and truthful state",
-    qa: ["Q1", "Q2", "Q3"],
-    dependency: "WO-002A + WO-002B",
-  },
-];
-
-const laneItems = [
-  { label: "Foundation", detail: "M-002", state: "active" },
-  { label: "SourceMargin", detail: "M-004", state: "next" },
-  { label: "Acquisition Radar", detail: "M-005", state: "queued" },
-  { label: "Run 016 / Nembra", detail: "M-006", state: "queued" },
-  { label: "Economics", detail: "M-007", state: "decision" },
-];
-
-function StatusPill({ status }) {
-  return <span className={`wc-status wc-status-${status.toLowerCase()}`}>{status.replaceAll("_", " ")}</span>;
+function StatusPill({ status = "BACKLOG" }) {
+  return <span className={`wc-status wc-status-${String(status).toLowerCase()}`}>{String(status).replaceAll("_", " ")}</span>;
 }
 
 function Icon({ name }) {
-  const icons = {
-    overview: "⌂",
-    today: "◎",
-    queue: "≡",
-    approvals: "✓",
-    qa: "◇",
-    machines: "⚙",
-  };
+  const icons = { overview: "⌂", today: "◎", queue: "≡", approvals: "✓", qa: "◇", machines: "⚙", history: "↺" };
   return <span className="wc-nav-icon">{icons[name] || "•"}</span>;
 }
 
+const qaDescriptions = [
+  ["Q1", "Operational QA", "Schemas, state, routing, formulas, retries, tests and runtime behavior."],
+  ["Q2", "Evidence / Compliance QA", "Provenance, freshness, contradictions, calculations, policy and claim strength."],
+  ["Q3", "Professional Excellence QA", "Whether the result meets an excellent-practitioner standard in every material discipline."],
+];
+
+function nextAllowedActions(status) {
+  switch (status) {
+    case "BACKLOG": return [["Make ready", "READY"]];
+    case "READY": return [["Start work", "IN_PROGRESS"], ["Block", "BLOCKED"]];
+    case "IN_PROGRESS": return [["Send to QA", "QA"], ["Block", "BLOCKED"]];
+    case "QA": return [["Return for revision", "IN_PROGRESS"], ["QA pass → done", "DONE"], ["Block", "BLOCKED"]];
+    case "WAITING_APPROVAL": return [["Approve → done", "DONE"], ["Return", "IN_PROGRESS"]];
+    case "BLOCKED": return [["Unblock → ready", "READY"]];
+    default: return [];
+  }
+}
+
+function formatEventTime(value) {
+  if (!value) return "pending timestamp";
+  const date = typeof value.toDate === "function" ? value.toDate() : new Date(value);
+  if (Number.isNaN(date.getTime())) return "unknown time";
+  return date.toLocaleString();
+}
+
 export default function WorkControlV2() {
+  const { currentUser } = useAuth();
   const [section, setSection] = useState("overview");
   const [selectedId, setSelectedId] = useState("WO-002A");
   const [query, setQuery] = useState("");
+  const [items, setItems] = useState([]);
+  const [events, setEvents] = useState([]);
+  const [ledgerState, setLedgerState] = useState("CONNECTING");
+  const [ledgerError, setLedgerError] = useState("");
+  const [busy, setBusy] = useState(false);
 
+  useEffect(() => {
+    if (!currentUser?.uid) return undefined;
+    let unsubscribeItems = () => {};
+    let unsubscribeEvents = () => {};
+    let cancelled = false;
+
+    const connect = async () => {
+      setLedgerState("CONNECTING");
+      setLedgerError("");
+      try {
+        await ensureLedger(currentUser.uid);
+        if (cancelled) return;
+        unsubscribeItems = subscribeItems(
+          currentUser.uid,
+          (rows) => {
+            setItems(rows);
+            setLedgerState("CONNECTED");
+          },
+          (error) => {
+            console.error("Work Control item subscription failed", error);
+            setLedgerState("ERROR");
+            setLedgerError(error?.message || "Could not read execution ledger.");
+          }
+        );
+        unsubscribeEvents = subscribeEvents(
+          currentUser.uid,
+          setEvents,
+          (error) => console.error("Work Control event subscription failed", error)
+        );
+      } catch (error) {
+        console.error("Work Control ledger initialization failed", error);
+        if (!cancelled) {
+          setLedgerState("ERROR");
+          setLedgerError(error?.message || "Could not initialize execution ledger.");
+        }
+      }
+    };
+
+    connect();
+    return () => {
+      cancelled = true;
+      unsubscribeItems();
+      unsubscribeEvents();
+    };
+  }, [currentUser?.uid]);
+
+  const objectives = useMemo(() => items.filter((item) => item.level === "objective"), [items]);
+  const milestones = useMemo(() => items.filter((item) => item.level === "milestone"), [items]);
+  const workOrders = useMemo(() => items.filter((item) => item.level === "work_order"), [items]);
+  const objective = objectives.find((item) => item.id === "OBJ-001") || objectives[0];
   const selected = workOrders.find((item) => item.id === selectedId) || workOrders[0];
-  const doneCount = milestones.filter((m) => m.status === "DONE").length;
-  const progress = Math.round((doneCount / milestones.length) * 100);
+  const activeMilestone = milestones.find((item) => item.status === "IN_PROGRESS") || milestones.find((item) => item.status === "READY");
+  const doneCount = milestones.filter((item) => item.status === "DONE").length;
+  const progress = milestones.length ? Math.round((doneCount / milestones.length) * 100) : 0;
 
   const filteredWork = useMemo(() => {
     const needle = query.trim().toLowerCase();
@@ -92,7 +115,32 @@ export default function WorkControlV2() {
     return workOrders.filter((item) =>
       [item.id, item.title, item.owner, item.executor, item.status].join(" ").toLowerCase().includes(needle)
     );
-  }, [query]);
+  }, [query, workOrders]);
+
+  const laneItems = useMemo(() => [
+    ["M-002", "Foundation"],
+    ["M-004", "SourceMargin"],
+    ["M-005", "Acquisition Radar"],
+    ["M-006", "Run 016 / Nembra"],
+    ["M-007", "Economics"],
+  ].map(([id, label]) => {
+    const item = milestones.find((row) => row.id === id);
+    return { id, label, status: item?.status || "BACKLOG" };
+  }), [milestones]);
+
+  const handleTransition = async (nextStatus) => {
+    if (!selected || !currentUser?.uid || busy) return;
+    setBusy(true);
+    setLedgerError("");
+    try {
+      await transitionItem(currentUser.uid, selected, nextStatus, currentUser.email || "owner");
+    } catch (error) {
+      console.error("Work Control transition failed", error);
+      setLedgerError(error?.message || "Status transition failed.");
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const nav = [
     ["overview", "Overview"],
@@ -101,6 +149,7 @@ export default function WorkControlV2() {
     ["approvals", "Approvals"],
     ["qa", "QA gates"],
     ["machines", "Machines"],
+    ["history", "History"],
   ];
 
   return (
@@ -108,26 +157,22 @@ export default function WorkControlV2() {
       <aside className="wc-sidebar">
         <div className="wc-brand">
           <div className="wc-brand-mark">F</div>
-          <div>
-            <strong>Factory</strong>
-            <span>Work Control</span>
-          </div>
+          <div><strong>Factory</strong><span>Work Control</span></div>
         </div>
 
         <nav className="wc-nav">
           {nav.map(([key, label]) => (
             <button key={key} className={section === key ? "active" : ""} onClick={() => setSection(key)}>
-              <Icon name={key} />
-              <span>{label}</span>
+              <Icon name={key} /><span>{label}</span>
             </button>
           ))}
         </nav>
 
         <div className="wc-sidebar-foot">
-          <div className="wc-connection-dot" />
+          <div className={`wc-connection-dot wc-ledger-${ledgerState.toLowerCase()}`} />
           <div>
-            <strong>Preview mode</strong>
-            <span>Execution adapter disconnected</span>
+            <strong>{ledgerState === "CONNECTED" ? "Ledger connected" : ledgerState === "ERROR" ? "Ledger error" : "Connecting ledger"}</strong>
+            <span>{ledgerState === "CONNECTED" ? "Firestore persistent state" : ledgerState === "ERROR" ? "Check access / rules" : "Initializing owner workspace"}</span>
           </div>
         </div>
       </aside>
@@ -139,62 +184,58 @@ export default function WorkControlV2() {
             <h1>Execution Control</h1>
           </div>
           <div className="wc-top-actions">
-            <div className="wc-search-wrap">
-              <span>⌕</span>
-              <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search work" />
-            </div>
-            <button className="wc-owner-button">Owner</button>
+            <div className="wc-search-wrap"><span>⌕</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search work" /></div>
+            <button className="wc-owner-button" title={currentUser?.email || "Signed-in owner"}>Owner</button>
           </div>
         </header>
 
-        <div className="wc-preview-banner">
-          <strong>Safe preview.</strong> This UI shows the live execution plan, but buttons do not dispatch Factory or n8n work until M-002 connects the execution adapter.
+        <div className={`wc-ledger-banner wc-ledger-banner-${ledgerState.toLowerCase()}`}>
+          <strong>{ledgerState === "CONNECTED" ? "Persistent mode." : ledgerState === "ERROR" ? "Persistence needs attention." : "Connecting persistent ledger."}</strong>{" "}
+          {ledgerState === "CONNECTED"
+            ? "Objectives, work orders and status transitions now persist under your authenticated account. Dispatch remains disabled until WO-002B connects n8n / Factory."
+            : ledgerState === "ERROR"
+              ? ledgerError
+              : "The control surface is initializing your owner ledger."}
         </div>
 
         {(section === "overview" || section === "today") && (
           <>
             <section className="wc-objective-card">
               <div className="wc-objective-copy">
-                <div className="wc-section-kicker">PRIMARY OBJECTIVE · OBJ-001</div>
-                <h2>Build the reusable AI production machine</h2>
-                <p>One dependable substrate that can run multiple commercial workloads without rebuilding core plumbing.</p>
+                <div className="wc-section-kicker">PRIMARY OBJECTIVE · {objective?.id || "OBJ-001"}</div>
+                <h2>{objective?.title || "Build the reusable AI production machine"}</h2>
+                <p>{objective?.businessOutcome || "One dependable substrate that can run multiple commercial workloads without rebuilding core plumbing."}</p>
                 <div className="wc-objective-meta">
-                  <div><span>Operating manager</span><strong>Agent 000</strong></div>
-                  <div><span>Active milestone</span><strong>M-002</strong></div>
-                  <div><span>Priority</span><strong>P0</strong></div>
+                  <div><span>Operating manager</span><strong>{objective?.owner || "Agent 000"}</strong></div>
+                  <div><span>Active milestone</span><strong>{activeMilestone?.id || "M-002"}</strong></div>
+                  <div><span>Priority</span><strong>{objective?.priority || "P0"}</strong></div>
                 </div>
               </div>
               <div className="wc-progress-card">
                 <div className="wc-progress-number">{progress}%</div>
                 <span>milestones complete</span>
                 <div className="wc-progress-track"><i style={{ width: `${progress}%` }} /></div>
-                <small>{doneCount} of {milestones.length} milestones</small>
+                <small>{doneCount} of {milestones.length || 7} milestones</small>
               </div>
             </section>
 
             <section className="wc-grid wc-grid-primary">
               <article className="wc-panel wc-next-panel">
                 <div className="wc-panel-head">
-                  <div>
-                    <span className="wc-section-kicker">NEXT ACTION</span>
-                    <h3>Connect real execution/state</h3>
-                  </div>
-                  <StatusPill status="READY" />
+                  <div><span className="wc-section-kicker">NEXT ACTION</span><h3>{selected?.title || "Persistent execution ledger + UI state"}</h3></div>
+                  <StatusPill status={selected?.status || "READY"} />
                 </div>
-                <p className="wc-next-copy">Connect the existing Work Control interface to a real execution/state adapter and persistent ledger.</p>
-                <div className="wc-next-row"><span>First work order</span><strong>WO-002A · Define execution adapter contract</strong></div>
-                <div className="wc-next-row"><span>Accountable owner</span><strong>Run 014</strong></div>
-                <div className="wc-next-row"><span>Definition of done</span><strong>One governed request reports truthful live state and evidence</strong></div>
-                <button className="wc-primary-button" disabled title="Execution adapter not connected">Dispatch disabled until adapter is connected</button>
+                <p className="wc-next-copy">{selected?.nextAction || "Verify state survives reload and record the first transition event."}</p>
+                <div className="wc-next-row"><span>Current work order</span><strong>{selected?.id || "WO-002A"}</strong></div>
+                <div className="wc-next-row"><span>Accountable owner</span><strong>{selected?.owner || "Run 014"}</strong></div>
+                <div className="wc-next-row"><span>Definition of done</span><strong>{selected?.definitionOfDone || "Persistent state verified"}</strong></div>
+                <button className="wc-primary-button" disabled title="Execution adapter not connected">Dispatch disabled until WO-002B</button>
               </article>
 
               <article className="wc-panel">
                 <div className="wc-panel-head">
-                  <div>
-                    <span className="wc-section-kicker">TODAY</span>
-                    <h3>Work stack</h3>
-                  </div>
-                  <span className="wc-count-badge">3 items</span>
+                  <div><span className="wc-section-kicker">TODAY</span><h3>Work stack</h3></div>
+                  <span className="wc-count-badge">{workOrders.length} items</span>
                 </div>
                 <div className="wc-today-list">
                   {workOrders.map((item, index) => (
@@ -210,19 +251,14 @@ export default function WorkControlV2() {
 
             <section className="wc-panel wc-lane-panel">
               <div className="wc-panel-head">
-                <div>
-                  <span className="wc-section-kicker">STRATEGIC SEQUENCE</span>
-                  <h3>What comes next</h3>
-                </div>
+                <div><span className="wc-section-kicker">STRATEGIC SEQUENCE</span><h3>What comes next</h3></div>
                 <span className="wc-muted">New ideas enter backlog by default</span>
               </div>
               <div className="wc-lane">
                 {laneItems.map((item, index) => (
-                  <React.Fragment key={item.label}>
-                    <div className={`wc-lane-item wc-lane-${item.state}`}>
-                      <span>{item.detail}</span>
-                      <strong>{item.label}</strong>
-                      <small>{item.state === "active" ? "NOW" : item.state === "next" ? "NEXT" : item.state === "decision" ? "DECIDE" : "QUEUED"}</small>
+                  <React.Fragment key={item.id}>
+                    <div className={`wc-lane-item ${item.status === "IN_PROGRESS" || item.status === "READY" ? "wc-lane-active" : item.status === "DONE" ? "wc-lane-next" : item.id === "M-007" ? "wc-lane-decision" : "wc-lane-queued"}`}>
+                      <span>{item.id}</span><strong>{item.label}</strong><small>{item.status === "IN_PROGRESS" ? "NOW" : item.status === "READY" ? "READY" : item.id === "M-007" ? "DECIDE" : item.status}</small>
                     </div>
                     {index < laneItems.length - 1 && <div className="wc-lane-arrow">→</div>}
                   </React.Fragment>
@@ -236,10 +272,7 @@ export default function WorkControlV2() {
           <section className="wc-grid wc-grid-queue">
             <article className="wc-panel wc-table-panel">
               <div className="wc-panel-head">
-                <div>
-                  <span className="wc-section-kicker">WORK QUEUE</span>
-                  <h3>M-002 work orders</h3>
-                </div>
+                <div><span className="wc-section-kicker">WORK QUEUE</span><h3>M-002 work orders</h3></div>
                 <span className="wc-muted">WIP limit: 1 primary work order / owner</span>
               </div>
               <div className="wc-table-wrap">
@@ -248,11 +281,7 @@ export default function WorkControlV2() {
                   <tbody>
                     {filteredWork.map((item) => (
                       <tr key={item.id} onClick={() => setSelectedId(item.id)} className={selectedId === item.id ? "selected" : ""}>
-                        <td><strong>{item.id}</strong></td>
-                        <td>{item.title}</td>
-                        <td>{item.owner}</td>
-                        <td>{item.priority}</td>
-                        <td><StatusPill status={item.status} /></td>
+                        <td><strong>{item.id}</strong></td><td>{item.title}</td><td>{item.owner}</td><td>{item.priority}</td><td><StatusPill status={item.status} /></td>
                       </tr>
                     ))}
                   </tbody>
@@ -262,48 +291,41 @@ export default function WorkControlV2() {
 
             <aside className="wc-panel wc-detail-panel">
               <div className="wc-panel-head">
-                <div>
-                  <span className="wc-section-kicker">SELECTED WORK</span>
-                  <h3>{selected.id}</h3>
-                </div>
-                <StatusPill status={selected.status} />
+                <div><span className="wc-section-kicker">SELECTED WORK</span><h3>{selected?.id || "—"}</h3></div>
+                <StatusPill status={selected?.status || "BACKLOG"} />
               </div>
-              <h4>{selected.title}</h4>
-              <dl>
-                <div><dt>Executor</dt><dd>{selected.executor}</dd></div>
-                <div><dt>Dependency</dt><dd>{selected.dependency}</dd></div>
-                <div><dt>Next action</dt><dd>{selected.next}</dd></div>
-                <div><dt>Definition of done</dt><dd>{selected.done}</dd></div>
-              </dl>
-              <div className="wc-qa-row">
-                <span>Required QA</span>
-                <div>{selected.qa.map((qa) => <b key={qa}>{qa}</b>)}</div>
-              </div>
+              {selected ? (
+                <>
+                  <h4>{selected.title}</h4>
+                  <dl>
+                    <div><dt>Executor</dt><dd>{selected.executor}</dd></div>
+                    <div><dt>Dependency</dt><dd>{selected.dependency}</dd></div>
+                    <div><dt>Next action</dt><dd>{selected.nextAction}</dd></div>
+                    <div><dt>Definition of done</dt><dd>{selected.definitionOfDone}</dd></div>
+                  </dl>
+                  <div className="wc-qa-row"><span>Required QA</span><div>{(selected.qaRequired || []).map((qa) => <b key={qa}>{qa}</b>)}</div></div>
+                  <div className="wc-transition-row">
+                    {nextAllowedActions(selected.status).map(([label, target]) => (
+                      <button key={target} disabled={busy || ledgerState !== "CONNECTED"} onClick={() => handleTransition(target)}>{busy ? "Saving…" : label}</button>
+                    ))}
+                  </div>
+                </>
+              ) : <p>No work order selected.</p>}
             </aside>
           </section>
         )}
 
         {section === "approvals" && (
           <section className="wc-panel wc-empty-state">
-            <div className="wc-empty-icon">✓</div>
-            <h2>No owner approvals waiting</h2>
+            <div className="wc-empty-icon">✓</div><h2>No owner approvals waiting</h2>
             <p>Strategic changes, capital commitments, material limitations, external transactions and scale decisions will appear here.</p>
           </section>
         )}
 
         {section === "qa" && (
           <section className="wc-grid wc-qa-grid">
-            {[
-              ["Q1", "Operational QA", "Schemas, state, routing, formulas, retries, tests and runtime behavior."],
-              ["Q2", "Evidence / Compliance QA", "Provenance, freshness, contradictions, calculations, policy and claim strength."],
-              ["Q3", "Professional Excellence QA", "Whether the result meets an excellent-practitioner standard in every material discipline."],
-            ].map(([code, title, detail]) => (
-              <article className="wc-panel wc-qa-card" key={code}>
-                <span>{code}</span>
-                <h3>{title}</h3>
-                <p>{detail}</p>
-                <small>Independent gate</small>
-              </article>
+            {qaDescriptions.map(([code, title, detail]) => (
+              <article className="wc-panel wc-qa-card" key={code}><span>{code}</span><h3>{title}</h3><p>{detail}</p><small>Independent gate</small></article>
             ))}
           </section>
         )}
@@ -312,16 +334,27 @@ export default function WorkControlV2() {
           <section className="wc-grid wc-machines-grid">
             {[
               ["Work Control", "Managerial layer", "READY", "Objectives, ownership, sequencing and QA"],
-              ["Execution adapter", "Factory bridge", "BLOCKED", "M-002 — not connected yet"],
+              ["Persistent ledger", "State + evidence", ledgerState === "CONNECTED" ? "READY" : "BLOCKED", ledgerState === "CONNECTED" ? "Authenticated Firestore ledger connected" : "Waiting for Firestore access"],
+              ["Execution adapter", "Factory bridge", "BLOCKED", "WO-002B — next after ledger verification"],
               ["n8n", "Orchestration", "READY", "Scheduled / on-demand workflow engine"],
-              ["Persistent ledger", "State + evidence", "BACKLOG", "WO-002B"],
             ].map(([title, kind, status, detail]) => (
-              <article className="wc-panel wc-machine-card" key={title}>
-                <div className="wc-panel-head"><span className="wc-section-kicker">{kind}</span><StatusPill status={status} /></div>
-                <h3>{title}</h3>
-                <p>{detail}</p>
-              </article>
+              <article className="wc-panel wc-machine-card" key={title}><div className="wc-panel-head"><span className="wc-section-kicker">{kind}</span><StatusPill status={status} /></div><h3>{title}</h3><p>{detail}</p></article>
             ))}
+          </section>
+        )}
+
+        {section === "history" && (
+          <section className="wc-panel wc-history-panel">
+            <div className="wc-panel-head"><div><span className="wc-section-kicker">EXECUTION LEDGER</span><h3>Recent state events</h3></div><span className="wc-count-badge">{events.length}</span></div>
+            <div className="wc-event-list">
+              {events.length ? events.map((event) => (
+                <div className="wc-event" key={event.id}>
+                  <span className="wc-event-type">{event.type}</span>
+                  <div><strong>{event.itemId || "Factory"}</strong><p>{event.detail}</p></div>
+                  <small>{formatEventTime(event.createdAt)}</small>
+                </div>
+              )) : <p className="wc-muted">No events recorded yet.</p>}
+            </div>
           </section>
         )}
 
