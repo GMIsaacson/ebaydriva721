@@ -16,6 +16,7 @@ import VerifyEmail from "./verifyemail";
 import Calculators from "./resources";
 import AccountPage from "./accountspage";
 import AppShell from "./AppShell";
+import WorkControlV2 from "./WorkControlV2";
 
 const PublicLayout = () => (
   <div className="App">
@@ -30,6 +31,8 @@ const App = () => {
     <AuthProvider>
       <Router>
         <Routes>
+          <Route path="/factory-control" element={<ErrorBoundary><WorkControlV2 /></ErrorBoundary>} />
+
           <Route element={<PublicLayout />}>
             <Route path="/" element={<ErrorBoundary><Home /></ErrorBoundary>} />
             <Route path="/ResetPassword" element={<ErrorBoundary><ResetPassword /></ErrorBoundary>} />
