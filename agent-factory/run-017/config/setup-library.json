@@ -1,0 +1,50 @@
+{
+  "schemaVersion": "1.0",
+  "setups": [
+    {
+      "id": "S001_FAILED_NEWS_BREAKDOWN",
+      "name": "Failed News Breakdown",
+      "direction": "bearish",
+      "allowedDte": [0, 1, 2],
+      "required": ["eventShock", "gap", "vwapFailure", "priceConfirmation"],
+      "confirmations": ["ratesConfirm", "breadthConfirm", "relativeWeakness"],
+      "disqualifiers": ["vwapReclaimAndHold", "openingLowReclaimed", "staleData"]
+    },
+    {
+      "id": "S002_FAILED_NEWS_REVERSAL",
+      "name": "Failed News Reversal",
+      "direction": "bullish",
+      "allowedDte": [0, 1, 2],
+      "required": ["eventShock", "gap", "openingExtremeHolds", "vwapReclaim", "priceConfirmation"],
+      "confirmations": ["ratesFade", "breadthImproves", "relativeStrength"],
+      "disqualifiers": ["openingLowBreak", "vwapRejection", "staleData"]
+    },
+    {
+      "id": "S003_OPENING_RANGE_RETEST",
+      "name": "Opening Range Break / Retest",
+      "direction": "either",
+      "allowedDte": [0, 1, 2, 3],
+      "required": ["openingRangeDefined", "rangeBreak", "controlledRetest", "priceConfirmation"],
+      "confirmations": ["breadthConfirm", "volumeConfirm", "relativeStrengthOrWeakness"],
+      "disqualifiers": ["rangeReentry", "staleData"]
+    },
+    {
+      "id": "S004_VWAP_RATES_CONFIRMATION",
+      "name": "VWAP + Rates Confirmation",
+      "direction": "either",
+      "allowedDte": [0, 1, 2, 3, 4, 5],
+      "required": ["vwapInteraction", "ratesImpulse", "priceConfirmation"],
+      "confirmations": ["breadthConfirm", "nasdaqRelativeMove", "volumeConfirm"],
+      "disqualifiers": ["ratesDiverge", "staleData"]
+    },
+    {
+      "id": "S005_RANGE_MEAN_REVERSION",
+      "name": "Range Mean Reversion",
+      "direction": "either",
+      "allowedDte": [1, 2, 3, 4, 5],
+      "required": ["nonEventRegime", "rangeRegime", "statisticalStretch", "reversalConfirmation"],
+      "confirmations": ["stableRates", "normalBreadth", "volatilityContained"],
+      "disqualifiers": ["majorEventWindow", "trendDayEvidence", "staleData"]
+    }
+  ]
+}
