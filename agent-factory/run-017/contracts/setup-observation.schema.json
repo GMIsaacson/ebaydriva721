@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "run017.setup-observation.v1",
+  "title": "Run 017 Setup Observation",
+  "type": "object",
+  "required": ["observationId", "timestampEt", "mode", "market", "candidate", "decision"],
+  "properties": {
+    "observationId": {"type": "string"},
+    "timestampEt": {"type": "string"},
+    "mode": {"const": "PAPER_ONLY"},
+    "market": {
+      "type": "object",
+      "required": ["underlying", "dte", "dataAgeSeconds"],
+      "properties": {
+        "underlying": {"enum": ["SPY", "SPX", "XSP"]},
+        "dte": {"type": "integer", "minimum": 0, "maximum": 5},
+        "dataAgeSeconds": {"type": "number", "minimum": 0},
+        "eventTags": {"type": "array", "items": {"type": "string"}},
+        "gapPct": {"type": ["number", "null"]},
+        "tenYearChangeBps": {"type": ["number", "null"]},
+        "vwapState": {"type": ["string", "null"]},
+        "breadthPct": {"type": ["number", "null"]},
+        "volatilityRegime": {"type": ["string", "null"]}
+      }
+    },
+    "candidate": {
+      "type": "object",
+      "required": ["setupId", "direction", "thesis", "entryTrigger", "invalidation", "exitPlan", "structure", "definedRisk", "maxLossPct"],
+      "properties": {
+        "setupId": {"type": "string"},
+        "direction": {"enum": ["bullish", "bearish", "neutral"]},
+        "thesis": {"type": "string"},
+        "entryTrigger": {"type": "string"},
+        "invalidation": {"type": "string"},
+        "exitPlan": {"type": "string"},
+        "structure": {"type": "string"},
+        "definedRisk": {"type": "boolean"},
+        "maxLossPct": {"type": "number", "minimum": 0}
+      }
+    },
+    "decision": {
+      "type": "object",
+      "required": ["riskGate", "score", "outcome"],
+      "properties": {
+        "riskGate": {"enum": ["PASS", "VETO"]},
+        "score": {"type": "number", "minimum": 0, "maximum": 100},
+        "outcome": {"enum": ["PAPER_CANDIDATE", "NO_TRADE"]},
+        "vetoReasons": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  }
+}
