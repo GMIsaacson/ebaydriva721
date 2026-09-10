@@ -1,10 +1,12 @@
 {
-  "schemaVersion": "1.0",
+  "schemaVersion": "1.1",
   "setups": [
     {
       "id": "S001_FAILED_NEWS_BREAKDOWN",
+      "version": 1,
       "name": "Failed News Breakdown",
       "direction": "bearish",
+      "researchStatus": "AWAITING_FULL_DATA",
       "allowedDte": [0, 1, 2],
       "required": ["eventShock", "gap", "vwapFailure", "priceConfirmation"],
       "confirmations": ["ratesConfirm", "breadthConfirm", "relativeWeakness"],
@@ -12,8 +14,10 @@
     },
     {
       "id": "S002_FAILED_NEWS_REVERSAL",
+      "version": 1,
       "name": "Failed News Reversal",
       "direction": "bullish",
+      "researchStatus": "AWAITING_FULL_DATA",
       "allowedDte": [0, 1, 2],
       "required": ["eventShock", "gap", "openingExtremeHolds", "vwapReclaim", "priceConfirmation"],
       "confirmations": ["ratesFade", "breadthImproves", "relativeStrength"],
@@ -21,8 +25,11 @@
     },
     {
       "id": "S003_OPENING_RANGE_RETEST",
+      "version": 1,
       "name": "Opening Range Break / Retest",
       "direction": "either",
+      "researchStatus": "KILLED_BOOTSTRAP_2026-09-10",
+      "evidenceRef": "agent-factory/run-017/evidence/bootstrap-s003-2026-09-10.json",
       "allowedDte": [0, 1, 2, 3],
       "required": ["openingRangeDefined", "rangeBreak", "controlledRetest", "priceConfirmation"],
       "confirmations": ["breadthConfirm", "volumeConfirm", "relativeStrengthOrWeakness"],
@@ -30,8 +37,10 @@
     },
     {
       "id": "S004_VWAP_RATES_CONFIRMATION",
+      "version": 1,
       "name": "VWAP + Rates Confirmation",
       "direction": "either",
+      "researchStatus": "AWAITING_FULL_DATA",
       "allowedDte": [0, 1, 2, 3, 4, 5],
       "required": ["vwapInteraction", "ratesImpulse", "priceConfirmation"],
       "confirmations": ["breadthConfirm", "nasdaqRelativeMove", "volumeConfirm"],
@@ -39,8 +48,10 @@
     },
     {
       "id": "S005_RANGE_MEAN_REVERSION",
+      "version": 1,
       "name": "Range Mean Reversion",
       "direction": "either",
+      "researchStatus": "AWAITING_FULL_DATA",
       "allowedDte": [1, 2, 3, 4, 5],
       "required": ["nonEventRegime", "rangeRegime", "statisticalStretch", "reversalConfirmation"],
       "confirmations": ["stableRates", "normalBreadth", "volatilityContained"],
