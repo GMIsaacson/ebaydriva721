@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "1.0",
+  "setupId": "S005_RANGE_MEAN_REVERSION",
+  "version": 1,
+  "registeredAt": "2026-09-10",
+  "confirmationPeriod": ["2026-01-02","2026-05-29"],
+  "ruleRef": "agent-factory/run-017/config/preregistered-s005-v1.json",
+  "ruleChanges": "NONE",
+  "eventExclusions": [
+    "2026-01-09","2026-01-13","2026-01-14","2026-01-28","2026-01-30",
+    "2026-02-11","2026-02-13","2026-02-27",
+    "2026-03-06","2026-03-11","2026-03-18",
+    "2026-04-03","2026-04-10","2026-04-14","2026-04-29",
+    "2026-05-08","2026-05-12","2026-05-13"
+  ],
+  "confirmationPassGate": {
+    "minimumEpisodes": 10,
+    "averageDirectionalReturn60mPct": "> 0",
+    "hitRate60mPct": "> 50"
+  },
+  "decisionRule": "PASS only if every gate is met. Otherwise KILL S005 v1. No threshold changes after loading this confirmation block."
+}
