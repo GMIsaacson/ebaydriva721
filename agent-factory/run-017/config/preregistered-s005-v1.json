@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "1.0",
+  "setupId": "S005_RANGE_MEAN_REVERSION",
+  "version": 1,
+  "registeredAt": "2026-09-10",
+  "universe": "SPY 5-minute RTH bars",
+  "purpose": "Cheap signal-level bootstrap gate only; no options-edge claim.",
+  "eventExclusions": [
+    "2026-06-05","2026-06-10","2026-06-11","2026-06-17",
+    "2026-07-02","2026-07-14","2026-07-15","2026-07-29",
+    "2026-08-07","2026-08-12","2026-08-13",
+    "2026-09-04"
+  ],
+  "entryWindowEt": ["10:30","14:30"],
+  "eligibility": {
+    "absoluteOpenGapVsPriorCloseMaxPct": 0.50,
+    "firstHourHighLowRangeMaxPct": 0.80,
+    "firstHourAbsoluteCloseVsOpenMaxPct": 0.45
+  },
+  "stretch": {
+    "sessionVwapDeviationMinAsFractionFirstHourRange": 0.65
+  },
+  "confirmation": "First subsequent 5-minute bar must close toward session VWAP.",
+  "episodeSelection": "At most one episode per day; use the first qualifying stretch plus confirmation.",
+  "direction": "Fade the stretch: above VWAP => short-direction proxy; below VWAP => long-direction proxy.",
+  "evaluationHorizonsMinutes": [30,60,120],
+  "chronologicalSplit": {"trainPct":60,"validationPct":20,"holdoutPct":20},
+  "bootstrapPassGate": {
+    "minimumHoldoutEpisodes": 10,
+    "holdoutAverageDirectionalReturn60mPct": "> 0",
+    "holdoutHitRate60mPct": "> 50"
+  },
+  "antiOverfitRule": "No threshold retuning after performance inspection. Any material change requires S005 v2 preregistration."
+}
