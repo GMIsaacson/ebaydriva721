@@ -4,6 +4,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const { executableNbboPrice, priceSpread, roundTripPnl } = require('../runtime/cost-model.cjs');
 const { replayS003 } = require('../runtime/underlying-proxy-s003.cjs');
+const { replayEpisodes } = require('../runtime/options-replay.cjs');
 
 function bar(dateEt, timeEt, open, high, low, close, volume = 1000) {
   return { dateEt, timeEt, open, high, low, close, volume, timestampMs: Date.parse(`${dateEt}T${timeEt}:00Z`) };
@@ -37,6 +38,25 @@ test('defined-risk spread round trip includes fees', () => {
   assert.equal(rt.valid, true);
   assert.ok(rt.totalFeesUsd > 0);
   assert.ok(Number.isFinite(rt.pnlUsd));
+});
+
+test('generic options replay returns net R after spread and fees', () => {
+  const replay = replayEpisodes([{
+    id: 'E1', setupId: 'S001_FAILED_NEWS_BREAKDOWN', date: '2026-08-03',
+    executionMode: 'NBBO', contracts: 1, maxLossUsd: 120,
+    entry: { legs: [
+      { side: 'BUY', bid: 2.00, ask: 2.10, ageSeconds: 0 },
+      { side: 'SELL', bid: 0.90, ask: 1.00, ageSeconds: 0 }
+    ]},
+    exit: { legs: [
+      { side: 'SELL', bid: 2.70, ask: 2.80, ageSeconds: 0 },
+      { side: 'BUY', bid: 0.75, ask: 0.85, ageSeconds: 0 }
+    ]}
+  }]);
+  assert.equal(replay.metrics.attempted, 1);
+  assert.equal(replay.metrics.filled, 1);
+  assert.ok(replay.results[0].r > 0);
+  assert.ok(replay.metrics.totalFeesUsd > 0);
 });
 
 test('S003 replay detects a long break-retest and target', () => {
