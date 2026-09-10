@@ -27,11 +27,11 @@
       </header>
 
       <section id="today" class="view active">
-        <div class="notice"><b>Synthetic demonstration</b><span>This console is not connected to live market data. All values below are labeled demo inputs.</span></div>
+        <div class="notice"><b>First real historical gate completed</b><span>S003 v1 failed the frozen SPY directional bootstrap: 50 episodes, −0.108R overall; 10-episode holdout −0.149R, profit factor 0.784. S003 v1 is killed. The scenario panels below remain synthetic demonstrations.</span></div>
         <div class="stats">
           <article><span>Mode</span><strong>PAPER</strong><small>Capital authority $0</small></article>
-          <article><span>Current regime</span><strong id="regimeText">Event / Risk-off</strong><small>Synthetic scenario</small></article>
-          <article><span>Candidate score</span><strong id="scoreText">—</strong><small>70+ still requires Risk PASS</small></article>
+          <article><span>Setups still alive</span><strong>4 / 5</strong><small>S001 · S002 · S004 · S005</small></article>
+          <article><span>S003 v1</span><strong>KILLED</strong><small>Preregistered bootstrap failed</small></article>
           <article><span>Risk gate</span><strong id="riskText">LOCKED</strong><small>Independent veto layer</small></article>
         </div>
 
@@ -41,22 +41,22 @@
             <div class="market-grid">
               <div><span>Underlying</span><b>SPY</b></div><div><span>DTE</span><b>1</b></div><div><span>Gap</span><b>−0.6%</b></div><div><span>10Y impulse</span><b>+9 bps</b></div><div><span>VWAP</span><b>Below / rejected</b></div><div><span>Breadth</span><b>31%</b></div>
             </div>
-            <div class="thesis"><span>Interpretation</span><p>Bad-news gap followed by a rebound that fails at VWAP while rates, breadth, and relative weakness confirm. This is a test case for S001, not a live signal.</p></div>
+            <div class="thesis"><span>Interpretation</span><p>Bad-news gap followed by a rebound that fails at VWAP while rates, breadth, and relative weakness confirm. This remains a synthetic S001 test case, not a live signal.</p></div>
           </article>
 
           <article class="panel candidate-panel">
-            <div class="panel-head"><div><p class="eyebrow">SETUP ENGINE</p><h2>S001 · Failed News Breakdown</h2></div><span id="decisionTag" class="tag muted">NOT SCORED</span></div>
+            <div class="panel-head"><div><p class="eyebrow">SETUP ENGINE</p><h2>S001 · Failed News Breakdown</h2></div><span id="decisionTag" class="tag muted">DEMO ONLY</span></div>
             <div class="check-list" id="checks">
               <div><span>Price confirmation</span><b>✓</b></div><div><span>VWAP failure</span><b>✓</b></div><div><span>Rates confirm</span><b>✓</b></div><div><span>Breadth confirms</span><b>✓</b></div>
             </div>
-            <div class="structure"><span>Paper structure</span><b>1DTE defined-risk put debit spread</b><small>Exact strikes deliberately omitted until a live options data source is connected and validated.</small></div>
-            <button id="scoreBtn" class="primary">Run paper decision gate</button>
+            <div class="structure"><span>Paper structure</span><b>1DTE defined-risk put debit spread</b><small>Exact strikes deliberately omitted until historical options execution data is connected and validated.</small></div>
+            <button id="scoreBtn" class="primary">Run synthetic paper decision gate</button>
           </article>
         </div>
 
         <article class="panel queue">
-          <div class="panel-head"><div><p class="eyebrow">DECISION QUEUE</p><h2>Today's research candidates</h2></div><span class="tag">NO LIVE ORDERS</span></div>
-          <div class="table-wrap"><table><thead><tr><th>Setup</th><th>State</th><th>Score</th><th>Risk</th><th>Output</th></tr></thead><tbody id="queueBody"><tr><td>S001 Failed News Breakdown</td><td>Awaiting deterministic gate</td><td>—</td><td>—</td><td>NO TRADE</td></tr></tbody></table></div>
+          <div class="panel-head"><div><p class="eyebrow">RESEARCH QUEUE</p><h2>Setup qualification state</h2></div><span class="tag">NO LIVE ORDERS</span></div>
+          <div class="table-wrap"><table><thead><tr><th>Setup</th><th>State</th><th>Evidence</th><th>Risk</th><th>Next gate</th></tr></thead><tbody id="queueBody"></tbody></table></div>
         </article>
       </section>
 
