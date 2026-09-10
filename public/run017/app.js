@@ -1,9 +1,9 @@
 const setups=[
-['S001','Failed News Breakdown','Bad-news gap + failed rebound/VWAP reclaim + confirming rates/breadth.','0–2 DTE'],
-['S002','Failed News Reversal','Bad news is absorbed; opening extreme holds and VWAP is reclaimed.','0–2 DTE'],
-['S003','Opening Range Break / Retest','Opening-range break, controlled retest, then continuation confirmation.','0–3 DTE'],
-['S004','VWAP + Rates Confirmation','Directional VWAP interaction aligned with Treasury impulse and breadth.','0–5 DTE'],
-['S005','Range Mean Reversion','Non-event, contained-volatility range only; fade a validated statistical stretch.','1–5 DTE']
+{code:'S001',name:'Failed News Breakdown',desc:'Bad-news gap + failed rebound/VWAP reclaim + confirming rates/breadth.',dte:'0–2 DTE',status:'AWAITING FULL DATA'},
+{code:'S002',name:'Failed News Reversal',desc:'Bad news is absorbed; opening extreme holds and VWAP is reclaimed.',dte:'0–2 DTE',status:'AWAITING FULL DATA'},
+{code:'S003',name:'Opening Range Break / Retest',desc:'Frozen v1 failed the real SPY directional bootstrap and is closed. A materially different hypothesis must become v2 before testing.',dte:'0–3 DTE',status:'KILLED · 2026-09-10'},
+{code:'S004',name:'VWAP + Rates Confirmation',desc:'Directional VWAP interaction aligned with Treasury impulse and breadth.',dte:'0–5 DTE',status:'AWAITING FULL DATA'},
+{code:'S005',name:'Range Mean Reversion',desc:'Non-event, contained-volatility range only; fade a validated statistical stretch.',dte:'1–5 DTE',status:'AWAITING FULL DATA'}
 ];
 const team=[
 ['Macro & Event Analyst','Separates released facts from the market reaction and classifies event regime.'],
@@ -17,28 +17,37 @@ const team=[
 ];
 const vetoes=['Live routing requested','Unsupported underlying','DTE outside 0–5','Undefined-risk structure','Missing invalidation','Missing exit plan','Candidate max loss over paper limit','Stale market data','Late 0DTE entry after 15:30 ET','Setup not in versioned library'];
 const milestones=[
-['Dataset & provenance','Build timestamped, replayable market/event/options observations.'],
-['Cost model','Model bid/ask, slippage, latency, fees and no-fill behavior.'],
-['Pre-registered hypotheses','Freeze rules and minimum sample sizes before inspecting results.'],
-['Out-of-sample testing','Time-split / walk-forward with no look-ahead leakage.'],
-['Regime robustness','Verify expectancy across event, trend, range and volatility regimes.'],
-['Paper shadow qualification','Timestamp decisions before outcomes; compare simulated fills to observable market.'],
-['Independent Q1/Q2/Q3','All three gates must PASS before any request for live authority.']
+['Dataset & provenance','Real SPY 5-minute bootstrap acquisition is working. Full event/rates/breadth/options history remains to be connected.','IN PROGRESS'],
+['Transaction-cost engine','NBBO and aggregate-bar execution modes now model spread penalties, slippage, stale quotes and per-leg fees.','BUILT'],
+['Pre-registered hypotheses','Chronological 60/20/20 split plus kill and promotion rules were frozen before the first replay result.','FROZEN'],
+['Out-of-sample testing','S003 v1 completed its first holdout and failed: −0.149R average, profit factor 0.784.','STARTED'],
+['Research-grade options feed','Cloud adapter for Massive is built; historical NBBO or comparable execution data must be connected for serious options P&L.','EXTERNAL DATA'],
+['Regime robustness','Surviving setups must clear event, trend, range and volatility slices without one regime carrying the edge.','REQUIRED'],
+['Paper shadow qualification','Timestamp decisions before outcomes and compare simulated fills with observable market quotes.','BLOCKED'],
+['Independent Q1/Q2/Q3','All three gates must PASS before any request for live authority.','REQUIRED']
+];
+const queue=[
+['S001 Failed News Breakdown','AWAITING FULL DATA','No verdict yet','LOCKED','Event + options replay'],
+['S002 Failed News Reversal','AWAITING FULL DATA','No verdict yet','LOCKED','Event + options replay'],
+['S003 Opening Range Break / Retest','KILLED v1','50 episodes · −0.108R overall','LOCKED','Closed; no tuning'],
+['S004 VWAP + Rates Confirmation','AWAITING FULL DATA','No verdict yet','LOCKED','Rates + options replay'],
+['S005 Range Mean Reversion','AWAITING FULL DATA','No verdict yet','LOCKED','Regime + options replay']
 ];
 
 document.querySelectorAll('.nav').forEach(b=>b.onclick=()=>{document.querySelectorAll('.nav,.view').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById(b.dataset.tab).classList.add('active')});
 
-document.getElementById('setupCards').innerHTML=setups.map(s=>`<article><small>${s[0]} · ${s[3]}</small><h3>${s[1]}</h3><p>${s[2]}</p></article>`).join('');
+document.getElementById('setupCards').innerHTML=setups.map(s=>`<article><small>${s.code} · ${s.dte}</small><h3>${s.name}</h3><p>${s.desc}</p><small>${s.status}</small></article>`).join('');
 document.getElementById('teamCards').innerHTML=team.map(t=>`<article><small>PROFESSIONAL DISCIPLINE</small><h3>${t[0]}</h3><p>${t[1]}</p></article>`).join('');
 document.getElementById('vetoList').innerHTML=vetoes.map(v=>`<div>VETO · ${v}</div>`).join('');
-document.getElementById('milestones').innerHTML=milestones.map((m,i)=>`<article><span class="num">${i+1}</span><div><b>${m[0]}</b><p>${m[1]}</p></div><span class="state">REQUIRED</span></article>`).join('');
+document.getElementById('milestones').innerHTML=milestones.map((m,i)=>`<article><span class="num">${i+1}</span><div><b>${m[0]}</b><p>${m[1]}</p></div><span class="state">${m[2]}</span></article>`).join('');
+document.getElementById('queueBody').innerHTML=queue.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td></tr>`).join('');
 
 function scoreDemo(){
   const result={score:100,riskGate:'PASS',outcome:'PAPER_CANDIDATE'};
-  document.getElementById('scoreText').textContent=result.score;
-  document.getElementById('riskText').textContent=result.riskGate;
-  const tag=document.getElementById('decisionTag');tag.textContent='PAPER CANDIDATE';tag.className='tag pass';
-  document.getElementById('queueBody').innerHTML=`<tr><td>S001 Failed News Breakdown</td><td>Deterministic gate complete</td><td>${result.score}/100</td><td>${result.riskGate}</td><td>${result.outcome}</td></tr>`;
-  document.getElementById('scoreBtn').textContent='Paper gate passed · no order routed';
+  const tag=document.getElementById('decisionTag');
+  tag.textContent='SYNTHETIC PASS';
+  tag.className='tag pass';
+  document.getElementById('scoreBtn').textContent='Synthetic gate passed · no order routed';
+  document.getElementById('scoreBtn').disabled=true;
 }
 document.getElementById('scoreBtn').onclick=scoreDemo;
