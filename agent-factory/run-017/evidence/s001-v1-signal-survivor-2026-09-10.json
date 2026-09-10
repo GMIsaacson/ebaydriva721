@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "1.0",
+  "date": "2026-09-10",
+  "setupId": "S001_FAILED_NEWS_BREAKDOWN",
+  "version": 1,
+  "decision": "ADVANCE_SIGNAL_LEVEL",
+  "classification": "SIGNAL_LEVEL_SURVIVOR_NOT_TRADABLE_EDGE",
+  "evidence": {
+    "2025": {"episodes":7,"averageDirectional60mPct":0.1310,"hitRate60mPct":71.43},
+    "2026": {"episodes":7,"averageDirectional60mPct":0.1298,"hitRate60mPct":57.14},
+    "pooled": {"episodes":14,"averageDirectional60mPct":0.1304,"medianDirectional60mPct":0.1454,"hitRate60mPct":64.29},
+    "robustness": {
+      "averageAfterRemovingBestEpisodePct":0.0885,
+      "averageAfterRemovingTwoBestEpisodesPct":0.0500,
+      "oneObservationTrimEachTailMeanPct":0.1342,
+      "bootstrap95PctMeanInterval":[-0.0425,0.3008]
+    }
+  },
+  "interpretation": "The unchanged S001 v1 signal showed positive 60-minute directional expectancy in two separate calendar-year samples and remains positive after concentration stress tests. Statistical uncertainty remains material because the pooled sample is only 14 episodes and the bootstrap interval still crosses zero.",
+  "restrictions": [
+    "Do not describe this as a proven options edge.",
+    "Do not enable broker routing or capital authority.",
+    "Do not retune S001 v1 thresholds after this observation.",
+    "Historical options execution validation remains required before any trading claim."
+  ],
+  "nextAction": "Continue evidence accumulation on future unseen CPI/PPI/payroll event days and validate the fixed signal using historical executable options quotes if a permitted research path is available."
+}
