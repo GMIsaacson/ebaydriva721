@@ -1,0 +1,64 @@
+{
+  "schemaVersion": "1.1",
+  "setups": [
+    {
+      "id": "S001_FAILED_NEWS_BREAKDOWN",
+      "version": 1,
+      "name": "Failed News Breakdown",
+      "direction": "bearish",
+      "researchStatus": "SIGNAL_LEVEL_SURVIVOR_2026-09-10",
+      "evidenceRef": "agent-factory/run-017/evidence/s001-v1-signal-survivor-2026-09-10.json",
+      "allowedDte": [0, 1, 2],
+      "required": ["eventShock", "gap", "vwapFailure", "priceConfirmation"],
+      "confirmations": ["ratesConfirm", "breadthConfirm", "relativeWeakness"],
+      "disqualifiers": ["vwapReclaimAndHold", "openingLowReclaimed", "staleData"]
+    },
+    {
+      "id": "S002_FAILED_NEWS_REVERSAL",
+      "version": 1,
+      "name": "Failed News Reversal",
+      "direction": "bullish",
+      "researchStatus": "AWAITING_FULL_DATA",
+      "allowedDte": [0, 1, 2],
+      "required": ["eventShock", "gap", "openingExtremeHolds", "vwapReclaim", "priceConfirmation"],
+      "confirmations": ["ratesFade", "breadthImproves", "relativeStrength"],
+      "disqualifiers": ["openingLowBreak", "vwapRejection", "staleData"]
+    },
+    {
+      "id": "S003_OPENING_RANGE_RETEST",
+      "version": 1,
+      "name": "Opening Range Break / Retest",
+      "direction": "either",
+      "researchStatus": "KILLED_BOOTSTRAP_2026-09-10",
+      "evidenceRef": "agent-factory/run-017/evidence/bootstrap-s003-2026-09-10.json",
+      "allowedDte": [0, 1, 2, 3],
+      "required": ["openingRangeDefined", "rangeBreak", "controlledRetest", "priceConfirmation"],
+      "confirmations": ["breadthConfirm", "volumeConfirm", "relativeStrengthOrWeakness"],
+      "disqualifiers": ["rangeReentry", "staleData"]
+    },
+    {
+      "id": "S004_VWAP_RATES_CONFIRMATION",
+      "version": 1,
+      "name": "VWAP + Rates Confirmation",
+      "direction": "either",
+      "researchStatus": "KILLED_BOOTSTRAP_2026-09-10",
+      "evidenceRef": "agent-factory/run-017/evidence/bootstrap-s004-2026-09-10.json",
+      "allowedDte": [0, 1, 2, 3, 4, 5],
+      "required": ["vwapInteraction", "ratesImpulse", "priceConfirmation"],
+      "confirmations": ["breadthConfirm", "nasdaqRelativeMove", "volumeConfirm"],
+      "disqualifiers": ["ratesDiverge", "staleData"]
+    },
+    {
+      "id": "S005_RANGE_MEAN_REVERSION",
+      "version": 1,
+      "name": "Range Mean Reversion",
+      "direction": "either",
+      "researchStatus": "KILLED_CONFIRMATION_2026-09-10",
+      "evidenceRef": "agent-factory/run-017/evidence/s005-v1-confirmation-kill-2026-09-10.json",
+      "allowedDte": [1, 2, 3, 4, 5],
+      "required": ["nonEventRegime", "rangeRegime", "statisticalStretch", "reversalConfirmation"],
+      "confirmations": ["stableRates", "normalBreadth", "volatilityContained"],
+      "disqualifiers": ["majorEventWindow", "trendDayEvidence", "staleData"]
+    }
+  ]
+}

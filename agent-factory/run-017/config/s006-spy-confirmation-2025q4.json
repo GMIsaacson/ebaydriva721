@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "1.0",
+  "registeredAt": "2026-09-10",
+  "setupId": "S006_CPI_PAYROLL_FAILED_GAP_BREAKDOWN",
+  "version": 1,
+  "ruleRef": "agent-factory/run-017/config/preregistered-s006-cpi-payroll-crossasset-v1.json",
+  "confirmationPeriod": ["2025-09-01","2025-12-31"],
+  "ruleChanges": "NONE",
+  "eventDays": {
+    "employmentSituation": ["2025-09-05","2025-11-20","2025-12-16"],
+    "cpi": ["2025-09-11","2025-10-24","2025-12-18"]
+  },
+  "passGate": {
+    "minimumEpisodes": 3,
+    "averageDirectionalReturn60mPct": "> 0",
+    "hitRate60mPct": "> 50"
+  },
+  "interpretationLimit": "Independent late-2025 SPY confirmation of the frozen S006 signal only; not an options profitability claim.",
+  "decisionRule": "PASS only if all gates are met. No parameter changes after data inspection."
+}

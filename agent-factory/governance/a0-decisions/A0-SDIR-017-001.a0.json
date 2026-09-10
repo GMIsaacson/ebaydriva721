@@ -1,0 +1,24 @@
+{
+  "decision_id": "A0-SDIR-017-001",
+  "status": "PASS",
+  "verdict": "NEW",
+  "owner": "Aberdeen Technologies",
+  "decided_at": "2026-09-10",
+  "business_outcome": "Determine whether a bounded SPY/SPX/XSP 0-5 DTE research system can identify at least one repeatable, cost-adjusted, out-of-sample positive-expectancy setup while keeping all initial activity in paper or replay mode.",
+  "existing_owner_scan": "Reviewed Factory Core professional-capability enforcement, Run 008 Operations Core, Run 014 Software Product Engineering, Run 015 UI Excellence, and Run 016 World Technology Intelligence. These provide orchestration, QA, software delivery, UI quality, and evidence-verification primitives, but none owns short-duration index-options hypothesis testing, setup statistics, option-structure selection, independent trading-risk veto, simulated execution, and post-trade expectancy measurement.",
+  "reuse_candidates_checked": [
+    "Factory Core v1.2.0",
+    "OPS-CORE-008",
+    "SW-PROD-014",
+    "UIX-TEAM-015",
+    "WORLD-TECHNOLOGY-INTELLIGENCE-016"
+  ],
+  "duplication_analysis": "Run017 reuses existing Factory governance, software-delivery, evidence, and QA patterns. Its residual ownership is the bounded research loop from market/event evidence through predefined setup detection, deterministic scoring, independent risk veto, paper execution, outcome capture, and statistical qualification. It does not create a brokerage, live execution authority, or discretionary AI trader.",
+  "residual_unowned_loop": "Market and event evidence -> normalized regime -> predefined setup candidate -> deterministic score -> independent risk veto -> paper/replay execution -> outcome and execution-cost capture -> Q1/Q2/Q3 review -> out-of-sample expectancy decision.",
+  "covers_paths": [
+    "agent-factory/run-017/",
+    "public/run017/",
+    ".github/workflows/run-017-research-qualification.yml"
+  ],
+  "evidence_ref": "agent-factory/run-017/evidence/local-deterministic-acceptance.json"
+}

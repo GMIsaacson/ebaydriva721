@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "1.0",
+  "registeredAt": "2026-09-10",
+  "ruleRef": "agent-factory/run-017/config/preregistered-s001-s002-v1.json",
+  "confirmationPeriod": ["2025-01-02","2025-08-29"],
+  "ruleChanges": "NONE",
+  "eventDays": {
+    "employmentSituation": ["2025-01-10","2025-02-07","2025-03-07","2025-04-04","2025-05-02","2025-06-06","2025-07-03","2025-08-01"],
+    "cpi": ["2025-01-15","2025-02-12","2025-03-12","2025-04-10","2025-05-13","2025-06-11","2025-07-15","2025-08-12"],
+    "ppi": ["2025-01-14","2025-02-13","2025-03-13","2025-04-11","2025-05-15","2025-06-12","2025-07-16","2025-08-14"]
+  },
+  "confirmationPassGate": {
+    "minimumEpisodes": 8,
+    "averageDirectionalReturn60mPct": "> 0",
+    "hitRate60mPct": "> 50"
+  },
+  "decisionRule": "PASS only if every gate is met with the unchanged v1 rule. Otherwise KILL or INSUFFICIENT according to sample size."
+}

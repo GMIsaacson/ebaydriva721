@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "1.0",
+  "frozenAt": "2026-09-10",
+  "principle": "Do not buy research-grade options data until a cheaper signal-level gate survives; do not claim executable options edge without quote-level execution evidence.",
+  "stages": [
+    {
+      "stage": "BOOTSTRAP",
+      "provider": "YAHOO_UNOFFICIAL_BOOTSTRAP",
+      "costUsdPerMonth": 0,
+      "allowedClaims": ["underlying-directional-sanity"],
+      "forbiddenClaims": ["options-profitability", "executable-fill-edge"]
+    },
+    {
+      "stage": "OPTIONS_MINUTE_SANITY",
+      "provider": "MASSIVE",
+      "preferredPlan": "BASIC_OR_STARTER",
+      "budgetCeilingUsdPerMonth": 29,
+      "allowedClaims": ["historical-contract-existence", "minute-aggregate-options-path", "coarse-cost-sensitivity"],
+      "forbiddenClaims": ["research-grade-nbbo-fill-edge"]
+    },
+    {
+      "stage": "RESEARCH_GRADE_EXECUTION",
+      "provider": "THETADATA_OR_MASSIVE_NBBO",
+      "preferredOption": "ThetaData Standard when 8-year tick/chain history is adequate and local terminal deployment is acceptable",
+      "alternative": "Massive Advanced when cloud-native historical quote access is preferred",
+      "requiresOwnerSpendApproval": true,
+      "requiredCapabilities": ["historical-options-quotes", "bid-ask", "timestamped-execution-context", "contract-chain-history"],
+      "allowedClaims": ["net-options-pnl-after-modeled-costs", "observable-fill-sensitivity"],
+      "forbiddenClaims": ["live-trading-authority"]
+    }
+  ],
+  "stopSpendRules": [
+    "If a setup fails the cheaper directional bootstrap, close that version before paid options replay.",
+    "If minute-options replay is negative under conservative fills, do not purchase quote-level history for that setup version.",
+    "Any paid data upgrade requires an alive setup and explicit owner approval."
+  ]
+}

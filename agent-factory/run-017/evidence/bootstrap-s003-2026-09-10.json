@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "1.0",
+  "recordedAt": "2026-09-10",
+  "runId": "SHORT-DURATION-INDEX-RESEARCH-017",
+  "setupId": "S003_OPENING_RANGE_RETEST",
+  "decision": "KILL_BOOTSTRAP",
+  "evidenceTier": "UNDERLYING_PROXY_ONLY",
+  "meaning": "The preregistered S003 directional proxy failed. This is not an options P&L test, but it is sufficient to stop spending deeper research effort on the frozen S003 v1 rule set.",
+  "source": {
+    "workflowRunId": 34482151328,
+    "artifactId": 10154032539,
+    "artifactName": "run017-bootstrap-evidence",
+    "artifactSha256": "32b0674988304529a50b91175544fb399693999eb93865281ec8c95ed58f77e6",
+    "marketProvider": "YAHOO_UNOFFICIAL_BOOTSTRAP",
+    "underlying": "SPY",
+    "interval": "5m",
+    "sessionsObserved": 60,
+    "bars": 4681
+  },
+  "results": {
+    "episodes": 50,
+    "allAverageR": -0.1076,
+    "holdoutEpisodes": 10,
+    "holdoutAverageR": -0.1485,
+    "holdoutProfitFactor": 0.7838
+  },
+  "rule": "Do not tune S003 v1 after observing this result. A materially different S003 v2 hypothesis must be preregistered as a new setup/version before testing.",
+  "authority": {
+    "liveTradingEnabled": false,
+    "brokerRoutingEnabled": false,
+    "capitalAuthorityUsd": 0
+  }
+}
