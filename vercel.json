@@ -7,6 +7,14 @@
     {
       "source": "/factory-control/:path*",
       "destination": "/index.html"
+    },
+    {
+      "source": "/intelligence-news",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/intelligence-news/:path*",
+      "destination": "/index.html"
     }
   ]
 }
