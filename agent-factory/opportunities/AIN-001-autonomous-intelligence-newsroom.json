@@ -1,0 +1,69 @@
+{
+  "opportunity_id": "AIN-001",
+  "name": "Autonomous Intelligence Newsroom",
+  "working_brand": "Atlas Intelligence",
+  "created_at": "2026-09-14",
+  "state": "Explore",
+  "decision": "BUILD_PROTOTYPE_VALIDATE",
+  "score": null,
+  "confidence": "Medium-Low until live-source validation",
+  "thesis": "Build a Google News-style event aggregation and clustering product operated by the Factory, beginning with African business and economic intelligence and progressing toward autonomous opportunity detection.",
+  "initial_market": "African business and economic intelligence",
+  "reference_pattern": "Google News aggregation and story clustering",
+  "differentiation": "NEWS -> EVENT -> ECONOMIC SIGNIFICANCE -> COMPANIES/MARKETS AFFECTED -> OPPORTUNITY -> ACTION",
+  "core_pipeline": [
+    "source_registry",
+    "autonomous_collection",
+    "extraction_and_normalization",
+    "event_story_clustering",
+    "evidence_and_provenance",
+    "ranking",
+    "summarization",
+    "categorization",
+    "publishing",
+    "monitoring_and_learning",
+    "opportunity_escalation"
+  ],
+  "autonomy_ladder": {
+    "L1": "Aggregator",
+    "L2": "Intelligence aggregator",
+    "L3": "Autonomous newsroom",
+    "L4": "Intelligence newsroom",
+    "L5": "Opportunity engine"
+  },
+  "factory_owners": {
+    "operating_manager": "Agent 000",
+    "intelligence_engine": "Run 016",
+    "software_build": "Run 014",
+    "ui_quality": "Run 015",
+    "qa": ["Q1", "Q2", "Q3"]
+  },
+  "factory_integrations": [
+    "CI-001",
+    "KEIG",
+    "Opportunity Portfolio Steward",
+    "Work Control v2"
+  ],
+  "prototype": {
+    "branch": "feat/autonomous-intelligence-newsroom-ui",
+    "route": "/intelligence-news",
+    "data_mode": "synthetic demonstration data",
+    "purpose": "Evaluate information architecture, user experience, event-cluster model and opportunity-action surface before live ingestion."
+  },
+  "validation_gates": [
+    "Connect a bounded set of legal/public sources",
+    "Prove article-to-event clustering quality",
+    "Measure unsupported-claim and duplication rate",
+    "Prove economic-significance ranking adds value over a normal news feed",
+    "Generate at least five human-actionable opportunity hypotheses from live news",
+    "Estimate ongoing ingestion, model and hosting cost",
+    "Stress-test copyright, attribution and source-use policy"
+  ],
+  "kill_criteria": [
+    "Event clustering remains unreliable after bounded tuning",
+    "The intelligence layer produces no measurable advantage over commodity aggregation",
+    "Source/licensing constraints prevent sustainable coverage",
+    "Cost per useful qualified signal is economically unattractive"
+  ],
+  "next_action": "Review the UI prototype, then connect a controlled live source set and run the first news-to-opportunity validation cycle."
+}
