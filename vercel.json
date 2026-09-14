@@ -7,6 +7,14 @@
     {
       "source": "/factory-control/:path*",
       "destination": "/index.html"
+    },
+    {
+      "source": "/investment-office",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/investment-office/:path*",
+      "destination": "/index.html"
     }
   ]
 }
