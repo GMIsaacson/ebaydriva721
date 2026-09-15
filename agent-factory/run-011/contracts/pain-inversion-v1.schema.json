@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "pain_inversion_v1",
+  "type": "object",
+  "required": ["signalSummary", "affectedParties", "painStatements", "reverseBusinessHypotheses", "requiredEvidence", "falsifiers"],
+  "properties": {
+    "signalSummary": {"type": "string", "minLength": 1},
+    "affectedParties": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "painStatements": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "triggerMechanisms": {"type": "array", "items": {"type": "string"}},
+    "frequencyHypothesis": {"type": "string"},
+    "urgencyHypothesis": {"type": "string"},
+    "forwardValueHypotheses": {"type": "array", "items": {"type": "string"}},
+    "reverseBusinessHypotheses": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "requiredEvidence": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "falsifiers": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "uncertainties": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": false
+}

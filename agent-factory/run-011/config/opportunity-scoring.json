@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "1.0",
+  "weights": {
+    "severityOfPain": 15,
+    "frequencyRepetition": 10,
+    "evidencePeoplePay": 15,
+    "remedyEffectiveness": 15,
+    "factoryAutomationPotential": 15,
+    "grossMarginPotential": 10,
+    "acquisitionFeasibility": 10,
+    "defensibilityDataAdvantage": 5,
+    "regulatoryViability": 5
+  },
+  "thresholds": {
+    "killBelow": 55,
+    "controlledProbeAt": 70,
+    "seriousInvestigationAt": 80
+  },
+  "promotionCaps": {
+    "missingEvidenceLinks": "WATCH",
+    "missingKillCriteria": "WATCH"
+  }
+}

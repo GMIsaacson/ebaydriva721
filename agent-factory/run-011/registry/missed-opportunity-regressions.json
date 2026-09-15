@@ -1,0 +1,56 @@
+{
+  "schemaVersion": "1.0",
+  "suite": "OUCS missed-opportunity regression suite",
+  "cases": [
+    {
+      "id": "MISS-001",
+      "name": "People-search data should invert into consumer privacy remediation",
+      "signal": "Large quantities of personal information are aggregated and exposed through people-search and data-broker services.",
+      "priorFactoryInterpretation": "Public-data source for commercial intelligence and entity resolution.",
+      "userInsight": "The exposure itself creates consumer pain; identify exposed data, inform the person, and help remove or suppress it using lawful opt-out, deletion, suppression, correction and privacy-right mechanisms.",
+      "rootCause": "No mandatory pain-inversion or reverse-business operation existed.",
+      "expectedConceptGroups": [
+        ["privacy", "exposure"],
+        ["remove", "removal", "delete", "deletion", "suppress", "opt-out"],
+        ["monitor", "recheck", "recurring"],
+        ["consumer", "individual", "person"]
+      ],
+      "minimumScore": 80,
+      "calibrationOutput": {
+        "painInversion": {
+          "affectedParty": "Consumers whose personal information is publicly aggregated and indexed.",
+          "pain": "Privacy exposure, loss of control over personal contact/location information, and repeated republication across brokers."
+        },
+        "remedy": {
+          "product": "Personal Exposure Remediation / Privacy Removal Service",
+          "mechanisms": ["opt-out", "deletion request", "suppression", "correction", "authorized-agent workflow", "recurring recheck"],
+          "productLoop": "consented exposure scan -> evidence report -> authorized removal/suppression -> verification -> recurring monitoring"
+        },
+        "candidate": {
+          "name": "Personal Exposure Remediation / Privacy Removal Service",
+          "dimensions": {
+            "severityOfPain": 85,
+            "frequencyRepetition": 90,
+            "evidencePeoplePay": 90,
+            "remedyEffectiveness": 75,
+            "factoryAutomationPotential": 85,
+            "grossMarginPotential": 85,
+            "acquisitionFeasibility": 70,
+            "defensibilityDataAdvantage": 55,
+            "regulatoryViability": 80
+          },
+          "evidenceLinks": [
+            "https://consumer.ftc.gov/articles/what-know-about-people-search-sites-sell-your-information",
+            "https://privacy.ca.gov/drop/",
+            "https://cppa.ca.gov/regulations/pdf/data_broker_drop_reg.pdf"
+          ],
+          "killCriteria": [
+            "Fewer than 50% of matched commercial-broker exposures are practically removable or suppressible in a controlled pilot.",
+            "Median human handling exceeds 20 minutes per paid cleanup after the first 100 cases.",
+            "Paid conversion from a consented exposure scan remains below 2% after a statistically useful acquisition test."
+          ]
+        }
+      }
+    }
+  ]
+}

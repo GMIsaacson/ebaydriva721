@@ -1,0 +1,14 @@
+{
+  "schemaVersion": "1.0",
+  "caseId": "MISS-001",
+  "signal": "Large quantities of personal information are aggregated and exposed through people-search and data-broker services.",
+  "candidate": "Personal Exposure Remediation / Privacy Removal Service",
+  "score": 81.5,
+  "decision": "SERIOUS_INVESTIGATION",
+  "interpretation": "The score authorizes deeper investigation only. It is not a validation, launch approval, legal conclusion, or revenue forecast.",
+  "proof": {
+    "deterministicTests": "6/6 PASS",
+    "regression": "MISS-001 PASS",
+    "scopeGate": "PASS"
+  }
+}
