@@ -1,23 +1,28 @@
 {
-  "decisionId": "A0-OUCS-011-PRR-001",
+  "decision_id": "A0-OUCS-011-PRR-001",
   "status": "PASS",
   "verdict": "EXTEND",
   "owner": "Aberdeen Technologies",
-  "decidedAt": "2026-09-15",
-  "target": "Run 011 — Opportunity Intelligence / OUCS",
-  "reuseEvidence": [
-    "Run 011 already owns opportunity discovery, decomposition, evidence packaging, routing and synthesis.",
-    "Agent 000 remains the operating manager and sequencing owner above Factory runs.",
-    "Existing independent opportunity Q3 remains the professional assurance gate.",
-    "Factory Core hybrid-topology rule keeps deterministic scoring, storage and regression as software rather than agents."
+  "decided_at": "2026-09-15",
+  "business_outcome": "Extend Run 011 so every material opportunity signal is evaluated for pain inversion, reverse-business potential, executable remedies, evidence-backed economics, Factory fit, explicit kill criteria, and regression coverage for owner-discovered misses.",
+  "existing_owner_scan": "Run 011 already owns opportunity discovery, decomposition, evidence packaging, routing and synthesis; Agent 000 remains the operating manager; independent opportunity Q3 remains the assurance gate.",
+  "reuse_candidates_checked": [
+    "Run 011 Opportunity Intelligence / OUCS",
+    "Agent 000 operating-manager layer",
+    "Independent opportunity Q3",
+    "Factory Core hybrid topology and deterministic software components"
   ],
-  "duplicationAnalysis": "Creating a new run would duplicate Run 011. PRR-001 and RM-001 are bounded capability extensions inside the existing opportunity-intelligence owner.",
-  "residualUnownedLoop": "Signals were evaluated mainly for forward commercial value; no mandatory component owned pain inversion, reverse-business analysis, remedy mapping, or regression tests for owner-discovered opportunities the Factory missed.",
+  "duplication_analysis": "Creating a new run would duplicate Run 011. PRR-001 and RM-001 are bounded capability extensions inside the existing opportunity-intelligence owner.",
+  "residual_unowned_loop": "Signals were evaluated mainly for forward commercial value; no mandatory component owned pain inversion, reverse-business analysis, remedy mapping, or regression tests for owner-discovered opportunities the Factory missed.",
+  "covers_paths": [
+    "agent-factory/run-011"
+  ],
+  "evidence_ref": "agent-factory/run-011/evidence/privacy-calibration-v1.json",
   "authority": {
-    "maxExternalActions": 0,
-    "maxSpendCents": 0,
+    "max_external_actions": 0,
+    "max_spend_cents": 0,
     "deploy": false,
-    "contactPeople": false,
-    "submitPrivacyRequests": false
+    "contact_people": false,
+    "submit_privacy_requests": false
   }
 }
