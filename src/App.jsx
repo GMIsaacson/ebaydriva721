@@ -33,7 +33,7 @@ const App = () => {
       <Router>
         <Routes>
           <Route path="/factory-control" element={<ProtectedRoute><ErrorBoundary><WorkControlV2 /></ErrorBoundary></ProtectedRoute>} />
-          <Route path="/investment-office" element={<ProtectedRoute><ErrorBoundary><InvestmentOffice /></ErrorBoundary></ProtectedRoute>} />
+          <Route path="/investment-office" element={<ErrorBoundary><InvestmentOffice /></ErrorBoundary>} />
 
           <Route element={<PublicLayout />}>
             <Route path="/" element={<ErrorBoundary><Home /></ErrorBoundary>} />
