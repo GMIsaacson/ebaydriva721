@@ -1,52 +1,53 @@
 # Factory Investment Office (FIO)
 
-FIO is the Factory's long-horizon investment intelligence capability. It is designed as an evidence-driven investment committee, not a single stock-picking agent.
+The Factory Investment Office is the Factory's long-horizon investment-intelligence capability. It separates autonomous research from capital authority: agents may discover, research, score, monitor, debate and recommend investments, but no workflow may place or authorize a trade.
 
-## Operating model
+## Committee
 
-1. **INV-06 Scout** finds candidates and compares them with the current watchlist leader.
-2. **INV-01 Business Analyst** evaluates business quality and competitive durability.
-3. **INV-02 Valuation Analyst** produces independent bear/base/bull valuation cases and expected-return ranges.
-4. **INV-03 Bear / Red Team** tries to falsify the thesis and defines kill criteria.
-5. **INV-04 Market & Catalyst Analyst** tracks timing-sensitive developments.
-6. **INV-05 Portfolio & Risk** determines sizing and portfolio fit.
-7. **INV-000 Investment Director** synthesizes the evidence into a living memo and explicit next action.
-8. **INV-07 Monitor** watches owned/watchlist assets for material thesis changes and requests refreshes when required.
+- **INV-000 — Investment Director**: synthesizes the committee, preserves dissent and issues the living decision memo.
+- **INV-01 — Business Analyst**: business quality, moat, management and unit economics.
+- **INV-02 — Valuation Analyst**: DCF, multiples, SOTP, scenarios and required-return discipline.
+- **INV-03 — Bear / Red Team**: attacks the thesis and defines failure/kill criteria.
+- **INV-04 — Market & Catalyst**: catalysts, timing, positioning and macro sensitivity.
+- **INV-05 — Portfolio & Risk**: sizing, concentration, correlation and drawdown.
+- **INV-06 — Long-Horizon Scout**: 5–15 year asymmetric opportunity discovery.
+- **INV-07 — Monitor**: prices, filings, news and material thesis-change detection.
 
-## Capital-control rule
+Required independent gates: **Q1 operational/calculation QA, Q2 evidence/provenance QA, Q3 professional-excellence QA**.
 
-Research may be autonomous. Trade execution is never autonomous. Any capital action requires an explicit owner approval gate.
+## Runtime architecture
 
-## QA gates
+`public/primary sources + market data → n8n → specialist agents → Q1/Q2/Q3 → INV-000 → Firebase → FIO UI → owner approval`
 
-- **Q1 Operational QA:** schemas, calculations, state transitions, retries, tests, and runtime behavior.
-- **Q2 Evidence QA:** freshness, provenance, claim strength, source contradictions, and calculation traceability.
-- **Q3 Professional Excellence QA:** whether the memo would meet a strong professional investment-research standard.
+Firebase is the durable system of record under `factoryInvestmentOfficeV1/public`. The browser is read-only. n8n is the writer through a dedicated Google/Firebase service-account credential. Brokerage credentials and trade execution are outside FIO v1.
 
-## Living investment record
+## Installed n8n workflows
 
-Each asset maintains:
+The following workflow definitions are versioned under `agent-factory/investment-office/n8n/` and are installed in the Factory n8n instance:
 
-- thesis and anti-thesis
-- evidence with source/freshness metadata
-- business-quality score
-- valuation range and scenario assumptions
-- expected return / hurdle-rate comparison
-- buy / hold / wait / reduce decision
-- DCA policy and position-size range
-- catalyst map
-- risk map
-- kill criteria
-- decision history
-- material thesis changes
-- explicit next action and accountable agent
+- `FIOMONITORV1` — hourly portfolio/watchlist market monitor with material-move detection.
+- `FIODAILYV1` — daily fresh-source thesis, valuation, catalyst and risk review.
+- `FIORADARV1` — daily long-horizon opportunity discovery and ranking.
+- `FIOCOMMITTEEV1` — independent specialist + Q1/Q2/Q3 committee, then INV-000 synthesis.
+- `FIOBOOTSTRAPV1` — one-time Firebase seed/bootstrap workflow.
 
-## MVP status
+The five workflows remain **inactive until the two dedicated credentials are attached**:
 
-The `/investment-office` React surface is the initial operator UI. It includes SpaceX as the first committee case, a ranked watchlist, opportunity radar, research queue, agent committee, living memo, required dissent, and capital approval controls.
+1. `FIO Firebase Service Account` — Google API / Firestore service account scoped to the `salescope-7f11d` project.
+2. `FIO OpenAI API` — HTTP Authorization credential for the OpenAI Responses API used by daily/radar/committee workflows.
 
-The next runtime layer is:
+This is intentional: inactive workflows are preferable to a stream of failed scheduled executions.
 
-`market/source adapters -> evidence store -> specialist agents -> Q1/Q2/Q3 -> INV-000 -> living memo -> monitor loop`
+## Current first case
 
-The UI deliberately labels the live market-data adapter as pending until a verified data feed is connected.
+SpaceX / `SPCX` is the first living investment memo. The seed record is a starting thesis, not a substitute for the first live committee run. Once credentials are bound and Firebase is bootstrapped, FIO-COMMITTEE must refresh the seed against current evidence before the system treats it as current research.
+
+## Capital-control invariant
+
+- Research autonomy: **enabled**
+- Monitoring autonomy: **enabled once runtime credentials are attached**
+- Opportunity discovery autonomy: **enabled once runtime credentials are attached**
+- Trade execution: **disabled**
+- Capital action: **owner approval required**
+
+No recommendation may silently become an order. Approval records may record an owner's decision, but FIO v1 contains no brokerage execution adapter.
