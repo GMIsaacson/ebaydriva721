@@ -51,6 +51,20 @@ test('employment eligibility use fails closed', () => {
   assert.ok(result.violations.includes('ELIGIBILITY_DECISIONING'));
 });
 
+test('privacy-remediation is not rejected merely because evidence mentions brokers selling personal data', () => {
+  const result = scopeGate({
+    signal: 'data brokers sell personal data and publish people-search profiles',
+    purpose: 'help consumers remove and suppress privacy exposure',
+  });
+  assert.equal(result.pass, true);
+});
+
+test('raw personal-profile resale fails closed', () => {
+  const result = scopeGate({ purpose: 'sell personal data and person profiles to customers' });
+  assert.equal(result.pass, false);
+  assert.ok(result.violations.includes('RAW_PERSON_PROFILE_RESALE'));
+});
+
 test('MISS-001 regression passes', () => {
   const registry = path.join(__dirname, '..', 'registry', 'missed-opportunity-regressions.json');
   const result = runRegistry(registry);
