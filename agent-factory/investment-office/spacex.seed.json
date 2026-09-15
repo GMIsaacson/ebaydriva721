@@ -1,0 +1,29 @@
+{
+  "asset_id": "SPCX",
+  "name": "SpaceX",
+  "record_type": "living_investment_memo",
+  "horizon": "10-15 years",
+  "decision": "ACCUMULATE",
+  "confidence": 0.78,
+  "score": 86,
+  "position_policy": {
+    "initial_target_weight": "3-5%",
+    "dca": "valuation-aware",
+    "autonomous_execution": false,
+    "owner_approval_required": true
+  },
+  "thesis": "Launch infrastructure, Starlink recurring connectivity, government/defense relationships and Starship-driven cost optionality create a vertically integrated space infrastructure platform.",
+  "anti_thesis": "Valuation may outrun cash generation; Starship development, capex intensity, regulation, governance concentration or execution delays may compress future returns.",
+  "kill_criteria": [
+    "Sustained deterioration in Starlink subscriber economics or churn",
+    "Starship fails to reach economically useful reuse within the thesis window",
+    "Governance or capital allocation materially impairs minority shareholder economics",
+    "Valuation rises enough that expected 10-year return falls below the portfolio hurdle rate"
+  ],
+  "market_data_status": "adapter_pending",
+  "next_action": {
+    "owner": "INV-000",
+    "action": "Refresh valuation and run full committee review with current verified market and filing data",
+    "priority": "P0"
+  }
+}

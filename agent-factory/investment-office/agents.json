@@ -1,0 +1,61 @@
+{
+  "system": "Factory Investment Office",
+  "version": "0.1.0",
+  "capital_policy": {
+    "autonomous_research": true,
+    "autonomous_trading": false,
+    "trade_execution_requires_owner_approval": true
+  },
+  "committee": [
+    {
+      "id": "INV-000",
+      "name": "Investment Director",
+      "mandate": "Coordinate the committee, resolve contradictions, enforce evidence standards, and issue the final living investment memo.",
+      "inputs": ["specialist_reports", "valuation_cases", "risk_report", "monitor_events"],
+      "outputs": ["decision", "confidence", "next_action", "owner_approval_request"]
+    },
+    {
+      "id": "INV-01",
+      "name": "Business Analyst",
+      "mandate": "Evaluate business quality, market structure, moat, management, unit economics, reinvestment runway, and competitive durability.",
+      "outputs": ["business_quality_score", "moat_assessment", "unit_economics", "evidence"]
+    },
+    {
+      "id": "INV-02",
+      "name": "Valuation Analyst",
+      "mandate": "Estimate value using multiple independent methods and express uncertainty through bear/base/bull scenarios.",
+      "outputs": ["valuation_range", "expected_return", "scenario_table", "assumptions"]
+    },
+    {
+      "id": "INV-03",
+      "name": "Bear / Red Team",
+      "mandate": "Attempt to falsify the thesis, identify missing evidence, hidden dependencies, governance risks, and ways permanent capital loss can occur.",
+      "outputs": ["bear_case", "failure_modes", "kill_criteria", "contradictions"]
+    },
+    {
+      "id": "INV-04",
+      "name": "Market & Catalyst Analyst",
+      "mandate": "Track earnings, filings, macro conditions, catalysts, positioning, and timing-sensitive developments without overriding long-horizon fundamentals.",
+      "outputs": ["catalyst_map", "timing_risks", "event_calendar", "market_context"]
+    },
+    {
+      "id": "INV-05",
+      "name": "Portfolio & Risk Agent",
+      "mandate": "Determine whether the asset improves the portfolio after concentration, correlation, liquidity, downside, and opportunity-cost analysis.",
+      "outputs": ["position_size_range", "portfolio_fit", "drawdown_scenarios", "risk_budget"]
+    },
+    {
+      "id": "INV-06",
+      "name": "Long-Horizon Scout",
+      "mandate": "Search the investable universe for 5-15 year asymmetric opportunities that can beat the current portfolio hurdle rate and current watchlist leader.",
+      "outputs": ["candidates", "screening_scores", "reason_for_attention", "research_queue_additions"]
+    },
+    {
+      "id": "INV-07",
+      "name": "Monitor",
+      "mandate": "Continuously compare new filings, prices, news, operating metrics, and material events against each living thesis.",
+      "outputs": ["material_change_alert", "thesis_delta", "valuation_refresh_request", "no_change"]
+    }
+  ],
+  "required_qa": ["Q1_OPERATIONAL", "Q2_EVIDENCE", "Q3_PROFESSIONAL_EXCELLENCE"]
+}

@@ -17,6 +17,7 @@ import Calculators from "./resources";
 import AccountPage from "./accountspage";
 import AppShell from "./AppShell";
 import WorkControlV2 from "./WorkControlV2";
+import InvestmentOffice from "./InvestmentOffice";
 
 const PublicLayout = () => (
   <div className="App">
@@ -32,6 +33,7 @@ const App = () => {
       <Router>
         <Routes>
           <Route path="/factory-control" element={<ProtectedRoute><ErrorBoundary><WorkControlV2 /></ErrorBoundary></ProtectedRoute>} />
+          <Route path="/investment-office" element={<ErrorBoundary><InvestmentOffice /></ErrorBoundary>} />
 
           <Route element={<PublicLayout />}>
             <Route path="/" element={<ErrorBoundary><Home /></ErrorBoundary>} />
