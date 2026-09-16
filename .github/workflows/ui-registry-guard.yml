@@ -1,0 +1,41 @@
+name: Validate Factory UI Registry
+
+on:
+  push:
+    branches:
+      - main
+      - feat/factory-work-control-v2-preview
+    paths:
+      - 'agent-factory/governance/ui-registry-v1.json'
+      - 'agent-factory/governance/verify-ui-registry.mjs'
+      - 'src/UIHub.jsx'
+      - 'src/ui-hub.css'
+      - 'src/FactoryShell.jsx'
+      - 'src/factory-shell.css'
+      - 'src/App.jsx'
+      - '.github/workflows/ui-registry-guard.yml'
+  pull_request:
+    paths:
+      - 'agent-factory/governance/ui-registry-v1.json'
+      - 'agent-factory/governance/verify-ui-registry.mjs'
+      - 'src/UIHub.jsx'
+      - 'src/ui-hub.css'
+      - 'src/FactoryShell.jsx'
+      - 'src/factory-shell.css'
+      - 'src/App.jsx'
+      - '.github/workflows/ui-registry-guard.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-ui-registry:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate canonical UI registry
+        run: node agent-factory/governance/verify-ui-registry.mjs
