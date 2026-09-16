@@ -33,8 +33,15 @@ const App = () => {
     <AuthProvider>
       <Router>
         <Routes>
-          <Route path="/factory-control" element={<ProtectedRoute><ErrorBoundary><FactoryShell /></ErrorBoundary></ProtectedRoute>}>
-            <Route index element={<ErrorBoundary><WorkControlV2 /></ErrorBoundary>} />
+          <Route path="/factory-control" element={<ErrorBoundary><FactoryShell /></ErrorBoundary>}>
+            <Route
+              index
+              element={
+                <ProtectedRoute>
+                  <ErrorBoundary><WorkControlV2 /></ErrorBoundary>
+                </ProtectedRoute>
+              }
+            />
             <Route path="ui-hub" element={<ErrorBoundary><UIHub /></ErrorBoundary>} />
           </Route>
 
