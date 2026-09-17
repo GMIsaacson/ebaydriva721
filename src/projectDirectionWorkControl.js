@@ -36,8 +36,9 @@ export function deriveProjectOperations(direction, workControl = {}, now = Date.
   if (!binding?.milestoneId) {
     return {
       bound: false,
-      connectionState: workControl.state || "UNBOUND",
+      connectionState: "UNBOUND",
       sourceLabel: "No Work Control binding",
+      freshnessStatus: direction?.freshness?.status || "FRESH",
     };
   }
 
