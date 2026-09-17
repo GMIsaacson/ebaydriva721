@@ -66,8 +66,14 @@ export function deriveProjectOperations(direction, workControl = {}, now = Date.
     else if (lastActivity && now - lastActivity.getTime() > DEFAULT_STALE_AFTER_MS) freshnessStatus = "STALE";
   }
 
-  const blockers = blockedWork.map((item) => `${item.id} · ${item.title}`);
-  const ownerApprovals = approvalWork.map((item) => `${item.id} · ${item.title}`);
+  const blockers = unique([
+    milestone?.status === "BLOCKED" ? `${milestone.id} · ${milestone.title}` : null,
+    ...blockedWork.map((item) => `${item.id} · ${item.title}`),
+  ]);
+  const ownerApprovals = unique([
+    milestone?.status === "WAITING_APPROVAL" ? `${milestone.id} · ${milestone.title}` : null,
+    ...approvalWork.map((item) => `${item.id} · ${item.title}`),
+  ]);
   const currentWork = activeWork.slice(0, 5).map((item) => ({
     id: item.id,
     title: item.title,
