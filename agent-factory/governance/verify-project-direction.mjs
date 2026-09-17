@@ -45,6 +45,11 @@ for (const [index, project] of (directionRegistry.projects || []).entries()) {
   if (!Array.isArray(project.execution?.nextActions) || project.execution.nextActions.length === 0) {
     errors.push(`${label}: execution.nextActions must be non-empty`);
   }
+  const binding = project.execution?.workControlBinding;
+  if (binding) {
+    if (!binding.milestoneId || typeof binding.milestoneId !== "string") errors.push(`${label}: execution.workControlBinding.milestoneId is required`);
+    if (!binding.scopeNote) errors.push(`${label}: execution.workControlBinding.scopeNote is required to prevent scope ambiguity`);
+  }
   if (!project.evidence?.confidence) errors.push(`${label}: missing evidence.confidence`);
   if (!Array.isArray(project.evidence?.proven) || !Array.isArray(project.evidence?.unproven)) {
     errors.push(`${label}: evidence.proven and evidence.unproven must be arrays`);
@@ -60,4 +65,5 @@ if (errors.length) {
 
 const total = (uiRegistry.projects || []).length;
 const migrated = directionRegistry.projects.length;
-console.log(`Project Direction registry OK: ${migrated}/${total} UI records have normalized strategic state; progressive migration remains enabled.`);
+const bound = directionRegistry.projects.filter((project) => project.execution?.workControlBinding).length;
+console.log(`Project Direction registry OK: ${migrated}/${total} UI records normalized; ${bound} live Work Control binding(s); progressive migration remains enabled.`);
