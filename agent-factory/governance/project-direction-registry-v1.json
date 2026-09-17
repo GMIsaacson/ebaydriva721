@@ -10,7 +10,7 @@
     "evidenceOwners": "Specialist teams",
     "qaOwner": "Independent Q1/Q2/Q3 QA",
     "ownerDecisionRole": "Material pivots, spending, launch/publication, and kill/revive decisions",
-    "maintenanceRule": "Update canonical project state once; UI Hub reflects it. Do not maintain a second card-specific strategy record."
+    "maintenanceRule": "Update canonical project state once; UI Hub reflects it. Work Control may hydrate operational readouts but may not rewrite strategic fields."
   },
   "stages": ["DISCOVER", "VALIDATE", "BUILD", "PILOT", "PROVE", "SCALE"],
   "freshnessStates": ["FRESH", "STALE", "BLOCKED", "AWAITING_EVIDENCE", "NEEDS_OWNER"],
@@ -33,7 +33,7 @@
       "steward": "Agent 000 / Project Steward",
       "sources": {
         "strategy": "Project Direction Registry",
-        "execution": "Work Control (adapter pending)",
+        "execution": "Work Control live adapter",
         "evidence": "Specialist teams + QA receipts"
       },
       "strategy": {
@@ -64,6 +64,11 @@
         ]
       },
       "execution": {
+        "workControlBinding": {
+          "milestoneId": "M-004",
+          "label": "SourceMargin common-engine integration",
+          "scopeNote": "This binding reflects the Factory integration workstream, not the entire commercial SourceMargin project. Strategic phase and gates remain owned by Project Direction."
+        },
         "nextActions": [
           "Complete the production-ready SourceMargin product/app.",
           "Prepare the launch dataset, onboarding flow and low-friction starter offer.",

@@ -6,6 +6,7 @@ on:
       - main
       - feat/factory-work-control-v2-preview
       - feat/ui-hub-project-direction-v1
+      - feat/project-direction-work-control-adapter
     paths:
       - 'agent-factory/governance/ui-registry-v1.json'
       - 'agent-factory/governance/verify-ui-registry.mjs'
@@ -14,6 +15,9 @@ on:
       - 'agent-factory/governance/PROJECT-DIRECTION-POLICY-v1.md'
       - 'src/UIHub.jsx'
       - 'src/ui-hub.css'
+      - 'src/ui-hub-live-work-control.css'
+      - 'src/projectDirectionWorkControl.js'
+      - 'src/workControlLedger.js'
       - 'src/FactoryShell.jsx'
       - 'src/factory-shell.css'
       - 'src/App.jsx'
@@ -27,6 +31,9 @@ on:
       - 'agent-factory/governance/PROJECT-DIRECTION-POLICY-v1.md'
       - 'src/UIHub.jsx'
       - 'src/ui-hub.css'
+      - 'src/ui-hub-live-work-control.css'
+      - 'src/projectDirectionWorkControl.js'
+      - 'src/workControlLedger.js'
       - 'src/FactoryShell.jsx'
       - 'src/factory-shell.css'
       - 'src/App.jsx'

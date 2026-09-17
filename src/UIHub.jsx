@@ -1,7 +1,10 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import registry from "../agent-factory/governance/ui-registry-v1.json";
 import directionRegistry from "../agent-factory/governance/project-direction-registry-v1.json";
+import { useAuth } from "./AuthProvider";
+import { subscribeItems } from "./workControlLedger";
+import { deriveProjectOperations, formatOperationalTime } from "./projectDirectionWorkControl";
 import "./ui-hub.css";
 
 const PIN_KEY = "factory-ui-hub-pins-v1";
@@ -30,12 +33,33 @@ function freshnessClass(value = "") {
   return `uih-pill uih-fresh-${String(value).toLowerCase()}`;
 }
 
+function workControlClass(value = "") {
+  return `uih-work-control-state uih-work-control-${String(value).toLowerCase()}`;
+}
+
 function manageUrl(project) {
   return `https://vercel.com/${registry.team.teamSlug}/${project.vercelProjectName}`;
 }
 
 function repoUrl(repo) {
   return repo ? `https://github.com/${repo}` : null;
+}
+
+function operationalState(direction, workControl) {
+  return direction ? deriveProjectOperations(direction, workControl) : null;
+}
+
+function projectNeedsOwner(direction, workControl) {
+  if (!direction) return false;
+  const strategic = direction.freshness?.status === "NEEDS_OWNER" || (direction.execution?.ownerApprovals || []).length > 0;
+  const operations = operationalState(direction, workControl);
+  return strategic || Boolean(operations?.connectionState === "CONNECTED" && operations.ownerApprovals?.length);
+}
+
+function projectFreshness(direction, workControl) {
+  if (!direction) return null;
+  const operations = operationalState(direction, workControl);
+  return operations?.connectionState === "CONNECTED" ? operations.freshnessStatus : direction.freshness?.status;
 }
 
 function StageRail({ phase }) {
@@ -67,13 +91,92 @@ function TextList({ items, empty = "None recorded." }) {
   );
 }
 
-function DirectionDetails({ direction }) {
-  const ownerApprovals = direction.execution?.ownerApprovals || [];
+function LiveOperations({ direction, operations }) {
+  const binding = direction.execution?.workControlBinding;
+  if (!binding) return null;
+
+  return (
+    <div className="uih-live-ops">
+      <div className="uih-live-ops-head">
+        <div>
+          <strong>Live Work Control</strong>
+          <span>{binding.milestoneId} · {binding.label || "Bound workstream"}</span>
+        </div>
+        <div className="uih-live-ops-badges">
+          <span className={workControlClass(operations.connectionState)}>{operations.sourceLabel}</span>
+          {operations.milestoneStatus && <span className="uih-live-status">{operations.milestoneStatus.replaceAll("_", " ")}</span>}
+        </div>
+      </div>
+
+      {binding.scopeNote && <p className="uih-live-ops-scope">{binding.scopeNote}</p>}
+
+      {operations.connectionState === "CONNECTED" ? (
+        operations.milestoneFound ? (
+          <>
+            <div className="uih-live-ops-grid">
+              <div>
+                <strong>Current Factory work</strong>
+                {operations.currentWork?.length ? (
+                  <div className="uih-current-work-list">
+                    {operations.currentWork.map((item) => (
+                      <div className="uih-current-work-item" key={item.id}>
+                        <div>
+                          <b>{item.id} · {item.title}</b>
+                          <span>{item.owner || item.executor || "Unassigned"}</span>
+                        </div>
+                        <em>{String(item.status || "BACKLOG").replaceAll("_", " ")}</em>
+                        {item.nextAction && <p>{item.nextAction}</p>}
+                      </div>
+                    ))}
+                  </div>
+                ) : <p className="uih-empty-copy">No project-specific child work orders are attached to this workstream yet.</p>}
+              </div>
+              <div>
+                <strong>Operational blockers</strong>
+                <TextList items={operations.blockers} empty="No live Work Control blocker." />
+              </div>
+              <div>
+                <strong>Owner approvals from Work Control</strong>
+                <TextList items={operations.ownerApprovals} empty="No live owner approval request." />
+              </div>
+              <div>
+                <strong>Operational dependencies</strong>
+                <TextList items={operations.dependencies} empty="No live dependency recorded." />
+              </div>
+            </div>
+            <div className="uih-live-ops-foot">
+              <span><strong>Workstream:</strong> {operations.milestoneTitle || binding.milestoneId}</span>
+              <span><strong>Last activity:</strong> {formatOperationalTime(operations.lastActivity)}</span>
+            </div>
+          </>
+        ) : (
+          <div className="uih-live-ops-message">Work Control is connected, but {binding.milestoneId} is not present in this owner ledger. No operational state is being inferred.</div>
+        )
+      ) : (
+        <div className="uih-live-ops-message">
+          {operations.connectionState === "SIGNED_OUT"
+            ? "Sign in to Factory Control to hydrate operational state from your Work Control ledger. Strategic state remains available."
+            : operations.connectionState === "ERROR"
+              ? "Work Control could not be read. The Hub is showing canonical strategic state only; no live operational values are being fabricated."
+              : "Connecting to the Work Control ledger. Strategic state remains available while the live operational layer loads."}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DirectionDetails({ direction, operations }) {
+  const strategicApprovals = direction.execution?.ownerApprovals || [];
+  const freshness = operations?.connectionState === "CONNECTED" ? operations.freshnessStatus : direction.freshness.status;
+  const lastWorkActivity = operations?.connectionState === "CONNECTED" && operations.lastActivity
+    ? formatOperationalTime(operations.lastActivity)
+    : direction.freshness.lastWorkActivity || (operations?.connectionState === "SIGNED_OUT" ? "Sign in to sync" : "No live activity recorded");
+
   return (
     <details className="uih-direction-details">
       <summary>
         <span>Direction & strategy</span>
-        <small>Why · gate · evidence · history</small>
+        <small>Why · gate · execution · evidence · history</small>
       </summary>
 
       <div className="uih-direction-body">
@@ -103,14 +206,22 @@ function DirectionDetails({ direction }) {
           </div>
           <div className="uih-direction-grid">
             <div><strong>Current hypothesis</strong><p>{direction.decision.currentHypothesis}</p></div>
-            <div><strong>Next gate</strong><p>{direction.decision.nextGate}</p></div>
+            <div><strong>Next strategic gate</strong><p>{direction.decision.nextGate}</p></div>
             <div><strong>Success criteria</strong><TextList items={direction.decision.successCriteria} /></div>
             <div><strong>Kill criteria</strong><TextList items={direction.decision.killCriteria} /></div>
-            <div><strong>Next actions</strong><TextList items={direction.execution.nextActions} /></div>
-            <div><strong>Blockers</strong><TextList items={direction.execution.blockers} /></div>
-            <div><strong>Dependencies</strong><TextList items={direction.execution.dependencies} /></div>
-            <div><strong>Owner approvals</strong><TextList items={ownerApprovals} empty="No owner approval currently required." /></div>
+            <div><strong>Strategic next actions</strong><TextList items={direction.execution.nextActions} /></div>
+            <div><strong>Strategic constraints</strong><TextList items={direction.execution.blockers} /></div>
+            <div><strong>Strategic dependencies</strong><TextList items={direction.execution.dependencies} /></div>
+            <div><strong>Strategic owner approvals</strong><TextList items={strategicApprovals} empty="No strategic owner approval currently required." /></div>
           </div>
+        </div>
+
+        <div className="uih-direction-section">
+          <div className="uih-direction-section-head">
+            <span>Execution</span>
+            <small>Read-only hydration from Work Control</small>
+          </div>
+          <LiveOperations direction={direction} operations={operations} />
         </div>
 
         <div className="uih-direction-section">
@@ -118,7 +229,7 @@ function DirectionDetails({ direction }) {
             <span>Evidence</span>
             <div className="uih-direction-head-badges">
               <span className="uih-evidence-confidence">Confidence: {direction.evidence.confidence}</span>
-              <span className={freshnessClass(direction.freshness.status)}>{direction.freshness.status}</span>
+              <span className={freshnessClass(freshness)}>{freshness}</span>
             </div>
           </div>
           {direction.evidence.confidenceNote && <p className="uih-confidence-note">{direction.evidence.confidenceNote}</p>}
@@ -138,7 +249,7 @@ function DirectionDetails({ direction }) {
           )}
           <dl className="uih-freshness-meta">
             <div><dt>Strategy updated</dt><dd>{direction.freshness.lastStrategicUpdate || "—"}</dd></div>
-            <div><dt>Last work activity</dt><dd>{direction.freshness.lastWorkActivity || "Not synced yet"}</dd></div>
+            <div><dt>Last Work Control activity</dt><dd>{lastWorkActivity}</dd></div>
             <div><dt>Last evidence</dt><dd>{direction.freshness.lastEvidenceAt || "—"}</dd></div>
           </dl>
         </div>
@@ -168,7 +279,7 @@ function DirectionDetails({ direction }) {
 
         <div className="uih-direction-sourcebar">
           <span><strong>Strategy:</strong> {direction.sources?.strategy || "Project Direction Registry"}</span>
-          <span><strong>Execution:</strong> {direction.sources?.execution || "Work Control"}</span>
+          <span><strong>Execution:</strong> {operations?.sourceLabel || direction.sources?.execution || "Work Control"}</span>
           <span><strong>Evidence:</strong> {direction.sources?.evidence || "Specialist teams + QA"}</span>
         </div>
       </div>
@@ -176,10 +287,14 @@ function DirectionDetails({ direction }) {
   );
 }
 
-function ProjectCard({ project, pinned, onPin, onOpen }) {
+function ProjectCard({ project, pinned, onPin, onOpen, workControl }) {
   const inferred = project.urlConfidence === "INFERRED";
   const direction = DIRECTION_BY_UI.get(project.id);
-  const needsOwner = direction?.freshness?.status === "NEEDS_OWNER" || (direction?.execution?.ownerApprovals || []).length > 0;
+  const operations = operationalState(direction, workControl);
+  const needsOwner = projectNeedsOwner(direction, workControl);
+  const freshness = projectFreshness(direction, workControl);
+  const liveBlockers = operations?.connectionState === "CONNECTED" ? operations.blockers?.length || 0 : null;
+  const liveApprovals = operations?.connectionState === "CONNECTED" ? operations.ownerApprovals?.length || 0 : null;
 
   return (
     <article className={`uih-card ${project.health === "ATTENTION" ? "uih-card-attention" : ""} ${direction ? "uih-card-direction" : ""}`}>
@@ -213,7 +328,7 @@ function ProjectCard({ project, pinned, onPin, onOpen }) {
             <span className="uih-direction-phase">{direction.decision.phaseLabel}</span>
             <div className="uih-direction-statuses">
               <span className="uih-confidence-chip">{direction.evidence.confidence}</span>
-              <span className={freshnessClass(direction.freshness.status)}>{direction.freshness.status}</span>
+              <span className={freshnessClass(freshness)}>{freshness}</span>
             </div>
           </div>
           <div className="uih-decision-earning">
@@ -221,14 +336,28 @@ function ProjectCard({ project, pinned, onPin, onOpen }) {
             <strong>{direction.decision.decisionBeingEarned}</strong>
           </div>
           <div className="uih-direction-compact-grid">
-            <div><span>Next gate</span><strong>{direction.decision.nextGate}</strong></div>
+            <div><span>Next strategic gate</span><strong>{direction.decision.nextGate}</strong></div>
             <div><span>North Star</span><strong>{direction.strategy.northStar}</strong></div>
           </div>
           <StageRail phase={direction.decision.phase} />
+
+          {operations?.bound && (
+            <div className="uih-work-control-strip">
+              <div>
+                <span>Work Control</span>
+                <strong>{operations.sourceLabel}</strong>
+              </div>
+              <div>
+                <span>Factory workstream</span>
+                <strong>{operations.milestoneStatus ? `${operations.binding.milestoneId} · ${operations.milestoneStatus.replaceAll("_", " ")}` : operations.binding.milestoneId}</strong>
+              </div>
+            </div>
+          )}
+
           <div className="uih-direction-kpis">
-            <span><strong>{direction.execution.nextActions?.length || 0}</strong> next actions</span>
-            <span><strong>{direction.execution.blockers?.length || 0}</strong> blockers</span>
-            <span className={needsOwner ? "needs-owner" : ""}><strong>{direction.execution.ownerApprovals?.length || 0}</strong> needs owner</span>
+            <span><strong>{direction.execution.nextActions?.length || 0}</strong> strategic actions</span>
+            <span><strong>{liveBlockers ?? direction.execution.blockers?.length ?? 0}</strong> live blockers</span>
+            <span className={needsOwner ? "needs-owner" : ""}><strong>{liveApprovals ?? direction.execution.ownerApprovals?.length ?? 0}</strong> needs owner</span>
           </div>
         </div>
       ) : (
@@ -248,7 +377,7 @@ function ProjectCard({ project, pinned, onPin, onOpen }) {
       {project.notes && <div className={`uih-note ${project.health === "ATTENTION" ? "attention" : ""}`}>{project.notes}</div>}
       {inferred && <div className="uih-url-warning">Launch alias inferred from project name — verify once before treating as canonical.</div>}
 
-      {direction && <DirectionDetails direction={direction} />}
+      {direction && <DirectionDetails direction={direction} operations={operations} />}
 
       <div className="uih-actions">
         <a
@@ -268,23 +397,64 @@ function ProjectCard({ project, pinned, onPin, onOpen }) {
 }
 
 export default function UIHub() {
+  const { currentUser } = useAuth();
   const defaultPins = useMemo(() => registry.projects.filter((project) => project.pinned).map((project) => project.id), []);
   const [pins, setPins] = useState(() => readStored(PIN_KEY, defaultPins));
   const [recent, setRecent] = useState(() => readStored(RECENT_KEY, []));
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState("ALL");
   const [family, setFamily] = useState("ALL");
+  const [workControlItems, setWorkControlItems] = useState([]);
+  const [workControlState, setWorkControlState] = useState(() => currentUser?.uid ? "CONNECTING" : "SIGNED_OUT");
+  const [workControlError, setWorkControlError] = useState("");
+
+  useEffect(() => {
+    if (!currentUser?.uid) {
+      setWorkControlItems([]);
+      setWorkControlState("SIGNED_OUT");
+      setWorkControlError("");
+      return undefined;
+    }
+
+    setWorkControlState("CONNECTING");
+    setWorkControlError("");
+    const unsubscribe = subscribeItems(
+      currentUser.uid,
+      (rows) => {
+        setWorkControlItems(rows);
+        setWorkControlState("CONNECTED");
+      },
+      (error) => {
+        console.error("UI Hub Work Control subscription failed", error);
+        setWorkControlState("ERROR");
+        setWorkControlError(error?.message || "Could not read Work Control ledger.");
+      }
+    );
+    return unsubscribe;
+  }, [currentUser?.uid]);
+
+  const workControl = useMemo(() => ({
+    state: workControlState,
+    items: workControlItems,
+    error: workControlError,
+  }), [workControlState, workControlItems, workControlError]);
 
   const projects = registry.projects;
   const families = useMemo(() => [...new Set(projects.map((project) => project.family))].sort(), [projects]);
   const activeCount = projects.filter((project) => project.lifecycle === "ACTIVE").length;
   const attentionCount = projects.filter((project) => project.health === "ATTENTION").length;
-  const archivedCount = projects.filter((project) => project.lifecycle === "ARCHIVE").length;
   const verifiedCount = projects.filter((project) => project.urlConfidence !== "INFERRED").length;
   const directionCount = directionRegistry.projects?.length || 0;
   const directionBacklog = projects.filter((project) => project.lifecycle === "ACTIVE" && !DIRECTION_BY_UI.has(project.id)).length;
-  const staleCount = (directionRegistry.projects || []).filter((direction) => direction.freshness?.status === "STALE").length;
-  const needsOwnerCount = (directionRegistry.projects || []).filter((direction) => direction.freshness?.status === "NEEDS_OWNER" || (direction.execution?.ownerApprovals || []).length > 0).length;
+  const liveDirectionStates = (directionRegistry.projects || []).map((direction) => ({
+    direction,
+    operations: operationalState(direction, workControl),
+  }));
+  const staleCount = liveDirectionStates.filter(({ direction, operations }) =>
+    (operations?.connectionState === "CONNECTED" ? operations.freshnessStatus : direction.freshness?.status) === "STALE"
+  ).length;
+  const needsOwnerCount = liveDirectionStates.filter(({ direction }) => projectNeedsOwner(direction, workControl)).length;
+  const liveBindingCount = liveDirectionStates.filter(({ operations }) => operations?.bound && operations.connectionState === "CONNECTED" && operations.milestoneFound).length;
 
   const togglePin = (id) => {
     setPins((current) => {
@@ -318,7 +488,7 @@ export default function UIHub() {
         if (filter === "PINNED" && !pins.includes(project.id)) return false;
         if (filter === "ATTENTION" && project.health !== "ATTENTION") return false;
         if (filter === "DIRECTION" && !direction) return false;
-        if (filter === "NEEDS_OWNER" && !(direction?.freshness?.status === "NEEDS_OWNER" || (direction?.execution?.ownerApprovals || []).length > 0)) return false;
+        if (filter === "NEEDS_OWNER" && !projectNeedsOwner(direction, workControl)) return false;
         if (["ACTIVE", "PROTOTYPE", "ARCHIVE"].includes(filter) && project.lifecycle !== filter) return false;
         if (family !== "ALL" && project.family !== family) return false;
         if (!needle) return true;
@@ -346,7 +516,7 @@ export default function UIHub() {
         if (aLife !== bLife) return aLife - bLife;
         return a.name.localeCompare(b.name);
       });
-  }, [projects, query, filter, family, pins]);
+  }, [projects, query, filter, family, pins, workControl]);
 
   return (
     <div className="uih-page">
@@ -366,26 +536,27 @@ export default function UIHub() {
         <div><strong>{projects.length}</strong><span>Registered UIs</span></div>
         <div><strong>{activeCount}</strong><span>Active</span></div>
         <div><strong>{directionCount}</strong><span>Direction normalized</span></div>
+        <div><strong>{liveBindingCount}</strong><span>Live Work Control bindings</span></div>
         <div><strong>{needsOwnerCount}</strong><span>Need owner</span></div>
         <div><strong>{attentionCount}</strong><span>Needs attention</span></div>
-        <div><strong>{verifiedCount}</strong><span>Verified launch paths</span></div>
       </section>
 
       <section className="uih-governance">
         <div className="uih-governance-mark">✓</div>
         <div>
-          <strong>Hub cards are now views of canonical project state — not standalone notes.</strong>
-          <span>UI Registry owns interface identity and launch paths. Project Direction owns strategy, gates and evidence. Work Control remains the execution source; Agent 000 / Project Steward maintains strategic coherence.</span>
+          <strong>Strategy and execution are separated, then joined on the card.</strong>
+          <span>Project Direction owns North Star, hypotheses and gates. Work Control hydrates operational state read-only. Agent 000 / Project Steward maintains strategic coherence.</span>
+          <span className="uih-governance-live">Work Control: <b>{workControlState}</b>{workControlError ? ` · ${workControlError}` : ""}</span>
         </div>
       </section>
 
       {pinnedProjects.length > 0 && (
         <section className="uih-section">
           <div className="uih-section-head">
-            <div><h2>Pinned UIs</h2><p>Your high-value launchpad. Strategic projects show their current decision and next gate directly on the card.</p></div>
+            <div><h2>Pinned UIs</h2><p>Your high-value launchpad. Strategic projects show their current decision and live Factory workstream directly on the card.</p></div>
           </div>
           <div className="uih-card-grid uih-pinned-grid">
-            {pinnedProjects.map((project) => <ProjectCard key={project.id} project={project} pinned onPin={togglePin} onOpen={recordOpen} />)}
+            {pinnedProjects.map((project) => <ProjectCard key={project.id} project={project} pinned onPin={togglePin} onOpen={recordOpen} workControl={workControl} />)}
           </div>
         </section>
       )}
@@ -435,7 +606,7 @@ export default function UIHub() {
         {visible.length ? (
           <div className="uih-card-grid">
             {visible.map((project) => (
-              <ProjectCard key={project.id} project={project} pinned={pins.includes(project.id)} onPin={togglePin} onOpen={recordOpen} />
+              <ProjectCard key={project.id} project={project} pinned={pins.includes(project.id)} onPin={togglePin} onOpen={recordOpen} workControl={workControl} />
             ))}
           </div>
         ) : (
@@ -444,7 +615,7 @@ export default function UIHub() {
       </section>
 
       <section className="uih-section uih-attention-section">
-        <div className="uih-section-head"><div><h2>Registry & stewardship maintenance</h2><p>Agent 000 / Project Steward owns strategic coherence; UI and deployment maintenance remain with their existing Factory owners.</p></div></div>
+        <div className="uih-section-head"><div><h2>Registry & stewardship maintenance</h2><p>Agent 000 / Project Steward owns strategic coherence; Work Control owns live execution state.</p></div></div>
         <div className="uih-maintenance-grid">
           <div><strong>{directionBacklog}</strong><span>active projects awaiting direction migration</span></div>
           <div><strong>{staleCount}</strong><span>normalized projects marked stale</span></div>
@@ -454,7 +625,7 @@ export default function UIHub() {
       </section>
 
       <footer className="uih-footer">
-        UI assets: <code>agent-factory/governance/ui-registry-v1.json</code> · Project strategy: <code>agent-factory/governance/project-direction-registry-v1.json</code> · Direction updated {directionRegistry.updatedAt} · UI registry updated {registry.updatedAt}
+        UI assets: <code>agent-factory/governance/ui-registry-v1.json</code> · Project strategy: <code>agent-factory/governance/project-direction-registry-v1.json</code> · Work Control adapter: <code>src/projectDirectionWorkControl.js</code> · Verified launch paths: {verifiedCount} · Direction updated {directionRegistry.updatedAt} · UI registry updated {registry.updatedAt}
       </footer>
     </div>
   );

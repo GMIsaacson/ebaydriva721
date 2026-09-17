@@ -11,8 +11,40 @@ The UI Hub card is a **view** of canonical project state. It is not a second man
 ## Separation of concerns
 
 - `ui-registry-v1.json` owns interface identity, lifecycle, launch paths, deployment metadata and UI-asset lineage.
-- `project-direction-registry-v1.json` owns strategic direction, gates, evidence state, freshness and decision history.
-- Work Control remains the operational source for execution state. Project Direction v1 carries an explicit `Work Control (adapter pending)` source marker until automatic hydration is implemented.
+- `project-direction-registry-v1.json` owns strategic direction, gates, evidence state, strategic freshness and decision history.
+- Work Control owns operational execution state. The UI Hub may subscribe to the same authenticated Work Control ledger and hydrate operational readouts onto a Project Direction card.
+- Work Control hydration is read-only from the Hub. It does not create, initialize or mutate Work Control records.
+
+## Operational adapter boundary
+
+A Project Direction record may declare `execution.workControlBinding.milestoneId`. That binding must be explicitly scoped because a Work Control milestone can represent only one Factory workstream inside a larger business project.
+
+The live adapter may derive and display:
+
+- bound Work Control milestone and status;
+- attached active work orders;
+- live operational blockers;
+- live owner-approval requests;
+- operational dependencies;
+- last Work Control activity;
+- operational freshness (`BLOCKED`, `NEEDS_OWNER`, or `STALE`) when supported by live ledger evidence.
+
+The live adapter **must not** rewrite or infer:
+
+- strategic phase;
+- North Star;
+- customer/problem definition;
+- decision being earned;
+- current hypothesis;
+- next strategic gate;
+- success criteria;
+- kill criteria;
+- business model or long-term destination;
+- strategic decision history.
+
+If Work Control is signed out, connecting, unavailable, or missing the bound milestone, the Hub must show that state explicitly and fall back to canonical strategic data. It must not invent operational values.
+
+Example: SourceMargin is strategically in `BUILD → PAID PILOT`, while Work Control milestone `M-004` represents only the **SourceMargin common-engine integration** workstream. `M-004 = BACKLOG` therefore does not mean the SourceMargin business project is in backlog.
 
 ## Responsibility model
 
@@ -34,9 +66,9 @@ A normalized serious project must carry:
 
 1. **Strategy** — problem, customer, why now, North Star, business model, long-term destination.
 2. **Decision** — current phase, decision being earned, hypothesis, next gate, success criteria and kill criteria.
-3. **Execution** — next actions, blockers, dependencies and owner approvals.
+3. **Execution** — strategic next actions/constraints plus an optional scoped Work Control binding.
 4. **Evidence** — confidence, proven, unproven, latest result and evidence links.
-5. **Freshness** — state plus last strategy/work/evidence timestamps when available.
+5. **Freshness** — strategic state plus live operational freshness when a valid Work Control binding is connected.
 6. **History** — material decisions, previous/new state, reason and authorization.
 
 ## Standard phase rail
@@ -53,11 +85,13 @@ A generic percentage is not a substitute for phase/gate state. When useful, a pr
 - `AWAITING_EVIDENCE`
 - `NEEDS_OWNER`
 
+Operational freshness can temporarily elevate a card to `BLOCKED`, `NEEDS_OWNER`, or `STALE`; it does not change the strategic phase.
+
 ## Maintenance flow
 
 `Specialist result → evidence/receipt → QA → Work Control → Agent 000 / Project Steward → canonical Project Direction update → UI Hub`
 
-A material strategic state change must add a history entry. Routine operational updates should flow from Work Control once the adapter is live rather than being duplicated manually.
+A material strategic state change must add a history entry. Routine operational updates flow from Work Control through the read-only adapter rather than being duplicated manually in Project Direction.
 
 ## Progressive migration
 
@@ -79,3 +113,5 @@ Initial migration order:
 ## SourceMargin first implementation
 
 SourceMargin is the reference implementation. Its current direction is `BUILD → PAID PILOT`; the immediate next gate is launch readiness followed by the first 10 paying pilot customers. Commercial willingness-to-pay, repeated usage, real sourcing actions and sustainable opportunity-generation economics are explicitly tracked as proof questions rather than assumed outcomes.
+
+SourceMargin is bound to Work Control milestone `M-004` only for the common-engine integration workstream. The Hub keeps that live execution status visibly separate from SourceMargin's strategic business state.
