@@ -27,14 +27,20 @@ export async function fetchN8nSnapshot(user) {
   return readJson(response);
 }
 
-export async function setWorkflowActive(user, workflowId, active) {
+export async function fetchWorkflowResult(user, workflowId) {
+  const response = await fetch(`/api/n8n-control?result=${encodeURIComponent(workflowId)}`, {
+    method: "GET",
+    headers: await authHeaders(user),
+    cache: "no-store",
+  });
+  return readJson(response);
+}
+
+export async function controlWorkflow(user, workflowId, action) {
   const response = await fetch("/api/n8n-control", {
     method: "POST",
     headers: await authHeaders(user, true),
-    body: JSON.stringify({
-      action: active ? "activate" : "deactivate",
-      workflowId,
-    }),
+    body: JSON.stringify({ action, workflowId }),
   });
   return readJson(response);
 }
