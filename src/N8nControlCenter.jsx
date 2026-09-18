@@ -1,9 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useAuth } from "./AuthProvider";
-import { fetchN8nSnapshot, setWorkflowActive } from "./n8nControlApi";
+import { controlWorkflow, fetchN8nSnapshot, fetchWorkflowResult } from "./n8nControlApi";
 import "./n8n-control.css";
-
-const FAIL_STATES = new Set(["error", "crashed", "canceled"]);
 
 function fmtTime(value) {
   if (!value) return "—";
@@ -54,6 +52,7 @@ export default function N8nControlCenter() {
   const [busyId, setBusyId] = useState("");
   const [error, setError] = useState(null);
   const [notice, setNotice] = useState("");
+  const [resultView, setResultView] = useState(null);
 
   const refresh = async ({ quiet = false } = {}) => {
     if (!currentUser) return;
@@ -82,7 +81,7 @@ export default function N8nControlCenter() {
   const filteredWorkflows = useMemo(() => {
     if (!needle) return workflows;
     return workflows.filter((row) =>
-      [row.name, row.id, ...(row.tags || []), ...(row.triggers || [])]
+      [row.name, row.id, row.schedule, row.operationalState]
         .join(" ").toLowerCase().includes(needle)
     );
   }, [workflows, needle]);
@@ -96,46 +95,45 @@ export default function N8nControlCenter() {
   }, [executions, needle]);
 
   const failures = useMemo(
-    () => filteredExecutions.filter((row) => FAIL_STATES.has(String(row.status).toLowerCase())),
-    [filteredExecutions]
-  );
-
-  const scheduled = useMemo(
-    () => filteredWorkflows.filter((row) => (row.triggers || []).includes("Schedule")),
+    () => filteredWorkflows.filter((row) => Number(row.errors24h || 0) > 0),
     [filteredWorkflows]
   );
 
-  const failureGroups = useMemo(() => {
-    const groups = new Map();
-    for (const row of failures) {
-      const key = row.workflowId || row.workflowName;
-      const item = groups.get(key) || {
-        workflowId: row.workflowId,
-        workflowName: row.workflowName,
-        count: 0,
-        latest: null,
-      };
-      item.count += 1;
-      if (!item.latest || Date.parse(row.startedAt || 0) > Date.parse(item.latest.startedAt || 0)) {
-        item.latest = row;
-      }
-      groups.set(key, item);
-    }
-    return Array.from(groups.values()).sort((a, b) => b.count - a.count);
-  }, [failures]);
+  const scheduled = useMemo(
+    () => filteredWorkflows.filter((row) => row.scheduled),
+    [filteredWorkflows]
+  );
 
-  const handleToggle = async (workflow) => {
+  const running = useMemo(
+    () => filteredExecutions.filter((row) => String(row.status).toLowerCase() === "running"),
+    [filteredExecutions]
+  );
+
+  const handleControl = async (workflow, action) => {
     if (!snapshot?.writeEnabled || busyId) return;
+    const verb = action === "pause" ? "Pause" : action === "resume" ? "Resume" : "Restart";
+    if (!window.confirm(`${verb} ${workflow.name}?\n\nThis changes the live n8n workflow state.`)) return;
+
     setBusyId(workflow.id);
     setNotice("");
     try {
-      await setWorkflowActive(currentUser, workflow.id, !workflow.active);
-      setNotice(`${workflow.name} ${workflow.active ? "deactivated" : "activated"}.`);
+      await controlWorkflow(currentUser, workflow.id, action);
+      setNotice(`${workflow.name}: ${action} completed.`);
       await refresh({ quiet: true });
     } catch (err) {
       setNotice(`Control failed: ${err.message}`);
     } finally {
       setBusyId("");
+    }
+  };
+
+  const openResult = async (workflow) => {
+    setResultView({ workflow, loading: true, payload: null, error: null });
+    try {
+      const payload = await fetchWorkflowResult(currentUser, workflow.id);
+      setResultView({ workflow, loading: false, payload, error: null });
+    } catch (err) {
+      setResultView({ workflow, loading: false, payload: null, error: err.message });
     }
   };
 
@@ -147,7 +145,13 @@ export default function N8nControlCenter() {
     ["schedules", "Schedules"],
   ];
 
-  const configured = snapshot?.configured !== false && error?.payload?.configured !== false;
+  const visibleCount = section === "workflows"
+    ? filteredWorkflows.length
+    : section === "failures"
+      ? failures.length
+      : section === "schedules"
+        ? scheduled.length
+        : filteredExecutions.length;
 
   return (
     <div className="n8nc-page">
@@ -169,8 +173,8 @@ export default function N8nControlCenter() {
         <div className="n8nc-side-health">
           <i className={snapshot?.connected ? "live" : error ? "down" : "checking"} />
           <div>
-            <strong>{snapshot?.connected ? "n8n connected" : error ? "Connection needs setup" : "Checking n8n"}</strong>
-            <span>{snapshot?.connected ? "Server-side API bridge" : "No credentials exposed to browser"}</span>
+            <strong>{snapshot?.connected ? "Factory n8n live" : error ? "Connection problem" : "Checking n8n"}</strong>
+            <span>{snapshot?.connected ? "Private n8n · server-side telemetry" : "No n8n secret exposed to browser"}</span>
           </div>
         </div>
       </aside>
@@ -180,11 +184,11 @@ export default function N8nControlCenter() {
           <div>
             <div className="n8nc-eyebrow">FACTORY · ORCHESTRATION CONTROL PLANE</div>
             <h1>n8n Control Center</h1>
-            <p>See workflow state, analyze executions, isolate failures and control publication from one surface.</p>
+            <p>See workflow state, analyze recent outcomes, isolate failures and control managed automation from one surface.</p>
           </div>
           <div className="n8nc-header-actions">
-            {snapshot?.instanceUrl && (
-              <a href={snapshot.instanceUrl} target="_blank" rel="noreferrer">Open n8n ↗</a>
+            {snapshot?.sourceUiUrl && (
+              <a href={snapshot.sourceUiUrl} target="_blank" rel="noreferrer">Open server console ↗</a>
             )}
             <button onClick={() => refresh()} disabled={loading}>{loading ? "Refreshing…" : "Refresh"}</button>
           </div>
@@ -194,13 +198,15 @@ export default function N8nControlCenter() {
           <div>
             <span className={snapshot?.connected ? "n8nc-dot live" : "n8nc-dot"} />
             <strong>{snapshot?.connected ? "Live telemetry" : "Telemetry offline"}</strong>
-            <small>{snapshot?.fetchedAt ? `Updated ${fmtTime(snapshot.fetchedAt)} · auto-refresh 30s` : "Waiting for first successful API read"}</small>
+            <small>{snapshot?.fetchedAt ? `Updated ${fmtTime(snapshot.fetchedAt)} · auto-refresh 30s` : "Waiting for first successful read"}</small>
           </div>
           <div>
             <strong>{snapshot?.writeEnabled ? "Owner controls enabled" : "Owner controls locked"}</strong>
-            <small>{snapshot?.writeEnabled ? "Activate / deactivate actions are authorized and audited." : "Reads remain isolated; workflow writes require the owner gate."}</small>
+            <small>{snapshot?.writeEnabled ? "Pause / resume / restart are authorized and audited." : "Telemetry is live; mutations remain gated."}</small>
           </div>
-          {snapshot?.sampleTruncated && <span className="n8nc-warning">View is capped to the newest 500 records.</span>}
+          {snapshot?.coverage?.managed != null && (
+            <span className="n8nc-warning">{snapshot.coverage.managed} Factory-managed workflows in this live scope</span>
+          )}
         </div>
 
         {notice && <div className={notice.startsWith("Control failed") ? "n8nc-notice error" : "n8nc-notice"}>{notice}</div>}
@@ -208,29 +214,34 @@ export default function N8nControlCenter() {
         {error && !snapshot?.connected && (
           <section className="n8nc-setup">
             <div className="n8nc-setup-copy">
-              <span>CONNECTION SETUP</span>
-              <h2>{configured ? "n8n is not reachable yet" : "Connect this cockpit to n8n"}</h2>
+              <span>LIVE BACKEND</span>
+              <h2>Factory workflow service is not reachable</h2>
               <p>
-                The UI is deployed with a server-side gateway. It needs the self-hosted n8n URL and API key in Vercel;
-                the key never reaches the browser.
+                n8n itself stays private on localhost. This cockpit reads through the Factory workflow service instead of exposing port 5678.
               </p>
             </div>
             <div className="n8nc-env-grid">
-              <code>N8N_BASE_URL</code><span>Public HTTPS URL for the n8n instance</span>
-              <code>N8N_API_KEY</code><span>API key from n8n Settings → n8n API</span>
-              <code>N8N_CONTROL_OWNER_UID</code><span>Firebase UID allowed to activate/deactivate workflows</span>
-              <code>N8N_CONTROL_OWNER_EMAIL</code><span>Alternative owner gate if UID is not used</span>
+              <code>WORKFLOW_CONTROL_BASE_URL</code><span>Optional override for the Factory workflow service</span>
+              <code>N8N_CONTROL_OWNER_UID / EMAIL</code><span>Owner identity gate for lifecycle actions</span>
+              <code>WORKFLOW_CONTROL_USER / PASSWORD</code><span>Server-side credentials for mutation requests only</span>
             </div>
             <small>Current gateway response: {error.message}</small>
           </section>
         )}
 
+        {!error && snapshot?.connected && !snapshot?.writeEnabled && (
+          <section className="n8nc-readonly-note">
+            <strong>Live read mode is operational.</strong>
+            <span>Owner lifecycle controls are intentionally disabled until the Vercel owner gate and workflow-control credentials are configured.</span>
+          </section>
+        )}
+
         <section className="n8nc-metrics">
-          <Metric value={snapshot?.metrics?.workflows} label="Workflows" />
+          <Metric value={snapshot?.metrics?.workflows} label="Managed workflows" />
           <Metric value={snapshot?.metrics?.activeWorkflows} label="Active" />
           <Metric value={snapshot?.metrics?.scheduledWorkflows} label="Scheduled" />
           <Metric value={snapshot?.metrics?.executions24h} label="Executions · 24h" />
-          <Metric value={snapshot?.metrics?.failures24h} label="Failures · 24h" />
+          <Metric value={snapshot?.metrics?.failures24h} label="Errors · 24h" />
           <Metric
             value={snapshot?.metrics?.successRate24h == null ? "—" : `${snapshot.metrics.successRate24h}%`}
             label="Success rate · 24h"
@@ -240,9 +251,9 @@ export default function N8nControlCenter() {
         <div className="n8nc-toolbar">
           <div className="n8nc-search">
             <span>⌕</span>
-            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search workflow, execution, tag or status" />
+            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search workflow, schedule or state" />
           </div>
-          <span>{section === "workflows" ? filteredWorkflows.length : section === "failures" ? failures.length : filteredExecutions.length} visible</span>
+          <span>{visibleCount} visible</span>
         </div>
 
         {section === "overview" && (
@@ -254,41 +265,39 @@ export default function N8nControlCenter() {
                   <b>{snapshot?.metrics?.running || 0}</b>
                 </div>
                 <div className="n8nc-list">
-                  {executions.filter((row) => ["running", "new", "waiting"].includes(row.status)).slice(0, 8).map((row) => (
+                  {running.slice(0, 8).map((row) => (
                     <div key={row.id}>
                       <div><strong>{row.workflowName}</strong><span>Execution {row.id} · {fmtTime(row.startedAt)}</span></div>
                       <Status value={row.status} />
                     </div>
                   ))}
-                  {!executions.some((row) => ["running", "new", "waiting"].includes(row.status)) && (
-                    <Empty title="No workflows running">Nothing is currently executing or waiting.</Empty>
-                  )}
+                  {!running.length && <Empty title="Nothing running now">No managed workflow is executing at this instant.</Empty>}
                 </div>
               </article>
 
               <article className="n8nc-panel">
                 <div className="n8nc-panel-head">
-                  <div><span>FAILURE RADAR</span><h2>Highest failure concentration</h2></div>
-                  <b>{failures.length}</b>
+                  <div><span>FAILURE RADAR</span><h2>Errors in the last 24 hours</h2></div>
+                  <b>{snapshot?.metrics?.failures24h || 0}</b>
                 </div>
                 <div className="n8nc-list">
-                  {failureGroups.slice(0, 6).map((group) => (
-                    <div key={group.workflowId || group.workflowName}>
-                      <div><strong>{group.workflowName}</strong><span>Latest {fmtTime(group.latest?.startedAt)}</span></div>
-                      <em>{group.count} fail{group.count === 1 ? "" : "s"}</em>
+                  {failures.slice(0, 6).map((workflow) => (
+                    <div key={workflow.id}>
+                      <div><strong>{workflow.name}</strong><span>{workflow.schedule}</span></div>
+                      <em>{workflow.errors24h} error{workflow.errors24h === 1 ? "" : "s"}</em>
                     </div>
                   ))}
-                  {!failureGroups.length && <Empty title="No failures in the loaded window">Recent execution history is clean.</Empty>}
+                  {!failures.length && <Empty title="No managed-workflow errors">The live backend reports zero errors in the current 24-hour window.</Empty>}
                 </div>
               </article>
             </section>
 
             <section className="n8nc-panel n8nc-recent">
               <div className="n8nc-panel-head">
-                <div><span>RECENT EXECUTIONS</span><h2>What n8n has been doing</h2></div>
+                <div><span>LATEST BY WORKFLOW</span><h2>Most recent executions</h2></div>
                 <button className="n8nc-text-button" onClick={() => setSection("executions")}>View all →</button>
               </div>
-              <ExecutionTable rows={filteredExecutions.slice(0, 12)} />
+              <ExecutionTable rows={filteredExecutions} />
             </section>
           </>
         )}
@@ -296,92 +305,129 @@ export default function N8nControlCenter() {
         {section === "workflows" && (
           <section className="n8nc-panel">
             <div className="n8nc-panel-head">
-              <div><span>WORKFLOW INVENTORY</span><h2>All automations</h2></div>
-              <small>{snapshot?.writeEnabled ? "Owner controls active" : "Controls read-only until owner gate is configured"}</small>
+              <div><span>MANAGED WORKFLOW INVENTORY</span><h2>Factory automations</h2></div>
+              <small>{snapshot?.writeEnabled ? "Owner controls active" : "Control actions are read-only here for now"}</small>
             </div>
             <div className="n8nc-table-wrap">
               <table>
-                <thead><tr><th>Workflow</th><th>Trigger</th><th>Tags</th><th>Updated</th><th>Status</th><th>Control</th></tr></thead>
+                <thead><tr><th>Workflow</th><th>Schedule</th><th>Latest run</th><th>Errors 24h</th><th>State</th><th>Control</th></tr></thead>
                 <tbody>
-                  {filteredWorkflows.map((workflow) => (
-                    <tr key={workflow.id}>
-                      <td>
-                        <strong>{workflow.name}</strong>
-                        <small>{workflow.id}</small>
-                      </td>
-                      <td>{workflow.triggers?.length ? workflow.triggers.join(", ") : "Internal / sub-workflow"}</td>
-                      <td>{workflow.tags?.length ? workflow.tags.join(", ") : "—"}</td>
-                      <td>{fmtTime(workflow.updatedAt)}</td>
-                      <td><Status value={workflow.active ? "active" : "inactive"} /></td>
-                      <td>
-                        <div className="n8nc-row-actions">
-                          {snapshot?.instanceUrl && (
-                            <a href={`${snapshot.instanceUrl}/workflow/${workflow.id}`} target="_blank" rel="noreferrer">Open ↗</a>
-                          )}
-                          <button
-                            disabled={!snapshot?.writeEnabled || busyId === workflow.id}
-                            onClick={() => handleToggle(workflow)}
-                            title={!snapshot?.writeEnabled ? "Owner write gate is not enabled" : workflow.active ? "Deactivate workflow" : "Activate workflow"}
-                          >
-                            {busyId === workflow.id ? "Working…" : workflow.active ? "Deactivate" : "Activate"}
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                  {filteredWorkflows.map((workflow) => {
+                    const paused = workflow.operationalState === "paused";
+                    return (
+                      <tr key={workflow.id}>
+                        <td><strong>{workflow.name}</strong><small>{workflow.id}</small></td>
+                        <td>{workflow.schedule}</td>
+                        <td>{workflow.latestExecution ? `${workflow.latestExecution.status} · ${fmtTime(workflow.latestExecution.startedAt)}` : "—"}</td>
+                        <td>{workflow.errors24h || 0}</td>
+                        <td><Status value={workflow.operationalState} /></td>
+                        <td>
+                          <div className="n8nc-row-actions">
+                            <button onClick={() => openResult(workflow)}>Result</button>
+                            <button
+                              disabled={!snapshot?.writeEnabled || busyId === workflow.id}
+                              onClick={() => handleControl(workflow, paused ? "resume" : "pause")}
+                              title={!snapshot?.writeEnabled ? "Owner lifecycle controls are not configured" : paused ? "Resume workflow" : "Pause workflow"}
+                            >
+                              {busyId === workflow.id ? "Working…" : paused ? "Resume" : "Pause"}
+                            </button>
+                            <button
+                              disabled={!snapshot?.writeEnabled || busyId === workflow.id}
+                              onClick={() => handleControl(workflow, "restart")}
+                              title={!snapshot?.writeEnabled ? "Owner lifecycle controls are not configured" : "Restart workflow registration/runtime"}
+                            >
+                              Restart
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
-            {!filteredWorkflows.length && <Empty title="No workflows found">Adjust the search or connect the n8n instance.</Empty>}
+            {!filteredWorkflows.length && <Empty title="No workflows found">Adjust the search or refresh the live backend.</Empty>}
           </section>
         )}
 
         {section === "executions" && (
           <section className="n8nc-panel">
             <div className="n8nc-panel-head">
-              <div><span>EXECUTION LEDGER</span><h2>Recent runs</h2></div>
-              <small>Payload data is intentionally not returned to this UI.</small>
+              <div><span>LATEST EXECUTION SNAPSHOT</span><h2>Latest run for each managed workflow</h2></div>
+              <small>Execution payloads load only when you request a result.</small>
             </div>
             <ExecutionTable rows={filteredExecutions} />
+            {!filteredExecutions.length && <Empty title="No execution records">No managed workflow has a latest execution in the live snapshot.</Empty>}
           </section>
         )}
 
         {section === "failures" && (
           <section className="n8nc-panel">
             <div className="n8nc-panel-head">
-              <div><span>FAILURE QUEUE</span><h2>Executions needing attention</h2></div>
+              <div><span>FAILURE QUEUE</span><h2>Managed workflows needing attention</h2></div>
               <b>{failures.length}</b>
             </div>
-            <ExecutionTable rows={failures} />
-            {!failures.length && <Empty title="No failures found">No error, crash or cancellation appears in the loaded execution window.</Empty>}
+            <div className="n8nc-list">
+              {failures.map((workflow) => (
+                <div key={workflow.id}>
+                  <div><strong>{workflow.name}</strong><span>{workflow.schedule} · latest {fmtTime(workflow.latestExecution?.startedAt)}</span></div>
+                  <div className="n8nc-row-actions"><em>{workflow.errors24h} errors</em><button onClick={() => openResult(workflow)}>View result</button></div>
+                </div>
+              ))}
+            </div>
+            {!failures.length && <Empty title="No failures found">The live backend reports zero errors for managed workflows in the last 24 hours.</Empty>}
           </section>
         )}
 
         {section === "schedules" && (
           <section className="n8nc-panel">
             <div className="n8nc-panel-head">
-              <div><span>SCHEDULE INVENTORY</span><h2>Scheduled workflows</h2></div>
+              <div><span>SCHEDULE INVENTORY</span><h2>Scheduled Factory workflows</h2></div>
               <b>{scheduled.length}</b>
             </div>
             <div className="n8nc-schedule-grid">
               {scheduled.map((workflow) => (
                 <article key={workflow.id}>
-                  <div><Status value={workflow.active ? "active" : "inactive"} /><span>Schedule Trigger</span></div>
+                  <div><Status value={workflow.operationalState} /><span>{workflow.schedule}</span></div>
                   <h3>{workflow.name}</h3>
-                  <p>{workflow.tags?.length ? workflow.tags.join(" · ") : "No workflow tags"}</p>
-                  {snapshot?.instanceUrl && <a href={`${snapshot.instanceUrl}/workflow/${workflow.id}`} target="_blank" rel="noreferrer">Inspect schedule in n8n ↗</a>}
+                  <p>{workflow.latestCompleted ? `Last completed ${fmtTime(workflow.latestCompleted.stoppedAt)} · ${fmtDuration(workflow.latestCompleted.durationMs)}` : "No completed run in live snapshot"}</p>
+                  <button className="n8nc-text-button" onClick={() => openResult(workflow)}>View latest result →</button>
                 </article>
               ))}
             </div>
-            {!scheduled.length && <Empty title="No scheduled workflows found">No loaded workflow contains a Schedule Trigger.</Empty>}
+            {!scheduled.length && <Empty title="No scheduled workflows found">No managed workflow currently reports a schedule.</Empty>}
           </section>
         )}
 
         <footer className="n8nc-footer">
-          <span>n8n remains the execution engine · Vercel is the operator cockpit.</span>
-          <span>Reads: Firebase-authenticated · Secrets: server-side · Writes: owner-gated + logged</span>
+          <span>n8n stays private on localhost · Vercel is the authenticated operator cockpit.</span>
+          <span>Telemetry: Factory workflow service · Mutations: owner-gated + server authenticated</span>
         </footer>
       </main>
+
+      {resultView && (
+        <div className="n8nc-result-modal" onMouseDown={(event) => { if (event.target === event.currentTarget) setResultView(null); }}>
+          <section>
+            <div className="n8nc-result-head">
+              <div>
+                <span>LATEST USEFUL RESULT</span>
+                <h2>{resultView.workflow.name}</h2>
+                <small>{resultView.payload?.node || resultView.workflow.id}{resultView.payload?.execution?.id ? ` · execution ${resultView.payload.execution.id}` : ""}</small>
+              </div>
+              <button onClick={() => setResultView(null)}>Close</button>
+            </div>
+            {resultView.loading && <div className="n8nc-result-body">Loading result…</div>}
+            {resultView.error && <div className="n8nc-result-error">{resultView.error}</div>}
+            {!resultView.loading && !resultView.error && (
+              <pre className="n8nc-result-body">
+                {resultView.payload?.payload == null
+                  ? (resultView.payload?.message || "No stored result payload.")
+                  : JSON.stringify(resultView.payload.payload, null, 2)}
+              </pre>
+            )}
+          </section>
+        </div>
+      )}
     </div>
   );
 }
@@ -391,11 +437,11 @@ function ExecutionTable({ rows }) {
   return (
     <div className="n8nc-table-wrap">
       <table>
-        <thead><tr><th>Execution</th><th>Workflow</th><th>Status</th><th>Mode</th><th>Started</th><th>Duration</th></tr></thead>
+        <thead><tr><th>Execution</th><th>Workflow</th><th>Status</th><th>Trigger / schedule</th><th>Started</th><th>Duration</th></tr></thead>
         <tbody>
           {rows.map((row) => (
             <tr key={row.id}>
-              <td><strong>#{row.id}</strong>{row.retryOf && <small>retry of {row.retryOf}</small>}</td>
+              <td><strong>#{row.id}</strong></td>
               <td><strong>{row.workflowName}</strong><small>{row.workflowId || "—"}</small></td>
               <td><Status value={row.status} /></td>
               <td>{row.mode || "—"}</td>
