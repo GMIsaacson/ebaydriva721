@@ -96,3 +96,16 @@
 .n8nc-workflow-actions .n8nc-result-button:hover:not(:disabled){background:#1d2939;border-color:#1d2939}
 @media(max-width:1180px){.n8nc-workflow-grid{grid-template-columns:1fr}}
 @media(max-width:800px){.n8nc-workflow-io,.n8nc-workflow-meta{grid-template-columns:1fr}}
+
+.n8nc-owner-enroll{max-width:1500px;margin:10px auto 0;border:1px solid #c7d7fe;background:#f8faff;border-radius:12px;padding:13px 14px;display:grid;grid-template-columns:1.2fr .8fr;gap:16px;align-items:center}
+.n8nc-owner-enroll>div>span{display:block;font-size:8px;font-weight:900;letter-spacing:.075em;color:#155eef}
+.n8nc-owner-enroll>div>strong{display:block;margin-top:3px;font-size:12px;color:#101828}
+.n8nc-owner-enroll p{margin:4px 0 0;font-size:10px;color:#667085;line-height:1.45}
+.n8nc-owner-enroll-form{display:flex;gap:7px}
+.n8nc-owner-enroll-form input{flex:1;min-width:0;border:1px solid #d0d5dd;border-radius:8px;background:#fff;padding:9px 10px;font:inherit;font-size:11px;outline:0}
+.n8nc-owner-enroll-form input:focus{border-color:#84adff;box-shadow:0 0 0 3px #eef4ff}
+.n8nc-owner-enroll-form button{border:1px solid #101828;background:#101828;color:#fff;border-radius:8px;padding:9px 11px;font-weight:800;font-size:10px;cursor:pointer;white-space:nowrap}
+.n8nc-owner-enroll-form button:disabled{opacity:.45;cursor:not-allowed}
+.n8nc-owner-active{max-width:1500px;margin:10px auto 0;border:1px solid #abefc6;background:#ecfdf3;color:#05603a;border-radius:10px;padding:9px 12px;display:flex;gap:8px;align-items:baseline}
+.n8nc-owner-active strong{font-size:11px}.n8nc-owner-active span{font-size:10px;color:#067647}
+@media(max-width:800px){.n8nc-owner-enroll{grid-template-columns:1fr}.n8nc-owner-enroll-form{flex-direction:column}.n8nc-owner-active{flex-direction:column;align-items:flex-start}}

@@ -44,3 +44,12 @@ export async function controlWorkflow(user, workflowId, action) {
   });
   return readJson(response);
 }
+
+export async function enrollWorkflowOwner(user, bootstrapCode) {
+  const response = await fetch("/api/n8n-control", {
+    method: "POST",
+    headers: await authHeaders(user, true),
+    body: JSON.stringify({ action: "enroll", bootstrapCode }),
+  });
+  return readJson(response);
+}

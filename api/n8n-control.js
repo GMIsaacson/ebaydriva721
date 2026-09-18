@@ -108,45 +108,23 @@ async function requireUser(req) {
   const token = auth.startsWith('Bearer ') ? auth.slice(7).trim() : '';
   if (!token) throw Object.assign(new Error('AUTH_REQUIRED'), { status: 401 });
   try {
-    return await verifyFirebaseIdToken(token);
+    return { ...(await verifyFirebaseIdToken(token)), token };
   } catch (error) {
     throw Object.assign(error, { status: 401 });
   }
-}
-
-function ownerGateConfigured() {
-  return Boolean(process.env.N8N_CONTROL_OWNER_UID || process.env.N8N_CONTROL_OWNER_EMAIL);
-}
-
-function isOwner(user) {
-  const uid = String(process.env.N8N_CONTROL_OWNER_UID || '').trim();
-  const email = String(process.env.N8N_CONTROL_OWNER_EMAIL || '').trim().toLowerCase();
-  if (uid && user.uid === uid) return true;
-  if (email && user.email === email) return true;
-  return false;
-}
-
-function controlCredentialsConfigured() {
-  return Boolean(process.env.WORKFLOW_CONTROL_USER && process.env.WORKFLOW_CONTROL_PASSWORD);
 }
 
 function controlBase() {
   return String(process.env.WORKFLOW_CONTROL_BASE_URL || DEFAULT_CONTROL_BASE).replace(/\/+$/, '');
 }
 
-async function upstream(path, { method = 'GET', body, basicAuth = false } = {}) {
+async function upstream(path, { method = 'GET', body, bearerToken } = {}) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 10_000);
   const headers = { Accept: 'application/json' };
 
   if (body !== undefined) headers['Content-Type'] = 'application/json';
-  if (basicAuth) {
-    if (!controlCredentialsConfigured()) {
-      throw Object.assign(new Error('CONTROL_CREDENTIALS_NOT_CONFIGURED'), { status: 503 });
-    }
-    const raw = `${process.env.WORKFLOW_CONTROL_USER}:${process.env.WORKFLOW_CONTROL_PASSWORD}`;
-    headers.Authorization = `Basic ${Buffer.from(raw).toString('base64')}`;
-  }
+  if (bearerToken) headers.Authorization = `Bearer ${bearerToken}`;
 
   try {
     const response = await fetch(`${controlBase()}${path}`, {
@@ -223,12 +201,14 @@ function latestExecutions(workflows) {
 }
 
 async function snapshot(user) {
-  const live = await upstream('/api/workflows');
+  const [live, owner] = await Promise.all([
+    upstream('/api/workflows'),
+    upstream('/api/owner', { bearerToken: user.token }),
+  ]);
   const workflows = (live.workflows || []).map(normalizeWorkflow).sort((a, b) => a.name.localeCompare(b.name));
   const success24 = Number(live.metrics?.success24 || 0);
   const failures24h = Number(live.metrics?.error24 || 0);
   const settled = success24 + failures24h;
-  const writeGateConfigured = ownerGateConfigured() && controlCredentialsConfigured();
 
   return {
     ok: true,
@@ -242,8 +222,9 @@ async function snapshot(user) {
       managed: Number(live.metrics?.managed ?? workflows.length),
       note: 'Live Factory-managed workflow set. n8n itself remains private on localhost.',
     },
-    writeGateConfigured,
-    writeEnabled: writeGateConfigured && isOwner(user),
+    owner,
+    writeGateConfigured: Boolean(owner?.enrolled),
+    writeEnabled: Boolean(owner?.isOwner),
     metrics: {
       workflows: workflows.length,
       activeWorkflows: workflows.filter((row) => row.operationalState === 'active' || row.operationalState === 'running').length,
@@ -273,27 +254,29 @@ async function resultFor(req) {
 }
 
 async function handleWrite(req, res, user) {
-  if (!ownerGateConfigured()) {
-    return json(res, 403, { ok: false, error: 'OWNER_GATE_NOT_CONFIGURED' });
-  }
-  if (!isOwner(user)) {
-    return json(res, 403, { ok: false, error: 'OWNER_REQUIRED' });
-  }
-  if (!controlCredentialsConfigured()) {
-    return json(res, 503, { ok: false, error: 'CONTROL_CREDENTIALS_NOT_CONFIGURED' });
-  }
-
   const body = req.body && typeof req.body === 'object' ? req.body : {};
   const action = String(body.action || '').toLowerCase();
+
+  if (action === 'enroll') {
+    const bootstrapCode = String(body.bootstrapCode || '').trim();
+    if (!bootstrapCode) return json(res, 400, { ok: false, error: 'BOOTSTRAP_CODE_REQUIRED' });
+    const owner = await upstream('/api/owner/enroll', {
+      method: 'POST',
+      body: { code: bootstrapCode },
+      bearerToken: user.token,
+    });
+    return json(res, 200, { ok: true, action, owner });
+  }
+
   if (!['pause', 'resume', 'restart'].includes(action)) {
     return json(res, 400, { ok: false, error: 'UNSUPPORTED_CONTROL_ACTION' });
   }
 
   const workflowId = safeId(body.workflowId);
-  const payload = await upstream('/api/control', {
+  const payload = await upstream('/api/control-auth', {
     method: 'POST',
     body: { id: workflowId, action },
-    basicAuth: true,
+    bearerToken: user.token,
   });
 
   console.log(JSON.stringify({
