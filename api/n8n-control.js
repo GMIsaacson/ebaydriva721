@@ -5,8 +5,7 @@ const crypto = require('crypto');
 const FIREBASE_PROJECT_ID = 'salescope-7f11d';
 const FIREBASE_ISSUER = `https://securetoken.google.com/${FIREBASE_PROJECT_ID}`;
 const FIREBASE_CERTS_URL = 'https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com';
-const MAX_PAGES = 5;
-const PAGE_SIZE = 100;
+const DEFAULT_CONTROL_BASE = 'https://workcontrol.159-65-169-244.sslip.io/workflows';
 
 let certCache = { expiresAt: 0, certs: {} };
 
@@ -99,41 +98,43 @@ function isOwner(user) {
   return false;
 }
 
-function getN8nConfig() {
-  const rawBase = String(process.env.N8N_BASE_URL || '').trim().replace(/\/+$/, '');
-  const apiKey = String(process.env.N8N_API_KEY || '').trim();
-  if (!rawBase || !apiKey) {
-    throw Object.assign(new Error('N8N_NOT_CONFIGURED'), { status: 503 });
-  }
-  const apiRoot = /\/api\/v1$/i.test(rawBase) ? rawBase : `${rawBase}/api/v1`;
-  const instanceUrl = rawBase.replace(/\/api\/v1$/i, '');
-  return { apiRoot, instanceUrl, apiKey };
+function controlCredentialsConfigured() {
+  return Boolean(process.env.WORKFLOW_CONTROL_USER && process.env.WORKFLOW_CONTROL_PASSWORD);
 }
 
-async function n8nRequest(path, { method = 'GET', body } = {}) {
-  const { apiRoot, apiKey } = getN8nConfig();
+function controlBase() {
+  return String(process.env.WORKFLOW_CONTROL_BASE_URL || DEFAULT_CONTROL_BASE).replace(/\/+$/, '');
+}
+
+async function upstream(path, { method = 'GET', body, basicAuth = false } = {}) {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 12_000);
+  const timer = setTimeout(() => controller.abort(), 10_000);
+  const headers = { Accept: 'application/json' };
+
+  if (body !== undefined) headers['Content-Type'] = 'application/json';
+  if (basicAuth) {
+    if (!controlCredentialsConfigured()) {
+      throw Object.assign(new Error('CONTROL_CREDENTIALS_NOT_CONFIGURED'), { status: 503 });
+    }
+    const raw = `${process.env.WORKFLOW_CONTROL_USER}:${process.env.WORKFLOW_CONTROL_PASSWORD}`;
+    headers.Authorization = `Basic ${Buffer.from(raw).toString('base64')}`;
+  }
+
   try {
-    const response = await fetch(`${apiRoot}${path}`, {
+    const response = await fetch(`${controlBase()}${path}`, {
       method,
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-        'X-N8N-API-KEY': apiKey,
-      },
+      headers,
       body: body === undefined ? undefined : JSON.stringify(body),
       signal: controller.signal,
     });
-
     const text = await response.text();
-    let payload = null;
+    let payload = {};
     if (text) {
-      try { payload = JSON.parse(text); } catch { payload = { message: text.slice(0, 500) }; }
+      try { payload = JSON.parse(text); }
+      catch { payload = { error: text.slice(0, 500) }; }
     }
-
     if (!response.ok) {
-      const error = new Error(payload?.message || payload?.error || `N8N_REQUEST_FAILED:${response.status}`);
+      const error = new Error(payload?.detail || payload?.error || `WORKFLOW_CONTROL_HTTP_${response.status}`);
       error.status = response.status;
       error.upstream = payload;
       throw error;
@@ -144,118 +145,83 @@ async function n8nRequest(path, { method = 'GET', body } = {}) {
   }
 }
 
-async function listPaginated(path, params = {}) {
-  const collected = [];
-  let cursor = null;
-  let page = 0;
-  let truncated = false;
-
-  while (page < MAX_PAGES) {
-    const query = new URLSearchParams({ limit: String(PAGE_SIZE), ...params });
-    if (cursor) query.set('cursor', cursor);
-    const payload = await n8nRequest(`${path}?${query.toString()}`);
-    const rows = Array.isArray(payload?.data) ? payload.data : Array.isArray(payload) ? payload : [];
-    collected.push(...rows);
-    cursor = payload?.nextCursor || null;
-    page += 1;
-    if (!cursor) break;
-  }
-
-  if (cursor) truncated = true;
-  return { data: collected, truncated };
+function isScheduled(schedule) {
+  const value = String(schedule || '').toLowerCase();
+  return Boolean(value) && !value.includes('manual') && !value.includes('on demand') && !value.includes('event-driven');
 }
 
-function triggerLabels(nodes = []) {
-  const labels = new Set();
-  for (const node of Array.isArray(nodes) ? nodes : []) {
-    const type = String(node?.type || '').toLowerCase();
-    if (!type) continue;
-    if (type.includes('scheduletrigger') || type.includes('.cron')) labels.add('Schedule');
-    else if (type.includes('webhook')) labels.add('Webhook');
-    else if (type.includes('manualtrigger')) labels.add('Manual');
-    else if (type.includes('trigger')) labels.add(node?.name || 'Trigger');
-  }
-  return Array.from(labels);
-}
-
-function normalizeWorkflow(workflow) {
+function normalizeWorkflow(row) {
+  const latest = row.latestExecution || null;
+  const state = row.operationalState || (!row.published ? 'paused' : latest?.status === 'running' ? 'running' : 'active');
   return {
-    id: String(workflow.id),
-    name: workflow.name || 'Untitled workflow',
-    active: Boolean(workflow.active),
-    createdAt: workflow.createdAt || null,
-    updatedAt: workflow.updatedAt || null,
-    versionId: workflow.versionId || null,
-    tags: (workflow.tags || []).map((tag) => tag?.name || tag?.id || String(tag)).filter(Boolean),
-    triggers: triggerLabels(workflow.nodes),
+    id: String(row.id),
+    name: row.name || 'Untitled workflow',
+    active: Boolean(row.published),
+    published: Boolean(row.published),
+    managed: true,
+    operationalState: state,
+    schedule: row.schedule || 'Manual / event-driven',
+    scheduled: isScheduled(row.schedule),
+    errors24h: Number(row.errors24h || 0),
+    latestExecution: latest,
+    latestCompleted: row.latestCompleted || null,
+    special: row.special || null,
   };
 }
 
-function normalizeExecution(execution, workflowNames) {
-  const startedAt = execution.startedAt || execution.startTime || null;
-  const stoppedAt = execution.stoppedAt || execution.stopTime || null;
-  const started = startedAt ? Date.parse(startedAt) : NaN;
-  const stopped = stoppedAt ? Date.parse(stoppedAt) : NaN;
-  const workflowId = execution.workflowId ? String(execution.workflowId) : null;
-  return {
-    id: String(execution.id),
-    workflowId,
-    workflowName: execution.workflowData?.name || workflowNames.get(workflowId) || 'Unknown workflow',
-    status: execution.status || (execution.finished ? 'success' : 'running'),
-    mode: execution.mode || null,
-    startedAt,
-    stoppedAt,
-    waitTill: execution.waitTill || null,
-    retryOf: execution.retryOf || null,
-    retrySuccessId: execution.retrySuccessId || null,
-    durationMs: Number.isFinite(started) && Number.isFinite(stopped) ? Math.max(0, stopped - started) : null,
-  };
-}
-
-function buildMetrics(workflows, executions) {
-  const dayAgo = Date.now() - 24 * 60 * 60 * 1000;
-  const recent = executions.filter((row) => row.startedAt && Date.parse(row.startedAt) >= dayAgo);
-  const failedStates = new Set(['error', 'crashed', 'canceled']);
-  const success = recent.filter((row) => row.status === 'success').length;
-  const failures = recent.filter((row) => failedStates.has(row.status)).length;
-  const settled = success + failures;
-
-  return {
-    workflows: workflows.length,
-    activeWorkflows: workflows.filter((row) => row.active).length,
-    scheduledWorkflows: workflows.filter((row) => row.triggers.includes('Schedule')).length,
-    executions24h: recent.length,
-    failures24h: failures,
-    running: executions.filter((row) => ['running', 'new', 'waiting'].includes(row.status)).length,
-    successRate24h: settled ? Math.round((success / settled) * 1000) / 10 : null,
-  };
+function latestExecutions(workflows) {
+  return workflows
+    .map((workflow) => {
+      const execution = workflow.latestExecution;
+      if (!execution) return null;
+      return {
+        id: String(execution.id),
+        workflowId: workflow.id,
+        workflowName: workflow.name,
+        status: execution.status || 'unknown',
+        mode: workflow.schedule,
+        startedAt: execution.startedAt || null,
+        stoppedAt: execution.stoppedAt || null,
+        durationMs: Number.isFinite(Number(execution.durationMs)) ? Number(execution.durationMs) : null,
+      };
+    })
+    .filter(Boolean)
+    .sort((a, b) => Date.parse(b.startedAt || 0) - Date.parse(a.startedAt || 0));
 }
 
 async function snapshot(user) {
-  const { instanceUrl } = getN8nConfig();
-  const [workflowResult, executionResult] = await Promise.all([
-    listPaginated('/workflows'),
-    listPaginated('/executions', { includeData: 'false' }),
-  ]);
-
-  const workflows = workflowResult.data.map(normalizeWorkflow).sort((a, b) => a.name.localeCompare(b.name));
-  const workflowNames = new Map(workflows.map((row) => [row.id, row.name]));
-  const executions = executionResult.data
-    .map((row) => normalizeExecution(row, workflowNames))
-    .sort((a, b) => Date.parse(b.startedAt || 0) - Date.parse(a.startedAt || 0));
+  const live = await upstream('/api/workflows');
+  const workflows = (live.workflows || []).map(normalizeWorkflow).sort((a, b) => a.name.localeCompare(b.name));
+  const success24 = Number(live.metrics?.success24 || 0);
+  const failures24h = Number(live.metrics?.error24 || 0);
+  const settled = success24 + failures24h;
+  const writeGateConfigured = ownerGateConfigured() && controlCredentialsConfigured();
 
   return {
     ok: true,
     connected: true,
     configured: true,
-    instanceUrl,
-    fetchedAt: new Date().toISOString(),
-    writeGateConfigured: ownerGateConfigured(),
-    writeEnabled: ownerGateConfigured() && isOwner(user),
-    sampleTruncated: workflowResult.truncated || executionResult.truncated,
-    metrics: buildMetrics(workflows, executions),
+    source: 'factory-workflow-control-center',
+    sourceUiUrl: controlBase() + '/',
+    fetchedAt: live.checkedAt || new Date().toISOString(),
+    coverage: {
+      mode: 'managed-factory-workflows',
+      managed: Number(live.metrics?.managed ?? workflows.length),
+      note: 'Live Factory-managed workflow set. n8n itself remains private on localhost.',
+    },
+    writeGateConfigured,
+    writeEnabled: writeGateConfigured && isOwner(user),
+    metrics: {
+      workflows: workflows.length,
+      activeWorkflows: workflows.filter((row) => row.operationalState === 'active' || row.operationalState === 'running').length,
+      scheduledWorkflows: workflows.filter((row) => row.scheduled).length,
+      executions24h: success24 + failures24h,
+      failures24h,
+      running: Number(live.metrics?.running || 0),
+      successRate24h: settled ? Math.round((success24 / settled) * 1000) / 10 : null,
+    },
     workflows,
-    executions,
+    executions: latestExecutions(workflows),
   };
 }
 
@@ -267,27 +233,35 @@ function safeId(value) {
   return id;
 }
 
+async function resultFor(req) {
+  const parsed = new URL(req.url, 'https://control.local');
+  const workflowId = safeId(parsed.searchParams.get('result'));
+  return upstream(`/api/result?id=${encodeURIComponent(workflowId)}`);
+}
+
 async function handleWrite(req, res, user) {
   if (!ownerGateConfigured()) {
-    return json(res, 403, { ok: false, error: 'CONTROL_WRITES_NOT_CONFIGURED' });
+    return json(res, 403, { ok: false, error: 'OWNER_GATE_NOT_CONFIGURED' });
   }
   if (!isOwner(user)) {
     return json(res, 403, { ok: false, error: 'OWNER_REQUIRED' });
   }
+  if (!controlCredentialsConfigured()) {
+    return json(res, 503, { ok: false, error: 'CONTROL_CREDENTIALS_NOT_CONFIGURED' });
+  }
 
   const body = req.body && typeof req.body === 'object' ? req.body : {};
-  const action = String(body.action || '');
-  if (!['activate', 'deactivate'].includes(action)) {
+  const action = String(body.action || '').toLowerCase();
+  if (!['pause', 'resume', 'restart'].includes(action)) {
     return json(res, 400, { ok: false, error: 'UNSUPPORTED_CONTROL_ACTION' });
   }
 
   const workflowId = safeId(body.workflowId);
-  const path = action === 'activate'
-    ? `/workflows/${encodeURIComponent(workflowId)}/activate`
-    : `/workflows/${encodeURIComponent(workflowId)}/deactivate`;
-
-  const upstream = await n8nRequest(path, { method: 'POST' });
-  const workflow = normalizeWorkflow(upstream || { id: workflowId, name: workflowId, active: action === 'activate' });
+  const payload = await upstream('/api/control', {
+    method: 'POST',
+    body: { id: workflowId, action },
+    basicAuth: true,
+  });
 
   console.log(JSON.stringify({
     logger: 'n8n-control-center',
@@ -299,7 +273,7 @@ async function handleWrite(req, res, user) {
     at: new Date().toISOString(),
   }));
 
-  return json(res, 200, { ok: true, action, workflow });
+  return json(res, 200, { ok: true, action, workflowId, upstream: payload });
 }
 
 module.exports = async function handler(req, res) {
@@ -312,12 +286,12 @@ module.exports = async function handler(req, res) {
 
   try {
     if (req.method === 'GET') {
-      const payload = await snapshot(user);
-      return json(res, 200, payload);
+      const parsed = new URL(req.url, 'https://control.local');
+      if (parsed.searchParams.has('result')) return json(res, 200, await resultFor(req));
+      return json(res, 200, await snapshot(user));
     }
-    if (req.method === 'POST') {
-      return await handleWrite(req, res, user);
-    }
+    if (req.method === 'POST') return await handleWrite(req, res, user);
+
     res.setHeader('Allow', 'GET, POST');
     return json(res, 405, { ok: false, error: 'METHOD_NOT_ALLOWED' });
   } catch (error) {
@@ -325,7 +299,7 @@ module.exports = async function handler(req, res) {
     console.error('[n8n-control-center]', error?.stack || error?.message || String(error));
     return json(res, status, {
       ok: false,
-      configured: error.message !== 'N8N_NOT_CONFIGURED',
+      configured: true,
       error: error.message || 'N8N_CONTROL_UNAVAILABLE',
       upstreamStatus: error.status || null,
     });
