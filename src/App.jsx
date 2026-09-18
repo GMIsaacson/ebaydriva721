@@ -19,6 +19,7 @@ import AppShell from "./AppShell";
 import WorkControlV2 from "./WorkControlV2";
 import FactoryShell from "./FactoryShell";
 import UIHub from "./UIHub";
+import N8nControlCenter from "./N8nControlCenter";
 
 const PublicLayout = () => (
   <div className="App">
@@ -43,6 +44,14 @@ const App = () => {
               }
             />
             <Route path="ui-hub" element={<ErrorBoundary><UIHub /></ErrorBoundary>} />
+            <Route
+              path="n8n"
+              element={
+                <ProtectedRoute>
+                  <ErrorBoundary><N8nControlCenter /></ErrorBoundary>
+                </ProtectedRoute>
+              }
+            />
           </Route>
 
           <Route element={<PublicLayout />}>
