@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useAuth } from "./AuthProvider";
-import { controlWorkflow, fetchN8nSnapshot, fetchWorkflowResult } from "./n8nControlApi";
+import { controlWorkflow, enrollWorkflowOwner, fetchN8nSnapshot, fetchWorkflowResult } from "./n8nControlApi";
 import "./n8n-control.css";
 
 function fmtTime(value) {
@@ -53,6 +53,8 @@ export default function N8nControlCenter() {
   const [error, setError] = useState(null);
   const [notice, setNotice] = useState("");
   const [resultView, setResultView] = useState(null);
+  const [claimCode, setClaimCode] = useState("");
+  const [claimBusy, setClaimBusy] = useState(false);
 
   const refresh = async ({ quiet = false } = {}) => {
     if (!currentUser) return;
@@ -124,6 +126,23 @@ export default function N8nControlCenter() {
       setNotice(`Control failed: ${err.message}`);
     } finally {
       setBusyId("");
+    }
+  };
+
+  const handleOwnerEnrollment = async () => {
+    const code = claimCode.trim();
+    if (!code || claimBusy) return;
+    setClaimBusy(true);
+    setNotice("");
+    try {
+      await enrollWorkflowOwner(currentUser, code);
+      setClaimCode("");
+      setNotice("Owner controls claimed for this signed-in Factory account.");
+      await refresh({ quiet: true });
+    } catch (err) {
+      setNotice(`Control failed: ${err.message}`);
+    } finally {
+      setClaimBusy(false);
     }
   };
 
@@ -201,8 +220,8 @@ export default function N8nControlCenter() {
             <small>{snapshot?.fetchedAt ? `Updated ${fmtTime(snapshot.fetchedAt)} · auto-refresh 30s` : "Waiting for first successful read"}</small>
           </div>
           <div>
-            <strong>{snapshot?.writeEnabled ? "Owner controls enabled" : "Owner controls locked"}</strong>
-            <small>{snapshot?.writeEnabled ? "Pause / resume / restart are authorized and audited." : "Telemetry is live; mutations remain gated."}</small>
+            <strong>{snapshot?.writeEnabled ? "Owner controls enabled" : snapshot?.owner?.enrolled ? "Owner controls belong to another account" : "Owner enrollment required"}</strong>
+            <small>{snapshot?.writeEnabled ? "Pause / resume / restart are authorized and audited." : snapshot?.owner?.enrolled ? "Telemetry is live; lifecycle mutations are owner-only." : "Telemetry is live; claim the owner gate once to enable lifecycle controls."}</small>
           </div>
           {snapshot?.coverage?.managed != null && (
             <span className="n8nc-warning">{snapshot.coverage.managed} Factory-managed workflows in this live scope</span>
@@ -229,10 +248,40 @@ export default function N8nControlCenter() {
           </section>
         )}
 
-        {!error && snapshot?.connected && !snapshot?.writeEnabled && (
+        {!error && snapshot?.connected && snapshot?.owner?.enrolled === false && (
+          <section className="n8nc-owner-enroll">
+            <div>
+              <span>ONE-TIME OWNER ENROLLMENT</span>
+              <strong>Claim lifecycle controls for this signed-in Factory account</strong>
+              <p>Enter the bootstrap code once. The backend stores only your Firebase UID as the controller; the bootstrap code is invalidated after a successful claim.</p>
+            </div>
+            <div className="n8nc-owner-enroll-form">
+              <input
+                type="password"
+                value={claimCode}
+                onChange={(event) => setClaimCode(event.target.value)}
+                onKeyDown={(event) => { if (event.key === "Enter") handleOwnerEnrollment(); }}
+                placeholder="Owner bootstrap code"
+                autoComplete="off"
+              />
+              <button disabled={!claimCode.trim() || claimBusy} onClick={handleOwnerEnrollment}>
+                {claimBusy ? "Claiming…" : "Claim owner controls"}
+              </button>
+            </div>
+          </section>
+        )}
+
+        {!error && snapshot?.connected && snapshot?.owner?.enrolled && !snapshot?.owner?.isOwner && (
           <section className="n8nc-readonly-note">
             <strong>Live read mode is operational.</strong>
-            <span>Owner lifecycle controls are intentionally disabled until the Vercel owner gate and workflow-control credentials are configured.</span>
+            <span>Lifecycle controls are already owned by another enrolled Factory account.</span>
+          </section>
+        )}
+
+        {!error && snapshot?.connected && snapshot?.owner?.isOwner && (
+          <section className="n8nc-owner-active">
+            <strong>Owner controls active.</strong>
+            <span>This Firebase account can pause, resume, and restart managed workflows.</span>
           </section>
         )}
 
