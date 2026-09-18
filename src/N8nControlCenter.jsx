@@ -81,7 +81,7 @@ export default function N8nControlCenter() {
   const filteredWorkflows = useMemo(() => {
     if (!needle) return workflows;
     return workflows.filter((row) =>
-      [row.name, row.id, row.schedule, row.operationalState]
+      [row.name, row.id, row.schedule, row.operationalState, row.about?.purpose, row.about?.reads, row.about?.produces]
         .join(" ").toLowerCase().includes(needle)
     );
   }, [workflows, needle]);
@@ -306,46 +306,73 @@ export default function N8nControlCenter() {
           <section className="n8nc-panel">
             <div className="n8nc-panel-head">
               <div><span>MANAGED WORKFLOW INVENTORY</span><h2>Factory automations</h2></div>
-              <small>{snapshot?.writeEnabled ? "Owner controls active" : "Control actions are read-only here for now"}</small>
+              <small>{snapshot?.writeEnabled ? "Owner controls active" : "Lifecycle controls remain locked; telemetry and results are live"}</small>
             </div>
-            <div className="n8nc-table-wrap">
-              <table>
-                <thead><tr><th>Workflow</th><th>Schedule</th><th>Latest run</th><th>Errors 24h</th><th>State</th><th>Control</th></tr></thead>
-                <tbody>
-                  {filteredWorkflows.map((workflow) => {
-                    const paused = workflow.operationalState === "paused";
-                    return (
-                      <tr key={workflow.id}>
-                        <td><strong>{workflow.name}</strong><small>{workflow.id}</small></td>
-                        <td>{workflow.schedule}</td>
-                        <td>{workflow.latestExecution ? `${workflow.latestExecution.status} · ${fmtTime(workflow.latestExecution.startedAt)}` : "—"}</td>
-                        <td>{workflow.errors24h || 0}</td>
-                        <td><Status value={workflow.operationalState} /></td>
-                        <td>
-                          <div className="n8nc-row-actions">
-                            <button onClick={() => openResult(workflow)}>Result</button>
-                            <button
-                              disabled={!snapshot?.writeEnabled || busyId === workflow.id}
-                              onClick={() => handleControl(workflow, paused ? "resume" : "pause")}
-                              title={!snapshot?.writeEnabled ? "Owner lifecycle controls are not configured" : paused ? "Resume workflow" : "Pause workflow"}
-                            >
-                              {busyId === workflow.id ? "Working…" : paused ? "Resume" : "Pause"}
-                            </button>
-                            <button
-                              disabled={!snapshot?.writeEnabled || busyId === workflow.id}
-                              onClick={() => handleControl(workflow, "restart")}
-                              title={!snapshot?.writeEnabled ? "Owner lifecycle controls are not configured" : "Restart workflow registration/runtime"}
-                            >
-                              Restart
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+
+            <div className="n8nc-workflow-grid">
+              {filteredWorkflows.map((workflow) => {
+                const paused = workflow.operationalState === "paused";
+                const lastRun = workflow.latestExecution;
+                const completed = workflow.latestCompleted;
+                return (
+                  <article className="n8nc-workflow-card" key={workflow.id}>
+                    <div className="n8nc-workflow-card-head">
+                      <div>
+                        <span className="n8nc-workflow-id">{workflow.id}</span>
+                        <h3>{workflow.name}</h3>
+                      </div>
+                      <Status value={workflow.operationalState} />
+                    </div>
+
+                    <div className="n8nc-workflow-purpose">
+                      <span>WHAT THIS WORKFLOW IS FOR</span>
+                      <p>{workflow.about?.purpose || "Purpose metadata has not yet been normalized."}</p>
+                    </div>
+
+                    <div className="n8nc-workflow-io">
+                      <div>
+                        <span>Reads / trigger inputs</span>
+                        <p>{workflow.about?.reads || "See workflow node graph."}</p>
+                      </div>
+                      <div>
+                        <span>Produces</span>
+                        <p>{workflow.about?.produces || "See latest workflow result."}</p>
+                      </div>
+                    </div>
+
+                    <dl className="n8nc-workflow-meta">
+                      <div><dt>Cadence</dt><dd>{workflow.schedule}</dd></div>
+                      <div><dt>Latest run</dt><dd>{lastRun ? `${lastRun.status} · ${fmtTime(lastRun.startedAt)}` : "No run recorded"}</dd></div>
+                      <div><dt>Last completed</dt><dd>{completed ? `${fmtTime(completed.stoppedAt)} · ${fmtDuration(completed.durationMs)}` : "—"}</dd></div>
+                      <div><dt>Errors · 24h</dt><dd className={workflow.errors24h ? "n8nc-workflow-error-value" : ""}>{workflow.errors24h || 0}</dd></div>
+                    </dl>
+
+                    {workflow.id === "EMAILINTELV1" && workflow.special?.gmailState === "needs_reconnect" && (
+                      <div className="n8nc-workflow-alert">Gmail connection needs attention before this workflow can process mail.</div>
+                    )}
+
+                    <div className="n8nc-workflow-actions">
+                      <button className="n8nc-result-button" onClick={() => openResult(workflow)}>View latest result</button>
+                      <button
+                        disabled={!snapshot?.writeEnabled || busyId === workflow.id}
+                        onClick={() => handleControl(workflow, paused ? "resume" : "pause")}
+                        title={!snapshot?.writeEnabled ? "Owner lifecycle controls are not configured" : paused ? "Resume workflow" : "Pause workflow"}
+                      >
+                        {busyId === workflow.id ? "Working…" : paused ? "Resume" : "Pause"}
+                      </button>
+                      <button
+                        disabled={!snapshot?.writeEnabled || busyId === workflow.id}
+                        onClick={() => handleControl(workflow, "restart")}
+                        title={!snapshot?.writeEnabled ? "Owner lifecycle controls are not configured" : "Restart workflow registration/runtime"}
+                      >
+                        Restart
+                      </button>
+                    </div>
+                  </article>
+                );
+              })}
             </div>
+
             {!filteredWorkflows.length && <Empty title="No workflows found">Adjust the search or refresh the live backend.</Empty>}
           </section>
         )}
