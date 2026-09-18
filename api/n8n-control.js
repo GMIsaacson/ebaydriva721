@@ -7,6 +7,34 @@ const FIREBASE_ISSUER = `https://securetoken.google.com/${FIREBASE_PROJECT_ID}`;
 const FIREBASE_CERTS_URL = 'https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com';
 const DEFAULT_CONTROL_BASE = 'https://workcontrol.159-65-169-244.sslip.io/workflows';
 
+const WORKFLOW_PURPOSE = Object.freeze({
+  ACQ001FACTORYDEMO: {
+    purpose: 'Demonstrates the Business Acquisition Radar from raw acquisition listings to a ranked owner brief.',
+    reads: 'Demo acquisition listings supplied through the manual or webhook trigger.',
+    produces: 'Normalized and deduplicated candidates, hard-filter results, Factory specialist analysis, Q1–Q3 QA ranking, and an owner brief.',
+  },
+  CI001HEARTBEATV1: {
+    purpose: 'Keeps the CI-001 autonomous intelligence loop alive and records whether the intelligence service is healthy.',
+    reads: 'The CI-001 heartbeat endpoint every 15 minutes, plus manual canary runs.',
+    produces: 'A normalized heartbeat result and CIL run record for operational monitoring.',
+  },
+  DEMO10SCONTROLLED: {
+    purpose: 'Smoke-tests the UI-to-n8n control path, scheduling, state changes, and observable execution on a harmless 10-second pulse.',
+    reads: 'A 10-second schedule plus control/status webhooks.',
+    produces: 'A pulse counter, enabled/disabled state, status response, and CIL run evidence.',
+  },
+  EMAILINTELV1: {
+    purpose: 'Monitors Gmail, classifies new inbox messages, and builds a compact digest that can be run on schedule or on demand.',
+    reads: 'Recent Gmail inbox messages, a 5-minute poll gate, manual/run-now triggers, and control state.',
+    produces: 'Normalized message records, classifications, a saved digest, run history, and live status/control responses.',
+  },
+  OPP011LIVEWATCH003: {
+    purpose: 'Watches approved public sources for new opportunity signals and packages them into a weekly read-only opportunity watch.',
+    reads: 'The approved OPP-011 public source map on a weekly Monday 8am CT schedule or manual canary run.',
+    produces: 'A read-only signal pack and the OPP-011 weekly watch result, with CIL run evidence.',
+  },
+});
+
 let certCache = { expiresAt: 0, certs: {} };
 
 function json(res, status, body) {
@@ -166,6 +194,11 @@ function normalizeWorkflow(row) {
     latestExecution: latest,
     latestCompleted: row.latestCompleted || null,
     special: row.special || null,
+    about: WORKFLOW_PURPOSE[String(row.id)] || {
+      purpose: 'Managed n8n workflow. Purpose metadata has not yet been normalized.',
+      reads: 'See the workflow node graph for current inputs and triggers.',
+      produces: 'See the latest result for current outputs.',
+    },
   };
 }
 
