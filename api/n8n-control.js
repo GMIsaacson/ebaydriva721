@@ -114,6 +114,17 @@ async function requireUser(req) {
   }
 }
 
+async function optionalUser(req) {
+  const auth = String(req.headers.authorization || '');
+  const token = auth.startsWith('Bearer ') ? auth.slice(7).trim() : '';
+  if (!token) return null;
+  try {
+    return { ...(await verifyFirebaseIdToken(token)), token };
+  } catch {
+    return null;
+  }
+}
+
 function controlBase() {
   return String(process.env.WORKFLOW_CONTROL_BASE_URL || DEFAULT_CONTROL_BASE).replace(/\/+$/, '');
 }
@@ -206,11 +217,16 @@ function latestExecutions(workflows) {
     .sort((a, b) => Date.parse(b.startedAt || 0) - Date.parse(a.startedAt || 0));
 }
 
-async function snapshot(user) {
-  const [live, owner] = await Promise.all([
-    upstream('/api/workflows'),
-    upstream('/api/owner', { bearerToken: user.token }),
-  ]);
+async function snapshot(user = null) {
+  const live = await upstream('/api/workflows');
+  let owner = { enrolled: null, isOwner: false, bootstrapRequired: false };
+  if (user?.token) {
+    try {
+      owner = await upstream('/api/owner', { bearerToken: user.token });
+    } catch {
+      owner = { enrolled: null, isOwner: false, bootstrapRequired: false };
+    }
+  }
   const workflows = (live.workflows || []).map(normalizeWorkflow).sort((a, b) => a.name.localeCompare(b.name));
   const success24 = Number(live.metrics?.success24 || 0);
   const failures24h = Number(live.metrics?.error24 || 0);
@@ -299,20 +315,23 @@ async function handleWrite(req, res, user) {
 }
 
 module.exports = async function handler(req, res) {
-  let user;
-  try {
-    user = await requireUser(req);
-  } catch (error) {
-    return json(res, error.status || 401, { ok: false, error: error.message || 'AUTH_REQUIRED' });
-  }
-
   try {
     if (req.method === 'GET') {
+      const user = await optionalUser(req);
       const parsed = new URL(req.url, 'https://control.local');
       if (parsed.searchParams.has('result')) return json(res, 200, await resultFor(req));
       return json(res, 200, await snapshot(user));
     }
-    if (req.method === 'POST') return await handleWrite(req, res, user);
+
+    if (req.method === 'POST') {
+      let user;
+      try {
+        user = await requireUser(req);
+      } catch (error) {
+        return json(res, error.status || 401, { ok: false, error: error.message || 'AUTH_REQUIRED' });
+      }
+      return await handleWrite(req, res, user);
+    }
 
     res.setHeader('Allow', 'GET, POST');
     return json(res, 405, { ok: false, error: 'METHOD_NOT_ALLOWED' });
