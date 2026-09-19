@@ -73,7 +73,6 @@ export default function N8nControlCenter() {
   const [claimBusy, setClaimBusy] = useState(false);
 
   const refresh = async ({ quiet = false } = {}) => {
-    if (!currentUser) return;
     if (!quiet) setLoading(true);
     try {
       const data = await fetchN8nSnapshot(currentUser);
@@ -244,8 +243,8 @@ export default function N8nControlCenter() {
             <small>{snapshot?.fetchedAt ? `Updated ${fmtTime(snapshot.fetchedAt)} · auto-refresh 30s` : "Waiting for first successful read"}</small>
           </div>
           <div>
-            <strong>{snapshot?.writeEnabled ? "Owner controls enabled" : snapshot?.owner?.enrolled ? "Owner controls belong to another account" : "Owner enrollment required"}</strong>
-            <small>{snapshot?.writeEnabled ? "Pause / resume / restart are authorized and audited." : snapshot?.owner?.enrolled ? "Telemetry is live; lifecycle mutations are owner-only." : "Telemetry is live; claim the owner gate once to enable lifecycle controls."}</small>
+            <strong>{snapshot?.writeEnabled ? "Owner controls enabled" : "Read-only cockpit"}</strong>
+            <small>{snapshot?.writeEnabled ? "Pause / resume / restart are authorized and audited." : "Viewing and analysis are open here; lifecycle mutations remain owner-protected."}</small>
           </div>
           {snapshot?.coverage?.managed != null && (
             <span className="n8nc-warning">{snapshot.coverage.managed} Factory-managed workflows in this live scope</span>
@@ -264,20 +263,27 @@ export default function N8nControlCenter() {
               </p>
             </div>
             <div className="n8nc-env-grid">
-              <code>WORKFLOW_CONTROL_BASE_URL</code><span>Optional override for the Factory workflow service</span>
-              <code>N8N_CONTROL_OWNER_UID / EMAIL</code><span>Owner identity gate for lifecycle actions</span>
-              <code>WORKFLOW_CONTROL_USER / PASSWORD</code><span>Server-side credentials for mutation requests only</span>
+              <code>WORKFLOW_CONTROL_BASE_URL</code><span>Factory workflow telemetry service</span>
+              <code>READ MODE</code><span>No DataScout login is required for workflow inspection</span>
+              <code>WRITE MODE</code><span>Pause, resume, and restart remain owner-protected</span>
             </div>
             <small>Current gateway response: {error.message}</small>
           </section>
         )}
 
-        {!error && snapshot?.connected && snapshot?.owner?.enrolled === false && (
+        {!error && snapshot?.connected && !currentUser && (
+          <section className="n8nc-readonly-note">
+            <strong>Direct cockpit access is active.</strong>
+            <span>No DataScout login is required to inspect workflows, nodes, schedules, health, or latest results. Lifecycle controls remain locked.</span>
+          </section>
+        )}
+
+        {!error && snapshot?.connected && currentUser && snapshot?.owner?.enrolled === false && (
           <section className="n8nc-owner-enroll">
             <div>
-              <span>ONE-TIME OWNER ENROLLMENT</span>
+              <span>OPTIONAL OWNER CONTROL ENROLLMENT</span>
               <strong>Claim lifecycle controls for this signed-in Factory account</strong>
-              <p>Enter the bootstrap code once. The backend stores only your Firebase UID as the controller; the bootstrap code is invalidated after a successful claim.</p>
+              <p>Read access does not depend on this. Enrollment is only for pause, resume, and restart.</p>
             </div>
             <div className="n8nc-owner-enroll-form">
               <input
@@ -295,17 +301,17 @@ export default function N8nControlCenter() {
           </section>
         )}
 
-        {!error && snapshot?.connected && snapshot?.owner?.enrolled && !snapshot?.owner?.isOwner && (
+        {!error && snapshot?.connected && currentUser && snapshot?.owner?.enrolled && !snapshot?.owner?.isOwner && (
           <section className="n8nc-readonly-note">
             <strong>Live read mode is operational.</strong>
-            <span>Lifecycle controls are already owned by another enrolled Factory account.</span>
+            <span>Lifecycle controls are owned by another enrolled Factory account.</span>
           </section>
         )}
 
-        {!error && snapshot?.connected && snapshot?.owner?.isOwner && (
+        {!error && snapshot?.connected && currentUser && snapshot?.owner?.isOwner && (
           <section className="n8nc-owner-active">
             <strong>Owner controls active.</strong>
-            <span>This Firebase account can pause, resume, and restart managed workflows.</span>
+            <span>This Factory account can pause, resume, and restart managed workflows.</span>
           </section>
         )}
 
@@ -530,8 +536,8 @@ export default function N8nControlCenter() {
         )}
 
         <footer className="n8nc-footer">
-          <span>n8n stays private on localhost · Vercel is the authenticated operator cockpit.</span>
-          <span>Telemetry: Factory workflow service · Mutations: owner-gated + server authenticated</span>
+          <span>n8n stays private on localhost · Vercel is the direct read/analysis cockpit.</span>
+          <span>Telemetry: open cockpit read · Mutations: owner-gated and authenticated</span>
         </footer>
       </main>
 
