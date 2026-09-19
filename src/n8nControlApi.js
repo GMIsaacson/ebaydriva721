@@ -1,10 +1,11 @@
-async function authHeaders(user, includeJson = false) {
-  if (!user?.getIdToken) throw new Error("Sign in to Factory Control.");
+async function authHeaders(user, includeJson = false, required = false) {
+  const headers = includeJson ? { "Content-Type": "application/json" } : {};
+  if (!user?.getIdToken) {
+    if (required) throw new Error("Owner authentication required.");
+    return headers;
+  }
   const token = await user.getIdToken();
-  return {
-    ...(includeJson ? { "Content-Type": "application/json" } : {}),
-    Authorization: `Bearer ${token}`,
-  };
+  return { ...headers, Authorization: `Bearer ${token}` };
 }
 
 async function readJson(response) {
@@ -39,7 +40,7 @@ export async function fetchWorkflowResult(user, workflowId) {
 export async function controlWorkflow(user, workflowId, action) {
   const response = await fetch("/api/n8n-control", {
     method: "POST",
-    headers: await authHeaders(user, true),
+    headers: await authHeaders(user, true, true),
     body: JSON.stringify({ action, workflowId }),
   });
   return readJson(response);
@@ -48,7 +49,7 @@ export async function controlWorkflow(user, workflowId, action) {
 export async function enrollWorkflowOwner(user, bootstrapCode) {
   const response = await fetch("/api/n8n-control", {
     method: "POST",
-    headers: await authHeaders(user, true),
+    headers: await authHeaders(user, true, true),
     body: JSON.stringify({ action: "enroll", bootstrapCode }),
   });
   return readJson(response);
