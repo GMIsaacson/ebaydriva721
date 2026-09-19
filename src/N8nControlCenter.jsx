@@ -19,6 +19,22 @@ function fmtDuration(ms) {
   return `${(ms / 60_000).toFixed(1)} min`;
 }
 
+function friendlyNodeType(type) {
+  const key = String(type || "").split(".").pop();
+  const labels = {
+    manualTrigger: "Manual trigger",
+    scheduleTrigger: "Schedule trigger",
+    webhook: "Webhook",
+    respondToWebhook: "Webhook response",
+    postgres: "Postgres",
+    code: "Code",
+    gmail: "Gmail",
+    httpRequest: "HTTP request",
+    noOp: "Result / pass-through",
+  };
+  return labels[key] || key || "Unknown node";
+}
+
 function Status({ value }) {
   const label = String(value || "unknown").toLowerCase();
   return <span className={`n8nc-status n8nc-status-${label}`}>{label}</span>;
@@ -83,8 +99,16 @@ export default function N8nControlCenter() {
   const filteredWorkflows = useMemo(() => {
     if (!needle) return workflows;
     return workflows.filter((row) =>
-      [row.name, row.id, row.schedule, row.operationalState, row.about?.purpose, row.about?.reads, row.about?.produces]
-        .join(" ").toLowerCase().includes(needle)
+      [
+        row.name,
+        row.id,
+        row.schedule,
+        row.operationalState,
+        row.about?.purpose,
+        row.about?.reads,
+        row.about?.produces,
+        ...(row.nodes || []).flatMap((node) => [node.name, node.type]),
+      ].join(" ").toLowerCase().includes(needle)
     );
   }, [workflows, needle]);
 
@@ -378,16 +402,46 @@ export default function N8nControlCenter() {
                       <p>{workflow.about?.purpose || "Purpose metadata has not yet been normalized."}</p>
                     </div>
 
-                    <div className="n8nc-workflow-io">
-                      <div>
-                        <span>Reads / trigger inputs</span>
-                        <p>{workflow.about?.reads || "See workflow node graph."}</p>
+                    <details className="n8nc-workflow-details">
+                      <summary>
+                        <span>Workflow details</span>
+                        <b>{workflow.nodes?.length || 0} nodes</b>
+                      </summary>
+
+                      <div className="n8nc-workflow-details-body">
+                        <div className="n8nc-workflow-io">
+                          <div>
+                            <span>Reads / trigger inputs</span>
+                            <p>{workflow.about?.reads || "See workflow node graph."}</p>
+                          </div>
+                          <div>
+                            <span>Produces</span>
+                            <p>{workflow.about?.produces || "See latest workflow result."}</p>
+                          </div>
+                        </div>
+
+                        <div className="n8nc-node-section">
+                          <div className="n8nc-node-section-head">
+                            <span>LIVE N8N NODE INVENTORY</span>
+                            <small>Ordered from the current workflow definition</small>
+                          </div>
+                          <ol className="n8nc-node-list">
+                            {(workflow.nodes || []).map((node) => (
+                              <li key={`${workflow.id}-${node.order}-${node.name}`} className={node.disabled ? "disabled" : ""}>
+                                <span className="n8nc-node-order">{String(node.order).padStart(2, "0")}</span>
+                                <div>
+                                  <strong>{node.name}</strong>
+                                  <small title={node.type}>{friendlyNodeType(node.type)}{node.disabled ? " · disabled" : ""}</small>
+                                </div>
+                              </li>
+                            ))}
+                          </ol>
+                          {!workflow.nodes?.length && (
+                            <div className="n8nc-node-empty">No node inventory returned by the live workflow service.</div>
+                          )}
+                        </div>
                       </div>
-                      <div>
-                        <span>Produces</span>
-                        <p>{workflow.about?.produces || "See latest workflow result."}</p>
-                      </div>
-                    </div>
+                    </details>
 
                     <dl className="n8nc-workflow-meta">
                       <div><dt>Cadence</dt><dd>{workflow.schedule}</dd></div>
