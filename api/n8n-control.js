@@ -172,6 +172,12 @@ function normalizeWorkflow(row) {
     latestExecution: latest,
     latestCompleted: row.latestCompleted || null,
     special: row.special || null,
+    nodes: Array.isArray(row.nodes) ? row.nodes.map((node, index) => ({
+      order: Number(node?.order || index + 1),
+      name: node?.name || `Node ${index + 1}`,
+      type: node?.type || 'unknown',
+      disabled: Boolean(node?.disabled),
+    })) : [],
     about: WORKFLOW_PURPOSE[String(row.id)] || {
       purpose: 'Managed n8n workflow. Purpose metadata has not yet been normalized.',
       reads: 'See the workflow node graph for current inputs and triggers.',
