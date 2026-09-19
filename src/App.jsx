@@ -46,11 +46,7 @@ const App = () => {
             <Route path="ui-hub" element={<ErrorBoundary><UIHub /></ErrorBoundary>} />
             <Route
               path="n8n"
-              element={
-                <ProtectedRoute>
-                  <ErrorBoundary><N8nControlCenter /></ErrorBoundary>
-                </ProtectedRoute>
-              }
+              element={<ErrorBoundary><N8nControlCenter /></ErrorBoundary>}
             />
           </Route>
 
