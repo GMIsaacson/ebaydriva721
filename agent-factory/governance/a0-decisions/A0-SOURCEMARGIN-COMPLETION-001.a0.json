@@ -23,7 +23,9 @@
     "agent-factory/run-004/tests/completion-guard.test.cjs",
     "agent-factory/run-004/contracts/registry.json",
     "agent-factory/run-004/scripts/validate-package.cjs",
-    "package.json"
+    "package.json",
+    "agent-factory/run-004/contracts/run-control.schema.json",
+    "agent-factory/run-004/runtime/runtime.cjs"
   ],
   "evidence_ref": "agent-factory/governance/a0-decisions/A0-SOURCEMARGIN-STATE-001.a0.json; GMIsaacson/ebaydriva721/issues/108; GMIsaacson/sourcemargin1.0/docs/DECISIONS.md"
 }
