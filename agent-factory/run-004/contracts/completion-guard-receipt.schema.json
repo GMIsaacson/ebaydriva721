@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "datascout-completion-guard-receipt/1.0.0",
+  "title": "SourceMargin Completion Guard Receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "authority",
+    "receiptId",
+    "projectId",
+    "workOrderId",
+    "checkedAt",
+    "completionStatus",
+    "completionEligible",
+    "violations",
+    "evidenceRefs"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "1.0" },
+    "authority": { "const": "Observe" },
+    "receiptId": { "type": "string", "pattern": "^SM-COMPLETE-[a-f0-9]{16}$" },
+    "projectId": { "const": "SourceMargin" },
+    "workOrderId": { "type": "string", "minLength": 1 },
+    "checkedAt": { "type": "string", "format": "date-time" },
+    "completionStatus": { "enum": ["DONE", "BLOCKED_WRITEBACK"] },
+    "completionEligible": { "type": "boolean" },
+    "violations": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+    "evidenceRefs": { "type": "array", "items": { "type": "string" }, "uniqueItems": true }
+  }
+}
