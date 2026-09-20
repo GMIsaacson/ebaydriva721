@@ -1,0 +1,59 @@
+{
+  "schemaVersion": "1.0",
+  "runId": "DS-S2M-004",
+  "gate": "G6",
+  "unitId": "WF-SM-ACQ-DISPATCH-G6-001",
+  "workflowId": "SOURCEMARGINACQDISPATCHG6",
+  "approvalRef": "CHATGPT-OWNER-APPROVAL-2026-09-20-SM-ACQ-DISPATCH",
+  "approvedAt": "2026-09-20",
+  "promotion": "CONTROLLED_LIVE_INTERNAL_MONITOR",
+  "authorityLevel": "Recommend",
+  "trigger": {
+    "manual": true,
+    "schedule": true,
+    "cron": "*/5 * * * *",
+    "webhook": false
+  },
+  "allowed": [
+    "POST read-only request to exact SourceMargin control_console_dashboard RPC using the public publishable key",
+    "read acquisition_routes projection returned by the approved RPC",
+    "write route-observation fingerprints and typed recommendation packets to existing private Factory PostgreSQL",
+    "open and close CIL audit runs",
+    "emit at most three changed-route recommendation packets per execution"
+  ],
+  "prohibited": [
+    "create Work Control commands",
+    "contact suppliers",
+    "send RFQs",
+    "email or message any external party",
+    "purchase or bid",
+    "publish or list",
+    "mutate Supabase acquisition_routes or evaluations",
+    "change SourceMargin strategy, gates, kill criteria, or acquisition classifications",
+    "grant authority",
+    "spend"
+  ],
+  "controls": {
+    "maxChangedRoutesPerExecution": 3,
+    "externalActionsEnabled": false,
+    "spendingAuthorityCents": 0,
+    "workControlDispatchAllowed": false,
+    "routeMutationAllowed": false,
+    "sourceRpcAllowlist": [
+      "https://aittnuqrrenkencygfje.supabase.co/rest/v1/rpc/control_console_dashboard"
+    ],
+    "postgresCredentialId": "RUN006POSTGRES",
+    "retriesOwnedBy": "Run 008",
+    "accountableOwner": "Agent 000",
+    "executionStateOwner": "Work Control"
+  },
+  "activationConditions": [
+    "A0 Constitutional Guard PASS",
+    "dispatcher package test PASS",
+    "canonical workflow imports inactive into the existing n8n 2.34.6 runtime",
+    "manual baseline execution succeeds with zero external actions",
+    "second manual execution proves no-change idempotency",
+    "only then may this exact bounded workflow be activated on its five-minute schedule"
+  ],
+  "promotionBoundary": "Any change that creates Work Control commands or performs sourcing actions requires fresh bounded owner authorization; this approval does not authorize that promotion."
+}
