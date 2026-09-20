@@ -1,0 +1,32 @@
+name: Run 004 Acquisition State Dispatcher
+
+on:
+  pull_request:
+    paths:
+      - "agent-factory/governance/a0-decisions/A0-SOURCEMARGIN-ACQ-DISPATCH-001.a0.json"
+      - "agent-factory/run-004/**"
+      - ".github/workflows/run-004-acquisition-state-dispatcher.yml"
+  push:
+    branches: [master]
+    paths:
+      - "agent-factory/governance/a0-decisions/A0-SOURCEMARGIN-ACQ-DISPATCH-001.a0.json"
+      - "agent-factory/run-004/**"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+      - run: npm ci
+      - name: Dispatcher authority contract
+        run: node --test agent-factory/run-004/tests/acquisition-state-dispatcher.test.cjs
+      - name: Existing Run 004 package regression
+        run: node agent-factory/run-004/scripts/validate-package.cjs
