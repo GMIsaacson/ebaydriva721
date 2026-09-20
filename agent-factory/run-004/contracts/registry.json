@@ -107,6 +107,33 @@
       "lifecycle_status": "Testing"
     },
     {
+      "unit_id": "SW-DS-COMPLETION-GUARD-001",
+      "type": "deterministic-software",
+      "name": "SourceMargin Completion Guard",
+      "version": "1.0.0",
+      "authority_level": "Observe",
+      "allowed_actions": [
+        "verify required durable writeback receipts",
+        "verify Work Control handoff receipt",
+        "verify state reconciliation is CONSISTENT",
+        "verify required Q1 and Q2 pass receipts",
+        "emit DONE or BLOCKED_WRITEBACK completion eligibility"
+      ],
+      "prohibited_actions": [
+        "create missing evidence",
+        "override reconciliation conflicts",
+        "change strategy",
+        "change gates or kill criteria",
+        "grant authority",
+        "purchase",
+        "outreach",
+        "publish",
+        "spend"
+      ],
+      "trigger_type": "end of material SourceMargin work order",
+      "lifecycle_status": "Testing"
+    },
+    {
       "unit_id": "WF-DS-S2M-004-G4-001",
       "type": "n8n-workflow",
       "name": "Run 004 G4 Offline Acceptance",
