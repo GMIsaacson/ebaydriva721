@@ -182,6 +182,37 @@
       ],
       "trigger_type": "manual owner-approved shadow",
       "lifecycle_status": "Testing"
+    },
+    {
+      "unit_id": "WF-SM-ACQ-DISPATCH-G6-001",
+      "type": "n8n-workflow",
+      "name": "SourceMargin Acquisition State Dispatcher G6",
+      "version": "1.0.0",
+      "authority_level": "Recommend",
+      "allowed_actions": [
+        "manual or scheduled read of the exact approved SourceMargin read-only RPC",
+        "write internal observation fingerprints and recommendation packets to existing private Factory PostgreSQL",
+        "emit at most three changed-route recommendation packets per execution",
+        "open and close CIL audit runs"
+      ],
+      "prohibited_actions": [
+        "create Work Control commands",
+        "contact suppliers",
+        "send RFQs",
+        "purchase or bid",
+        "publish or list",
+        "mutate acquisition route state",
+        "mutate SourceMargin evaluations",
+        "change strategy gates or kill criteria",
+        "grant authority",
+        "spend"
+      ],
+      "approval_gates": [
+        "bounded owner approval CHATGPT-OWNER-APPROVAL-2026-09-20-SM-ACQ-DISPATCH covers internal monitoring only",
+        "fresh bounded owner authorization required before Work Control command creation or any external sourcing action"
+      ],
+      "trigger_type": "manual or five-minute scheduled internal monitor",
+      "lifecycle_status": "G6 Controlled Live — internal monitor only"
     }
   ]
 }
