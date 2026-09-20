@@ -1,6 +1,7 @@
 const { createHash } = require('node:crypto');
 const { validateHandoff } = require('./handoff.cjs');
 const { evaluatePolicy } = require('./policy.cjs');
+const { evaluateCompletionGuard } = require('./completion-guard.cjs');
 
 function inputHash(value) {
   return createHash('sha256').update(JSON.stringify(value)).digest('hex');
@@ -23,6 +24,10 @@ class ControlledRuntime {
   start() {
     const control = this.store.getControl(this.config.runId);
     if (control.killSwitch || control.state === 'cancelled') throw new Error('cancelled run cannot start');
+    if (control.state === 'completed') throw new Error('completed run cannot start');
+    if (control.state === 'blocked_writeback') {
+      throw new Error('writeback-blocked run cannot start; repair receipts and rerun completion guard');
+    }
     return this.store.setControl(this.config.runId, { state: 'running' });
   }
 
@@ -47,6 +52,24 @@ class ControlledRuntime {
       state: 'cancelled',
       killSwitch: true,
       cancelReason: reason,
+    });
+  }
+
+  complete(completionInput) {
+    const control = this.store.getControl(this.config.runId);
+    if (!control) throw new Error('run control not initialized');
+    if (control.killSwitch || control.state === 'cancelled') throw new Error('cancelled run cannot complete');
+    const completionReceipt = evaluateCompletionGuard(completionInput);
+    const state = completionReceipt.completionEligible ? 'completed' : 'blocked_writeback';
+    return this.store.setControl(this.config.runId, {
+      state,
+      completionReceipt,
+      checkpoint: {
+        ...(control.checkpoint || {}),
+        status: completionReceipt.completionStatus,
+        completionReceiptId: completionReceipt.receiptId,
+        finishedAt: completionInput.checkedAt,
+      },
     });
   }
 
