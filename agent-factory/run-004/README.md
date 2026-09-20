@@ -139,3 +139,22 @@ G4 passed after the package supplied all of the following evidence:
 5. Complete the G4 Gate Review without changing any authority.
 
 G4 passed on 2026-08-15. G5 may run only within the separately approved two-SKU shadow scope; no external activation may begin without a new G6 owner decision.
+
+
+## SourceMargin completion guard
+
+Material SourceMargin work orders use the deterministic `SW-DS-COMPLETION-GUARD-001` before Run 004 may enter `completed`.
+
+The guard requires:
+
+1. a durable Supabase operational/audit writeback receipt;
+2. a Work Control handoff receipt with execution state persisted;
+3. a GitHub durable writeback receipt when the material action changes project state, methodology, or system rules;
+4. a SourceMargin State Reconciler receipt with `reconciliationStatus=CONSISTENT`;
+5. Q1 and Q2 PASS receipts when the work order declares those reviews required.
+
+If every required receipt is present, the guard emits `DONE` and the controlled runtime may enter `completed`.
+
+If any required receipt is missing, stale/conflicting state prevents reconciliation, or a required Q1/Q2 review has not passed, the guard emits `BLOCKED_WRITEBACK` and Run 004 enters `blocked_writeback`. It may not be restarted to repeat execution; the missing records/reviews must be repaired and the completion guard rerun.
+
+The completion guard is Observe-only. It cannot fabricate evidence, repair state by inference, alter strategy/gates/kill criteria, grant authority, purchase, contact suppliers, publish, or spend.
