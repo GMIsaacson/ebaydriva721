@@ -332,7 +332,7 @@ begin
     return next;
   end if;
 end;
-$;
+$$;
 
 comment on table sourcemargin.sm_acquisition_dispatch_state is
 'Non-authoritative transport memory for the bounded SourceMargin acquisition-state monitor. Work Control remains execution-state owner.';
