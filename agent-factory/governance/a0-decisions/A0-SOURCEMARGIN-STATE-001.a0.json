@@ -1,0 +1,31 @@
+{
+  "decision_id": "A0-SOURCEMARGIN-STATE-001",
+  "status": "PASS",
+  "verdict": "EXTEND",
+  "owner": "Aberdeen Technologies",
+  "decided_at": "2026-09-19",
+  "business_outcome": "Keep SourceMargin inside Factory 1 while making current project state recoverable and self-consistent across the live research database, Factory execution state, and durable GitHub record, so Agent 000 and Work Control can resume the correct next action without reconstructing state from chat history.",
+  "existing_owner_scan": "Reviewed Factory A0 governance, Run 004 DataScout Source-to-Marketplace, Run 008 Operations Core, the Factory specialist registry and professional-readiness retrofit, SourceMargin Supabase research/coverage/audit data, SourceMargin GitHub system record, and the established Agent 000 plus Work Control ownership boundary. Run 004 already owns the source-to-marketplace research loop; Run 008 already owns deterministic recovery/state-control primitives; Work Control owns execution state; Agent 000 owns strategic coordination. No separate SourceMargin director, shadow factory, duplicate project database, or new execution-control plane is required.",
+  "reuse_candidates_checked": [
+    "Run 004 — DataScout Source-to-Marketplace",
+    "Run 008 — Operations Core",
+    "AGT-RESEARCH-VALIDATION-001",
+    "AGT-PORTFOLIO-STEWARD-001",
+    "SW-DS-ECONOMICS-001",
+    "SPC-SOURCE-001 Marketplace Supplier Sourcing",
+    "SPC-ECOM-001 Marketplace Demand & Listing Economics",
+    "SPC-ECON-001 Unit Economics",
+    "SPC-QA-001 Deterministic/Test QA",
+    "SPC-EVID-001 Evidence/Claim Verification",
+    "SourceMargin Supabase research ledger / coverage map / audit_actions",
+    "SourceMargin GitHub durable system record",
+    "Agent 000 / Work Control canonical ownership model"
+  ],
+  "duplication_analysis": "REUSE is sufficient for crawler research, demand validation, supplier search, deterministic economics, evidence QA, and execution/recovery controls. EXTEND is required only for the unowned reconciliation loop. The extension must live within existing Run 004 and shared Run 008/Work Control patterns: read authoritative SourceMargin operational state, compare it with execution and durable-record checkpoints, fail closed on conflict or staleness, and emit a typed state receipt for Agent 000/Work Control. It must not create a new director, standalone state owner, alternate task system, duplicate database, or autonomous authority.",
+  "residual_unowned_loop": "SourceMargin Supabase live state + Factory Work Control execution state + SourceMargin GitHub durable checkpoint -> reconcile identifiers, stage, active work order, owner, next action, blockers, coverage, freshness and last material decision -> detect contradiction/staleness -> fail closed when unresolved -> emit one typed current-state receipt -> Work Control updates execution facts within its authority -> Agent 000 consumes the receipt for coordination. The reconciler may not alter North Star, hypotheses, gates, kill criteria, purchasing authority, publishing authority, spend, or external-action permissions.",
+  "covers_paths": [
+    "agent-factory/run-004/",
+    "agent-factory/run-008/"
+  ],
+  "evidence_ref": "agent-factory/governance/team-professional-retrofit-v1.0.json; agent-factory/governance/specialist-registry-v1.0.json; GMIsaacson/sourcemargin1.0 docs/PROJECT_STATUS.md, docs/DECISIONS.md, docs/ACTION_LOG.md, docs/EBAY_CENSUS.md"
+}
