@@ -1,0 +1,31 @@
+{
+  "decision_id": "A0-SOURCEMARGIN-ACQ-DISPATCH-001",
+  "status": "PASS",
+  "verdict": "EXTEND",
+  "owner": "Aberdeen Technologies",
+  "decided_at": "2026-09-20",
+  "business_outcome": "Continuously observe SourceMargin acquisition-route state changes and emit bounded internal sourcing-work recommendations without granting n8n authority to contact suppliers, bid, buy, publish, spend, mutate acquisition state, or bypass Agent 000 / Work Control.",
+  "existing_owner_scan": "Reviewed Run 004 DataScout Source-to-Marketplace, the live SourceMargin acquisition_routes ledger and read-only control_console_dashboard RPC, existing SourceMargin State Reconciler and Completion Guard, Agent 000 / Work Control ownership, Run 008 retry/dead-letter boundary, the existing live SourceMargin seller controller, and the existing Factory private PostgreSQL credential. Run 004 already owns sourcing research and n8n orchestration; Work Control already owns execution state; Run 008 already owns recovery. No new team, director, database service, workflow-control plane, or external-action authority is justified.",
+  "reuse_candidates_checked": [
+    "Run 004 — DataScout Source-to-Marketplace",
+    "Agent 000 / Work Control",
+    "SW-DS-STATE-RECONCILER-001",
+    "SW-DS-COMPLETION-GUARD-001",
+    "Run 008 Operations Core",
+    "Existing Factory n8n 2.34.6 runtime",
+    "Existing RUN006POSTGRES private PostgreSQL credential",
+    "SourceMargin public read-only control_console_dashboard RPC",
+    "Existing CIL run open/close audit functions"
+  ],
+  "duplication_analysis": "EXTEND Run 004 with one bounded acquisition-state monitor. The workflow may schedule read-only polling of the approved SourceMargin RPC and write internal observation/recommendation records to the existing private Factory PostgreSQL. It may not create Work Control commands in this authorization, because that would add execution authority and a new trust path. Work Control remains the sole execution-state owner. A later promotion from recommendation to Work Control command creation requires fresh bounded owner authorization and architecture review.",
+  "residual_unowned_loop": "acquisition_routes state changes -> detect only changed active primary route state/threshold fingerprints -> map each change to a typed internal recommended work class -> persist provenance-bound observation -> expose at most three recommendations per cycle -> stop. No supplier contact, source purchase, bidding, publishing, route-state mutation, Work Control command creation, or spend occurs.",
+  "covers_paths": [
+    "agent-factory/run-004/n8n/run-004-g6-acquisition-state-dispatcher.workflow.json",
+    "agent-factory/run-004/postgres/acquisition-state-dispatcher.sql",
+    "agent-factory/run-004/g6/acquisition-state-dispatcher-authorization.json",
+    "agent-factory/run-004/contracts/registry.json",
+    "agent-factory/run-004/README.md",
+    "agent-factory/run-004/tests/acquisition-state-dispatcher.test.cjs"
+  ],
+  "evidence_ref": "SourceMargin acquisition-routing model and Work Control issue #108; owner instruction in current chat on 2026-09-20 to implement the state-driven n8n workflow carefully under existing Factory rules."
+}

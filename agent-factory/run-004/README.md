@@ -12,7 +12,7 @@ It rehabilitates the existing React/Vite/Firebase DataScout repository. It does 
 - G3 Simulation: passed, 21/21 offline contract cases
 - G4 Deployment: passed on final PR-head acceptance; package, Firestore Emulator, and inactive n8n evidence retained
 - G5 Shadow: owner-authorized bounded two-SKU run packaged; fresh public evidence is processed without external action
-- G6–G7: blocked pending separate owner decisions
+- G6: **bounded internal acquisition-state monitor authorized 2026-09-20**; general external/live sourcing authority remains blocked\n- G7: blocked pending separate owner decision
 
 ## Authority lock
 
@@ -158,3 +158,66 @@ If every required receipt is present, the guard emits `DONE` and the controlled 
 If any required receipt is missing, stale/conflicting state prevents reconciliation, or a required Q1/Q2 review has not passed, the guard emits `BLOCKED_WRITEBACK` and Run 004 enters `blocked_writeback`. It may not be restarted to repeat execution; the missing records/reviews must be repaired and the completion guard rerun.
 
 The completion guard is Observe-only. It cannot fabricate evidence, repair state by inference, alter strategy/gates/kill criteria, grant authority, purchase, contact suppliers, publish, or spend.
+
+
+## G6 acquisition-state dispatcher
+
+Owner approval `CHATGPT-OWNER-APPROVAL-2026-09-20-SM-ACQ-DISPATCH` authorizes one narrow controlled-live extension: `WF-SM-ACQ-DISPATCH-G6-001`.
+
+This is an **internal state monitor**, not an autonomous sourcing actuator.
+
+### Trigger
+
+- Manual execution is allowed.
+- A five-minute schedule (`*/5 * * * *`, America/Chicago) is allowed only after the exact checked-in workflow imports inactive, a manual baseline succeeds, and a second manual run proves no-change idempotency.
+- Webhooks are prohibited.
+
+### Read boundary
+
+The workflow may call exactly one external endpoint:
+
+`https://aittnuqrrenkencygfje.supabase.co/rest/v1/rpc/control_console_dashboard`
+
+using the public Supabase publishable key. Raw SourceMargin tables remain unavailable to the workflow.
+
+### Write boundary
+
+The workflow may write only transport/observation records to the **existing private Factory PostgreSQL** through the existing `RUN006POSTGRES` credential:
+
+- `sourcemargin.sm_acquisition_dispatch_state`
+- `sourcemargin.sm_acquisition_dispatch_events`
+- existing CIL run/audit functions.
+
+Those tables are not canonical product state and are not Work Control. They exist only to provide durable idempotency and internal recommendation receipts.
+
+### Routing behavior
+
+Only **active primary acquisition routes** are observed.
+
+A material route fingerprint change may emit one typed recommendation, for example:
+
+- `RFQ_READY` → `RFQ_PACKAGE_REVIEW`
+- `WATCH` → `SOURCE_WATCH_MONITOR`
+- `PRICE_TRIGGER_READY` → `PRICE_TRIGGER_MONITOR`
+- `RESEARCH` → supplier/event-source research according to route type
+- `FAILED` / `EXHAUSTED` → `ROUTE_FALLBACK_REVIEW`
+- `SAMPLE_READY` / `BUY_READY` → owner-approval work only.
+
+At most **three changed routes** may be emitted per execution. The first live run is baseline-only; unchanged state produces `NO_CHANGE`.
+
+### Authority lock
+
+The dispatcher has `Recommend` authority only.
+
+It may **not**:
+
+- create Work Control commands;
+- contact suppliers or send RFQs;
+- bid or purchase;
+- publish or list;
+- mutate `acquisition_routes`, evaluations, strategy, gates, kill criteria, or authority;
+- spend money.
+
+Agent 000 remains accountable. Work Control remains the only execution-state owner. Run 008 remains the retry/dead-letter/recovery boundary.
+
+Promotion from recommendation packets to actual Work Control command creation requires a **fresh bounded owner authorization and architecture review**. This G6 approval does not authorize that promotion.
