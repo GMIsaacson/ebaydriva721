@@ -1,0 +1,135 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "datascout-state-receipt/1.0.0",
+  "title": "SourceMargin State Reconciliation Receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "authority",
+    "receiptId",
+    "projectId",
+    "milestoneId",
+    "generatedAt",
+    "reconciliationStatus",
+    "freshness",
+    "missingExecutionFields",
+    "conflicts",
+    "sourceRefs"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0"
+    },
+    "authority": {
+      "const": "Observe"
+    },
+    "receiptId": {
+      "type": "string",
+      "pattern": "^SM-STATE-[a-f0-9]{16}$"
+    },
+    "projectId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "milestoneId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "reconciliationStatus": {
+      "enum": [
+        "CONSISTENT",
+        "STALE",
+        "CONFLICT",
+        "BLOCKED"
+      ]
+    },
+    "currentPhase": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "activeWorkOrder": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "owner": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "nextAction": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "lifecycle": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "stage2Checkpoint": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "censusCoverage": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "blockers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "lastMaterialDecision": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "freshness": {
+      "type": "object"
+    },
+    "missingExecutionFields": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "owner",
+          "nextAction",
+          "activeWorkOrder"
+        ]
+      }
+    },
+    "conflicts": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "sourceRefs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}\n
