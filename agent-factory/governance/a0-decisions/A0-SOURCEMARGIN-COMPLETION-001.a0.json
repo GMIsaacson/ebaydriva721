@@ -1,0 +1,29 @@
+{
+  "decision_id": "A0-SOURCEMARGIN-COMPLETION-001",
+  "status": "PASS",
+  "verdict": "EXTEND",
+  "owner": "Aberdeen Technologies",
+  "decided_at": "2026-09-19",
+  "business_outcome": "Prevent any material SourceMargin work order from reaching DONE when required Supabase writeback, Work Control handoff, durable GitHub checkpoint, state reconciliation, or required Q1/Q2 evidence is missing or inconsistent.",
+  "existing_owner_scan": "Reviewed Run 004 DataScout Source-to-Marketplace, existing SourceMargin State Reconciler, Run 008 Operations Core, Work Control, Agent 000 accountability, Q1 deterministic QA and Q2 evidence QA. Existing components own the underlying state/evidence but no deterministic completion gate currently combines their receipts into an enforceable SourceMargin DONE eligibility decision.",
+  "reuse_candidates_checked": [
+    "Run 004 — DataScout Source-to-Marketplace",
+    "SW-DS-STATE-RECONCILER-001",
+    "Run 008 — Operations Core",
+    "Work Control",
+    "Agent 000",
+    "SPC-QA-001 Deterministic/Test QA",
+    "SPC-EVID-001 Evidence/Claim Verification"
+  ],
+  "duplication_analysis": "Do not create a new agent, team, service, database, control center, or alternate workflow owner. Extend Run 004 with one deterministic Observe-only completion guard that consumes existing receipts and returns completion eligibility. Agent 000 remains accountable; Work Control remains execution-state owner; the State Reconciler remains the state-consistency authority.",
+  "residual_unowned_loop": "material SourceMargin work result -> verify required Supabase writeback -> verify Work Control handoff -> verify durable GitHub writeback when required -> require state reconciliation CONSISTENT -> require Q1/Q2 PASS when each is required -> emit DONE eligibility only when every required condition passes; otherwise emit BLOCKED_WRITEBACK with explicit violations.",
+  "covers_paths": [
+    "agent-factory/run-004/runtime/completion-guard.cjs",
+    "agent-factory/run-004/contracts/completion-guard-receipt.schema.json",
+    "agent-factory/run-004/tests/completion-guard.test.cjs",
+    "agent-factory/run-004/contracts/registry.json",
+    "agent-factory/run-004/scripts/validate-package.cjs",
+    "package.json"
+  ],
+  "evidence_ref": "agent-factory/governance/a0-decisions/A0-SOURCEMARGIN-STATE-001.a0.json; GMIsaacson/ebaydriva721/issues/108; GMIsaacson/sourcemargin1.0/docs/DECISIONS.md"
+}
