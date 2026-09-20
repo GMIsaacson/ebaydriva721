@@ -11,6 +11,7 @@ const requiredFiles = [
   'contracts/run-control.schema.json',
   'contracts/telemetry.schema.json',
   'contracts/state-receipt.schema.json',
+  'contracts/completion-guard-receipt.schema.json',
   'contracts/registry.json',
   'firestore/firestore.g4.emulator.rules',
   'firestore/firestore.g4.indexes.json',
@@ -24,6 +25,7 @@ const requiredFiles = [
   'runtime/runtime.cjs',
   'runtime/store.cjs',
   'runtime/state-reconciler.cjs',
+  'runtime/completion-guard.cjs',
 ];
 
 const missing = requiredFiles.filter((file) => !fs.existsSync(path.join(ROOT, file)));

@@ -78,3 +78,16 @@ Therefore:
 **Owner:** Agent 000  
 **Current next action:** implement the read-only SourceMargin state-reconciliation extension under Run 004, consuming existing SourceMargin records and emitting the typed receipt above.  
 **After that:** resume Stage 2 from the persisted SourceMargin state rather than chat history.
+
+
+## Completion enforcement
+
+A0 decision `A0-SOURCEMARGIN-COMPLETION-001` extends Run 004 with deterministic software `SW-DS-COMPLETION-GUARD-001`.
+
+For every material SourceMargin work order:
+
+`worker result → required writebacks → state reconciliation → required Q1/Q2 → completion guard → Work Control completion eligibility`
+
+The only successful terminal completion receipt is `DONE`. Any missing writeback, non-`CONSISTENT` reconciliation result, or missing required Q1/Q2 PASS receipt yields `BLOCKED_WRITEBACK`.
+
+Agent 000 remains accountable but cannot substitute judgment for a failed guard receipt. The guard does not own project state; it only verifies that the existing owners produced the required durable receipts.
