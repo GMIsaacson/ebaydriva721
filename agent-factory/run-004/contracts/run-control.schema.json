@@ -14,16 +14,67 @@
     "updated_at"
   ],
   "properties": {
-    "run_id": { "const": "DS-S2M-004" },
-    "mode": { "enum": ["offline", "firestore-emulator", "shadow"] },
-    "state": { "enum": ["ready", "running", "stopped", "failed", "cancelled", "completed"] },
-    "kill_switch": { "type": "boolean" },
-    "external_actions_enabled": { "const": false },
-    "spending_authority_cents": { "const": 0 },
-    "restart_count": { "type": "integer", "minimum": 0 },
-    "checkpoint": { "type": ["object", "null"] },
-    "stop_reason": { "type": ["string", "null"] },
-    "cancel_reason": { "type": ["string", "null"] },
-    "updated_at": { "type": "string", "format": "date-time" }
+    "run_id": {
+      "const": "DS-S2M-004"
+    },
+    "mode": {
+      "enum": [
+        "offline",
+        "firestore-emulator",
+        "shadow"
+      ]
+    },
+    "state": {
+      "enum": [
+        "ready",
+        "running",
+        "stopped",
+        "failed",
+        "cancelled",
+        "completed",
+        "blocked_writeback"
+      ]
+    },
+    "kill_switch": {
+      "type": "boolean"
+    },
+    "external_actions_enabled": {
+      "const": false
+    },
+    "spending_authority_cents": {
+      "const": 0
+    },
+    "restart_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "checkpoint": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "stop_reason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "cancel_reason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "completion_receipt": {
+      "type": [
+        "object",
+        "null"
+      ]
+    }
   }
 }
