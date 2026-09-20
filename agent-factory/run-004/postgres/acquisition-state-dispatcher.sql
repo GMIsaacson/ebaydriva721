@@ -122,7 +122,7 @@ begin
         last_seen_at=excluded.last_seen_at,
         last_execution_id=excluded.last_execution_id;
 
-    return next jsonb_build_object(
+    packet := jsonb_build_object(
       'eventType','BASELINE_SYNC',
       'changed',false,
       'activePrimaryRoutes',v_current_count,
@@ -137,6 +137,7 @@ begin
         'routeMutationAllowed',false
       )
     );
+    return next;
     return;
   end if;
 
@@ -281,7 +282,8 @@ begin
         last_execution_id=excluded.last_execution_id;
 
     v_processed := v_processed + 1;
-    return next v_packet;
+    packet := v_packet;
+    return next;
   end loop;
 
   -- Refresh heartbeat only for unchanged active primary routes. Changed routes
@@ -312,7 +314,7 @@ begin
     and s.state_fingerprint=c.state_fingerprint;
 
   if v_processed = 0 then
-    return next jsonb_build_object(
+    packet := jsonb_build_object(
       'eventType','NO_CHANGE',
       'changed',false,
       'activePrimaryRoutes',v_current_count,
@@ -327,9 +329,10 @@ begin
         'routeMutationAllowed',false
       )
     );
+    return next;
   end if;
 end;
-$$;
+$;
 
 comment on table sourcemargin.sm_acquisition_dispatch_state is
 'Non-authoritative transport memory for the bounded SourceMargin acquisition-state monitor. Work Control remains execution-state owner.';
