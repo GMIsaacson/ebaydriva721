@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "1.0",
+  "programId": "SPC-FREIGHT-001-QUAL-V1",
+  "subjectSpecialistId": "SPC-FREIGHT-001",
+  "reviewerSpecialistId": "SPC-FREIGHT-Q3-001",
+  "reviewType": "INDEPENDENT_PORTFOLIO_Q3",
+  "portfolioReviewCommandId": "WC-20260922054728-ece811e159",
+  "outcomeNormalizationCommandId": "WC-20260922054804-5ffb8e4d3c",
+  "independentQ2AuditCommandId": "WC-20260922054825-9aa06a8ff5",
+  "professionalOutcome": "PE_PASS",
+  "promotionRecommendation": "QUALIFIED",
+  "q2Audit": {
+    "qualificationQ2": "PASS",
+    "q3OutcomeAccepted": "PE_PASS",
+    "promotionEvidenceStatus": "COMPLETE"
+  },
+  "portfolio": {
+    "passingCases": 5,
+    "q2PassingCases": 5,
+    "quoteBackedReconciliationCases": 2,
+    "estimationErrorGate": "NOT_APPLICABLE_NO_ESTIMATION_CASES",
+    "caseIds": [
+      "SM-AMZ-THERMAL-PADS-001",
+      "RUN004-CAR-SEAT-GAP-FREIGHT-002",
+      "CONTROLLED-DDP-TARIFF-003",
+      "PUBLIC-QUOTE-SELLERHOOK-KETTLE-004",
+      "UPS-DIM-WEIGHT-EXW-005"
+    ]
+  },
+  "reviewerFindings": [
+    "Evidence states VERIFIED, QUOTED, MODELED, UNKNOWN and BLOCKED were consistently kept distinct.",
+    "Supported deterministic arithmetic was correct across the five-case portfolio.",
+    "DDP duty double-counting was avoided and EXW cost boundaries were preserved.",
+    "Quote-backed freight was not relabeled as final-charge or verified total landed cost.",
+    "Dimensional-weight and billable-weight handling was correctly applied from official carrier evidence.",
+    "Missing material inputs triggered explicit blocking rather than invented freight, duty, tax or landed-cost values.",
+    "The capability demonstrated repeatable professional stop/hold/kill discipline without unsupported BUY/profit/readiness promotion."
+  ],
+  "standingExclusions": [
+    "independent review of its own authored work",
+    "customs legal opinion",
+    "tax advice",
+    "supplier contact without separate authority",
+    "purchase or spend authority",
+    "SourceMargin production mutation",
+    "customer publication authority"
+  ],
+  "qualificationScope": "QUALIFIED Freight/Import/Landed-Cost professional capability. May issue evidence-bounded landed-cost professional certification when required inputs are complete; this does not itself authorize any production write, publication, supplier contact, purchase, or legal/tax conclusion.",
+  "authorityUsage": {
+    "externalActions": 0,
+    "spendCents": 0,
+    "productionMutation": false,
+    "publication": false,
+    "supplierContact": false
+  },
+  "completedAt": "2026-09-22T05:48:32.421Z"
+}
