@@ -55,6 +55,56 @@ function validateMoneyEvidence(entry, path, missing, invalid, options = {}) {
   return entry.amountCents;
 }
 
+function evaluatePreFeeFastKill(packet) {
+  if (!packet || typeof packet !== 'object') {
+    return { status:'UNRESOLVED', reason:'REQUIRED_EVIDENCE_UNRESOLVED', saleCents:null, sourcePlusInboundCents:null, preFeeSpreadCents:null };
+  }
+
+  const saleMissing=[]; const saleInvalid=[];
+  const sourceMissing=[]; const sourceInvalid=[];
+  const saleCents=validateMoneyEvidence(packet.sale,'sale',saleMissing,saleInvalid);
+  const sourceCostCents=validateMoneyEvidence(packet.sourceCost,'sourceCost',sourceMissing,sourceInvalid);
+
+  if (saleCents === null || sourceCostCents === null || saleMissing.length || saleInvalid.length || sourceMissing.length || sourceInvalid.length) {
+    return {
+      status:'UNRESOLVED',
+      reason:'REQUIRED_EVIDENCE_UNRESOLVED',
+      saleCents,
+      sourcePlusInboundCents:sourceCostCents,
+      preFeeSpreadCents:saleCents === null || sourceCostCents === null ? null : saleCents-sourceCostCents,
+    };
+  }
+
+  if (sourceCostCents >= saleCents) {
+    return {
+      status:'KILL',
+      reason:'SOURCE_PLUS_INBOUND_GTE_REVENUE',
+      saleCents,
+      sourcePlusInboundCents:sourceCostCents,
+      preFeeSpreadCents:saleCents-sourceCostCents,
+    };
+  }
+
+  const inboundMissing=[]; const inboundInvalid=[];
+  const inboundFreightCents=validateMoneyEvidence(packet.inboundFreight,'inboundFreight',inboundMissing,inboundInvalid);
+  if (inboundFreightCents === null || inboundMissing.length || inboundInvalid.length) {
+    return {
+      status:'UNRESOLVED',
+      reason:'REQUIRED_EVIDENCE_UNRESOLVED',
+      saleCents,
+      sourcePlusInboundCents:sourceCostCents,
+      preFeeSpreadCents:saleCents-sourceCostCents,
+    };
+  }
+
+  const sourcePlusInboundCents=sourceCostCents+inboundFreightCents;
+  const preFeeSpreadCents=saleCents-sourcePlusInboundCents;
+  if (sourcePlusInboundCents >= saleCents) {
+    return { status:'KILL', reason:'SOURCE_PLUS_INBOUND_GTE_REVENUE', saleCents, sourcePlusInboundCents, preFeeSpreadCents };
+  }
+  return { status:'CONTINUE', reason:'POSITIVE_PRE_FEE_SPREAD', saleCents, sourcePlusInboundCents, preFeeSpreadCents };
+}
+
 function calculateReferralFeeCents(totalPriceCents, feeCategory) {
   const row = feeSchedule.categories[feeCategory];
   if (!row) return null;
@@ -164,6 +214,7 @@ module.exports = {
   MARKETPLACE,
   feeSchedule,
   calculateReferralFeeCents,
+  evaluatePreFeeFastKill,
   buildAmazonEconomicsInputs,
   hashPacket,
 };
