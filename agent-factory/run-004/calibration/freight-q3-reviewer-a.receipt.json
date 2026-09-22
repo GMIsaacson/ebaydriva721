@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "1.0",
+  "programId": "SPC-FREIGHT-Q3-001-QUAL-V1",
+  "caseId": "Q3-REV-A-INCOMPLETE-BOUNDARY",
+  "commandId": "WC-20260922054008-9256832a16",
+  "goldOutcome": "PE_PASS_WITH_LIMITATION",
+  "actualOutcome": "PE_PASS_WITH_LIMITATION",
+  "result": "PASS",
+  "keyFindings": [
+    "distinguished professional judgment quality from product readiness",
+    "kept $2.05 MODELED_ONLY",
+    "blocked certification instead of guessing missing freight/import inputs"
+  ],
+  "authorityUsage": {
+    "externalActions": 0,
+    "spendCents": 0,
+    "productionMutation": false
+  }
+}
