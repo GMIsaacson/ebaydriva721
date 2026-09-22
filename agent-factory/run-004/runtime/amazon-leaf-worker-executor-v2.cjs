@@ -1428,8 +1428,19 @@ function normalizeAggregateOutcome(raw) {
   return raw;
 }
 
+function sanitizeEconomicsInputsForStage(raw, stage) {
+  if (!raw || !Array.isArray(raw.candidates)) return raw;
+  if (['ECONOMICS','EVIDENCE_QA'].includes(stage)) return raw;
+  raw.candidates = raw.candidates.map((candidate)=>({
+    ...candidate,
+    economicsInputs:null,
+  }));
+  return raw;
+}
+
 function validateAndEnrich(raw, payload, prior, response, nowIso, publicSnapshots = []) {
   if (!raw || typeof raw !== 'object') throw new Error('AMAZON_LEAF_RESULT_INVALID');
+  raw = sanitizeEconomicsInputsForStage(raw, payload.stage);
   const usage = responseUsage(response);
   if (payload.stage !== 'ASIN_DISCOVERY') raw = reconcileCandidateRows(raw, prior);
   const expectedAsins = prior.length ? prior[0].stageResult.candidates.map((c) => c.asin).sort() : null;
@@ -1705,6 +1716,7 @@ module.exports = {
   prescreenHandoffSnapshots,
   loadPrescreenHandoff,
   loadPriorResults,
+  sanitizeEconomicsInputsForStage,
   validateAndEnrich,
   buildPrompt,
   processAmazonLeafStage,
