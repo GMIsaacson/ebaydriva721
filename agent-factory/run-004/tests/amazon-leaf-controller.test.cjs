@@ -14,7 +14,7 @@ function result(stage){return {runId:RUN,leafId:LEAF,stage,outcome:'PASS',summar
  evidence:[{url:'https://www.amazon.com/dp/B000000001',observedAt:at,claim:'Fixture only',sourceReceipt:'fixture-retrieval'}],
  candidates:[{asin:'B000000001',disposition:stage==='EVIDENCE_QA'?'research_candidate':'continue',reason:'Fixture',
  economicsInputs:{collectedRevenueCents:1000,sourceCostCents:200,inboundFreightCents:100,marketplaceFeesCents:200,outboundShippingCents:100,packagingCents:50,riskReserveCents:50}}]};}
-function receipt(stage,body=result(stage)){const specialist=Object.fromEntries(STAGES)[stage];return {terminalState:'DELIVERED',stageResult:body,researchUsage:{webSearchCalls:stage==='ECONOMICS'?1:2},specialistExecution:{specialistId:specialist,stage,runId:RUN,leafId:LEAF,independentReview:stage==='EVIDENCE_QA'}};}
+function receipt(stage,body=result(stage)){const specialist=Object.fromEntries(STAGES)[stage];return {terminalState:'DELIVERED',stageResult:body,researchUsage:{webSearchCalls:stage==='ECONOMICS'?1:2,maxToolCalls:stage==='ECONOMICS'?1:2,publicHttpRequests:0},specialistExecution:{specialistId:specialist,stage,runId:RUN,leafId:LEAF,independentReview:stage==='EVIDENCE_QA'}};}
 test('preflight records blocker without dispatch',async()=>{const h=harness();await tick({...h,bindings:{}});assert.equal(h.state().phase,'BLOCKED');assert.equal(h.calls(),0);});
 test('six stage sequence is resumable, independent QA and never publication',async()=>{
  const h=harness();
