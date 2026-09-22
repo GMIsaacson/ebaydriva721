@@ -1,0 +1,13 @@
+{
+  "programId": "SPC-IP-Q3-001-QUAL-V1",
+  "caseId": "IP-Q3-C",
+  "commandId": "WC-20260922060724-4ec515aeb3",
+  "goldOutcome": "PE_PASS_WITH_LIMITATION",
+  "actualOutcome": "PE_PASS_WITH_LIMITATION",
+  "result": "PASS",
+  "authorityUsage": {
+    "externalActions": 0,
+    "spendCents": 0,
+    "productionMutation": false
+  }
+}
