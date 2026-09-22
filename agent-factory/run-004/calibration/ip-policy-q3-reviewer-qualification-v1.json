@@ -1,0 +1,58 @@
+{
+  "schemaVersion": "1.0",
+  "programId": "SPC-IP-Q3-001-QUAL-V1",
+  "specialistId": "SPC-IP-Q3-001",
+  "discipline": "Marketplace Policy/IP",
+  "subdiscipline": "Independent Marketplace Policy/IP Q3 Review",
+  "roleType": "REVIEWER_ONLY",
+  "qualificationTarget": "QUALIFIED",
+  "independenceRules": [
+    "May not author the Marketplace Policy/IP work it reviews.",
+    "May not self-review.",
+    "Q2 evidence review remains separate from Q3 professional judgment.",
+    "No legal opinion, platform account action, publication, supplier contact, purchase or production mutation authority."
+  ],
+  "calibrationCases": [
+    {
+      "caseId": "IP-Q3-A",
+      "commandId": "WC-20260922060719-0c51ef4471",
+      "goldOutcome": "PE_PASS_WITH_LIMITATION",
+      "actualOutcome": "PE_PASS_WITH_LIMITATION",
+      "result": "PASS"
+    },
+    {
+      "caseId": "IP-Q3-B",
+      "commandId": "WC-20260922060722-8e56811caa",
+      "goldOutcome": "PE_FAIL",
+      "actualOutcome": "PE_FAIL",
+      "result": "PASS"
+    },
+    {
+      "caseId": "IP-Q3-C",
+      "commandId": "WC-20260922060724-4ec515aeb3",
+      "goldOutcome": "PE_PASS_WITH_LIMITATION",
+      "actualOutcome": "PE_PASS_WITH_LIMITATION",
+      "result": "PASS"
+    }
+  ],
+  "aggregateQ2": {
+    "commandId": "WC-20260922060829-772a13e144",
+    "result": "PASS",
+    "reviewerCasesPassing": 3
+  },
+  "qualificationResult": "QUALIFIED",
+  "allowedTaskClasses": [
+    "Q3-marketplace-policy-ip-review"
+  ],
+  "excludedTaskClasses": [
+    "policy-ip-authoring",
+    "self-review",
+    "legal-opinion",
+    "production-mutation",
+    "platform-account-action",
+    "supplier-contact",
+    "purchase",
+    "publication"
+  ],
+  "eligibleAsReviewer": true
+}

@@ -1,0 +1,97 @@
+{
+  "decision_id": "A0-SOURCEMARGIN-IP-PCM-001",
+  "status": "PASS",
+  "verdict": "EXTEND",
+  "owner": "Aberdeen Technologies",
+  "decided_at": "2026-09-22",
+  "business_outcome": "Close the remaining Run 004 Marketplace Policy/IP readiness gap and make product/category professional gating candidate-specific, without creating a new SourceMargin team, scheduler, database, control center, or universal category expert.",
+  "existing_owner_scan": "Reviewed Run 004, G2.5 Professional Capability Completeness, SPC-IP-001, SPC-EVID-001, SPC-QA-001, the specialist registry, SourceMargin A0 capability map, Work Control, the existing Professional Capability Matrix evaluator, and the completed freight qualification pattern. SPC-IP-001 already owns Marketplace Policy/IP but is UNPROVEN. The core PCM already supports per-job required disciplines, assigned specialists, independent reviewers, criticality, evidence standards and fail-closed readiness. No new team or parallel capability framework is justified.",
+  "reuse_candidates_checked": [
+    "SPC-IP-001 — existing Marketplace Policy/IP specialist identity",
+    "SPC-EVID-001 — existing QUALIFIED Q2 evidence reviewer",
+    "SPC-QA-001 — existing QUALIFIED deterministic/test reviewer",
+    "agent-factory/core/professional-capability.cjs — existing PCM validator/readiness evaluator",
+    "Run 004 — existing Source-to-Marketplace owner",
+    "Work Control — existing execution-state/receipt ledger",
+    "SourceMargin A0 capability map and specialist registry"
+  ],
+  "duplication_analysis": "REUSE covers the authoring specialist identity, Q1/Q2, Work Control, Run 004 ownership, and PCM semantics. EXTEND is required for two narrow gaps only: (1) calibrate/qualify SPC-IP-001 and a reviewer-only independent Marketplace Policy/IP Q3 specialist because G2.5 forbids self-review; and (2) add a Run 004 candidate-level PCM router that determines whether category/specification expertise is materially required. The router must not create a generic universal product expert. It may classify a candidate as not requiring category Q3 only when explicit low-risk criteria are satisfied; otherwise it must require a bound qualified job-specific specialist and fail closed if one is unavailable.",
+  "residual_unowned_loop": "For each SourceMargin candidate: evaluate marketplace/IP risk and product/category complexity -> construct one Professional Capability Manifest for only the material professional disciplines -> bind qualified existing specialists/reviewers when available -> return READY/CONDITIONAL/BLOCKED plus exact missing capability. Policy/IP is always screened before publication. Product/category specification becomes gating only when risk triggers such as fitment/compatibility, safety/regulatory claims, electrical/electronic function, material/chemical performance, medical/health claims, vehicle fitment, load-bearing/structural claims, branded-equivalence, or other technically material equivalence are present. No generic specialist may silently certify those cases.",
+  "covers_paths": [
+    ".github/workflows/run-004-ip-pcm-qualification.yml",
+    "agent-factory/governance/a0-decisions/A0-SOURCEMARGIN-IP-PCM-001.a0.json",
+    "agent-factory/governance/specialist-registry-v1.0.json",
+    "agent-factory/governance/SOURCEMARGIN_A0_CAPABILITY_MAP.md",
+    "agent-factory/governance/team-professional-retrofit-v1.0.json",
+    "agent-factory/run-004/README.md",
+    "agent-factory/run-004/calibration/ip-policy-specialist-qualification-v1.json",
+    "agent-factory/run-004/calibration/ip-policy-q3-reviewer-qualification-v1.json",
+    "agent-factory/run-004/runtime/source-margin-professional-router.cjs",
+    "agent-factory/run-004/tests/ip-policy-specialist-qualification.test.cjs",
+    "agent-factory/run-004/tests/source-margin-professional-router.test.cjs",
+    "agent-factory/run-004/runtime/ip-policy-specialist-qualification.cjs",
+    "agent-factory/run-004/calibration/ip-policy-calibration-ebay-generic-001.receipt.json",
+    "agent-factory/run-004/calibration/ip-policy-calibration-ebay-compatibility-002.receipt.json",
+    "agent-factory/run-004/calibration/ip-policy-calibration-ebay-authenticity-003.receipt.json",
+    "agent-factory/run-004/calibration/ip-policy-calibration-ebay-content-004.receipt.json",
+    "agent-factory/run-004/calibration/ip-policy-calibration-amazon-compatibility-005.receipt.json",
+    "agent-factory/run-004/calibration/ip-policy-q3-reviewer-a.receipt.json",
+    "agent-factory/run-004/calibration/ip-policy-q3-reviewer-b.receipt.json",
+    "agent-factory/run-004/calibration/ip-policy-q3-reviewer-c.receipt.json",
+    "agent-factory/run-004/calibration/ip-policy-q3-final-portfolio.receipt.json"
+  ],
+  "evidence_ref": "Current master cef3f04b2ec249520cd44e0e3fa6c8c4ecba88ef. Canonical registry: SPC-IP-001 = UNPROVEN. SourceMargin A0 map: Marketplace Policy/IP = unproven; Product/category specification = job-specific qualified specialist, blocked until bound. Existing core professional-capability.cjs already provides per-job PCM validation/readiness. Official marketplace calibration evidence will be restricted to current first-party Amazon/eBay policy sources where available, with legal conclusions explicitly out of scope.",
+  "authority_boundary": {
+    "phase": "QUALIFICATION_AND_ROUTING_ONLY",
+    "allowed": [
+      "read current public Amazon/eBay marketplace policy and IP guidance",
+      "perform bounded policy/IP calibration and independent review",
+      "construct candidate-level PCM requirements",
+      "route to existing qualified specialists/reviewers",
+      "emit internal READY/CONDITIONAL/BLOCKED receipts",
+      "state that legal counsel or rights-owner/platform evidence is required where policy evidence is insufficient"
+    ],
+    "denied": [
+      "legal opinion or determination of trademark/copyright/patent legality",
+      "rights-owner contact or VeRO/Brand Registry filing",
+      "appeals or platform account actions",
+      "supplier contact without separate authority",
+      "purchase, spend, listing, message, or publication",
+      "SourceMargin production mutation or resolver write-back",
+      "creating a generic universal product/category specialist",
+      "marking a technically material candidate ready without a bound qualified category specialist",
+      "creating a new team, scheduler, database, control center, or execution plane"
+    ]
+  },
+  "qualification_target": {
+    "author": "SPC-IP-001",
+    "reviewer": "SPC-IP-Q3-001",
+    "authorCasesMinimum": 5,
+    "q2PassRequired": true,
+    "reviewerGoldCasesMinimum": 3,
+    "independentPortfolioQ3": "PE_PASS",
+    "failClosed": true
+  },
+  "router_rules": {
+    "policyIpScreen": "ALWAYS_REQUIRED_FOR_PUBLICATION",
+    "categorySpecialist": "CONDITIONAL_ON_MATERIAL_TECHNICAL_OR_REGULATORY_RISK",
+    "lowRiskBypass": "ONLY_WHEN_EXPLICIT_LOW_RISK_CRITERIA_PASS",
+    "missingRequiredSpecialist": "BLOCKED",
+    "noGenericUniversalExpert": true
+  },
+  "implementation_result": {
+    "authorSpecialist": "SPC-IP-001",
+    "authorState": "QUALIFIED",
+    "authorCases": "5/5 PASS",
+    "authorQ2": "WC-20260922060801-35a1317baf = PASS",
+    "reviewerSpecialist": "SPC-IP-Q3-001",
+    "reviewerState": "QUALIFIED",
+    "reviewerCalibration": "3/3 gold match",
+    "reviewerQ2": "WC-20260922060829-772a13e144 = PASS",
+    "portfolioQ3": "WC-20260922060851-831644e731",
+    "normalizedOutcome": "WC-20260922060931-f479f032fe = PE_PASS / QUALIFIED",
+    "finalQ2": "WC-20260922060951-820a903e12 = PASS / COMPLETE",
+    "candidateRouter": "Implemented fail-closed per-candidate PCM routing; Marketplace Policy/IP always gates publication, while product/category specialist binding is conditional on explicit technical/regulatory risk and defaults to required when low risk is not established.",
+    "productionAuthority": "UNCHANGED — no SourceMargin write-back, publication, supplier contact, purchase, spend or platform account authority."
+  }
+}

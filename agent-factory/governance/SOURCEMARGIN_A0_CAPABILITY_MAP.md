@@ -30,9 +30,10 @@ Supabase remains the SourceMargin live operational research truth. GitHub remain
 | Retry/dead-letter/cancellation/recovery primitives | Run 008 Operations Core | REUSE | No separate operations/state-control service. |
 | SourceMargin current-state reconciliation | Run 004 using Run 008/Work Control patterns | EXTEND | Genuine gap: reconcile Supabase + Work Control + GitHub into one typed state receipt; fail closed on drift. |
 | Freight/import/landed-cost professional judgment | SPC-FREIGHT-001 | REUSE — QUALIFIED | QUALIFIED after 5/5 passing cases, 5/5 Q2 PASS, 2 quote-backed reconciliations, independent portfolio Q3 `PE_PASS`, and final Q2 qualification audit PASS. Evidence-complete professional certification is allowed; production mutation/publication remains separately denied. |
-| Marketplace policy/IP judgment | SPC-IP-001 | EXTEND/QUALIFY existing capability | Currently UNPROVEN. |
-| Product/category specification judgment | Job-specific qualified specialist | BLOCKED until bound | Do not create a generic universal category expert. Bind only when material. |
+| Marketplace policy/IP judgment | SPC-IP-001 | REUSE — QUALIFIED | QUALIFIED after 5/5 author cases, 5/5 Q2 PASS, independent reviewer calibration, portfolio Q3 `PE_PASS`, and final Q2 promotion audit. Marketplace-policy/IP certification is bounded and is not legal advice or platform/account authority. |
+| Product/category specification judgment | Candidate PCM → job-specific qualified specialist | CONDITIONAL / FAIL-CLOSED | No universal category expert. Explicit generic/simple candidates with no material technical/regulatory risk may omit this discipline; compatibility, fitment, electronics, safety, regulated, medical/health, material-performance, structural, branded-equivalence and similar cases require a bound qualified specialist + independent reviewer. Unknown complexity defaults to required. |
 | Freight/import independent Q3 | SPC-FREIGHT-Q3-001 + Professional Capability framework | REUSE — QUALIFIED | Reviewer-only specialist is QUALIFIED; final SPC-FREIGHT-001 portfolio review returned `PE_PASS` and the independent Q2 qualification audit accepted the outcome. |
+| Marketplace Policy/IP independent Q3 | SPC-IP-Q3-001 + Professional Capability framework | REUSE — QUALIFIED | Reviewer-only specialist is QUALIFIED after 3/3 preregistered reviewer gold cases; final SPC-IP-001 portfolio review returned `PE_PASS` and final Q2 accepted promotion evidence as COMPLETE. |
 | Software/UI changes to SourceMargin | Run 014 / Run 015 | REUSE when needed | These are shared production capabilities, not permanent SourceMargin subteams. |
 
 ## Genuine extension: State Reconciliation
@@ -67,12 +68,14 @@ Fail-closed rules:
 
 ## Professional-readiness constraint
 
-Canonical Factory retrofit still marks Run 004 as professionally BLOCKED overall, but the freight/import gap is closed: `SPC-FREIGHT-001` is QUALIFIED and its independent portfolio Q3 returned `PE_PASS`. Marketplace policy/IP and category-professional review remain unproven/unbound, so those separate disciplines can still block product-level commercial readiness when material.
+Run 004 is no longer globally blocked by freight or Marketplace Policy/IP capability gaps: `SPC-FREIGHT-001` and `SPC-IP-001` are QUALIFIED with independent `PE_PASS` reviews. Product/category expertise is now candidate-gated through the SourceMargin PCM router rather than treated as a permanent global missing role. Complex candidates fail closed until a job-specific qualified specialist and independent reviewer are bound; explicit low-risk generic/simple candidates may proceed without inventing a universal category expert.
 
 Therefore:
 - research, discovery, evidence collection, demand validation, supplier search and deterministic economics may continue within their allowed/provisional scopes;
 - freight/import professional certification may now be issued only when the case-specific required evidence is complete;
-- no unsupported “profitable”, “BUY-ready”, or equivalent commercial readiness claim may be promoted while another material gating discipline (for example policy/IP or category specification) remains unqualified or unbound.
+- Marketplace Policy/IP certification may now be issued only against current platform evidence and candidate facts, with legal advice and platform/account actions explicitly out of scope;
+- each candidate receives a professional-capability manifest. Material category/specification risk requires a bound qualified job-specific specialist and reviewer; missing expertise blocks that candidate only;
+- no unsupported “profitable”, “BUY-ready”, or equivalent commercial readiness claim may bypass a candidate's required professional disciplines.
 
 ## Immediate Work Control handoff
 

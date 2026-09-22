@@ -1,0 +1,36 @@
+{
+  "programId": "SPC-IP-001-QUAL-V1",
+  "caseId": "IP-CAL-002",
+  "specialistId": "SPC-IP-001",
+  "mode": "SHADOW",
+  "platform": "ebay",
+  "workControlCommandId": "WC-20260922060541-d809b9fb71",
+  "professionalOutcome": "IP_BLOCK",
+  "findings": [
+    "Current title used third-party brand without compatibility qualifier before the brand.",
+    "Marketplace-policy remediation is to use evidence-bounded for/fits/compatible-with wording and keep Brand=Generic."
+  ],
+  "evidenceRefs": [
+    "https://www.ebay.com/help/selling/policies/prohibited-restricted-items?id=4349"
+  ],
+  "minimumRemediationEvidence": [
+    "revised listing title/content using current eBay compatibility framing",
+    "truthful technical compatibility evidence",
+    "seller-created or authorized content"
+  ],
+  "legalConclusionMade": false,
+  "forbiddenClaimsMade": [],
+  "q2": {
+    "reviewerId": "SPC-EVID-001",
+    "commandId": "WC-20260922060801-35a1317baf",
+    "result": "PASS"
+  },
+  "authorityUsage": {
+    "externalActions": 0,
+    "spendCents": 0,
+    "productionMutation": false,
+    "publication": false,
+    "platformAccountAction": false
+  },
+  "caseResult": "PASS"
+}

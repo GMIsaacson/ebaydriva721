@@ -1,0 +1,34 @@
+{
+  "programId": "SPC-IP-001-QUAL-V1",
+  "caseId": "IP-CAL-001",
+  "specialistId": "SPC-IP-001",
+  "mode": "SHADOW",
+  "platform": "ebay",
+  "workControlCommandId": "WC-20260922060538-e755768a24",
+  "professionalOutcome": "IP_PASS",
+  "findings": [
+    "Bounded marketplace/IP screen passed for explicitly generic unbranded product using seller-created content.",
+    "Result is not legal non-infringement clearance or a guarantee against future platform/rights-owner action."
+  ],
+  "evidenceRefs": [
+    "https://www.ebay.com/help/selling/policies/prohibited-restricted-items?id=4349",
+    "https://www.ebay.com/help/default/default/counterfeit-item-policy?id=4276",
+    "https://pages.ebay.com/vero/"
+  ],
+  "minimumRemediationEvidence": [],
+  "legalConclusionMade": false,
+  "forbiddenClaimsMade": [],
+  "q2": {
+    "reviewerId": "SPC-EVID-001",
+    "commandId": "WC-20260922060801-35a1317baf",
+    "result": "PASS"
+  },
+  "authorityUsage": {
+    "externalActions": 0,
+    "spendCents": 0,
+    "productionMutation": false,
+    "publication": false,
+    "platformAccountAction": false
+  },
+  "caseResult": "PASS"
+}

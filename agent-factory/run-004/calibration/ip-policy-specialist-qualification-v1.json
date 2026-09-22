@@ -1,0 +1,127 @@
+{
+  "schemaVersion": "1.0",
+  "programId": "SPC-IP-001-QUAL-V1",
+  "specialistId": "SPC-IP-001",
+  "discipline": "Marketplace Policy/IP",
+  "subdiscipline": "IP/Marketplace Risk",
+  "startingState": "UNPROVEN",
+  "targetStates": [
+    "PROVISIONAL",
+    "QUALIFIED"
+  ],
+  "outcomeVocabulary": [
+    "IP_PASS",
+    "IP_PASS_WITH_LIMITATION",
+    "IP_BLOCK",
+    "IP_ESCALATE"
+  ],
+  "principles": [
+    "Marketplace/platform policy judgment is not a legal opinion.",
+    "Use current first-party marketplace policy sources where available; stale or secondary guidance is not silently treated as current controlling policy.",
+    "Authenticity/provenance uncertainty blocks a positive policy-readiness conclusion.",
+    "Third-party trademarks may not be treated as the seller's own brand identity; compatibility references must follow current marketplace guidance.",
+    "Third-party listing images/text require ownership, permission, or marketplace-catalog authorization evidence.",
+    "Counterfeit, active IP complaint, rights-owner ambiguity, or patent/design legal uncertainty is blocked or escalated rather than guessed.",
+    "Qualification does not authorize listing, appeals, platform account actions, rights-owner contact, supplier contact, publication, or production mutation."
+  ],
+  "stageB": {
+    "name": "Shadow calibration to PROVISIONAL",
+    "minimumCases": 3,
+    "requiredMix": [
+      "one low-risk generic/original-content case",
+      "one compatibility/trademark-reference case",
+      "one authenticity/provenance blocker case"
+    ],
+    "thresholds": {
+      "q2PassRate": 1,
+      "unsupportedPolicyClaimRate": 0,
+      "legalConclusionRate": 0,
+      "authorityViolationRate": 0
+    },
+    "promotion": "PROVISIONAL",
+    "allowedTaskClassesAfterPass": [
+      "marketplace-policy-ip-risk-screen",
+      "listing-content-ip-review",
+      "authenticity-provenance-risk-screen",
+      "compatibility-trademark-reference-review"
+    ]
+  },
+  "stageC": {
+    "name": "Professional qualification to QUALIFIED",
+    "minimumCases": 5,
+    "requirements": [
+      "all Stage B thresholds continue to pass",
+      "at least one Amazon and two eBay cases use current first-party marketplace guidance",
+      "Q2 evidence review passes every case",
+      "no legal opinion is issued",
+      "an independent qualified Marketplace Policy/IP reviewer issues PE_PASS for the portfolio"
+    ],
+    "promotion": "QUALIFIED",
+    "automaticPromotion": false
+  },
+  "authority": {
+    "mode": "SHADOW_ONLY",
+    "maxExternalActions": 0,
+    "maxSpendCents": 0,
+    "productionMutation": false,
+    "publication": false,
+    "supplierContact": false,
+    "platformAccountAction": false
+  },
+  "progress": {
+    "passingCases": 5,
+    "q2PassingCases": 5,
+    "currentRecommendedState": "QUALIFIED",
+    "independentQ3": "PE_PASS",
+    "independentQ3Reviewer": "SPC-IP-Q3-001",
+    "authorQ2CommandId": "WC-20260922060801-35a1317baf",
+    "portfolioQ3CommandId": "WC-20260922060851-831644e731",
+    "outcomeNormalizationCommandId": "WC-20260922060931-f479f032fe",
+    "finalQ2AuditCommandId": "WC-20260922060951-820a903e12",
+    "promotionEvidenceStatus": "COMPLETE",
+    "cases": [
+      {
+        "caseId": "IP-CAL-001",
+        "platform": "ebay",
+        "commandId": "WC-20260922060538-e755768a24",
+        "outcome": "IP_PASS",
+        "q2": "PASS"
+      },
+      {
+        "caseId": "IP-CAL-002",
+        "platform": "ebay",
+        "commandId": "WC-20260922060541-d809b9fb71",
+        "outcome": "IP_BLOCK",
+        "q2": "PASS"
+      },
+      {
+        "caseId": "IP-CAL-003",
+        "platform": "ebay",
+        "commandId": "WC-20260922060544-5c4150bed6",
+        "outcome": "IP_BLOCK",
+        "q2": "PASS"
+      },
+      {
+        "caseId": "IP-CAL-004",
+        "platform": "ebay",
+        "commandId": "WC-20260922060547-7f23c70aac",
+        "outcome": "IP_BLOCK",
+        "q2": "PASS"
+      },
+      {
+        "caseId": "IP-CAL-005",
+        "platform": "amazon",
+        "commandId": "WC-20260922060550-331b55751e",
+        "outcome": "IP_PASS_WITH_LIMITATION",
+        "q2": "PASS"
+      }
+    ]
+  },
+  "qualificationResult": "QUALIFIED",
+  "standingLimitations": [
+    "Qualification covers bounded marketplace policy/IP risk screening, not legal advice or legal non-infringement clearance.",
+    "Current platform evidence and candidate facts must be rechecked when stale or changed.",
+    "Technical compatibility/equivalence remains a separate product/category professional discipline.",
+    "No platform account/listing action, supplier contact, purchase/spend, production mutation or customer publication authority is granted."
+  ]
+}
