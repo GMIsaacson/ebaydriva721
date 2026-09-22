@@ -105,9 +105,14 @@ function validateSpecialistReceipt(receipt, stageIndex) {
     fail('SPECIALIST_ROUTING_RECEIPT_INVALID');
   }
   if (stage === 'EVIDENCE_QA' && sx.independentReview !== true) fail('INDEPENDENT_Q2_RECEIPT_REQUIRED');
-  const calls = Number(receipt?.researchUsage?.webSearchCalls ?? 0);
-  if (!Number.isInteger(calls) || calls < 0 || calls > 3) fail('PUBLIC_RESEARCH_USAGE_INVALID');
-  return calls;
+  const webCalls = Number(receipt?.researchUsage?.webSearchCalls ?? 0);
+  const requestedWebCalls = Number(receipt?.researchUsage?.maxToolCalls ?? 0);
+  const publicHttpRequests = Number(receipt?.researchUsage?.publicHttpRequests ?? 0);
+  if (!Number.isInteger(webCalls) || webCalls < 0 || webCalls > 3) fail('PUBLIC_RESEARCH_USAGE_INVALID');
+  if (!Number.isInteger(requestedWebCalls) || requestedWebCalls < 0 || requestedWebCalls > 3) fail('PUBLIC_RESEARCH_REQUEST_LIMIT_INVALID');
+  if (webCalls > requestedWebCalls + 1) fail('PUBLIC_RESEARCH_PROVIDER_OVERRUN');
+  if (!Number.isInteger(publicHttpRequests) || publicHttpRequests < 0 || publicHttpRequests > 5) fail('PUBLIC_HTTP_USAGE_INVALID');
+  return {webCalls,publicHttpRequests,totalCalls:webCalls+publicHttpRequests};
 }
 
 // The store owns the controller checkpoint; Work Control remains the command/receipt authority.
@@ -230,17 +235,18 @@ async function tick({store, workControl, bindings, now = () => new Date()}) {
   let stageCalls;
   try {
     stageCalls = validateSpecialistReceipt(receipt, state.stage);
-    if (state.publicResearchCalls + stageCalls > MAX_PUBLIC_RESEARCH_CALLS) fail('PUBLIC_RESEARCH_RUN_LIMIT');
+    if (state.publicResearchCalls + stageCalls.totalCalls > MAX_PUBLIC_RESEARCH_CALLS) fail('PUBLIC_RESEARCH_RUN_LIMIT');
     result = validateResult(structuredClone(receipt.stageResult), STAGES[state.stage][0], now().getTime());
     if (state.results.length) {
       const prior = state.results[0].result.candidates.map(c => c.asin).sort();
       if (JSON.stringify(result.candidates.map(c => c.asin).sort()) !== JSON.stringify(prior)) fail('CANDIDATE_RECONCILIATION_FAILED');
     }
   } catch(error) {
-    return save({phase:'BLOCKED'}, {
+    return save({phase:'BLOCKED', modelBudgetCommittedCents:reconciledModelBudget}, {
       kind:'INVALID_RESULT',
       reason:error.message,
       commandId:state.commandId,
+      modelCostCents:Number.isFinite(actualModelCost) ? actualModelCost : null,
     });
   }
 
@@ -259,7 +265,7 @@ async function tick({store, workControl, bindings, now = () => new Date()}) {
     commandId:null,
     results,
     attempts:0,
-    publicResearchCalls: state.publicResearchCalls + stageCalls,
+    publicResearchCalls: state.publicResearchCalls + stageCalls.totalCalls,
     modelBudgetCommittedCents: reconciledModelBudget,
   }, {
     kind:'STAGE_RESULT',
@@ -267,7 +273,8 @@ async function tick({store, workControl, bindings, now = () => new Date()}) {
     outcome:result.outcome,
     summary:result.summary,
     specialist:receipt.specialistExecution.specialistId,
-    webSearchCalls:stageCalls,
+    webSearchCalls:stageCalls.webCalls,
+    publicHttpRequests:stageCalls.publicHttpRequests,
   });
 }
 
