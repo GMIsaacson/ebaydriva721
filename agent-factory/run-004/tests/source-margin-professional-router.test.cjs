@@ -1,6 +1,8 @@
 'use strict';
 const test=require('node:test');
 const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
 const {routeSourceMarginCandidate,categoryRisk}=require('../runtime/source-margin-professional-router.cjs');
 
 function baseRegistry(){
@@ -131,4 +133,17 @@ test('safety/electrical/material and branded-equivalence flags are category-gati
     assert.equal(risk.required,true,key);
     assert.ok(risk.triggered.includes(key),key);
   }
+});
+
+
+test('canonical registry resolves generic candidate but blocks unbound compatibility candidate',()=>{
+  const registry=JSON.parse(fs.readFileSync(path.join(__dirname,'..','..','governance','specialist-registry-v1.0.json'),'utf8')).records;
+  const generic=routeSourceMarginCandidate(genericCandidate({candidateId:'CANON-GEN-001'}),registry);
+  assert.equal(generic.readiness,'READY');
+  assert.equal(generic.publishableProfessionalGate,true);
+
+  const compatibility=routeSourceMarginCandidate(genericCandidate({candidateId:'CANON-COMP-001',compatibilityClaim:true}),registry);
+  assert.equal(compatibility.readiness,'BLOCKED');
+  assert.equal(compatibility.publishableProfessionalGate,false);
+  assert.ok(compatibility.blockers.some(x=>x.type==='CATEGORY_SPECIALIST_UNBOUND'));
 });
