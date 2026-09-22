@@ -436,6 +436,40 @@ async function resultFor(req) {
   return upstream(`/api/result?id=${encodeURIComponent(workflowId)}`);
 }
 
+async function diagnoseFor(req) {
+  const parsed = new URL(req.url, 'https://control.local');
+  const workflowId = safeId(parsed.searchParams.get('diagnose'));
+  return upstream(`/api/diagnose?id=${encodeURIComponent(workflowId)}`);
+}
+
+async function dependenciesFor() {
+  return upstream('/api/dependencies');
+}
+
+async function executionsFor(req) {
+  const parsed = new URL(req.url, 'https://control.local');
+  const params = new URLSearchParams();
+  const workflowId = parsed.searchParams.get('workflowId');
+  const status = parsed.searchParams.get('status');
+  const limit = parsed.searchParams.get('limit');
+  const offset = parsed.searchParams.get('offset');
+  if (workflowId) params.set('workflowId', safeId(workflowId));
+  if (status) params.set('status', String(status).slice(0, 40));
+  if (limit) params.set('limit', String(limit).slice(0, 6));
+  if (offset) params.set('offset', String(offset).slice(0, 8));
+  const suffix = params.toString();
+  return upstream(`/api/executions${suffix ? `?${suffix}` : ''}`);
+}
+
+async function executionDetailFor(req) {
+  const parsed = new URL(req.url, 'https://control.local');
+  const executionId = String(parsed.searchParams.get('execution') || '').trim();
+  if (!/^\d{1,20}$/.test(executionId)) {
+    throw Object.assign(new Error('INVALID_EXECUTION_ID'), { status: 400 });
+  }
+  return upstream(`/api/executions/${executionId}`);
+}
+
 async function handleWrite(req, res, user) {
   const body = req.body && typeof req.body === 'object' ? req.body : {};
   const action = String(body.action || '').toLowerCase();
@@ -481,6 +515,10 @@ module.exports = async function handler(req, res) {
       const user = await optionalUser(req);
       const parsed = new URL(req.url, 'https://control.local');
       if (parsed.searchParams.has('result')) return json(res, 200, await resultFor(req));
+      if (parsed.searchParams.has('diagnose')) return json(res, 200, await diagnoseFor(req));
+      if (parsed.searchParams.has('dependencies')) return json(res, 200, await dependenciesFor());
+      if (parsed.searchParams.has('executions')) return json(res, 200, await executionsFor(req));
+      if (parsed.searchParams.has('execution')) return json(res, 200, await executionDetailFor(req));
       return json(res, 200, await snapshot(user));
     }
 
