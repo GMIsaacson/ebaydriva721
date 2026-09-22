@@ -25,7 +25,12 @@
     "agent-factory/run-004/runtime/sourcemargin-resolver-shadow-adapter.cjs",
     "agent-factory/run-004/contracts/sourcemargin-resolver-shadow.schema.json",
     "agent-factory/run-004/contracts/registry.json",
-    "agent-factory/run-004/README.md"
+    "agent-factory/run-004/README.md",
+    "agent-factory/run-004/calibration/freight-specialist-qualification-v1.json",
+    "agent-factory/run-004/calibration/freight-calibration-thermal-pads-001.attempt.json",
+    "agent-factory/run-004/contracts/freight-specialist-calibration-receipt.schema.json",
+    "agent-factory/run-004/runtime/freight-specialist-qualification.cjs",
+    "agent-factory/run-004/tests/freight-specialist-qualification.test.cjs"
   ],
   "evidence_ref": "agent-factory/governance/SOURCEMARGIN_A0_CAPABILITY_MAP.md; agent-factory/governance/specialist-registry-v1.0.json; agent-factory/governance/team-professional-retrofit-v1.0.json; agent-factory/governance/a0-decisions/A0-SOURCEMARGIN-STATE-001.a0.json; agent-factory/governance/a0-decisions/A0-SOURCEMARGIN-COMPLETION-001.a0.json; agent-factory/governance/a0-decisions/A0-SOURCEMARGIN-ACQ-DISPATCH-001.a0.json; GMIsaacson/Eb-Al merge a0ea19b3522608e5207c44a275ddefb9a741050d; SourceMargin Thermal Pads resolver state on 2026-09-21: 8 queued resolver tasks, RESEARCH_SAMPLE_READY, 0 publishable SAMPLE_READY.",
   "authority_boundary": {
@@ -62,5 +67,15 @@
     "A typed shadow receipt records task ID, specialist route, evidence, proposed result, blockers, Q1/Q2 state, runtime, and authority usage.",
     "Only after these criteria pass may a fresh A0/owner decision consider bounded production claim/write-back authority."
   ],
-  "prior_production_change_disposition": "The already-applied SourceMargin resolver schema/UI changes are retained as a fail-closed domain-project input because no Factory worker currently consumes them and they reduce false publication. This A0 record does not retroactively authorize those production mutations; it governs the Factory execution integration from this point forward."
+  "prior_production_change_disposition": "The already-applied SourceMargin resolver schema/UI changes are retained as a fail-closed domain-project input because no Factory worker currently consumes them and they reduce false publication. This A0 record does not retroactively authorize those production mutations; it governs the Factory execution integration from this point forward.",
+  "implementation_update": {
+    "date": "2026-09-22",
+    "scope": "Qualify existing SPC-FREIGHT-001 without creating a new specialist or granting production authority.",
+    "programId": "SPC-FREIGHT-001-QUAL-V1",
+    "currentState": "UNPROVEN",
+    "firstCalibrationAttempt": "WC-20260922050446-195dc8e863",
+    "firstAttemptResult": "BLOCKED_RUNTIME_QUOTA",
+    "interpretation": "The HTTP 429/credit_balance_exhausted failure produced no specialist output and is not evidence for or against competence. No promotion is allowed until case thresholds actually pass.",
+    "promotionRules": "UNPROVEN -> PROVISIONAL requires three passing shadow cases with 100% Q2, zero unsupported estimates, zero arithmetic errors, and zero authority violations. PROVISIONAL -> QUALIFIED requires five total cases, at least two reconciled against real quote/final-charge evidence, acceptable estimate error where estimates are explicitly requested, and independent logistics Q3 PE_PASS."
+  }
 }
