@@ -84,7 +84,8 @@
   },
   "currentKnownBlockers": [
     "No independent qualified logistics/freight Q3 reviewer is currently registered.",
-    "Thermal Pads lacks quote-backed packaging, international freight, duty/tariff, inspection, prep/labeling, and domestic inbound values."
+    "Stage C still requires at least two additional passing cases, including at least one additional real quote/final-charge reconciliation case.",
+    "Thermal Pads itself still lacks quote-backed packaging, international freight, duty/tariff, inspection, prep/labeling, and domestic inbound values."
   ],
   "authority": {
     "mode": "SHADOW_ONLY",
@@ -95,17 +96,50 @@
     "publication": false
   },
   "progress": {
-    "passingCases": 1,
+    "passingCases": 3,
     "requiredForProvisional": 3,
-    "q2PassingCases": 1,
-    "actualReconciliationCases": 0,
-    "currentRecommendedState": "UNPROVEN",
-    "latestCase": {
-      "caseId": "SM-AMZ-THERMAL-PADS-001",
-      "workControlCommandId": "WC-20260922051902-3774be3966",
-      "q2CommandId": "WC-20260922051943-9cbb4a9520",
-      "result": "PASS",
-      "notes": "Correct incomplete/block outcome; no unsupported freight/import estimates; Q2 PASS."
+    "q2PassingCases": 3,
+    "actualReconciliationCases": 1,
+    "currentRecommendedState": "PROVISIONAL",
+    "caseMix": {
+      "incompleteBlockCase": "SM-AMZ-THERMAL-PADS-001",
+      "quoteBackedFreightCase": "RUN004-CAR-SEAT-GAP-FREIGHT-002",
+      "incotermTariffCase": "CONTROLLED-DDP-TARIFF-003",
+      "satisfied": true
+    },
+    "cases": [
+      {
+        "caseId": "SM-AMZ-THERMAL-PADS-001",
+        "workControlCommandId": "WC-20260922051902-3774be3966",
+        "q2CommandId": "WC-20260922051943-9cbb4a9520",
+        "result": "PASS",
+        "category": "incomplete-block",
+        "notes": "Correctly blocked unresolved components; no unsupported estimates."
+      },
+      {
+        "caseId": "RUN004-CAR-SEAT-GAP-FREIGHT-002",
+        "workControlCommandId": "WC-20260922052334-ab1d0de50d",
+        "q2CommandId": "WC-20260922052421-0233119389",
+        "result": "PASS",
+        "category": "quote-backed-freight",
+        "notes": "Normalized a real visible freight quote as QUOTED, not VERIFIED; arithmetic and scope limits passed Q2."
+      },
+      {
+        "caseId": "CONTROLLED-DDP-TARIFF-003",
+        "workControlCommandId": "WC-20260922052444-2b29ba0e39",
+        "q2CommandId": "WC-20260922052535-fca5336728",
+        "result": "PASS",
+        "category": "incoterm-tariff",
+        "notes": "Handled DDP without double-counting duty; authoritative classification evidence was caveated; unverified current rate and duty dollars remained blocked."
+      }
+    ],
+    "stageCProgress": {
+      "totalCases": 3,
+      "requiredTotalCases": 5,
+      "realQuoteOrFinalChargeCases": 1,
+      "requiredRealQuoteOrFinalChargeCases": 2,
+      "independentQ3": "MISSING",
+      "estimateErrorEvidence": "NOT_YET_APPLICABLE"
     }
   }
 }
