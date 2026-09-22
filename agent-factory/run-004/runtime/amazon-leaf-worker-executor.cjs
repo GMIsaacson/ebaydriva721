@@ -143,9 +143,11 @@ function stageInstructions(stage) {
       'If exact source configuration or pack equivalence is unresolved, mark that candidate blocked rather than using a category/search price.',
     ],
     LANDED_COST: [
-      'For sourced candidates still marked continue, capture visible freight/shipping/logistics evidence and relevant route/quantity basis. Preserve quote/model/unresolved states distinctly.',
+      'For sourced candidates still marked continue, capture SOURCE-TO-BUYER/fulfillment inbound freight, supplier shipping, import/duty/logistics evidence, and relevant route/quantity basis. Preserve quote/model/unresolved states distinctly.',
+      'This stage does NOT own Amazon referral/FBA fees, marketplace outbound/customer shipping, packaging, advertising, returns/risk reserve, or final profitability; those belong to ECONOMICS. Do not block a candidate here merely because those later-stage inputs are absent.',
+      'A public exact-source offer that explicitly states free shipping may record inbound supplier shipping as 0 cents for that observed offer/quantity and continue when no other material inbound/import component is unresolved. Shipping calculated at checkout without a public amount is unresolved and blocks that candidate.',
       'SPC-FREIGHT-001 is QUALIFIED for evidence-bounded landed-cost work, but customs-legal and tax opinions are excluded.',
-      'Do not fabricate freight, tariff, weight, Incoterm, or destination assumptions. Missing material inputs must block the candidate.',
+      'Do not fabricate freight, tariff, weight, Incoterm, destination, or import assumptions. Missing material LANDED-COST inputs must block only the affected candidate.',
     ],
     ECONOMICS: [
       'Normalize complete evidence-backed inputs for the existing deterministic Run 004 economics engine. Do not perform optimistic arithmetic to fill missing fields.',
