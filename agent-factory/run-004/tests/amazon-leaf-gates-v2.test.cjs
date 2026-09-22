@@ -397,3 +397,35 @@ test('PRESCREEN is a governed stage and forbids prior receipts', () => {
   assert.equal(payload.stage,'PRESCREEN');
   assert.equal(worker.STAGE_SPECIALISTS.PRESCREEN.taskClass,'leaf-opportunity-prescreen');
 });
+
+test('price enrichment rescues high-demand prescreen candidates from price-unverified exclusion', () => {
+  const worker=require('../runtime/amazon-leaf-worker-executor-v2.cjs');
+  const snapshots=[{
+    asin:'B07T288VN8',
+    title:'Nilight Battery Switch 12-48V Heavy Duty',
+    url:'https://www.amazon.com/dp/B07T288VN8',
+    ok:true,
+    status:200,
+    displayedPrice:'',
+    boughtPastMonth:'3K+ bought in past month',
+    availability:'In Stock',
+    rating:'',
+    ratingsCount:'',
+    sourceReceipt:'web-prescreen',
+  }];
+  const before=worker.scoreAmazonPrescreenSnapshot(snapshots[0]);
+  assert.equal(before.eligibleForDeepResearch,false);
+  assert.equal(before.exclusionReason,'PRICE_UNVERIFIED');
+
+  const enriched=worker.mergePrescreenPriceEnrichment(snapshots,{
+    candidates:[{
+      asin:'B07T288VN8',
+      observedPriceCents:1899,
+      evidenceClaim:'Exact Amazon page shows $18.99.',
+    }],
+  });
+  assert.equal(enriched[0].displayedPrice,'$18.99');
+  const after=worker.scoreAmazonPrescreenSnapshot(enriched[0]);
+  assert.equal(after.eligibleForDeepResearch,true);
+  assert.ok(after.score > 0);
+});
