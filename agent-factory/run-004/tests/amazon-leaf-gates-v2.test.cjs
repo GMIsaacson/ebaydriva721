@@ -105,8 +105,8 @@ test('source cost alone exceeds Amazon sale and kills even when inbound shipping
     evidence:[{url:source}],
     candidates:[{
       asin:'B0FK2BSZW1',
-      disposition:'continue',
-      reason:'continue',
+      disposition:'blocked',
+      reason:'shipping unresolved',
       economicsInputs:null,
       economicsEvidence:{
         schemaVersion:'amazon-economics-evidence/1.0.0',
