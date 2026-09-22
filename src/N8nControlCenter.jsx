@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useAuth } from "./AuthProvider";
-import { controlWorkflow, enrollWorkflowOwner, fetchN8nSnapshot, fetchWorkflowResult } from "./n8nControlApi";
+import { controlWorkflow, enrollWorkflowOwner, fetchDependencyInventory, fetchExecutionDetail, fetchExecutionLedger, fetchN8nSnapshot, fetchWorkflowDiagnosis, fetchWorkflowResult } from "./n8nControlApi";
 import "./n8n-control.css";
 
 function fmtTime(value) {
@@ -111,6 +111,13 @@ export default function N8nControlCenter() {
   const [resultView, setResultView] = useState(null);
   const [claimCode, setClaimCode] = useState("");
   const [claimBusy, setClaimBusy] = useState(false);
+  const [executionLedger, setExecutionLedger] = useState({ executions: [], total: 0, limit: 25, offset: 0, hasMore: false });
+  const [executionLedgerBusy, setExecutionLedgerBusy] = useState(false);
+  const [executionLedgerError, setExecutionLedgerError] = useState("");
+  const [executionView, setExecutionView] = useState(null);
+  const [diagnosisView, setDiagnosisView] = useState(null);
+  const [dependencyInventory, setDependencyInventory] = useState({ dependencies: [] });
+  const [dependencyBusy, setDependencyBusy] = useState(false);
 
   const refresh = async ({ quiet = false } = {}) => {
     if (!quiet) setLoading(true);
@@ -133,6 +140,8 @@ export default function N8nControlCenter() {
 
   const workflows = snapshot?.workflows || [];
   const executions = snapshot?.executions || [];
+  const fullExecutions = executionLedger?.executions || [];
+  const dependencies = dependencyInventory?.dependencies || [];
   const needle = query.trim().toLowerCase();
 
   const filteredWorkflows = useMemo(() => {
@@ -163,6 +172,22 @@ export default function N8nControlCenter() {
         .join(" ").toLowerCase().includes(needle)
     );
   }, [executions, needle]);
+
+  const filteredLedger = useMemo(() => {
+    if (!needle) return fullExecutions;
+    return fullExecutions.filter((row) =>
+      [row.workflowName, row.workflowId, row.id, row.status, row.mode]
+        .join(" ").toLowerCase().includes(needle)
+    );
+  }, [fullExecutions, needle]);
+
+  const filteredDependencies = useMemo(() => {
+    if (!needle) return dependencies;
+    return dependencies.filter((dep) =>
+      [dep.name, dep.key, dep.category, dep.state, ...(dep.workflows || []).flatMap((row) => [row.name, row.id])]
+        .join(" ").toLowerCase().includes(needle)
+    );
+  }, [dependencies, needle]);
 
   const failures = useMemo(
     () => filteredWorkflows.filter((row) => Number(row.errors24h || 0) > 0),
@@ -222,6 +247,52 @@ export default function N8nControlCenter() {
     }
   };
 
+  const loadExecutionLedger = async (offset = 0) => {
+    if (!snapshot?.capabilities?.executionLedger || executionLedgerBusy) return;
+    setExecutionLedgerBusy(true);
+    setExecutionLedgerError("");
+    try {
+      const data = await fetchExecutionLedger(currentUser, { limit: 25, offset });
+      setExecutionLedger(data);
+    } catch (err) {
+      setExecutionLedgerError(err.message);
+    } finally {
+      setExecutionLedgerBusy(false);
+    }
+  };
+
+  const loadDependencies = async () => {
+    if (!snapshot?.capabilities?.dependencyInventory || dependencyBusy) return;
+    setDependencyBusy(true);
+    try {
+      setDependencyInventory(await fetchDependencyInventory(currentUser));
+    } catch (err) {
+      setNotice(`Dependency inventory failed: ${err.message}`);
+    } finally {
+      setDependencyBusy(false);
+    }
+  };
+
+  const openExecution = async (execution) => {
+    setExecutionView({ execution, loading: true, payload: null, error: null });
+    try {
+      const payload = await fetchExecutionDetail(currentUser, execution.id);
+      setExecutionView({ execution, loading: false, payload, error: null });
+    } catch (err) {
+      setExecutionView({ execution, loading: false, payload: null, error: err.message });
+    }
+  };
+
+  const openDiagnosis = async (workflow) => {
+    setDiagnosisView({ workflow, loading: true, payload: null, error: null });
+    try {
+      const payload = await fetchWorkflowDiagnosis(currentUser, workflow.id);
+      setDiagnosisView({ workflow, loading: false, payload, error: null });
+    } catch (err) {
+      setDiagnosisView({ workflow, loading: false, payload: null, error: err.message });
+    }
+  };
+
   const openResult = async (workflow) => {
     setResultView({ workflow, loading: true, payload: null, error: null });
     try {
@@ -237,6 +308,7 @@ export default function N8nControlCenter() {
     ["attention", "Needs attention"],
     ["workflows", "Workflows"],
     ["executions", "Executions"],
+    ["dependencies", "Dependencies"],
     ["failures", "Execution errors"],
     ["schedules", "Schedules"],
   ];
@@ -245,11 +317,24 @@ export default function N8nControlCenter() {
     ? filteredWorkflows.length
     : section === "attention"
       ? attention.length
+      : section === "executions"
+        ? filteredLedger.length
+        : section === "dependencies"
+          ? filteredDependencies.length
       : section === "failures"
         ? failures.length
         : section === "schedules"
           ? scheduled.length
           : filteredExecutions.length;
+
+  useEffect(() => {
+    if (section === "executions" && snapshot?.capabilities?.executionLedger && !executionLedger.executions.length && !executionLedgerBusy) {
+      loadExecutionLedger(0);
+    }
+    if (section === "dependencies" && snapshot?.capabilities?.dependencyInventory && !dependencyInventory.dependencies.length && !dependencyBusy) {
+      loadDependencies();
+    }
+  }, [section, snapshot?.version]);
 
   return (
     <div className="n8nc-page">
@@ -435,7 +520,7 @@ export default function N8nControlCenter() {
                       </div>
                       <div className="n8nc-row-actions">
                         <Status value={workflow.health?.primaryReason?.severity || "attention"} />
-                        <button onClick={() => openResult(workflow)}>Inspect</button>
+                        <button onClick={() => openDiagnosis(workflow)}>Troubleshoot</button>
                       </div>
                     </div>
                   ))}
@@ -582,6 +667,7 @@ export default function N8nControlCenter() {
 
                     <div className="n8nc-workflow-actions">
                       <button className="n8nc-result-button" onClick={() => openResult(workflow)}>View latest result</button>
+                      <button onClick={() => openDiagnosis(workflow)}>Troubleshoot</button>
                       <button
                         disabled={!snapshot?.writeEnabled || busyId === workflow.id}
                         onClick={() => handleControl(workflow, paused ? "resume" : "pause")}
@@ -609,15 +695,60 @@ export default function N8nControlCenter() {
         {section === "executions" && (
           <section className="n8nc-panel">
             <div className="n8nc-panel-head">
-              <div><span>EXECUTION VISIBILITY</span><h2>Latest execution per managed workflow</h2></div>
-              <small>{snapshot?.coverage?.executionHistoryNote || "The current backend exposes latest-per-workflow execution state."}</small>
+              <div><span>EXECUTION LEDGER</span><h2>Full managed-workflow execution history</h2></div>
+              <small>{snapshot?.coverage?.executionHistoryNote || "Execution ledger capability is loading."}</small>
             </div>
             <div className="n8nc-capability-note">
-              <strong>Not a full execution ledger yet.</strong>
-              <span>The cockpit is explicitly showing the backend's current visibility boundary rather than labeling this snapshot as complete history.</span>
+              <strong>Node-safe inspection is active.</strong>
+              <span>Open an execution to see node-by-node state, timing, and redacted failures. Raw node inputs and outputs stay private.</span>
             </div>
-            <ExecutionTable rows={filteredExecutions} />
-            {!filteredExecutions.length && <Empty title="No execution records">No managed workflow has a latest execution in the live snapshot.</Empty>}
+            {executionLedgerError && <div className="n8nc-result-error">{executionLedgerError}</div>}
+            {snapshot?.capabilities?.executionLedger ? (
+              <>
+                <ExecutionTable rows={filteredLedger} onInspect={openExecution} />
+                <div className="n8nc-pagination">
+                  <span>{executionLedger.total ? `${executionLedger.offset + 1}–${Math.min(executionLedger.offset + executionLedger.executions.length, executionLedger.total)} of ${executionLedger.total}` : "No executions"}</span>
+                  <div>
+                    <button disabled={executionLedgerBusy || executionLedger.offset <= 0} onClick={() => loadExecutionLedger(Math.max(0, executionLedger.offset - executionLedger.limit))}>Previous</button>
+                    <button disabled={executionLedgerBusy || !executionLedger.hasMore} onClick={() => loadExecutionLedger(executionLedger.offset + executionLedger.limit)}>Next</button>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <ExecutionTable rows={filteredExecutions} />
+                <Empty title="Ledger upgrade not deployed">The control service is still exposing latest-per-workflow execution state.</Empty>
+              </>
+            )}
+          </section>
+        )}
+
+        {section === "dependencies" && (
+          <section className="n8nc-panel">
+            <div className="n8nc-panel-head">
+              <div><span>SHARED DEPENDENCY INVENTORY</span><h2>Services that Factory workflows depend on</h2></div>
+              <button className="n8nc-text-button" onClick={loadDependencies} disabled={dependencyBusy}>{dependencyBusy ? "Refreshing…" : "Refresh dependencies"}</button>
+            </div>
+            <div className="n8nc-capability-note">
+              <strong>One dependency can affect many workflows.</strong>
+              <span>Factory Control groups shared services so a Gmail, database, API, or webhook incident is treated as one operational issue rather than many unrelated red cards.</span>
+            </div>
+            <div className="n8nc-dependency-grid">
+              {filteredDependencies.map((dep) => (
+                <article key={dep.key} className={dep.state === "attention" ? "attention" : ""}>
+                  <div className="n8nc-dependency-head">
+                    <div><span>{dep.category || "dependency"}</span><h3>{dep.name}</h3></div>
+                    <Status value={dep.state || "unknown"} />
+                  </div>
+                  <p>{dep.affected ? `${dep.affected} workflow${dep.affected === 1 ? "" : "s"} currently affected.` : "No active failure probe has flagged this dependency."}</p>
+                  <div className="n8nc-dependency-workflows">
+                    {(dep.workflows || []).map((row) => <span key={row.id}>{row.name}</span>)}
+                  </div>
+                  {dep.recovery?.available === false && <small>{dep.recovery.reason}</small>}
+                </article>
+              ))}
+            </div>
+            {!filteredDependencies.length && <Empty title="No dependency inventory loaded">{dependencyBusy ? "Loading dependencies…" : "No dependency-bearing nodes were returned by the live workflow service."}</Empty>}
           </section>
         )}
 
@@ -637,7 +768,7 @@ export default function N8nControlCenter() {
                   </div>
                   <div className="n8nc-row-actions">
                     <Status value={workflow.health?.primaryReason?.severity || "attention"} />
-                    <button onClick={() => openResult(workflow)}>Inspect result</button>
+                    <button onClick={() => openDiagnosis(workflow)}>Troubleshoot</button>
                   </div>
                 </div>
               ))}
@@ -656,7 +787,7 @@ export default function N8nControlCenter() {
               {failures.map((workflow) => (
                 <div key={workflow.id}>
                   <div><strong>{workflow.name}</strong><span>{workflow.schedule} · latest {fmtTime(workflow.latestExecution?.startedAt)}</span></div>
-                  <div className="n8nc-row-actions"><em>{workflow.errors24h} errors</em><button onClick={() => openResult(workflow)}>View result</button></div>
+                  <div className="n8nc-row-actions"><em>{workflow.errors24h} errors</em><button onClick={() => openDiagnosis(workflow)}>Troubleshoot</button></div>
                 </div>
               ))}
             </div>
@@ -690,6 +821,88 @@ export default function N8nControlCenter() {
         </footer>
       </main>
 
+      {executionView && (
+        <div className="n8nc-result-modal" onMouseDown={(event) => { if (event.target === event.currentTarget) setExecutionView(null); }}>
+          <section>
+            <div className="n8nc-result-head">
+              <div>
+                <span>EXECUTION INSPECTOR</span>
+                <h2>{executionView.execution.workflowName}</h2>
+                <small>Execution #{executionView.execution.id}</small>
+              </div>
+              <button onClick={() => setExecutionView(null)}>Close</button>
+            </div>
+            {executionView.loading && <div className="n8nc-result-body">Loading execution detail…</div>}
+            {executionView.error && <div className="n8nc-result-error">{executionView.error}</div>}
+            {!executionView.loading && !executionView.error && executionView.payload && (
+              <div className="n8nc-inspector">
+                <div className="n8nc-result-kpis">
+                  <div><span>Status</span><strong><Status value={executionView.payload.execution?.status} /></strong></div>
+                  <div><span>Mode</span><strong>{executionView.payload.execution?.mode || "—"}</strong></div>
+                  <div><span>Duration</span><strong>{fmtDuration(executionView.payload.execution?.durationMs)}</strong></div>
+                  <div><span>Nodes observed</span><strong>{executionView.payload.nodeRuns?.length || 0}</strong></div>
+                </div>
+                {executionView.payload.error && <div className="n8nc-result-error"><strong>{executionView.payload.error.node || executionView.payload.error.name}</strong><br />{executionView.payload.error.message}</div>}
+                <div className="n8nc-node-runs">
+                  {(executionView.payload.nodeRuns || []).map((node) => (
+                    <div key={node.order + "-" + node.name} className={node.status === "error" ? "error" : ""}>
+                      <span className="n8nc-node-order">{String(node.order).padStart(2, "0")}</span>
+                      <div><strong>{node.name}</strong><small>{node.error?.message || (node.executionTimeMs != null ? fmtDuration(node.executionTimeMs) : "Not executed in this run")}</small></div>
+                      <Status value={node.status} />
+                    </div>
+                  ))}
+                </div>
+                <p className="n8nc-privacy-note">{executionView.payload.privacy?.note}</p>
+              </div>
+            )}
+          </section>
+        </div>
+      )}
+
+      {diagnosisView && (
+        <div className="n8nc-result-modal" onMouseDown={(event) => { if (event.target === event.currentTarget) setDiagnosisView(null); }}>
+          <section>
+            <div className="n8nc-result-head">
+              <div>
+                <span>WORKFLOW TROUBLESHOOTER</span>
+                <h2>{diagnosisView.workflow.name}</h2>
+                <small>{diagnosisView.workflow.id}</small>
+              </div>
+              <button onClick={() => setDiagnosisView(null)}>Close</button>
+            </div>
+            {diagnosisView.loading && <div className="n8nc-result-body">Analyzing current workflow evidence…</div>}
+            {diagnosisView.error && <div className="n8nc-result-error">{diagnosisView.error}</div>}
+            {!diagnosisView.loading && !diagnosisView.error && diagnosisView.payload && (
+              <div className="n8nc-diagnosis">
+                <div className="n8nc-diagnosis-summary">
+                  <Status value={diagnosisView.payload.diagnosis?.category || "unknown"} />
+                  <h3>{diagnosisView.payload.diagnosis?.title}</h3>
+                  <p>{diagnosisView.payload.diagnosis?.explanation}</p>
+                </div>
+                {(diagnosisView.payload.dependencies || []).length > 0 && (
+                  <div className="n8nc-diagnosis-block">
+                    <span>DEPENDENCIES</span>
+                    {(diagnosisView.payload.dependencies || []).map((dep) => (
+                      <div key={dep.key}><strong>{dep.name}</strong><Status value={dep.state || "unknown"} /><small>{dep.detail}</small></div>
+                    ))}
+                  </div>
+                )}
+                {diagnosisView.payload.diagnosis?.evidence?.failedNode && (
+                  <div className="n8nc-diagnosis-block">
+                    <span>FAILED NODE</span>
+                    <div><strong>{diagnosisView.payload.diagnosis.evidence.failedNode.name}</strong><Status value="error" /><small>{diagnosisView.payload.diagnosis.evidence.failedNode.error?.message}</small></div>
+                  </div>
+                )}
+                <div className="n8nc-recovery-contract">
+                  <strong>Safe recovery actions currently available</strong>
+                  <p>Pause, resume, and re-register remain owner-gated. Run now, retry, dependency testing, and reconnect stay disabled until their adapters are implemented and validated.</p>
+                </div>
+              </div>
+            )}
+          </section>
+        </div>
+      )}
+
       {resultView && (
         <div className="n8nc-result-modal" onMouseDown={(event) => { if (event.target === event.currentTarget) setResultView(null); }}>
           <section>
@@ -713,12 +926,12 @@ export default function N8nControlCenter() {
   );
 }
 
-function ExecutionTable({ rows }) {
+function ExecutionTable({ rows, onInspect }) {
   if (!rows.length) return null;
   return (
     <div className="n8nc-table-wrap">
       <table>
-        <thead><tr><th>Execution</th><th>Workflow</th><th>Status</th><th>Trigger / schedule</th><th>Started</th><th>Duration</th></tr></thead>
+        <thead><tr><th>Execution</th><th>Workflow</th><th>Status</th><th>Trigger / schedule</th><th>Started</th><th>Duration</th>{onInspect && <th>Inspect</th>}</tr></thead>
         <tbody>
           {rows.map((row) => (
             <tr key={row.id}>
@@ -728,6 +941,7 @@ function ExecutionTable({ rows }) {
               <td>{row.mode || "—"}</td>
               <td>{fmtTime(row.startedAt)}</td>
               <td>{fmtDuration(row.durationMs)}</td>
+              {onInspect && <td><button className="n8nc-text-button" onClick={() => onInspect(row)}>Open →</button></td>}
             </tr>
           ))}
         </tbody>
