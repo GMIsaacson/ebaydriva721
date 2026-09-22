@@ -31,6 +31,7 @@ function initial() {
     commandId: null,
     attempts: 0,
     modelBudgetCommittedCents: 0,
+    dispatchOrdinal: 0,
     publicResearchCalls: 0,
     results: [],
     events: [],
@@ -155,7 +156,7 @@ async function tick({store, workControl, bindings, now = () => new Date()}) {
       fail('RUN_BUDGET_OR_STAGE_LIMIT');
     }
 
-    const correlationKey = `${RUN}:${STAGES[state.stage][0]}:v2`;
+    const correlationKey = `${RUN}:${STAGES[state.stage][0]}:v2:d${state.dispatchOrdinal + 1}`;
     const command = {
       teamId: bindings.run004TeamId,
       priority: 'normal',
@@ -166,6 +167,7 @@ async function tick({store, workControl, bindings, now = () => new Date()}) {
     await save({
       phase:'DISPATCH_INTENT',
       correlationKey,
+      dispatchOrdinal: state.dispatchOrdinal + 1,
       modelBudgetCommittedCents: state.modelBudgetCommittedCents + STAGE_MODEL_BUDGET_CENTS,
     }, {kind:'DISPATCH_INTENT', inputHash:hash(command)});
 
@@ -208,11 +210,19 @@ async function tick({store, workControl, bindings, now = () => new Date()}) {
     return state;
   }
 
+  const actualModelCost = Number(receipt?.modelExecution?.estimatedCostCents ?? 0);
+  const reconciledModelBudget = Math.max(
+    0,
+    state.modelBudgetCommittedCents - STAGE_MODEL_BUDGET_CENTS
+      + (Number.isFinite(actualModelCost) && actualModelCost >= 0 ? actualModelCost : STAGE_MODEL_BUDGET_CENTS),
+  );
+
   if (receipt.terminalState !== 'DELIVERED') {
-    return save({phase:'BLOCKED'}, {
+    return save({phase:'BLOCKED', modelBudgetCommittedCents:reconciledModelBudget}, {
       kind:'WORKER_BLOCKED',
       commandId:state.commandId,
       reason:receipt.terminalState || 'Unknown terminal state',
+      modelCostCents:Number.isFinite(actualModelCost) ? actualModelCost : null,
     });
   }
 
@@ -250,6 +260,7 @@ async function tick({store, workControl, bindings, now = () => new Date()}) {
     results,
     attempts:0,
     publicResearchCalls: state.publicResearchCalls + stageCalls,
+    modelBudgetCommittedCents: reconciledModelBudget,
   }, {
     kind:'STAGE_RESULT',
     commandId:state.commandId,
