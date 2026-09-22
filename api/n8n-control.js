@@ -167,18 +167,124 @@ function isScheduled(schedule) {
   return Boolean(value) && !value.includes('manual') && !value.includes('on demand') && !value.includes('event-driven');
 }
 
+const EXPECTED_ACTIVE_WORKFLOWS = new Set([
+  'CI001HEARTBEATV1',
+  'EMAILINTELV1',
+  'FACTORYARCHWATCHV1',
+  'OPP011LIVEWATCH003',
+  'SOURCEMARGINACQDISPATCHG6',
+  'SMEBAYLEAFCENSUS259340',
+]);
+
+function cadenceMs(schedule) {
+  const value = String(schedule || '').trim().toLowerCase();
+  if (!value) return null;
+  const match = value.match(/every\s+(\d+(?:\.\d+)?)\s*(sec|second|min|minute|hr|hour|day|week)s?/i);
+  if (match) {
+    const n = Number(match[1]);
+    const unit = match[2].toLowerCase();
+    if (!Number.isFinite(n) || n <= 0) return null;
+    if (unit.startsWith('sec')) return n * 1000;
+    if (unit.startsWith('min')) return n * 60_000;
+    if (unit === 'hr' || unit.startsWith('hour')) return n * 3_600_000;
+    if (unit.startsWith('day')) return n * 86_400_000;
+    if (unit.startsWith('week')) return n * 604_800_000;
+  }
+  if (value.includes('hourly')) return 3_600_000;
+  if (value.includes('weekly')) return 604_800_000;
+  return null;
+}
+
+function nextRunAt(workflow) {
+  if (!workflow?.scheduled || workflow.operationalState === 'paused') return null;
+  const cadence = cadenceMs(workflow.schedule);
+  if (!cadence) return null;
+  const source = workflow.latestExecution?.startedAt || workflow.latestCompleted?.stoppedAt;
+  const base = Date.parse(source || '');
+  if (!Number.isFinite(base)) return null;
+  return new Date(base + cadence).toISOString();
+}
+
+function workflowHealth(workflow) {
+  const reasons = [];
+  const dependencies = [];
+  const special = workflow.special || {};
+  const now = Date.now();
+
+  if (Number(workflow.errors24h || 0) > 0) {
+    reasons.push({
+      code: 'execution_errors',
+      severity: 'high',
+      label: `${workflow.errors24h} execution error${Number(workflow.errors24h) === 1 ? '' : 's'} in the last 24h`,
+    });
+  }
+
+  if (String(special.gmailState || '').toLowerCase() === 'needs_reconnect') {
+    dependencies.push({ code: 'gmail', state: 'attention', label: 'Gmail reconnect required' });
+    reasons.push({ code: 'dependency_gmail', severity: 'high', label: 'Gmail dependency requires reconnection' });
+  }
+
+  if (EXPECTED_ACTIVE_WORKFLOWS.has(workflow.id) && workflow.operationalState === 'paused') {
+    reasons.push({ code: 'unexpected_pause', severity: 'medium', label: 'Workflow is paused but is expected to be active' });
+  }
+
+  const cadence = cadenceMs(workflow.schedule);
+  const latestAt = Date.parse(workflow.latestExecution?.startedAt || workflow.latestCompleted?.stoppedAt || '');
+  if (workflow.scheduled && workflow.operationalState !== 'paused') {
+    if (!Number.isFinite(latestAt)) {
+      reasons.push({ code: 'never_executed', severity: 'medium', label: 'Scheduled workflow has no recorded execution' });
+    } else if (cadence) {
+      const staleAfter = Math.max(cadence * 2.5, 5 * 60_000);
+      if (now - latestAt > staleAfter) {
+        reasons.push({ code: 'stale_schedule', severity: 'high', label: 'Scheduled workflow appears overdue or stale' });
+      }
+    }
+  }
+
+  let outcome = { state: 'unknown', label: 'Useful outcome not instrumented', detail: null };
+  if (workflow.id === 'EMAILINTELV1') {
+    if (String(special.gmailState || '').toLowerCase() === 'needs_reconnect') {
+      outcome = { state: 'blocked', label: 'Useful outcome blocked', detail: 'Gmail is disconnected, so successful scheduler ticks do not mean mail was processed.' };
+    } else if (special.lastSuccessfulRunAt) {
+      outcome = {
+        state: 'healthy',
+        label: 'Useful outcome observed',
+        detail: `Last successful mail run ${special.lastSuccessfulRunAt}; ${Number(special.totalProcessed || 0)} messages processed in retained state.`,
+      };
+    }
+  } else if (workflow.id === 'DEMO10SCONTROLLED') {
+    outcome = {
+      state: 'not_applicable',
+      label: 'Control-path test',
+      detail: `Pulse counter: ${Number(special.count || 0)}. This workflow validates control mechanics rather than a business outcome.`,
+    };
+  }
+
+  const severityRank = { high: 3, medium: 2, low: 1 };
+  const primaryReason = [...reasons].sort((a, b) => (severityRank[b.severity] || 0) - (severityRank[a.severity] || 0))[0] || null;
+
+  return {
+    state: reasons.length ? 'attention' : 'ready',
+    primaryReason,
+    reasons,
+    dependencies: dependencies.length ? dependencies : [{ code: 'known_dependencies', state: 'healthy', label: 'No known dependency issue reported' }],
+    outcome,
+  };
+}
+
 function normalizeWorkflow(row) {
   const latest = row.latestExecution || null;
   const state = row.operationalState || (!row.published ? 'paused' : latest?.status === 'running' ? 'running' : 'active');
-  return {
+  const schedule = row.schedule || 'Manual / event-driven';
+  const workflow = {
     id: String(row.id),
     name: row.name || 'Untitled workflow',
     active: Boolean(row.published),
     published: Boolean(row.published),
     managed: true,
     operationalState: state,
-    schedule: row.schedule || 'Manual / event-driven',
-    scheduled: isScheduled(row.schedule),
+    schedule,
+    scheduled: isScheduled(schedule),
     errors24h: Number(row.errors24h || 0),
     latestExecution: latest,
     latestCompleted: row.latestCompleted || null,
@@ -194,6 +300,12 @@ function normalizeWorkflow(row) {
       reads: 'See the workflow node graph for current inputs and triggers.',
       produces: 'See the latest result for current outputs.',
     },
+  };
+
+  return {
+    ...workflow,
+    nextRunAt: nextRunAt(workflow),
+    health: workflowHealth(workflow),
   };
 }
 
@@ -227,10 +339,18 @@ async function snapshot(user = null) {
       owner = { enrolled: null, isOwner: false, bootstrapRequired: false };
     }
   }
+
   const workflows = (live.workflows || []).map(normalizeWorkflow).sort((a, b) => a.name.localeCompare(b.name));
   const success24 = Number(live.metrics?.success24 || 0);
   const failures24h = Number(live.metrics?.error24 || 0);
   const settled = success24 + failures24h;
+  const attention = workflows.filter((row) => row.health?.state === 'attention');
+  const dependencyIssues = workflows.filter((row) => (row.health?.dependencies || []).some((dep) => dep.state === 'attention'));
+  const ready = workflows.filter((row) => row.health?.state === 'ready');
+  const outcomes = workflows.map((row) => row.health?.outcome).filter(Boolean);
+  const outcomeBlocked = outcomes.filter((row) => row.state === 'blocked').length;
+  const outcomeHealthy = outcomes.filter((row) => row.state === 'healthy').length;
+  const outcomeUnknown = outcomes.filter((row) => row.state === 'unknown').length;
 
   return {
     ok: true,
@@ -242,6 +362,8 @@ async function snapshot(user = null) {
     coverage: {
       mode: 'managed-factory-workflows',
       managed: Number(live.metrics?.managed ?? workflows.length),
+      executionHistory: 'latest-per-workflow',
+      executionHistoryNote: 'The current workflow service exposes the latest execution for each managed workflow, not the full n8n execution ledger.',
       note: 'Live Factory-managed workflow set. n8n itself remains private on localhost.',
     },
     owner,
@@ -255,7 +377,46 @@ async function snapshot(user = null) {
       failures24h,
       running: Number(live.metrics?.running || 0),
       successRate24h: settled ? Math.round((success24 / settled) * 1000) / 10 : null,
+      readyWorkflows: ready.length,
+      readinessRate: workflows.length ? Math.round((ready.length / workflows.length) * 1000) / 10 : null,
+      needsAttention: attention.length,
+      dependencyIssues: dependencyIssues.length,
+      outcomeHealthy,
+      outcomeBlocked,
+      outcomeUnknown,
     },
+    health: {
+      execution: {
+        state: failures24h > 0 ? 'attention' : 'healthy',
+        successRate24h: settled ? Math.round((success24 / settled) * 1000) / 10 : null,
+        executions24h: settled,
+      },
+      readiness: {
+        state: attention.length ? 'attention' : 'healthy',
+        ready: ready.length,
+        total: workflows.length,
+      },
+      dependencies: {
+        state: dependencyIssues.length ? 'attention' : 'healthy',
+        issues: dependencyIssues.length,
+      },
+      outcomes: {
+        state: outcomeBlocked ? 'attention' : outcomeHealthy ? 'healthy' : 'unknown',
+        healthy: outcomeHealthy,
+        blocked: outcomeBlocked,
+        unknown: outcomeUnknown,
+      },
+    },
+    attention: attention.map((row) => ({
+      workflowId: row.id,
+      workflowName: row.name,
+      operationalState: row.operationalState,
+      primaryReason: row.health.primaryReason,
+      reasons: row.health.reasons,
+      dependencyIssues: (row.health.dependencies || []).filter((dep) => dep.state === 'attention'),
+      lastExecution: row.latestExecution,
+      nextRunAt: row.nextRunAt,
+    })),
     workflows,
     executions: latestExecutions(workflows),
   };
