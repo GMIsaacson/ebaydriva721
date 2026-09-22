@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://factory.local/contracts/freight-specialist-calibration-receipt-v1.schema.json",
+  "title": "Freight Specialist Calibration Receipt v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "programId",
+    "caseId",
+    "specialistId",
+    "mode",
+    "components",
+    "productionCertification",
+    "modeledTotal",
+    "nextEvidence",
+    "authorityUsage"
+  ],
+  "properties": {
+    "programId": {"const": "SPC-FREIGHT-001-QUAL-V1"},
+    "caseId": {"type": "string", "minLength": 1},
+    "specialistId": {"const": "SPC-FREIGHT-001"},
+    "mode": {"const": "SHADOW"},
+    "components": {
+      "type": "array",
+      "minItems": 7,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["component", "status", "amount", "evidenceBasis", "minimumAdditionalEvidence"],
+        "properties": {
+          "component": {
+            "enum": [
+              "product_cost",
+              "packaging_cost",
+              "international_freight",
+              "duty_tariff",
+              "inspection_cost",
+              "prep_labeling",
+              "domestic_inbound_freight"
+            ]
+          },
+          "status": {"enum": ["UNKNOWN", "BLOCKED", "MODELED", "QUOTED", "VERIFIED", "NOT_APPLICABLE"]},
+          "amount": {"type": ["number", "null"], "minimum": 0},
+          "evidenceBasis": {"type": "string"},
+          "minimumAdditionalEvidence": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    },
+    "productionCertification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["certified", "reason"],
+      "properties": {
+        "certified": {"const": false},
+        "reason": {"type": "string", "minLength": 1}
+      }
+    },
+    "modeledTotal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["amount", "status"],
+      "properties": {
+        "amount": {"type": ["number", "null"], "minimum": 0},
+        "status": {"enum": ["MODELED_ONLY", "UNKNOWN", "QUOTED", "VERIFIED"]}
+      }
+    },
+    "nextEvidence": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+    "forbiddenClaimsMade": {"type": "array", "items": {"type": "string"}},
+    "q2": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "reviewerId": {"type": "string"},
+        "result": {"enum": ["PASS", "FAIL", "PENDING"]}
+      }
+    },
+    "authorityUsage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["externalActions", "spendCents", "productionMutation"],
+      "properties": {
+        "externalActions": {"const": 0},
+        "spendCents": {"const": 0},
+        "productionMutation": {"const": false}
+      }
+    }
+  }
+}
