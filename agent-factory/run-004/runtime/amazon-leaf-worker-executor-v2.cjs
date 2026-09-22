@@ -234,6 +234,63 @@ const PRESCREEN_RESULT_SCHEMA = {
   required:['summary','blockers','candidates'],
 };
 
+
+const PRESCREEN_PRICE_RESULT_SCHEMA = {
+  type:'object',
+  additionalProperties:false,
+  properties:{
+    candidates:{
+      type:'array',
+      maxItems:10,
+      items:{
+        type:'object',
+        additionalProperties:false,
+        properties:{
+          asin:{type:'string',pattern:'^[A-Z0-9]{10}$'},
+          observedPriceCents:{anyOf:[{type:'null'},{type:'integer',minimum:1}]},
+          evidenceClaim:{type:'string'},
+        },
+        required:['asin','observedPriceCents','evidenceClaim'],
+      },
+    },
+  },
+  required:['candidates'],
+};
+
+function buildPrescreenPricePrompt(rows) {
+  return [
+    'Resolve current public Amazon.com displayed prices for the exact ASINs below.',
+    'Use public web search only. Do not substitute related products or other pack sizes.',
+    'Return integer U.S. cents only when a current public Amazon price is visible in evidence; otherwise null.',
+    'Do not infer price from MSRP, another retailer, historical price, or a different ASIN.',
+    'ASIN TARGETS:',
+    JSON.stringify(rows.map((row)=>({asin:row.asin,title:row.title,amazonUrl:row.url,boughtPastMonthText:row.boughtPastMonth}))),
+    'Return structured JSON only.',
+  ].join('\n');
+}
+
+function mergePrescreenPriceEnrichment(snapshots, raw) {
+  const prices=new Map();
+  for(const row of Array.isArray(raw?.candidates) ? raw.candidates : []) {
+    if (!/^[A-Z0-9]{10}$/.test(String(row?.asin || ''))) continue;
+    if (!Number.isSafeInteger(row.observedPriceCents) || row.observedPriceCents <= 0) continue;
+    prices.set(row.asin,{
+      amountCents:row.observedPriceCents,
+      evidenceClaim:String(row.evidenceClaim || '').slice(0,700),
+    });
+  }
+  return snapshots.map((snapshot)=>{
+    if (parseDisplayedUsdCents(snapshot.displayedPrice) !== null) return snapshot;
+    const hit=prices.get(snapshot.asin);
+    if (!hit) return snapshot;
+    return {
+      ...snapshot,
+      displayedPrice:`$${(hit.amountCents/100).toFixed(2)}`,
+      priceEvidenceClaim:hit.evidenceClaim,
+    };
+  });
+}
+
 function normalizePrescreenWebCandidates(raw) {
   const seen=new Set();
   const rows=[];
@@ -289,6 +346,7 @@ async function processAmazonLeafPrescreen({apiKey,command,profileSet,deps,payloa
   let snapshots=deterministic.snapshots;
   let usage={inputTokens:0,outputTokens:0,webSearchCalls:0,webSearchIds:[]};
   let response=null;
+  let responseIds=[];
   let mode='deterministic_public_http';
 
   if (deterministic.leafScore.decision === 'unscorable' || deterministic.selectedAsins.length === 0) {
@@ -301,9 +359,44 @@ async function processAmazonLeafPrescreen({apiKey,command,profileSet,deps,payloa
       maxToolCalls:4,
       reasoningEffort:'low',
     });
-    usage=responseUsage(response);
+    const firstUsage=responseUsage(response);
+    usage={
+      inputTokens:firstUsage.inputTokens,
+      outputTokens:firstUsage.outputTokens,
+      webSearchCalls:firstUsage.webSearchCalls,
+      webSearchIds:[...firstUsage.webSearchIds],
+    };
+    if (response?.id) responseIds.push(String(response.id));
     const raw=JSON.parse(WorkerCore.extractResponseText(response));
     snapshots=normalizePrescreenWebCandidates(raw);
+
+    const priceMissing=snapshots
+      .filter((row)=>parseAmazonBoughtPastMonthLowerBound(row.boughtPastMonth) >= AMAZON_MIN_MONTHLY_DEMAND_LOWER_BOUND)
+      .filter((row)=>parseDisplayedUsdCents(row.displayedPrice) === null)
+      .slice(0,10);
+
+    if (priceMissing.length) {
+      mode='bounded_web_search_fallback_with_price_enrichment';
+      const priceResponse=await callOpenAIRequest(apiKey,{
+        prompt:buildPrescreenPricePrompt(priceMissing),
+        schema:PRESCREEN_PRICE_RESULT_SCHEMA,
+        schemaName:'amazon_leaf_prescreen_price_result',
+        maxOutputTokens:2200,
+        maxToolCalls:3,
+        reasoningEffort:'low',
+      });
+      const secondUsage=responseUsage(priceResponse);
+      usage={
+        inputTokens:usage.inputTokens+secondUsage.inputTokens,
+        outputTokens:usage.outputTokens+secondUsage.outputTokens,
+        webSearchCalls:usage.webSearchCalls+secondUsage.webSearchCalls,
+        webSearchIds:[...usage.webSearchIds,...secondUsage.webSearchIds],
+      };
+      if (priceResponse?.id) responseIds.push(String(priceResponse.id));
+      const priceRaw=JSON.parse(WorkerCore.extractResponseText(priceResponse));
+      snapshots=mergePrescreenPriceEnrichment(snapshots,priceRaw);
+      response=priceResponse;
+    }
   }
 
   const leafScore=scoreAmazonLeafOpportunity(snapshots);
@@ -374,7 +467,7 @@ async function processAmazonLeafPrescreen({apiKey,command,profileSet,deps,payloa
     researchUsage:{
       webSearchCalls:usage.webSearchCalls,
       webSearchReceiptIds:usage.webSearchIds,
-      maxToolCalls:mode === 'bounded_web_search_fallback' ? 4 : 0,
+      maxToolCalls:mode === 'deterministic_public_http' ? 0 : mode === 'bounded_web_search_fallback' ? 4 : 7,
       publicHttpRequests:deterministic.snapshots.length,
       publicHttpVerified:deterministic.snapshots.length,
       publicHttpReceipts:deterministic.snapshots.map((x)=>x.sourceReceipt).filter(Boolean),
@@ -384,6 +477,7 @@ async function processAmazonLeafPrescreen({apiKey,command,profileSet,deps,payloa
       provider:'openai',
       model,
       responseId:String(response?.id || '').slice(0,120) || null,
+      responseIds:responseIds.map((id)=>id.slice(0,120)),
       inputTokens:usage.inputTokens,
       outputTokens:usage.outputTokens,
       estimatedCostCents,
@@ -1463,6 +1557,7 @@ module.exports = {
   fetchAmazonLeafAsins,
   prescreenAmazonLeaf,
   normalizePrescreenWebCandidates,
+  mergePrescreenPriceEnrichment,
   processAmazonLeafPrescreen,
   calculateAmazonSourceTargets,
   scoreAmazonPrescreenSnapshot,
