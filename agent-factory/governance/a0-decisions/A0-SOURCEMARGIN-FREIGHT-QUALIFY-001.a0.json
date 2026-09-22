@@ -1,0 +1,66 @@
+{
+  "decision_id": "A0-SOURCEMARGIN-FREIGHT-QUALIFY-001",
+  "status": "PASS",
+  "verdict": "EXTEND",
+  "owner": "Aberdeen Technologies",
+  "decided_at": "2026-09-22",
+  "business_outcome": "Promote the existing Factory freight/import/landed-cost specialist from PROVISIONAL to QUALIFIED after its Stage C evidence and independent professional Q3 pass, without expanding SourceMargin execution, mutation, publication, supplier-contact, purchase, legal, or tax authority.",
+  "existing_owner_scan": "Reviewed A0-SOURCEMARGIN-RESOLVER-EXEC-001, A0-SOURCEMARGIN-FREIGHT-Q3-001, the G2.5 Professional Capability standard, SPC-FREIGHT-001 qualification program, SPC-FREIGHT-Q3-001 reviewer qualification, Run 004, Work Control, SPC-EVID-001 and the SourceMargin A0 capability map. The existing specialist owns freight/import/landed-cost authoring and now has complete Stage C evidence. No new team or execution system is required.",
+  "reuse_candidates_checked": [
+    "SPC-FREIGHT-001 — existing authoring specialist",
+    "SPC-FREIGHT-Q3-001 — QUALIFIED independent freight Q3 reviewer",
+    "SPC-EVID-001 — QUALIFIED independent Q2 evidence reviewer",
+    "Run 004 — existing Source-to-Marketplace owner",
+    "Work Control — existing governed execution ledger",
+    "Professional Capability framework / G2.5"
+  ],
+  "duplication_analysis": "The capability is already owned and calibrated. The only structural change justified is promotion of the existing specialist's qualification state and authorization of an internal evidence-bounded landed-cost professional certification task class. No new agent team, scheduler, database, control center, or SourceMargin worker plane is created.",
+  "evidence_ref": "Stage C portfolio: 5/5 PASS, 5/5 Q2 PASS, 2 quote-backed reconciliation cases. Independent portfolio Q3 WC-20260922054728-ece811e159; exact outcome normalization WC-20260922054804-5ffb8e4d3c = PE_PASS / QUALIFIED; independent Q2 audit WC-20260922054825-9aa06a8ff5 = qualificationQ2 PASS, q3OutcomeAccepted PE_PASS, promotionEvidenceStatus COMPLETE.",
+  "qualification_evidence": {
+    "programId": "SPC-FREIGHT-001-QUAL-V1",
+    "subject": "SPC-FREIGHT-001",
+    "priorState": "PROVISIONAL",
+    "newState": "QUALIFIED",
+    "casesPassed": 5,
+    "q2Passed": 5,
+    "quoteReconciliations": 2,
+    "estimateErrorGate": "NOT_APPLICABLE_NO_ESTIMATION_CASES",
+    "independentReviewer": "SPC-FREIGHT-Q3-001",
+    "independentQ3": "PE_PASS",
+    "finalQ2": "PASS"
+  },
+  "authority_boundary": {
+    "phase": "PROFESSIONAL_CAPABILITY_QUALIFIED",
+    "allowed": [
+      "freight/import research",
+      "landed-cost modeling",
+      "tariff research using authoritative evidence",
+      "quote normalization",
+      "evidence-bounded landed-cost professional certification when all required material inputs are complete",
+      "emit internal professional receipts"
+    ],
+    "denied": [
+      "independent Q3 review of its own authored work",
+      "customs legal opinion",
+      "tax advice",
+      "supplier contact without separate authority",
+      "purchase, bid, list, message, or spend",
+      "SourceMargin production mutation or resolver write-back",
+      "customer publication",
+      "bypass of case-specific evidence completeness gates",
+      "creation of a new team, scheduler, database, control center, or autonomous execution plane"
+    ]
+  },
+  "covers_paths": [
+    ".github/workflows/run-004-freight-specialist-qualification.yml",
+    "agent-factory/governance/a0-decisions/A0-SOURCEMARGIN-FREIGHT-QUALIFY-001.a0.json",
+    "agent-factory/governance/specialist-registry-v1.0.json",
+    "agent-factory/governance/SOURCEMARGIN_A0_CAPABILITY_MAP.md",
+    "agent-factory/governance/team-professional-retrofit-v1.0.json",
+    "agent-factory/run-004/README.md",
+    "agent-factory/run-004/calibration/freight-specialist-qualification-v1.json",
+    "agent-factory/run-004/calibration/freight-q3-final-portfolio.receipt.json",
+    "agent-factory/run-004/tests/freight-specialist-qualification.test.cjs"
+  ],
+  "production_disposition": "This decision qualifies professional capability only. The SourceMargin resolver integration remains under its separate A0 SHADOW_ONLY authority until a future owner-approved decision explicitly grants bounded claim/write-back or publication authority."
+}
