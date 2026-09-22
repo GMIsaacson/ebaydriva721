@@ -354,6 +354,36 @@ function validateAndEnrich(raw, payload, prior, response, nowIso, publicSnapshot
     }
   }
 
+  // Enforce stage ownership deterministically. LANDED_COST owns only inbound/source-to-buyer
+  // logistics. It must not terminally block an otherwise sourced candidate solely because
+  // ECONOMICS-owned buckets (marketplace fees, outbound shipping, packaging, risk reserve)
+  // are still unresolved.
+  if (payload.stage === 'LANDED_COST' && prior.length) {
+    const latest = new Map(prior.at(-1).stageResult.candidates.map((c) => [c.asin, c]));
+    raw.candidates = raw.candidates.map((candidate) => {
+      const before = latest.get(candidate.asin);
+      if (!before || before.disposition !== 'continue' || candidate.disposition !== 'blocked') return candidate;
+      const reason = String(candidate.reason || '').toLowerCase();
+      const freight = String(candidate.freightBasis || '').toLowerCase();
+      const economicsOnly = ['marketplace fees','outbound shipping','packaging','risk reserve'].some((term) => reason.includes(term));
+      const freeShipping = freight.includes('free shipping');
+      const inboundStillUnresolved = /(shipping calculated|freight[^.]*unresolved|route[^.]*unresolved|weight[^.]*unresolved|destination[^.]*unresolved|duty[^.]*unresolved|import[^.]*unresolved)/i.test(freight);
+      if (economicsOnly && freeShipping && !inboundStillUnresolved) {
+        return {
+          ...candidate,
+          disposition: 'continue',
+          reason: 'Landed-cost stage satisfied for the evidenced supplier offer: exact source price and free shipping are evidenced. Marketplace fees, outbound shipping, packaging, and risk reserve remain intentionally deferred to ECONOMICS.',
+        };
+      }
+      return candidate;
+    });
+    if (raw.candidates.some((c) => c.disposition === 'continue') && raw.outcome === 'BLOCKED') {
+      raw.outcome = 'PASS';
+      raw.blockers = [];
+      raw.summary = 'At least one candidate has sufficient evidence-bounded inbound/source-to-buyer cost basis to advance. Economics-owned cost buckets remain deferred to ECONOMICS; other candidates retain their terminal dispositions.';
+    }
+  }
+
   if (raw.outcome === 'BLOCKED' && !raw.blockers.length) raw.blockers.push('Public evidence or required input remained unresolved.');
   if (raw.outcome === 'PASS' && raw.blockers.length) {
     const reason = raw.blockers.join(' | ').slice(0, 700) || 'Model reported unresolved blockers.';
