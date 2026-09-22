@@ -442,3 +442,87 @@ test('demand-rich missing-price leaf is data-blocked, not falsely deprioritized'
   assert.equal(score.decision,'data_blocked');
   assert.equal(score.priceBlockedDemandCount,1);
 });
+
+test('prescreen handoff snapshots preserve governed evidence and exact nomination set', () => {
+  const worker=require('../runtime/amazon-leaf-worker-executor-v2.cjs');
+  const stageResult={
+    stage:'PRESCREEN',
+    candidates:[{
+      asin:'B000C2AHWC',
+      title:'FEL-PRO ES 72856 Engine Cylinder Head Bolt Set for Chevrolet K1500',
+      amazonUrl:'https://www.amazon.com/dp/B000C2AHWC',
+      displayedPrice:'$26.17',
+      boughtPastMonthText:'50+ bought in past month',
+      availability:'In Stock',
+      evidenceClaim:'Amazon product-detail evidence shows $26.17 and 50+ bought in past month.',
+    }],
+  };
+  const rows=worker.prescreenHandoffSnapshots(stageResult,['B000C2AHWC'],'WC-PRESCREEN-001');
+  assert.equal(rows.length,1);
+  assert.equal(rows[0].asin,'B000C2AHWC');
+  assert.equal(rows[0].displayedPrice,'$26.17');
+  assert.equal(rows[0].boughtPastMonth,'50+ bought in past month');
+  assert.equal(rows[0].verificationMode,'governed_prescreen_handoff');
+  assert.equal(rows[0].sourceReceipt,'prior:WC-PRESCREEN-001');
+});
+
+test('prescreen handoff rejects ASINs that were not nominated', async () => {
+  const worker=require('../runtime/amazon-leaf-worker-executor-v2.cjs');
+  const payload={
+    leafId:'15713121',
+    prescreenCommandId:'WC-PRESCREEN-002',
+    candidateAsins:['B999999999'],
+  };
+  const controlRequest=async()=>({
+    receipt:{
+      terminalState:'DELIVERED',
+      stageResult:{
+        leafId:'15713121',
+        stage:'PRESCREEN',
+        selectedAsins:['B000C2AHWC'],
+        candidates:[{
+          asin:'B000C2AHWC',
+          title:'FEL-PRO ES 72856',
+          amazonUrl:'https://www.amazon.com/dp/B000C2AHWC',
+          displayedPrice:'$26.17',
+          boughtPastMonthText:'50+ bought in past month',
+          availability:'In Stock',
+          evidenceClaim:'evidence',
+        }],
+      },
+    },
+  });
+  await assert.rejects(
+    ()=>worker.loadPrescreenHandoff(payload,controlRequest),
+    /AMAZON_PRESCREEN_HANDOFF_ASIN_NOT_NOMINATED/
+  );
+});
+
+test('prescreenCommandId is valid only for ASIN_DISCOVERY', () => {
+  const worker=require('../runtime/amazon-leaf-worker-executor-v2.cjs');
+  const discovery=worker.parsePayload({
+    instruction:'[AMAZON_LEAF_STAGE_V2] '+JSON.stringify({
+      runId:'SM-AMZ-HEAD-BOLT-001',
+      leafId:'15713121',
+      leafName:'Head Bolt Sets',
+      stage:'ASIN_DISCOVERY',
+      specialist:'AGT-RESEARCH-VALIDATION-001',
+      priorCommandIds:[],
+      prescreenCommandId:'WC-20260922175302-d53b8a7d26',
+      candidateAsins:['B000C2AHWC'],
+    }),
+  });
+  assert.equal(discovery.prescreenCommandId,'WC-20260922175302-d53b8a7d26');
+
+  assert.throws(()=>worker.parsePayload({
+    instruction:'[AMAZON_LEAF_STAGE_V2] '+JSON.stringify({
+      runId:'SM-AMZ-HEAD-BOLT-002',
+      leafId:'15713121',
+      leafName:'Head Bolt Sets',
+      stage:'SOURCING',
+      specialist:'SPC-SOURCE-001',
+      priorCommandIds:[],
+      prescreenCommandId:'WC-20260922175302-d53b8a7d26',
+    }),
+  }),/AMAZON_PRESCREEN_HANDOFF_STAGE_INVALID/);
+});
