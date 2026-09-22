@@ -1,0 +1,114 @@
+{
+  "programId": "SPC-FREIGHT-001-QUAL-V1",
+  "caseId": "UPS-DIM-WEIGHT-EXW-005",
+  "specialistId": "SPC-FREIGHT-001",
+  "mode": "SHADOW",
+  "workControlCommandId": "WC-20260922053834-078e83d61c",
+  "q2CommandId": "WC-20260922053920-7d6a8d68a1",
+  "components": [
+    {
+      "component": "product_cost",
+      "status": "BLOCKED",
+      "amount": null,
+      "evidenceBasis": "EXW goods price intentionally omitted from the fixture.",
+      "minimumAdditionalEvidence": [
+        "supplier EXW goods quote if economics are later required"
+      ]
+    },
+    {
+      "component": "packaging_cost",
+      "status": "BLOCKED",
+      "amount": null,
+      "evidenceBasis": "No separate packaging charge supplied; ICC EXW packaging obligation must be read against the commercial quote.",
+      "minimumAdditionalEvidence": [
+        "commercial quote/package terms if cost breakout is material"
+      ]
+    },
+    {
+      "component": "international_freight",
+      "status": "BLOCKED",
+      "amount": null,
+      "evidenceBasis": "No carrier price was supplied. UPS dimensional-weight rule determines billable weight basis only.",
+      "minimumAdditionalEvidence": [
+        "destination postal code",
+        "service level",
+        "carrier quote using 50 lb billable weight and actual shipment facts"
+      ]
+    },
+    {
+      "component": "duty_tariff",
+      "status": "BLOCKED",
+      "amount": null,
+      "evidenceBasis": "No product classification, customs value, origin treatment, or duty quote supplied.",
+      "minimumAdditionalEvidence": [
+        "HTS classification",
+        "country of origin",
+        "customs value",
+        "current tariff evidence"
+      ]
+    },
+    {
+      "component": "inspection_cost",
+      "status": "BLOCKED",
+      "amount": null,
+      "evidenceBasis": "No inspection cost supplied.",
+      "minimumAdditionalEvidence": [
+        "inspection scope/charge if applicable"
+      ]
+    },
+    {
+      "component": "prep_labeling",
+      "status": "BLOCKED",
+      "amount": null,
+      "evidenceBasis": "No prep/labeling cost supplied.",
+      "minimumAdditionalEvidence": [
+        "prep/label requirements and charge if applicable"
+      ]
+    },
+    {
+      "component": "domestic_inbound_freight",
+      "status": "BLOCKED",
+      "amount": null,
+      "evidenceBasis": "No U.S. domestic inbound leg or price supplied.",
+      "minimumAdditionalEvidence": [
+        "destination and carrier/3PL quote if separate from international service"
+      ]
+    }
+  ],
+  "productionCertification": {
+    "certified": false,
+    "reason": "Verified dimensional-weight calculation is not a freight quote and does not establish landed cost."
+  },
+  "modeledTotal": {
+    "amount": null,
+    "status": "UNKNOWN"
+  },
+  "nextEvidence": [
+    "obtain actual carrier quote using destination/service/package facts",
+    "preserve EXW scope and separately evidence export/import/duty/brokerage/insurance where material",
+    "do not convert billable-weight calculation into freight dollars without a quote"
+  ],
+  "forbiddenClaimsMade": [],
+  "q2": {
+    "reviewerId": "SPC-EVID-001",
+    "result": "PASS"
+  },
+  "authorityUsage": {
+    "externalActions": 0,
+    "spendCents": 0,
+    "productionMutation": false
+  },
+  "caseResult": "PASS",
+  "caseResultReason": "Correctly verified UPS dimensional-weight rule and 50 lb billable weight, bounded EXW scope, and refused to invent freight dollars; Q2 PASS.",
+  "ruleEvidence": {
+    "ups": "https://www.ups.com/us/en/support/shipping-support/shipping-dimensions-weight",
+    "icc": "https://library.iccwbo.org/content/tfb/BOOKS/BK_0049/BK_0049_04_RulesAny.htm"
+  },
+  "deterministicFacts": {
+    "cubicInches": 6912,
+    "dimensionalWeightExactLb": 49.726618705,
+    "dimensionalWeightRoundedLb": 50,
+    "actualWeightLb": 28,
+    "billableWeightLb": 50
+  }
+}
