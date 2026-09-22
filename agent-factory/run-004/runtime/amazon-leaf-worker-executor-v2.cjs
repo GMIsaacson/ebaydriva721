@@ -514,6 +514,10 @@ function parsePayload(command) {
   if (!spec) throw new Error('AMAZON_LEAF_STAGE_INVALID');
   if (payload.specialist !== spec.specialistId) throw new Error('AMAZON_LEAF_SPECIALIST_MISMATCH');
   if (!Array.isArray(payload.priorCommandIds) || payload.priorCommandIds.length > 6) throw new Error('AMAZON_LEAF_PRIOR_REFS_INVALID');
+  if (payload.prescreenCommandId != null) {
+    if (payload.stage !== 'ASIN_DISCOVERY') throw new Error('AMAZON_PRESCREEN_HANDOFF_STAGE_INVALID');
+    if (!/^WC-[A-Za-z0-9-]+$/.test(String(payload.prescreenCommandId))) throw new Error('AMAZON_PRESCREEN_HANDOFF_ID_INVALID');
+  }
   if (payload.candidateAsins != null) {
     if (payload.stage !== 'ASIN_DISCOVERY') throw new Error('AMAZON_LEAF_CANDIDATE_ASINS_STAGE_INVALID');
     if (!Array.isArray(payload.candidateAsins) || payload.candidateAsins.length < 1 || payload.candidateAsins.length > MAX_CANDIDATES) throw new Error('AMAZON_LEAF_CANDIDATE_ASINS_INVALID');
@@ -521,6 +525,61 @@ function parsePayload(command) {
     if (payload.candidateAsins.length < 1 || payload.candidateAsins.length > MAX_CANDIDATES || payload.candidateAsins.some((asin)=>!/^[A-Z0-9]{10}$/.test(asin))) throw new Error('AMAZON_LEAF_CANDIDATE_ASINS_INVALID');
   }
   return payload;
+}
+
+
+function prescreenHandoffSnapshots(stageResult, selectedAsins, commandId) {
+  if (!stageResult || stageResult.stage !== 'PRESCREEN') throw new Error('AMAZON_PRESCREEN_HANDOFF_STAGE_INVALID');
+  const selected=new Set(selectedAsins || []);
+  const rows=[];
+  for(const candidate of Array.isArray(stageResult.candidates) ? stageResult.candidates : []) {
+    if (!selected.has(candidate.asin)) continue;
+    let url;
+    try { url=new URL(String(candidate.amazonUrl || '')); } catch { throw new Error('AMAZON_PRESCREEN_HANDOFF_URL_INVALID'); }
+    if (url.protocol !== 'https:' || !/(^|\.)amazon\.com$/i.test(url.hostname) || url.pathname !== `/dp/${candidate.asin}`) {
+      throw new Error('AMAZON_PRESCREEN_HANDOFF_URL_INVALID');
+    }
+    rows.push({
+      asin:candidate.asin,
+      url:`https://www.amazon.com/dp/${candidate.asin}`,
+      selectedAsin:candidate.asin,
+      ok:true,
+      status:200,
+      title:String(candidate.title || '').slice(0,300),
+      rating:'',
+      ratingsCount:'',
+      displayedPrice:String(candidate.displayedPrice || '').slice(0,40),
+      availability:String(candidate.availability || '').slice(0,120),
+      boughtPastMonth:String(candidate.boughtPastMonthText || '').slice(0,160),
+      bytes:0,
+      sourceReceipt:`prior:${commandId}`,
+      evidenceClaim:String(candidate.evidenceClaim || '').slice(0,700),
+      verificationMode:'governed_prescreen_handoff',
+    });
+  }
+  if (rows.length !== selected.size) throw new Error('AMAZON_PRESCREEN_HANDOFF_SELECTED_ASIN_MISSING');
+  return rows;
+}
+
+async function loadPrescreenHandoff(payload, controlRequest) {
+  if (!payload.prescreenCommandId) return null;
+  const record=await controlRequest(`/api/v1/commands/${payload.prescreenCommandId}`);
+  const receipt=record?.receipt;
+  const stageResult=receipt?.stageResult;
+  if (!receipt || receipt.terminalState !== 'DELIVERED' || !stageResult) throw new Error('AMAZON_PRESCREEN_HANDOFF_RECEIPT_MISSING');
+  if (stageResult.stage !== 'PRESCREEN' || String(stageResult.leafId) !== String(payload.leafId)) throw new Error('AMAZON_PRESCREEN_HANDOFF_SCOPE_MISMATCH');
+  const nominated=Array.isArray(stageResult.selectedAsins) ? stageResult.selectedAsins : [];
+  const selected=payload.candidateAsins?.length ? payload.candidateAsins : nominated;
+  if (!selected.length) throw new Error('AMAZON_PRESCREEN_HANDOFF_EMPTY');
+  for(const asin of selected) {
+    if (!nominated.includes(asin)) throw new Error('AMAZON_PRESCREEN_HANDOFF_ASIN_NOT_NOMINATED');
+  }
+  return {
+    commandId:payload.prescreenCommandId,
+    stageResult,
+    selectedAsins:selected,
+    snapshots:prescreenHandoffSnapshots(stageResult,selected,payload.prescreenCommandId),
+  };
 }
 
 async function loadPriorResults(payload, controlRequest) {
@@ -1441,12 +1500,20 @@ async function processAmazonLeafStage({ apiKey, command, profileSet, deps }) {
     return processAmazonLeafPrescreen({apiKey,command,profileSet,deps,payload,specialist});
   }
   const prior = await loadPriorResults(payload, controlRequest);
+  const prescreenHandoff = payload.stage === 'ASIN_DISCOVERY'
+    ? await loadPrescreenHandoff(payload, controlRequest)
+    : null;
   let publicSnapshots = [];
   if (payload.stage === 'ASIN_DISCOVERY') {
-    const seedAsins = payload.candidateAsins?.length
-      ? payload.candidateAsins
-      : await fetchAmazonLeafAsins(payload.leafId, fetch, MAX_CANDIDATES);
-    publicSnapshots = await collectAmazonPublicSnapshots(seedAsins, fetch, MAX_CANDIDATES);
+    if (prescreenHandoff) {
+      publicSnapshots = prescreenHandoff.snapshots;
+      if (!payload.candidateAsins?.length) payload.candidateAsins=[...prescreenHandoff.selectedAsins];
+    } else {
+      const seedAsins = payload.candidateAsins?.length
+        ? payload.candidateAsins
+        : await fetchAmazonLeafAsins(payload.leafId, fetch, MAX_CANDIDATES);
+      publicSnapshots = await collectAmazonPublicSnapshots(seedAsins, fetch, MAX_CANDIDATES);
+    }
   }
   if (payload.stage === 'DEMAND_VALIDATION' && prior.length) {
     publicSnapshots = await collectAmazonPublicSnapshots(
@@ -1516,15 +1583,20 @@ async function processAmazonLeafStage({ apiKey, command, profileSet, deps }) {
       runId: payload.runId,
       leafId: payload.leafId,
       stage: payload.stage,
-      reviewedCommandIds: payload.priorCommandIds,
+      reviewedCommandIds: [
+        ...payload.priorCommandIds,
+        ...(payload.prescreenCommandId ? [payload.prescreenCommandId] : []),
+      ],
     },
     researchUsage: {
       webSearchCalls: usage.webSearchCalls,
       webSearchReceiptIds: usage.webSearchIds,
       maxToolCalls,
-      publicHttpRequests: publicSnapshots.length,
-      publicHttpVerified: publicSnapshots.filter((x)=>x?.ok).length,
-      publicHttpReceipts: publicSnapshots.filter((x)=>x?.ok).map((x)=>x.sourceReceipt),
+      publicHttpRequests: publicSnapshots.filter((x)=>String(x?.sourceReceipt || '').startsWith('amazon-public-http:')).length,
+      publicHttpVerified: publicSnapshots.filter((x)=>x?.ok && String(x?.sourceReceipt || '').startsWith('amazon-public-http:')).length,
+      publicHttpReceipts: publicSnapshots
+        .filter((x)=>x?.ok && String(x?.sourceReceipt || '').startsWith('amazon-public-http:'))
+        .map((x)=>x.sourceReceipt),
     },
     stageResult,
     modelExecution: {
@@ -1588,6 +1660,8 @@ module.exports = {
   economicsEvidenceAssessments,
   shouldUse,
   parsePayload,
+  prescreenHandoffSnapshots,
+  loadPrescreenHandoff,
   loadPriorResults,
   validateAndEnrich,
   buildPrompt,
