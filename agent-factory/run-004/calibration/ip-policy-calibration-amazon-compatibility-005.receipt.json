@@ -1,0 +1,33 @@
+{
+  "programId": "SPC-IP-001-QUAL-V1",
+  "caseId": "IP-CAL-005",
+  "specialistId": "SPC-IP-001",
+  "mode": "SHADOW",
+  "platform": "amazon",
+  "workControlCommandId": "WC-20260922060550-331b55751e",
+  "professionalOutcome": "IP_PASS_WITH_LIMITATION",
+  "findings": [
+    "Current first-party Amazon News_Amazon guidance supports Generic brand treatment and compatibility wording in the supplied format.",
+    "Direct controlling help pages were not independently opened during the calibration, so the result remains a bounded marketplace-format screen rather than legal or account-health clearance."
+  ],
+  "evidenceRefs": [
+    "https://sellercentral.amazon.com/seller-forums/discussions/t/5cd9e230-65fc-4434-a189-0992d8feb698",
+    "https://sellercentral.amazon.com/seller-forums/discussions/t/09f7d8f4-fe41-4de8-b21e-f05e76b91939"
+  ],
+  "minimumRemediationEvidence": [],
+  "legalConclusionMade": false,
+  "forbiddenClaimsMade": [],
+  "q2": {
+    "reviewerId": "SPC-EVID-001",
+    "commandId": "WC-20260922060801-35a1317baf",
+    "result": "PASS"
+  },
+  "authorityUsage": {
+    "externalActions": 0,
+    "spendCents": 0,
+    "productionMutation": false,
+    "publication": false,
+    "platformAccountAction": false
+  },
+  "caseResult": "PASS"
+}
