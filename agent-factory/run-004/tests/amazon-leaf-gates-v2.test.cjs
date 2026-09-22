@@ -333,3 +333,67 @@ test('empty Amazon category-page sample is unscorable, not falsely deprioritized
   assert.equal(score.sampleSize,0);
   assert.equal(score.opportunityScore,0);
 });
+
+test('noisy singleton browse-node seed is rejected instead of contaminating leaf selection', async () => {
+  const worker=require('../runtime/amazon-leaf-worker-executor-v2.cjs');
+  const fakeFetch=async()=>({
+    ok:true,
+    text:async()=>'<html><a href="/dp/B0DVBL912R">generic</a></html>',
+  });
+  const asins=await worker.fetchAmazonLeafAsins('15710491',fakeFetch,30);
+  assert.deepEqual(asins,[]);
+});
+
+test('governed web prescreen normalization keeps only exact Amazon dp URLs and deduplicates ASINs', () => {
+  const worker=require('../runtime/amazon-leaf-worker-executor-v2.cjs');
+  const rows=worker.normalizePrescreenWebCandidates({
+    candidates:[
+      {
+        asin:'B012345678',
+        title:'304 Stainless Steel Clamp 2 in 20 Pack',
+        amazonUrl:'https://www.amazon.com/dp/B012345678',
+        observedPriceCents:2999,
+        boughtPastMonthText:'1K+ bought in past month',
+        availability:'In Stock',
+        evidenceClaim:'Exact Amazon product result.',
+      },
+      {
+        asin:'B012345678',
+        title:'duplicate',
+        amazonUrl:'https://www.amazon.com/dp/B012345678',
+        observedPriceCents:2999,
+        boughtPastMonthText:'1K+ bought in past month',
+        availability:'In Stock',
+        evidenceClaim:'duplicate',
+      },
+      {
+        asin:'B999999999',
+        title:'wrong host',
+        amazonUrl:'https://example.com/dp/B999999999',
+        observedPriceCents:1999,
+        boughtPastMonthText:'100+ bought in past month',
+        availability:'In Stock',
+        evidenceClaim:'bad',
+      },
+    ],
+  });
+  assert.equal(rows.length,1);
+  assert.equal(rows[0].asin,'B012345678');
+  assert.equal(rows[0].displayedPrice,'$29.99');
+});
+
+test('PRESCREEN is a governed stage and forbids prior receipts', () => {
+  const worker=require('../runtime/amazon-leaf-worker-executor-v2.cjs');
+  const payload=worker.parsePayload({
+    instruction:'[AMAZON_LEAF_STAGE_V2] '+JSON.stringify({
+      runId:'SM-AMZ-PRESCREEN-003',
+      leafId:'15710491',
+      leafName:'Battery Switches',
+      stage:'PRESCREEN',
+      specialist:'AGT-RESEARCH-VALIDATION-001',
+      priorCommandIds:[],
+    }),
+  });
+  assert.equal(payload.stage,'PRESCREEN');
+  assert.equal(worker.STAGE_SPECIALISTS.PRESCREEN.taskClass,'leaf-opportunity-prescreen');
+});
