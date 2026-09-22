@@ -2,6 +2,7 @@
 const test=require('node:test'); const assert=require('node:assert/strict');
 const {tick,initial,validateResult,STAGES,RUN,LEAF}=require('../runtime/amazon-leaf-controller.cjs');
 const {makePorts}=require('../runtime/amazon-leaf-ports.cjs');
+const {fetchAmazonPublicSnapshot}=require('../runtime/amazon-leaf-worker-executor.cjs');
 const at='2026-09-22T14:00:00.000Z';
 const bindings={executionReceipt:'fixture',publicResearchReceipt:'fixture',writebackReceipt:'fixture',run004TeamId:'RUN-004'};
 function harness(){
@@ -50,4 +51,17 @@ test('real HTTP adapter uses established gateway and checkpoint RPC; forbids red
  await p.workControl.dispatch({teamId:'fixture'});await p.workControl.read('WC-test-1');await p.store.compareAndSet(0,initial());
  assert.match(calls[0][0],/gateway\/v1\/commands$/);assert.match(calls[2][0],/rpc\/run004_plant_labels_checkpoint$/);
  assert.equal(calls[0][1].redirect,'error');
+});
+
+test('exact Amazon verifier requires selected ASIN, not variation metadata presence',async()=>{
+ const requested='B0821CVRNR';
+ const html='<html>'+('x'.repeat(12000))+'<span id="productTitle">Yellow Plant Tags</span><input id="ASIN" name="ASIN" value="B01N9QYUOD"><script>var variants={"B0821CVRNR":{}}</script></html>';
+ const result=await fetchAmazonPublicSnapshot(requested,async()=>new Response(html,{status:200}));
+ assert.equal(result.ok,false);assert.equal(result.reason,'selected_asin_mismatch');assert.equal(result.selectedAsin,'B01N9QYUOD');
+});
+test('exact Amazon verifier accepts matching selected ASIN',async()=>{
+ const requested='B07R3FR392';
+ const html='<html>'+('x'.repeat(12000))+'<span id="productTitle">Bamboo Plant Labels</span><input id="ASIN" name="ASIN" value="'+requested+'"></html>';
+ const result=await fetchAmazonPublicSnapshot(requested,async()=>new Response(html,{status:200}));
+ assert.equal(result.ok,true);assert.equal(result.selectedAsin,requested);assert.match(result.sourceReceipt,/^amazon-public-http:/);
 });
