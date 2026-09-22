@@ -5,6 +5,7 @@ const AmazonEconomicsEvidence = require('./amazon-economics-evidence.cjs');
 
 const MARKER = '[AMAZON_LEAF_STAGE_V2]';
 const MAX_CANDIDATES = 5;
+const AMAZON_MIN_MONTHLY_DEMAND_LOWER_BOUND = 25;
 
 const STAGE_SPECIALISTS = Object.freeze({
   ASIN_DISCOVERY: { specialistId: 'AGT-RESEARCH-VALIDATION-001', qualificationState: 'TESTING', taskClass: 'public-marketplace-discovery', independentReview: false },
@@ -240,8 +241,9 @@ function stageInstructions(stage, payload) {
       'PASS requires at least one exact ASIN/product URL and fresh public evidence. coverage should normally be partial for this bounded acceptance run.',
     ],
     DEMAND_VALIDATION: [
-      'For the exact prior ASIN set, verify current public demand signals, observed price context, offer/seller evidence when available, and whether the item remains worth sourcing research.',
-      'Do not convert review counts, ranking, or rounded purchase badges into exact monthly sales. Reject or block weak/unverifiable candidates but retain them.',
+      'For the exact prior ASIN set, verify the current exact Amazon product page and its bought-in-past-month badge.',
+      'SourceMargin demand gate is >=25 units/month using an explicit verified monthly-purchase lower bound. Missing monthly-purchase evidence BLOCKS the candidate; an explicit lower bound below 25 REJECTS it. Ratings, review counts, rank, and general popularity may be retained as context but may never qualify demand.',
+      'Rounded purchase badges remain lower bounds, never exact monthly sales.',
     ],
     SOURCING: [
       'For prior candidates still marked continue, find exact public supplier product-detail/SKU pages and compare must-preserve attributes: item type, material, dimensions/configuration, and pack quantity.',
@@ -465,6 +467,92 @@ function normalizeDiscoveryWithSnapshots(raw, snapshots) {
   return raw;
 }
 
+function parseAmazonBoughtPastMonthLowerBound(value) {
+  if (!value) return null;
+  const text = String(value).replaceAll(',', '').trim();
+  const match = text.match(/([0-9]+(?:\.[0-9]+)?)\s*([kKmM]?)\s*\+?\s*bought\s+in\s+past\s+month/i);
+  if (!match) return null;
+  const amount = Number(match[1]);
+  if (!Number.isFinite(amount) || amount < 0) return null;
+  const suffix = String(match[2] || '').toUpperCase();
+  const multiplier = suffix === 'M' ? 1_000_000 : suffix === 'K' ? 1_000 : 1;
+  return Math.floor(amount * multiplier);
+}
+
+function qualifyAmazonMonthlyDemand(boughtPastMonthText, thresholdUnits = AMAZON_MIN_MONTHLY_DEMAND_LOWER_BOUND) {
+  if (!Number.isSafeInteger(thresholdUnits) || thresholdUnits < 1) throw new Error('AMAZON_DEMAND_THRESHOLD_INVALID');
+  const lowerBoundUnits = parseAmazonBoughtPastMonthLowerBound(boughtPastMonthText);
+  if (lowerBoundUnits === null) {
+    return { disposition:'blocked', lowerBoundUnits:null, thresholdUnits, reason:'MONTHLY_DEMAND_UNVERIFIED' };
+  }
+  if (lowerBoundUnits < thresholdUnits) {
+    return { disposition:'rejected', lowerBoundUnits, thresholdUnits, reason:'BELOW_MONTHLY_DEMAND_THRESHOLD' };
+  }
+  return { disposition:'continue', lowerBoundUnits, thresholdUnits, reason:'MEETS_MONTHLY_DEMAND_THRESHOLD' };
+}
+
+function normalizeDemandValidationWithSnapshots(raw, snapshots) {
+  const byAsin = new Map(snapshots.map((x) => [x.asin, x]));
+  let continuing = 0;
+  let blocked = 0;
+  let rejected = 0;
+  raw.candidates = raw.candidates.map((candidate) => {
+    const snap = byAsin.get(candidate.asin);
+    if (!snap?.ok) {
+      blocked++;
+      return {
+        ...candidate,
+        disposition:'blocked',
+        reason:`Monthly demand cannot be certified because the exact Amazon product page could not be reverified (${snap?.reason || 'no_snapshot'}).`,
+      };
+    }
+    const qualification = qualifyAmazonMonthlyDemand(snap.boughtPastMonth);
+    const demandSignal = [
+      snap.boughtPastMonth || '',
+      snap.rating ? `Rating: ${snap.rating}; ${snap.ratingsCount || ''}` : '',
+    ].filter(Boolean).join(' | ').slice(0,900);
+
+    if (qualification.disposition === 'continue') {
+      continuing++;
+      return {
+        ...candidate,
+        disposition:'continue',
+        demandSignal,
+        reason:`Verified Amazon monthly-purchase lower bound is ${qualification.lowerBoundUnits}, meeting SourceMargin's >=${qualification.thresholdUnits}/month demand gate. Rounded badges remain lower bounds, not exact sales counts.`,
+      };
+    }
+    if (qualification.disposition === 'rejected') {
+      rejected++;
+      return {
+        ...candidate,
+        disposition:'rejected',
+        demandSignal,
+        reason:`Verified Amazon monthly-purchase lower bound is ${qualification.lowerBoundUnits}, below SourceMargin's >=${qualification.thresholdUnits}/month sourcing gate. Observation is retained but cannot advance.`,
+      };
+    }
+    blocked++;
+    return {
+      ...candidate,
+      disposition:'blocked',
+      demandSignal,
+      reason:`No explicit Amazon bought-in-past-month lower bound was verified. Ratings/review counts are retained as context but cannot substitute for 30-day demand evidence.`,
+    };
+  });
+
+  if (continuing > 0) {
+    raw.outcome='PASS';
+    raw.blockers=[];
+  } else if (blocked > 0) {
+    raw.outcome='BLOCKED';
+    raw.blockers=['No candidate has verified monthly-purchase evidence meeting the SourceMargin demand gate.'];
+  } else {
+    raw.outcome='REJECTED';
+    raw.blockers=[];
+  }
+  raw.summary=`Demand gate: ${continuing} meet >=${AMAZON_MIN_MONTHLY_DEMAND_LOWER_BOUND}/month; ${rejected} are below threshold; ${blocked} lack verified monthly-purchase evidence. Ratings are never converted into 30-day demand.`;
+  return raw;
+}
+
 function evidencePacketUrls(packet) {
   const urls = new Set();
   function walk(value) {
@@ -492,6 +580,60 @@ function economicsEvidenceAssessments(candidates) {
         resolved: assessment.resolved,
       };
     });
+}
+
+function normalizeLandedCostFastKill(raw, prior) {
+  const latest = new Map(prior.at(-1).stageResult.candidates.map((candidate) => [candidate.asin, candidate]));
+  const evidenceUrls = new Set(raw.evidence.map((item) => item.url));
+  for (const row of prior) {
+    for (const item of Array.isArray(row.stageResult?.evidence) ? row.stageResult.evidence : []) {
+      if (item?.url) evidenceUrls.add(item.url);
+    }
+  }
+
+  let killed = 0;
+  raw.candidates = raw.candidates.map((candidate) => {
+    const before = latest.get(candidate.asin);
+    if (before && ['blocked','rejected'].includes(before.disposition)) return candidate;
+    if (candidate.disposition !== 'continue' || !candidate.economicsEvidence) return candidate;
+
+    const requiredEntries = [
+      candidate.economicsEvidence.sale,
+      candidate.economicsEvidence.sourceCost,
+      candidate.economicsEvidence.inboundFreight,
+    ];
+    if (requiredEntries.some((entry) => !entry?.evidence?.sourceUrl || !evidenceUrls.has(entry.evidence.sourceUrl))) {
+      return candidate;
+    }
+
+    const decision = AmazonEconomicsEvidence.evaluatePreFeeFastKill(candidate.economicsEvidence);
+    if (decision.status !== 'KILL') return candidate;
+
+    killed++;
+    return {
+      ...candidate,
+      disposition:'rejected',
+      economicsInputs:null,
+      reason:`PRE_FEE_FAST_KILL: source cost + inbound freight (${decision.sourcePlusInboundCents} cents) is >= observed sale revenue (${decision.saleCents} cents), leaving pre-fee spread ${decision.preFeeSpreadCents} cents. With all later cost buckets non-negative, positive unit contribution is impossible for this exact route.`,
+    };
+  });
+
+  const continuing = raw.candidates.filter((candidate) => candidate.disposition === 'continue').length;
+  const blocked = raw.candidates.filter((candidate) => candidate.disposition === 'blocked').length;
+  if (continuing > 0) {
+    raw.outcome='PASS';
+    raw.blockers=[];
+  } else if (blocked > 0) {
+    raw.outcome='BLOCKED';
+    raw.blockers=['No candidate survived landed-cost validation; pre-fee negative-spread routes were terminally rejected before marketplace-fee research.'];
+  } else {
+    raw.outcome='REJECTED';
+    raw.blockers=[];
+  }
+  if (killed > 0) {
+    raw.summary=`${raw.summary} Pre-fee fast kill rejected ${killed} exact route(s) where source cost plus inbound freight was not below sale revenue.`.slice(0,1200);
+  }
+  return raw;
 }
 
 function normalizeEconomicsEvidenceStage(raw, prior) {
@@ -711,6 +853,8 @@ async function processAmazonLeafStage({ apiKey, command, profileSet, deps }) {
     raw.candidates = raw.candidates.filter((c)=>allowed.has(c.asin));
     raw = normalizeDiscoveryWithSnapshots(raw, publicSnapshots.filter((x)=>raw.candidates.some((c)=>c.asin===x.asin)));
   }
+  if (payload.stage === 'DEMAND_VALIDATION') raw = normalizeDemandValidationWithSnapshots(raw, publicSnapshots);
+  if (payload.stage === 'LANDED_COST') raw = normalizeLandedCostFastKill(raw, prior);
   if (payload.stage === 'ECONOMICS_EVIDENCE') raw = normalizeEconomicsEvidenceStage(raw, prior);
   if (payload.stage === 'ECONOMICS') raw = normalizeDeterministicEconomicsStage(raw, prior);
   const nowIso = new Date().toISOString();
@@ -784,6 +928,7 @@ async function processAmazonLeafStage({ apiKey, command, profileSet, deps }) {
 module.exports = {
   MARKER,
   MAX_CANDIDATES,
+  AMAZON_MIN_MONTHLY_DEMAND_LOWER_BOUND,
   STAGE_SPECIALISTS,
   RESULT_SCHEMA,
   AMAZON_ECONOMICS_EVIDENCE_SCHEMA,
@@ -791,6 +936,10 @@ module.exports = {
   collectAmazonPublicSnapshots,
   fetchAmazonLeafAsins,
   normalizeDiscoveryWithSnapshots,
+  parseAmazonBoughtPastMonthLowerBound,
+  qualifyAmazonMonthlyDemand,
+  normalizeDemandValidationWithSnapshots,
+  normalizeLandedCostFastKill,
   normalizeEconomicsEvidenceStage,
   normalizeDeterministicEconomicsStage,
   economicsEvidenceAssessments,
