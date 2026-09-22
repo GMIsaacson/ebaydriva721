@@ -221,3 +221,107 @@ test('all rejected candidates may retain aggregate REJECTED', () => {
   };
   assert.equal(worker.normalizeAggregateOutcome(raw).outcome,'REJECTED');
 });
+
+test('30-ASIN prescreen ranks high-demand, higher-value standardized candidates above low-price retail commodities', () => {
+  const worker=require('../runtime/amazon-leaf-worker-executor-v2.cjs');
+  assert.equal(worker.AMAZON_PRESCREEN_POOL_SIZE,30);
+  assert.equal(worker.AMAZON_DEEP_RESEARCH_LIMIT,5);
+  assert.equal(worker.AMAZON_PREFERRED_SOURCE_SHARE_BPS,4500);
+  assert.equal(worker.AMAZON_SOURCE_CLASS_PRIORITY[0],'manufacturer_factory');
+  assert.equal(worker.AMAZON_SOURCE_CLASS_PRIORITY.at(-1),'retail');
+
+  const high=worker.scoreAmazonPrescreenSnapshot({
+    asin:'B012345678',
+    title:'304 Stainless Steel Clamp 2 in 20 Pack',
+    displayedPrice:'$29.99',
+    boughtPastMonth:'1K+ bought in past month',
+    availability:'In Stock',
+  });
+  const low=worker.scoreAmazonPrescreenSnapshot({
+    asin:'B007JSGNVQ',
+    title:'Duck Brand Auto Electrical Tape 0.75 in x 60 ft 1 Roll',
+    displayedPrice:'$1.48',
+    boughtPastMonth:'5K+ bought in past month',
+    availability:'In Stock',
+  });
+  assert.equal(high.eligibleForDeepResearch,true);
+  assert.equal(low.eligibleForDeepResearch,true);
+  assert.ok(high.score > low.score);
+  assert.deepEqual(worker.calculateAmazonSourceTargets(2999),{
+    salePriceCents:2999,
+    minimumSupportedReferralFeeCents:360,
+    absoluteSourceCostCeilingCents:2638,
+    preferredSourceTargetCents:1349,
+    preferredSourceShareBps:4500,
+    policyVersion:'amazon-opportunity-prescreen/1.0.0',
+  });
+});
+
+test('prescreen excludes missing demand and marketplace private label from deep research', () => {
+  const worker=require('../runtime/amazon-leaf-worker-executor-v2.cjs');
+  const noDemand=worker.scoreAmazonPrescreenSnapshot({
+    asin:'B076Q7ZK19',
+    title:'Stainless Steel Worm Gear Hose Clamp 60 Pieces',
+    displayedPrice:'$16.99',
+    boughtPastMonth:'',
+    availability:'In Stock',
+  });
+  assert.equal(noDemand.eligibleForDeepResearch,false);
+  assert.equal(noDemand.exclusionReason,'MONTHLY_DEMAND_UNVERIFIED');
+
+  const amazonBasics=worker.scoreAmazonPrescreenSnapshot({
+    asin:'B07YDRY8ZS',
+    title:'Amazon Basics Electrical Tape 6 Pack',
+    displayedPrice:'$15.61',
+    boughtPastMonth:'1K+ bought in past month',
+    availability:'In Stock',
+  });
+  assert.equal(amazonBasics.eligibleForDeepResearch,false);
+  assert.equal(amazonBasics.exclusionReason,'MARKETPLACE_PRIVATE_LABEL');
+});
+
+test('ASIN_DISCOVERY accepts a deterministic top-five prescreen nomination only', () => {
+  const worker=require('../runtime/amazon-leaf-worker-executor-v2.cjs');
+  const command={
+    instruction:'[AMAZON_LEAF_STAGE_V2] '+JSON.stringify({
+      runId:'SM-AMZ-PRESCREEN-001',
+      leafId:'256161011',
+      leafName:'Electrical Tape',
+      stage:'ASIN_DISCOVERY',
+      specialist:'AGT-RESEARCH-VALIDATION-001',
+      priorCommandIds:[],
+      candidateAsins:['B007JSGNVQ','B002VKT22O'],
+    }),
+  };
+  const payload=worker.parsePayload(command);
+  assert.deepEqual(payload.candidateAsins,['B007JSGNVQ','B002VKT22O']);
+
+  assert.throws(()=>worker.parsePayload({
+    instruction:'[AMAZON_LEAF_STAGE_V2] '+JSON.stringify({
+      runId:'SM-AMZ-PRESCREEN-002',
+      leafId:'256161011',
+      leafName:'Electrical Tape',
+      stage:'SOURCING',
+      specialist:'SPC-SOURCE-001',
+      priorCommandIds:[],
+      candidateAsins:['B007JSGNVQ'],
+    }),
+  }),/AMAZON_LEAF_CANDIDATE_ASINS_STAGE_INVALID/);
+});
+
+test('sourcing targets are derived deterministically from carried Amazon sale evidence', () => {
+  const worker=require('../runtime/amazon-leaf-worker-executor-v2.cjs');
+  const prior=[{
+    stageResult:{candidates:[{
+      asin:'B012345678',
+      disposition:'continue',
+      economicsEvidence:{
+        sale:{amountCents:2999},
+      },
+    }]},
+  }];
+  const targets=worker.buildSourcingTargets(prior);
+  assert.equal(targets.length,1);
+  assert.equal(targets[0].preferredSourceTargetCents,1349);
+  assert.equal(targets[0].absoluteSourceCostCeilingCents,2638);
+});
