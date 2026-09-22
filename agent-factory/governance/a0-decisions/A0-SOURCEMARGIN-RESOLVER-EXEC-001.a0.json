@@ -7,9 +7,9 @@
   "business_outcome": "Allow SourceMargin resolver gaps to be tested through the existing Factory execution model without creating a second agent system, while preserving fail-closed publication semantics and preventing unqualified supplier/freight judgments or unauthorized production mutation.",
   "existing_owner_scan": "Reviewed A0-SOURCEMARGIN-STATE-001, A0-SOURCEMARGIN-COMPLETION-001, A0-SOURCEMARGIN-ACQ-DISPATCH-001, Run 004 DataScout Source-to-Marketplace, Run 008 Operations Core, Work Control, Agent 000, the SourceMargin A0 capability map, the Factory specialist registry, the professional-readiness retrofit, and the live SourceMargin resolver interface introduced in GMIsaacson/Eb-Al at merge a0ea19b3522608e5207c44a275ddefb9a741050d. Run 004 already owns source-to-marketplace research, Work Control already owns execution state, Run 008 already owns deterministic retry/dead-letter/recovery patterns, SPC-SOURCE-001 already owns supplier search/comparison, SPC-EVID-001 owns Q2 evidence verification, SPC-ECON-001 plus SW-DS-ECONOMICS-001 own unit-economics calculation, and SPC-FREIGHT-001 already exists for freight/import/landed-cost work and has passed Stage B calibration to PROVISIONAL; it remains non-production and ineligible as an independent reviewer until Stage C plus independent Q3. No new team, scheduler, database, control center, or standalone worker system is justified.",
   "reuse_candidates_checked": [
-    "Run 004 — DataScout Source-to-Marketplace",
+    "Run 004 \u2014 DataScout Source-to-Marketplace",
     "Agent 000 / Work Control",
-    "Run 008 — Operations Core",
+    "Run 008 \u2014 Operations Core",
     "SPC-SOURCE-001 Marketplace Supplier Sourcing",
     "SPC-EVID-001 Evidence/Claim Verification",
     "SPC-ECON-001 Unit Economics",
@@ -32,9 +32,16 @@
     "agent-factory/run-004/runtime/freight-specialist-qualification.cjs",
     "agent-factory/run-004/tests/freight-specialist-qualification.test.cjs",
     "agent-factory/run-004/calibration/freight-calibration-car-seat-gap-002.receipt.json",
-    "agent-factory/run-004/calibration/freight-calibration-ddp-tariff-003.receipt.json"
+    "agent-factory/run-004/calibration/freight-calibration-ddp-tariff-003.receipt.json",
+    "agent-factory/run-004/runtime/amazon-leaf-controller.cjs",
+    "agent-factory/run-004/runtime/amazon-leaf-ports.cjs",
+    "agent-factory/run-004/scripts/tick-plant-labels.cjs",
+    "agent-factory/run-004/plant-labels/install-checkpoint.sql",
+    "agent-factory/run-004/plant-labels/README.md",
+    "agent-factory/run-004/tests/amazon-leaf-controller.test.cjs",
+    "agent-factory/run-004/contracts/state-receipt.schema.json"
   ],
-  "evidence_ref": "agent-factory/governance/SOURCEMARGIN_A0_CAPABILITY_MAP.md; agent-factory/governance/specialist-registry-v1.0.json; agent-factory/governance/team-professional-retrofit-v1.0.json; agent-factory/governance/a0-decisions/A0-SOURCEMARGIN-STATE-001.a0.json; agent-factory/governance/a0-decisions/A0-SOURCEMARGIN-COMPLETION-001.a0.json; agent-factory/governance/a0-decisions/A0-SOURCEMARGIN-ACQ-DISPATCH-001.a0.json; GMIsaacson/Eb-Al merge a0ea19b3522608e5207c44a275ddefb9a741050d; SourceMargin Thermal Pads resolver state on 2026-09-21: 8 queued resolver tasks, RESEARCH_SAMPLE_READY, 0 publishable SAMPLE_READY.",
+  "evidence_ref": "agent-factory/governance/SOURCEMARGIN_A0_CAPABILITY_MAP.md; agent-factory/governance/specialist-registry-v1.0.json; agent-factory/governance/team-professional-retrofit-v1.0.json; agent-factory/governance/a0-decisions/A0-SOURCEMARGIN-STATE-001.a0.json; agent-factory/governance/a0-decisions/A0-SOURCEMARGIN-COMPLETION-001.a0.json; agent-factory/governance/a0-decisions/A0-SOURCEMARGIN-ACQ-DISPATCH-001.a0.json; GMIsaacson/Eb-Al merge a0ea19b3522608e5207c44a275ddefb9a741050d; SourceMargin Thermal Pads resolver state on 2026-09-21: 8 queued resolver tasks, RESEARCH_SAMPLE_READY, 0 publishable SAMPLE_READY.; owner instruction on 2026-09-22 to implement bounded Plant Labels extension; agent-factory/run-004/plant-labels/README.md",
   "authority_boundary": {
     "phase": "SHADOW_ONLY",
     "allowed": [
@@ -100,5 +107,29 @@
       ]
     },
     "remainingForQualified": "Stage C: at least 5 total cases, at least 2 real quote/final-charge reconciliations, acceptable estimate-error evidence when estimates are requested, and independent qualified logistics/freight Q3 PE_PASS. Production certification remains denied."
+  },
+  "bounded_plant_labels_extension": {
+    "date": "2026-09-22",
+    "owner_instruction": "User approved implementing the proposed Run 004 / Work Control Plant Labels extension in this conversation.",
+    "scope": "Build and test one bounded research controller and existing-ledger checkpoint RPC. Existing shadow resolver authority remains unchanged.",
+    "implementation_status": "REVIEW_CANDIDATE_NOT_DEPLOYED",
+    "leaf_id": "14623206011",
+    "run_id": "SM-AMZ-PLANT-LABELS-001",
+    "reuse": "Run 004 specialist routing, existing Work Control command API and execution owner, existing Supabase leaf work items/state events, existing deterministic economics and completion guard. No new executor, scheduler or database.",
+    "limits": {
+      "max_candidates": 25,
+      "max_source_requests": 200,
+      "max_read_retries": 2,
+      "max_model_budget_cents": 12,
+      "max_stage_minutes": 30
+    },
+    "write_boundary": "Proposed research packets and stage events on Plant Labels only after deployment acceptance; no normalized source/cost verification, publication, Sample Ready promotion or coverage credit.",
+    "launch_blockers": [
+      "Authenticated Work Control endpoint and deployment access unavailable",
+      "Approved existing public research mechanism and cumulative request enforcement unbound",
+      "Live specialist routing and strict JSON output contract unverified",
+      "Normalized domain materialization and completion receipts not implemented"
+    ],
+    "professional_state_note": "Latest freight qualification decision supersedes historical PROVISIONAL prose above; freight is QUALIFIED. Other discipline gates remain in force."
   }
 }

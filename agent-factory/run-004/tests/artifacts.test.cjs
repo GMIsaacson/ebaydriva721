@@ -75,7 +75,7 @@ test('emulator rules isolate Run 004 and deny delete and default access', () => 
   assert.match(rules, /allow read, write: if false/);
 });
 
-test('registry preserves stable IDs and Testing lifecycle', () => {
+test('registry preserves stable IDs and approved lifecycle boundaries', () => {
   const registry = JSON.parse(read('contracts/registry.json'));
   const ids = registry.units.map((unit) => unit.unit_id);
   assert.equal(new Set(ids).size, ids.length);
@@ -86,5 +86,8 @@ test('registry preserves stable IDs and Testing lifecycle', () => {
   assert.ok(ids.includes('SW-DS-COMPLETION-GUARD-001'));
   assert.ok(ids.includes('WF-DS-S2M-004-G4-001'));
   assert.ok(ids.includes('WF-DS-S2M-004-G5-001'));
-  assert.ok(registry.units.every((unit) => unit.lifecycle_status === 'Testing'));
+  for (const unit of registry.units) {
+    assert.equal(unit.lifecycle_status, unit.unit_id === 'WF-SM-ACQ-DISPATCH-G6-001'
+      ? 'G6 Controlled Live — internal monitor only' : 'Testing');
+  }
 });
