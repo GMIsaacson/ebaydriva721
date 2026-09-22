@@ -591,3 +591,36 @@ test('pre-economics stages strip placeholder economics inputs', () => {
     {collectedRevenueCents:2617}
   );
 });
+
+test('observation-only stage retains ASINs even when price and demand are missing', () => {
+  const worker=require('../runtime/amazon-leaf-worker-executor-v2.cjs');
+  assert.equal(worker.STAGE_SPECIALISTS.OBSERVE.taskClass,'leaf-basic-observation');
+
+  const payload=worker.parsePayload({
+    instruction:'[AMAZON_LEAF_STAGE_V2] '+JSON.stringify({
+      runId:'SM-AMZ-CENSUS-TEST-001',
+      leafId:'16413611',
+      leafName:'O-Rings',
+      stage:'OBSERVE',
+      specialist:'AGT-RESEARCH-VALIDATION-001',
+      priorCommandIds:[],
+    }),
+  });
+  assert.equal(payload.stage,'OBSERVE');
+
+  const rows=worker.normalizePrescreenWebCandidates({
+    candidates:[{
+      asin:'B012345678',
+      title:'O-Ring Assortment Kit',
+      amazonUrl:'https://www.amazon.com/dp/B012345678',
+      observedPriceCents:null,
+      boughtPastMonthText:null,
+      availability:null,
+      evidenceClaim:'Public Amazon product-detail result supports this ASIN.',
+    }],
+  });
+  assert.equal(rows.length,1);
+  assert.equal(rows[0].asin,'B012345678');
+  assert.equal(rows[0].displayedPrice,'');
+  assert.equal(rows[0].boughtPastMonth,'');
+});
