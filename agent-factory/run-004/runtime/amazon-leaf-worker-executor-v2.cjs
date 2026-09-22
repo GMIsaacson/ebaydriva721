@@ -12,6 +12,7 @@ const AMAZON_PREFERRED_SOURCE_SHARE_BPS = 4500;
 const AMAZON_MIN_SUPPORTED_REFERRAL_RATE_BPS = 1200;
 const AMAZON_MIN_SUPPORTED_REFERRAL_FEE_CENTS = 30;
 const AMAZON_MIN_MONTHLY_DEMAND_LOWER_BOUND = 25;
+const AMAZON_MIN_DETERMINISTIC_LEAF_SEEDS = 3;
 const AMAZON_SOURCE_CLASS_PRIORITY = Object.freeze([
   'manufacturer_factory',
   'authorized_distributor',
@@ -23,6 +24,7 @@ const AMAZON_SOURCE_CLASS_PRIORITY = Object.freeze([
 ]);
 
 const STAGE_SPECIALISTS = Object.freeze({
+  PRESCREEN: { specialistId: 'AGT-RESEARCH-VALIDATION-001', qualificationState: 'TESTING', taskClass: 'leaf-opportunity-prescreen', independentReview: false },
   ASIN_DISCOVERY: { specialistId: 'AGT-RESEARCH-VALIDATION-001', qualificationState: 'TESTING', taskClass: 'public-marketplace-discovery', independentReview: false },
   DEMAND_VALIDATION: { specialistId: 'AGT-RESEARCH-VALIDATION-001', qualificationState: 'TESTING', taskClass: 'marketplace-demand-validation', independentReview: false },
   SOURCING: { specialistId: 'SPC-SOURCE-001', qualificationState: 'PROVISIONAL', taskClass: 'supplier-search', independentReview: false },
@@ -202,6 +204,203 @@ const RESULT_SCHEMA = {
   },
   required: ['outcome','summary','blockers','coverage','evidence','candidates'],
 };
+
+
+const PRESCREEN_RESULT_SCHEMA = {
+  type:'object',
+  additionalProperties:false,
+  properties:{
+    summary:{type:'string'},
+    blockers:{type:'array',maxItems:10,items:{type:'string'}},
+    candidates:{
+      type:'array',
+      maxItems:AMAZON_PRESCREEN_POOL_SIZE,
+      items:{
+        type:'object',
+        additionalProperties:false,
+        properties:{
+          asin:{type:'string',pattern:'^[A-Z0-9]{10}$'},
+          title:{type:'string'},
+          amazonUrl:{type:'string'},
+          observedPriceCents:{anyOf:[{type:'null'},{type:'integer',minimum:1}]},
+          boughtPastMonthText:{anyOf:[{type:'null'},{type:'string'}]},
+          availability:{anyOf:[{type:'null'},{type:'string'}]},
+          evidenceClaim:{type:'string'},
+        },
+        required:['asin','title','amazonUrl','observedPriceCents','boughtPastMonthText','availability','evidenceClaim'],
+      },
+    },
+  },
+  required:['summary','blockers','candidates'],
+};
+
+function normalizePrescreenWebCandidates(raw) {
+  const seen=new Set();
+  const rows=[];
+  for (const candidate of Array.isArray(raw?.candidates) ? raw.candidates : []) {
+    if (!/^[A-Z0-9]{10}$/.test(String(candidate?.asin || ''))) continue;
+    if (seen.has(candidate.asin)) continue;
+    let url;
+    try { url=new URL(String(candidate.amazonUrl || '')); } catch { continue; }
+    if (url.protocol !== 'https:' || !/(^|\.)amazon\.com$/i.test(url.hostname)) continue;
+    if (url.pathname !== `/dp/${candidate.asin}`) continue;
+    seen.add(candidate.asin);
+    rows.push({
+      asin:candidate.asin,
+      title:String(candidate.title || '').slice(0,300),
+      url:url.toString(),
+      ok:true,
+      status:200,
+      displayedPrice:Number.isSafeInteger(candidate.observedPriceCents) && candidate.observedPriceCents > 0
+        ? `$${(candidate.observedPriceCents/100).toFixed(2)}`
+        : '',
+      boughtPastMonth:String(candidate.boughtPastMonthText || '').slice(0,160),
+      availability:String(candidate.availability || '').slice(0,120),
+      rating:'',
+      ratingsCount:'',
+      sourceReceipt:'web-prescreen',
+      evidenceClaim:String(candidate.evidenceClaim || '').slice(0,700),
+    });
+    if (rows.length >= AMAZON_PRESCREEN_POOL_SIZE) break;
+  }
+  return rows;
+}
+
+function buildPrescreenPrompt(payload) {
+  return [
+    'You are executing the governed SourceMargin Amazon leaf opportunity prescreen.',
+    `Run: ${payload.runId}; Amazon US leaf: ${payload.leafName} (${payload.leafId}).`,
+    `Find up to ${AMAZON_PRESCREEN_POOL_SIZE} distinct current Amazon.com product-detail pages that are genuinely products in this leaf or a direct exact-name match for this leaf.`,
+    'Use public web search only. Do not log in, contact sellers, purchase, list, publish, or mutate anything.',
+    'Return only exact canonical product URLs in the form https://www.amazon.com/dp/ASIN.',
+    'Capture displayed Amazon price in integer cents only when visible in public evidence. Otherwise use null.',
+    'Capture the exact "bought in past month" text only when visible in public evidence. Otherwise use null.',
+    'Never infer monthly demand from ratings, reviews, rank, popularity, or search position.',
+    'Prefer current product pages with explicit bought-in-past-month evidence, standardized specifications, and sale prices with enough room for sourcing.',
+    'Do not research suppliers in this stage.',
+    'Do not fabricate ASINs or prices. If you cannot support a row with public evidence, omit it.',
+    'Return structured JSON only.',
+  ].join('\n');
+}
+
+async function processAmazonLeafPrescreen({apiKey,command,profileSet,deps,payload,specialist}) {
+  const {callOpenAIRequest,WorkerCore,submitReceipt,model}=deps;
+  const deterministic=await prescreenAmazonLeaf(payload.leafId);
+  let snapshots=deterministic.snapshots;
+  let usage={inputTokens:0,outputTokens:0,webSearchCalls:0,webSearchIds:[]};
+  let response=null;
+  let mode='deterministic_public_http';
+
+  if (deterministic.leafScore.decision === 'unscorable' || deterministic.selectedAsins.length === 0) {
+    mode='bounded_web_search_fallback';
+    response=await callOpenAIRequest(apiKey,{
+      prompt:buildPrescreenPrompt(payload),
+      schema:PRESCREEN_RESULT_SCHEMA,
+      schemaName:'amazon_leaf_prescreen_result',
+      maxOutputTokens:6500,
+      maxToolCalls:4,
+      reasoningEffort:'low',
+    });
+    usage=responseUsage(response);
+    const raw=JSON.parse(WorkerCore.extractResponseText(response));
+    snapshots=normalizePrescreenWebCandidates(raw);
+  }
+
+  const leafScore=scoreAmazonLeafOpportunity(snapshots);
+  const selected=selectAmazonDeepResearchCandidates(snapshots,AMAZON_DEEP_RESEARCH_LIMIT);
+  const selectedAsins=selected.map((row)=>row.asin);
+  const outcome=selectedAsins.length ? 'PASS' : 'BLOCKED';
+  const blockers=outcome === 'PASS' ? [] : ['No demand-qualified, price-verified Amazon candidates survived the prescreen.'];
+  const nowIso=new Date().toISOString();
+  const estimatedCostCents=response
+    ? WorkerCore.estimateModelCostCents(
+        {input_tokens:usage.inputTokens,output_tokens:usage.outputTokens},
+        WorkerCore.pricingForModel(model),
+        usage.webSearchCalls
+      )
+    : 0;
+  if (estimatedCostCents > Number(command.modelBudgetCents || 0)) throw new Error('MODEL_BUDGET_EXCEEDED');
+
+  const profile=WorkerCore.getTeamProfile(profileSet,command.team.id);
+  const stageResult={
+    runId:payload.runId,
+    leafId:payload.leafId,
+    stage:'PRESCREEN',
+    outcome,
+    summary:`${leafScore.decision} leaf score ${leafScore.opportunityScore}/100 from ${leafScore.sampleSize} verified/search-supported candidates; ${leafScore.demandQualifiedCount} demand-qualified; ${selectedAsins.length} nominated for deep research.`,
+    blockers,
+    coverage:'partial',
+    mode,
+    leafScore,
+    selected,
+    selectedAsins,
+    sourceClassPriority:[...AMAZON_SOURCE_CLASS_PRIORITY],
+    candidates:snapshots.map((snapshot)=>({
+      asin:snapshot.asin,
+      title:snapshot.title,
+      amazonUrl:snapshot.url,
+      displayedPrice:snapshot.displayedPrice || null,
+      boughtPastMonthText:snapshot.boughtPastMonth || null,
+      availability:snapshot.availability || null,
+      score:scoreAmazonPrescreenSnapshot(snapshot),
+      evidenceClaim:snapshot.evidenceClaim || snapshotClaim(snapshot),
+    })),
+  };
+  const receipt={
+    schemaVersion:'1.1',
+    commandId:command.commandId,
+    terminalState:'DELIVERED',
+    summary:`Amazon ${payload.leafName} PRESCREEN: ${outcome}`,
+    detail:stageResult.summary,
+    steps:[
+      {name:'Specialist binding',detail:`${specialist.specialistId} / ${specialist.qualificationState} / ${specialist.taskClass}`},
+      {name:'PRESCREEN',detail:stageResult.summary},
+    ],
+    completedAt:nowIso,
+    externalActionsPerformed:0,
+    spendCents:0,
+    productionMutation:false,
+    teamExecutionProfile:WorkerCore.profileIdentity(profileSet,profile),
+    specialistExecution:{
+      specialistId:specialist.specialistId,
+      qualificationState:specialist.qualificationState,
+      taskClass:specialist.taskClass,
+      independentReview:false,
+      runId:payload.runId,
+      leafId:payload.leafId,
+      stage:'PRESCREEN',
+      reviewedCommandIds:[],
+    },
+    researchUsage:{
+      webSearchCalls:usage.webSearchCalls,
+      webSearchReceiptIds:usage.webSearchIds,
+      maxToolCalls:mode === 'bounded_web_search_fallback' ? 4 : 0,
+      publicHttpRequests:deterministic.snapshots.length,
+      publicHttpVerified:deterministic.snapshots.length,
+      publicHttpReceipts:deterministic.snapshots.map((x)=>x.sourceReceipt).filter(Boolean),
+    },
+    stageResult,
+    modelExecution:{
+      provider:'openai',
+      model,
+      responseId:String(response?.id || '').slice(0,120) || null,
+      inputTokens:usage.inputTokens,
+      outputTokens:usage.outputTokens,
+      estimatedCostCents,
+      webSearchCalls:usage.webSearchCalls,
+      webSearchCostCents:usage.webSearchCalls,
+    },
+  };
+  await submitReceipt(receipt);
+  return {
+    commandId:command.commandId,
+    terminalState:'DELIVERED',
+    estimatedCostCents,
+    profile:receipt.teamExecutionProfile,
+    specialistExecution:receipt.specialistExecution,
+    stageResult,
+  };
+}
 
 function shouldUse(command) {
   return command?.team?.id === 'RUN-004' && String(command?.instruction || '').includes(MARKER);
@@ -450,6 +649,7 @@ async function fetchAmazonLeafAsins(leafId, fetchImpl = fetch, limit = MAX_CANDI
     if (!asins.includes(match[1])) asins.push(match[1]);
     if (asins.length >= limit) break;
   }
+  if (asins.length < AMAZON_MIN_DETERMINISTIC_LEAF_SEEDS) return [];
   return asins;
 }
 
@@ -1131,6 +1331,10 @@ async function processAmazonLeafStage({ apiKey, command, profileSet, deps }) {
   const { callOpenAIRequest, WorkerCore, submitReceipt, controlRequest, model } = deps;
   const payload = parsePayload(command);
   const specialist = STAGE_SPECIALISTS[payload.stage];
+  if (payload.stage === 'PRESCREEN') {
+    if (payload.priorCommandIds.length) throw new Error('AMAZON_PRESCREEN_PRIOR_REFS_FORBIDDEN');
+    return processAmazonLeafPrescreen({apiKey,command,profileSet,deps,payload,specialist});
+  }
   const prior = await loadPriorResults(payload, controlRequest);
   let publicSnapshots = [];
   if (payload.stage === 'ASIN_DISCOVERY') {
@@ -1249,13 +1453,17 @@ module.exports = {
   AMAZON_PREFERRED_SOURCE_SHARE_BPS,
   AMAZON_SOURCE_CLASS_PRIORITY,
   AMAZON_MIN_MONTHLY_DEMAND_LOWER_BOUND,
+  AMAZON_MIN_DETERMINISTIC_LEAF_SEEDS,
   STAGE_SPECIALISTS,
+  PRESCREEN_RESULT_SCHEMA,
   RESULT_SCHEMA,
   AMAZON_ECONOMICS_EVIDENCE_SCHEMA,
   fetchAmazonPublicSnapshot,
   collectAmazonPublicSnapshots,
   fetchAmazonLeafAsins,
   prescreenAmazonLeaf,
+  normalizePrescreenWebCandidates,
+  processAmazonLeafPrescreen,
   calculateAmazonSourceTargets,
   scoreAmazonPrescreenSnapshot,
   scoreAmazonLeafOpportunity,
