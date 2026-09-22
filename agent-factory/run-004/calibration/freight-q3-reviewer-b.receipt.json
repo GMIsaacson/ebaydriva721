@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "1.0",
+  "programId": "SPC-FREIGHT-Q3-001-QUAL-V1",
+  "caseId": "Q3-REV-B-DDP-ADVERSARIAL",
+  "commandId": "WC-20260922054011-536bfd678e",
+  "goldOutcome": "PE_FAIL",
+  "actualOutcome": "PE_FAIL",
+  "result": "PASS",
+  "keyFindings": [
+    "detected DDP duty double-counting",
+    "detected unsupported customs-value basis",
+    "detected fabricated freight split",
+    "detected stale tariff relabeled current",
+    "rejected VERIFIED landed cost and SAMPLE_READY/profit promotion"
+  ],
+  "authorityUsage": {
+    "externalActions": 0,
+    "spendCents": 0,
+    "productionMutation": false
+  }
+}
