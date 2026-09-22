@@ -1,0 +1,44 @@
+{
+  "schemaVersion": "1.0",
+  "programId": "SPC-IP-001-QUAL-V1",
+  "subjectSpecialistId": "SPC-IP-001",
+  "reviewerSpecialistId": "SPC-IP-Q3-001",
+  "reviewType": "INDEPENDENT_PORTFOLIO_Q3",
+  "portfolioReviewCommandId": "WC-20260922060851-831644e731",
+  "outcomeNormalizationCommandId": "WC-20260922060931-f479f032fe",
+  "independentQ2AuditCommandId": "WC-20260922060951-820a903e12",
+  "professionalOutcome": "PE_PASS",
+  "promotionRecommendation": "QUALIFIED",
+  "q2Audit": {
+    "qualificationQ2": "PASS",
+    "q3OutcomeAccepted": "PE_PASS",
+    "promotionEvidenceStatus": "COMPLETE"
+  },
+  "portfolio": {
+    "passingCases": 5,
+    "q2PassingCases": 5,
+    "platformMix": {
+      "ebay": 4,
+      "amazon": 1
+    }
+  },
+  "standingExclusions": [
+    "legal opinion",
+    "technical compatibility certification",
+    "rights-owner/platform guarantee",
+    "self-review",
+    "platform account/listing action",
+    "supplier contact without authority",
+    "purchase/spend",
+    "production mutation",
+    "customer publication"
+  ],
+  "authorityUsage": {
+    "externalActions": 0,
+    "spendCents": 0,
+    "productionMutation": false,
+    "publication": false,
+    "platformAccountAction": false
+  },
+  "completedAt": "2026-09-22T06:09:51Z"
+}
