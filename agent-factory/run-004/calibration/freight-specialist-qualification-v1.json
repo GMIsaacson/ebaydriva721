@@ -5,7 +5,10 @@
   "discipline": "Logistics",
   "subdiscipline": "Freight/Import/Landed Cost",
   "startingState": "UNPROVEN",
-  "targetStates": ["PROVISIONAL", "QUALIFIED"],
+  "targetStates": [
+    "PROVISIONAL",
+    "QUALIFIED"
+  ],
   "principles": [
     "Missing landed-cost inputs are never guessed.",
     "A modeled allowance is never relabeled as quoted or verified.",
@@ -81,7 +84,6 @@
   },
   "currentKnownBlockers": [
     "No independent qualified logistics/freight Q3 reviewer is currently registered.",
-    "Factory governed worker calibration execution is presently blocked by OpenAI API credit_balance_exhausted / HTTP 429.",
     "Thermal Pads lacks quote-backed packaging, international freight, duty/tariff, inspection, prep/labeling, and domestic inbound values."
   ],
   "authority": {
@@ -91,5 +93,19 @@
     "productionMutation": false,
     "supplierContact": false,
     "publication": false
+  },
+  "progress": {
+    "passingCases": 1,
+    "requiredForProvisional": 3,
+    "q2PassingCases": 1,
+    "actualReconciliationCases": 0,
+    "currentRecommendedState": "UNPROVEN",
+    "latestCase": {
+      "caseId": "SM-AMZ-THERMAL-PADS-001",
+      "workControlCommandId": "WC-20260922051902-3774be3966",
+      "q2CommandId": "WC-20260922051943-9cbb4a9520",
+      "result": "PASS",
+      "notes": "Correct incomplete/block outcome; no unsupported freight/import estimates; Q2 PASS."
+    }
   }
 }
