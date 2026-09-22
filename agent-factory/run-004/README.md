@@ -227,7 +227,7 @@ Promotion from recommendation packets to actual Work Control command creation re
 
 `SPC-FREIGHT-001` is now under the governed calibration program `SPC-FREIGHT-001-QUAL-V1`.
 
-The program does **not** promote the specialist merely because a qualification harness exists. The canonical registry remains `UNPROVEN` until evidence thresholds pass.
+The program does **not** promote the specialist merely because a qualification harness exists. Stage B evidence has now passed, so the canonical registry is `PROVISIONAL`; production certification remains denied until Stage C and independent logistics Q3 pass.
 
 Promotion rules:
 
@@ -235,10 +235,21 @@ Promotion rules:
 - `PROVISIONAL -> QUALIFIED`: at least five total cases, at least two reconciled against real quote/final-charge evidence, acceptable estimate error where estimation was explicitly requested, and independent qualified logistics/freight Q3 with `PE_PASS`.
 - No automatic promotion is allowed.
 
-First calibration case: Thermal Pads / Amazon ASIN `B096ZNHY8F`.
+Stage B calibration set: (1) Thermal Pads incomplete/block case; (2) Car Seat Gap Filler quote-backed freight case; (3) controlled DDP + tariff-classification case.
 
 Work Control command `WC-20260922050446-195dc8e863` attempted the first shadow calibration. The governed worker failed closed before model execution with `OPENAI_HTTP_429` / `credit_balance_exhausted`. It used 0 input tokens, 0 output tokens, $0 model cost, 0 external actions, and made no production mutation.
 
-That runtime failure is **not** counted as a failed professional case and **not** counted as a pass. The specialist therefore remains `UNPROVEN`. The case should be retried only after the governed worker runtime is restored.
+That initial runtime failure was not counted as a professional case. After the runtime was restored, Thermal Pads passed as case 1 with independent Q2 PASS. Cases 2 and 3 also passed with Q2 PASS, satisfying the three-case Stage B mix. `SPC-FREIGHT-001` is therefore `PROVISIONAL`, not `QUALIFIED`.
 
 The qualification harness explicitly rejects fabricated freight values, relabeling modeled landed cost as verified, external authority use, and production certification while material inputs remain unresolved.
+
+
+### Current freight qualification status — Stage B passed
+
+- Case 1: Thermal Pads incomplete/block — PASS, Q2 PASS.
+- Case 2: Car Seat Gap Filler exact-SKU visible freight quote — PASS, Q2 PASS.
+- Case 3: controlled DDP + tariff-classification fixture — PASS, Q2 PASS.
+- Stage B result: **PROVISIONAL**.
+- Production certification: **DENIED**.
+- Independent reviewer eligibility: **NO**.
+- Stage C remaining: 5 total cases minimum, 2 real quote/final-charge reconciliations minimum, estimate-error evidence where estimates are requested, and independent qualified logistics/freight Q3 `PE_PASS`.

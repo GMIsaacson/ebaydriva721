@@ -1,0 +1,111 @@
+{
+  "programId": "SPC-FREIGHT-001-QUAL-V1",
+  "caseId": "CONTROLLED-DDP-TARIFF-003",
+  "specialistId": "SPC-FREIGHT-001",
+  "mode": "SHADOW",
+  "workControlCommandId": "WC-20260922052444-2b29ba0e39",
+  "q2CommandId": "WC-20260922052535-fca5336728",
+  "components": [
+    {
+      "component": "product_cost",
+      "status": "BLOCKED",
+      "amount": null,
+      "evidenceBasis": "The controlled $900 DDP quote is all-in and provides no separate goods-cost breakout.",
+      "minimumAdditionalEvidence": [
+        "commercial invoice with goods value or seller cost breakout"
+      ]
+    },
+    {
+      "component": "packaging_cost",
+      "status": "BLOCKED",
+      "amount": null,
+      "evidenceBasis": "No packaging breakout supplied in the DDP fixture.",
+      "minimumAdditionalEvidence": [
+        "packaging specification and charge or explicit included-term evidence"
+      ]
+    },
+    {
+      "component": "international_freight",
+      "status": "BLOCKED",
+      "amount": null,
+      "evidenceBasis": "DDP quote includes international carriage, but no separate freight amount is itemized; no split was invented.",
+      "minimumAdditionalEvidence": [
+        "carrier/seller freight breakout or transport invoice"
+      ]
+    },
+    {
+      "component": "duty_tariff",
+      "status": "BLOCKED",
+      "amount": null,
+      "evidenceBasis": "CBP classification precedent supports materially similar cleaning cloths under 6307.10.2030, but the current 2026 Taiwan rate and actual duty dollars were not directly verified. DDP quote says U.S. import duty is included, so no duty is added again.",
+      "minimumAdditionalEvidence": [
+        "exact product construction/classification support",
+        "current applicable USITC HTS line/rate",
+        "country-of-origin evidence",
+        "customs value",
+        "CBP entry/broker statement or actual duty-paid evidence"
+      ]
+    },
+    {
+      "component": "inspection_cost",
+      "status": "BLOCKED",
+      "amount": null,
+      "evidenceBasis": "No inspection breakout supplied.",
+      "minimumAdditionalEvidence": [
+        "inspection scope and charge or explicit included-term evidence"
+      ]
+    },
+    {
+      "component": "prep_labeling",
+      "status": "BLOCKED",
+      "amount": null,
+      "evidenceBasis": "No prep/labeling breakout supplied.",
+      "minimumAdditionalEvidence": [
+        "prep/labeling requirements and charge or explicit included-term evidence"
+      ]
+    },
+    {
+      "component": "domestic_inbound_freight",
+      "status": "BLOCKED",
+      "amount": null,
+      "evidenceBasis": "DDP quote names Minneapolis as destination but no post-delivery domestic inbound component or unloading charge is separately evidenced.",
+      "minimumAdditionalEvidence": [
+        "final delivery/transport evidence and unloading or onward-inbound terms if applicable"
+      ]
+    }
+  ],
+  "productionCertification": {
+    "certified": false,
+    "reason": "The controlled DDP quote is a calibration fixture; exact current tariff rate, actual duty dollars, customs value and final entry/invoice evidence are not verified."
+  },
+  "modeledTotal": {
+    "amount": 0.9,
+    "status": "QUOTED"
+  },
+  "nextEvidence": [
+    "verify exact construction against current classification evidence",
+    "retrieve the current applicable USITC HTS line/rate",
+    "obtain final commercial invoice/packing list and country-of-origin evidence",
+    "obtain CBP entry/broker statement or actual duty-paid evidence",
+    "obtain final DDP invoice/transport evidence"
+  ],
+  "forbiddenClaimsMade": [],
+  "q2": {
+    "reviewerId": "SPC-EVID-001",
+    "result": "PASS"
+  },
+  "authorityUsage": {
+    "externalActions": 0,
+    "spendCents": 0,
+    "productionMutation": false
+  },
+  "caseResult": "PASS",
+  "caseResultReason": "The specialist correctly handled DDP as an all-in quoted acquisition cost, avoided double-counting duty, did not invent freight/duty splits, treated classification evidence as precedent rather than binding, and left the unverified current 2026 rate and actual duty dollars blocked. Independent Q2 passed.",
+  "officialEvidence": [
+    "https://rulings.cbp.gov/ruling/N234431",
+    "https://rulings.cbp.gov/ruling/N308376",
+    "https://rulings.cbp.gov/search?term=6307",
+    "https://www.usitc.gov/harmonized_tariff_information/hts/archive/list",
+    "https://www.cbp.gov/sites/default/files/2024-11/vol_58_no_44_complete.pdf"
+  ]
+}

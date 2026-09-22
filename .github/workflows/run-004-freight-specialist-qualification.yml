@@ -33,9 +33,20 @@ jobs:
           const registry=JSON.parse(fs.readFileSync('agent-factory/governance/specialist-registry-v1.0.json','utf8'));
           const s=registry.records.find(x=>x.specialistId==='SPC-FREIGHT-001');
           if(!s) throw new Error('SPC-FREIGHT-001 missing');
-          if(s.qualificationState!=='UNPROVEN') throw new Error('Premature specialist promotion');
           if(s.qualificationProgramId!==program.programId) throw new Error('Qualification program mismatch');
           if(program.authority.maxExternalActions!==0 || program.authority.maxSpendCents!==0 || program.authority.productionMutation!==false) throw new Error('Authority expanded');
           if(program.stageC.automaticPromotion!==false) throw new Error('QUALIFIED promotion must be manual/Q3-gated');
-          console.log('Freight qualification program is fail-closed and specialist remains UNPROVEN.');
+          const p=program.progress||{};
+          const stageBPass=Number(p.passingCases||0)>=Number(program.stageB.minimumCases||0) && Number(p.q2PassingCases||0)===Number(p.passingCases||0) && p.caseMix?.satisfied===true;
+          const c=p.stageCProgress||{};
+          const stageCPass=Number(c.totalCases||0)>=Number(program.stageC.minimumTotalCases||0) && Number(c.realQuoteOrFinalChargeCases||0)>=Number(program.stageC.minimumRealQuoteOrFinalChargeCases||0) && c.independentQ3==='PE_PASS';
+          if(stageCPass && s.qualificationState!=='QUALIFIED') throw new Error('Stage C passed but registry not QUALIFIED');
+          if(!stageCPass && stageBPass && s.qualificationState!=='PROVISIONAL') throw new Error('Stage B passed but registry not PROVISIONAL');
+          if(!stageBPass && s.qualificationState!=='UNPROVEN') throw new Error('Premature specialist promotion');
+          if(s.qualificationState==='PROVISIONAL'){
+            for(const x of program.stageB.allowedTaskClassesAfterPass){ if(!s.allowedTaskClasses.includes(x)) throw new Error('Missing provisional task class: '+x); }
+            for(const x of program.stageB.stillExcluded){ if(!s.excludedTaskClasses.includes(x)) throw new Error('Missing provisional exclusion: '+x); }
+          }
+          if(s.qualificationState==='QUALIFIED' && !stageCPass) throw new Error('QUALIFIED without Stage C + Q3');
+          console.log('Freight qualification state is evidence-derived and fail-closed:',s.qualificationState);
           NODE

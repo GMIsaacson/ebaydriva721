@@ -1,0 +1,110 @@
+{
+  "programId": "SPC-FREIGHT-001-QUAL-V1",
+  "caseId": "RUN004-CAR-SEAT-GAP-FREIGHT-002",
+  "specialistId": "SPC-FREIGHT-001",
+  "mode": "SHADOW",
+  "workControlCommandId": "WC-20260922052334-ab1d0de50d",
+  "q2CommandId": "WC-20260922052421-0233119389",
+  "components": [
+    {
+      "component": "product_cost",
+      "status": "VERIFIED",
+      "amount": 2.8,
+      "evidenceBasis": "Canonical historical exact-SKU record for Foshan Carfu Technology Co., Ltd. AC-2469, 2-pack: $2.80/pair at MOQ 100.",
+      "minimumAdditionalEvidence": []
+    },
+    {
+      "component": "packaging_cost",
+      "status": "BLOCKED",
+      "amount": null,
+      "evidenceBasis": "No packaging charge supplied.",
+      "minimumAdditionalEvidence": [
+        "packaging specification",
+        "per-unit or per-order packaging charge"
+      ]
+    },
+    {
+      "component": "international_freight",
+      "status": "QUOTED",
+      "amount": 13.5276,
+      "evidenceBasis": "Owner-observed Alibaba logistics quote on exact AC-2469 SKU page: $1,352.76 for 100 pairs; $13.5276/pair. Destination, mode, Incoterm and validity not supplied.",
+      "minimumAdditionalEvidence": [
+        "destination",
+        "transport mode",
+        "Incoterm",
+        "quote date/validity",
+        "included/excluded charges",
+        "order-level or supplier/platform confirmation"
+      ]
+    },
+    {
+      "component": "duty_tariff",
+      "status": "BLOCKED",
+      "amount": null,
+      "evidenceBasis": "Taxes/import charges were stated as additional at checkout; no duty/tariff amount or classification supplied.",
+      "minimumAdditionalEvidence": [
+        "HTS classification",
+        "country of origin",
+        "tariff treatment",
+        "customs-value basis",
+        "duty/entry evidence"
+      ]
+    },
+    {
+      "component": "inspection_cost",
+      "status": "BLOCKED",
+      "amount": null,
+      "evidenceBasis": "No inspection scope or fee supplied.",
+      "minimumAdditionalEvidence": [
+        "inspection scope",
+        "fee quote or documented included term"
+      ]
+    },
+    {
+      "component": "prep_labeling",
+      "status": "BLOCKED",
+      "amount": null,
+      "evidenceBasis": "No prep/labeling specification or charge supplied.",
+      "minimumAdditionalEvidence": [
+        "prep/label requirements",
+        "per-unit or per-order charge"
+      ]
+    },
+    {
+      "component": "domestic_inbound_freight",
+      "status": "BLOCKED",
+      "amount": null,
+      "evidenceBasis": "No domestic inbound freight evidence supplied.",
+      "minimumAdditionalEvidence": [
+        "domestic origin/destination",
+        "shipment basis",
+        "carrier/3PL quote"
+      ]
+    }
+  ],
+  "productionCertification": {
+    "certified": false,
+    "reason": "The $13.5276/pair freight component is quote-backed, but destination/mode/Incoterm/validity and multiple landed-cost components remain unresolved; full production landed cost is not certifiable."
+  },
+  "modeledTotal": {
+    "amount": null,
+    "status": "UNKNOWN"
+  },
+  "nextEvidence": [
+    "confirm quote destination, mode, Incoterm, validity and inclusions/exclusions",
+    "obtain tariff/duty evidence and remaining packaging, inspection, prep/labeling and domestic inbound costs",
+    "retain $2.80 goods plus $13.5276 quoted freight only as a partial quote-backed subtotal, not total landed cost"
+  ],
+  "forbiddenClaimsMade": [],
+  "q2": {
+    "reviewerId": "SPC-EVID-001",
+    "result": "PASS"
+  },
+  "authorityUsage": {
+    "externalActions": 0,
+    "spendCents": 0,
+    "productionMutation": false
+  },
+  "caseResult": "PASS",
+  "caseResultReason": "The specialist correctly normalized a real visible freight quote, calculated $13.5276/pair without using the crossed-out value, kept the component QUOTED rather than VERIFIED, and left unsupported landed-cost components explicit. Independent Q2 passed."
+}
