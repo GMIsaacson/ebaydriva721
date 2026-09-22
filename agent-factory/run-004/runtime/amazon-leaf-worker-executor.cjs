@@ -198,7 +198,15 @@ function validateAndEnrich(raw, payload, prior, response, nowIso) {
   }
 
   if (raw.outcome === 'BLOCKED' && !raw.blockers.length) raw.blockers.push('Public evidence or required input remained unresolved.');
-  if (raw.outcome === 'PASS' && raw.blockers.length) throw new Error('AMAZON_LEAF_PASS_WITH_BLOCKERS');
+  if (raw.outcome === 'PASS' && raw.blockers.length) {
+    const reason = raw.blockers.join(' | ').slice(0, 700) || 'Model reported unresolved blockers.';
+    raw.outcome = 'BLOCKED';
+    raw.candidates = raw.candidates.map((candidate) =>
+      candidate.disposition === 'continue' || candidate.disposition === 'research_candidate'
+        ? { ...candidate, disposition: 'blocked', reason: candidate.reason ? `${candidate.reason}; blocked because ${reason}` : reason }
+        : candidate
+    );
+  }
   if (raw.outcome === 'REJECTED' && raw.candidates.some((c) => c.disposition !== 'rejected')) throw new Error('AMAZON_LEAF_REJECTED_WITH_SURVIVORS');
   if (payload.stage === 'EVIDENCE_QA' && raw.outcome === 'PASS' && raw.candidates.some((c) => c.disposition === 'continue')) {
     throw new Error('AMAZON_LEAF_Q2_UNFINISHED_CANDIDATE');
