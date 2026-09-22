@@ -29,7 +29,7 @@ Supabase remains the SourceMargin live operational research truth. GitHub remain
 | Deterministic/test QA | SPC-QA-001 | REUSE | QUALIFIED Q1 reviewer. |
 | Retry/dead-letter/cancellation/recovery primitives | Run 008 Operations Core | REUSE | No separate operations/state-control service. |
 | SourceMargin current-state reconciliation | Run 004 using Run 008/Work Control patterns | EXTEND | Genuine gap: reconcile Supabase + Work Control + GitHub into one typed state receipt; fail closed on drift. |
-| Freight/import/landed-cost professional judgment | SPC-FREIGHT-001 | EXTEND/QUALIFY existing capability | Currently UNPROVEN. No profitable/BUY-ready claim may depend on it until qualified. |
+| Freight/import/landed-cost professional judgment | SPC-FREIGHT-001 | EXTEND/QUALIFY existing capability | PROVISIONAL after Stage B calibration (3/3 cases, Q2 PASS). Research/modeling only; no production certification or profitable/BUY-ready claim may depend on it until Stage C + independent Q3 qualify it. |
 | Marketplace policy/IP judgment | SPC-IP-001 | EXTEND/QUALIFY existing capability | Currently UNPROVEN. |
 | Product/category specification judgment | Job-specific qualified specialist | BLOCKED until bound | Do not create a generic universal category expert. Bind only when material. |
 | Independent commercial/professional Q3 | Professional Capability framework | EXTEND/CALIBRATE | Run 004 Q3 is currently missing. Sample-ready may remain an evidence/research state; profitable/BUY-ready promotion must fail closed without required Q3. |
@@ -67,7 +67,7 @@ Fail-closed rules:
 
 ## Professional-readiness constraint
 
-Canonical Factory retrofit currently marks Run 004 as professionally BLOCKED because freight/import, marketplace policy/IP and category-professional review are unproven and independent commercial Q3 is missing.
+Canonical Factory retrofit still marks Run 004 as professionally BLOCKED. Freight/import has advanced to PROVISIONAL, but a provisional gating specialist is not professionally READY under G2.5; marketplace policy/IP and category-professional review also remain unproven/unbound, and independent commercial Q3 is missing.
 
 Therefore:
 - research, discovery, evidence collection, demand validation, supplier search and deterministic economics may continue within their allowed/provisional scopes;
