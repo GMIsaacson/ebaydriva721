@@ -55,6 +55,28 @@ function validateMoneyEvidence(entry, path, missing, invalid, options = {}) {
   return entry.amountCents;
 }
 
+function evaluatePreFeeFastKill(packet) {
+  const missing = [];
+  const invalid = [];
+  if (!packet || typeof packet !== 'object') {
+    return { status:'UNRESOLVED', reason:'REQUIRED_EVIDENCE_UNRESOLVED', saleCents:null, sourcePlusInboundCents:null, preFeeSpreadCents:null };
+  }
+  const saleCents = validateMoneyEvidence(packet.sale, 'sale', missing, invalid);
+  const sourceCostCents = validateMoneyEvidence(packet.sourceCost, 'sourceCost', missing, invalid);
+  const inboundFreightCents = validateMoneyEvidence(packet.inboundFreight, 'inboundFreight', missing, invalid);
+  const sourcePlusInboundCents = sourceCostCents === null || inboundFreightCents === null
+    ? null
+    : sourceCostCents + inboundFreightCents;
+  if (missing.length || invalid.length || saleCents === null || sourcePlusInboundCents === null) {
+    return { status:'UNRESOLVED', reason:'REQUIRED_EVIDENCE_UNRESOLVED', saleCents, sourcePlusInboundCents, preFeeSpreadCents:null };
+  }
+  const preFeeSpreadCents = saleCents - sourcePlusInboundCents;
+  if (sourcePlusInboundCents >= saleCents) {
+    return { status:'KILL', reason:'SOURCE_PLUS_INBOUND_GTE_REVENUE', saleCents, sourcePlusInboundCents, preFeeSpreadCents };
+  }
+  return { status:'CONTINUE', reason:'POSITIVE_PRE_FEE_SPREAD', saleCents, sourcePlusInboundCents, preFeeSpreadCents };
+}
+
 function calculateReferralFeeCents(totalPriceCents, feeCategory) {
   const row = feeSchedule.categories[feeCategory];
   if (!row) return null;
@@ -164,6 +186,7 @@ module.exports = {
   MARKETPLACE,
   feeSchedule,
   calculateReferralFeeCents,
+  evaluatePreFeeFastKill,
   buildAmazonEconomicsInputs,
   hashPacket,
 };
