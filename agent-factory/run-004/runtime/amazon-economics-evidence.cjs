@@ -56,21 +56,49 @@ function validateMoneyEvidence(entry, path, missing, invalid, options = {}) {
 }
 
 function evaluatePreFeeFastKill(packet) {
-  const missing = [];
-  const invalid = [];
   if (!packet || typeof packet !== 'object') {
     return { status:'UNRESOLVED', reason:'REQUIRED_EVIDENCE_UNRESOLVED', saleCents:null, sourcePlusInboundCents:null, preFeeSpreadCents:null };
   }
-  const saleCents = validateMoneyEvidence(packet.sale, 'sale', missing, invalid);
-  const sourceCostCents = validateMoneyEvidence(packet.sourceCost, 'sourceCost', missing, invalid);
-  const inboundFreightCents = validateMoneyEvidence(packet.inboundFreight, 'inboundFreight', missing, invalid);
-  const sourcePlusInboundCents = sourceCostCents === null || inboundFreightCents === null
-    ? null
-    : sourceCostCents + inboundFreightCents;
-  if (missing.length || invalid.length || saleCents === null || sourcePlusInboundCents === null) {
-    return { status:'UNRESOLVED', reason:'REQUIRED_EVIDENCE_UNRESOLVED', saleCents, sourcePlusInboundCents, preFeeSpreadCents:null };
+
+  const saleMissing=[]; const saleInvalid=[];
+  const sourceMissing=[]; const sourceInvalid=[];
+  const saleCents=validateMoneyEvidence(packet.sale,'sale',saleMissing,saleInvalid);
+  const sourceCostCents=validateMoneyEvidence(packet.sourceCost,'sourceCost',sourceMissing,sourceInvalid);
+
+  if (saleCents === null || sourceCostCents === null || saleMissing.length || saleInvalid.length || sourceMissing.length || sourceInvalid.length) {
+    return {
+      status:'UNRESOLVED',
+      reason:'REQUIRED_EVIDENCE_UNRESOLVED',
+      saleCents,
+      sourcePlusInboundCents:sourceCostCents,
+      preFeeSpreadCents:saleCents === null || sourceCostCents === null ? null : saleCents-sourceCostCents,
+    };
   }
-  const preFeeSpreadCents = saleCents - sourcePlusInboundCents;
+
+  if (sourceCostCents >= saleCents) {
+    return {
+      status:'KILL',
+      reason:'SOURCE_PLUS_INBOUND_GTE_REVENUE',
+      saleCents,
+      sourcePlusInboundCents:sourceCostCents,
+      preFeeSpreadCents:saleCents-sourceCostCents,
+    };
+  }
+
+  const inboundMissing=[]; const inboundInvalid=[];
+  const inboundFreightCents=validateMoneyEvidence(packet.inboundFreight,'inboundFreight',inboundMissing,inboundInvalid);
+  if (inboundFreightCents === null || inboundMissing.length || inboundInvalid.length) {
+    return {
+      status:'UNRESOLVED',
+      reason:'REQUIRED_EVIDENCE_UNRESOLVED',
+      saleCents,
+      sourcePlusInboundCents:sourceCostCents,
+      preFeeSpreadCents:saleCents-sourceCostCents,
+    };
+  }
+
+  const sourcePlusInboundCents=sourceCostCents+inboundFreightCents;
+  const preFeeSpreadCents=saleCents-sourcePlusInboundCents;
   if (sourcePlusInboundCents >= saleCents) {
     return { status:'KILL', reason:'SOURCE_PLUS_INBOUND_GTE_REVENUE', saleCents, sourcePlusInboundCents, preFeeSpreadCents };
   }
