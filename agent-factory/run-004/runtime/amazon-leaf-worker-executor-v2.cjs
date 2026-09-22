@@ -786,6 +786,23 @@ function reconcileCandidateRows(raw, prior) {
   return raw;
 }
 
+function normalizeAggregateOutcome(raw) {
+  const active = raw.candidates.filter((candidate) => candidate.disposition === 'continue' || candidate.disposition === 'research_candidate').length;
+  const blocked = raw.candidates.filter((candidate) => candidate.disposition === 'blocked').length;
+  const rejected = raw.candidates.filter((candidate) => candidate.disposition === 'rejected').length;
+
+  if (raw.outcome === 'REJECTED') {
+    if (active > 0) throw new Error('AMAZON_LEAF_REJECTED_WITH_SURVIVORS');
+    if (blocked > 0) {
+      raw.outcome = 'BLOCKED';
+      raw.blockers = [...new Set([...(raw.blockers || []), 'One or more candidates remain evidence-blocked; aggregate leaf outcome cannot be REJECTED.'])];
+      raw.summary = `${raw.summary} Aggregate normalized to BLOCKED because ${blocked} candidate(s) remain evidence-blocked while ${rejected} are rejected.`.slice(0,1200);
+    }
+  }
+
+  return raw;
+}
+
 function validateAndEnrich(raw, payload, prior, response, nowIso, publicSnapshots = []) {
   if (!raw || typeof raw !== 'object') throw new Error('AMAZON_LEAF_RESULT_INVALID');
   const usage = responseUsage(response);
@@ -809,6 +826,7 @@ function validateAndEnrich(raw, payload, prior, response, nowIso, publicSnapshot
     }
   }
 
+  raw = normalizeAggregateOutcome(raw);
   if (raw.outcome === 'BLOCKED' && !raw.blockers.length) raw.blockers.push('Public evidence or required input remained unresolved.');
   if (raw.outcome === 'PASS' && raw.blockers.length) {
     const reason = raw.blockers.join(' | ').slice(0, 700) || 'Model reported unresolved blockers.';
@@ -819,7 +837,6 @@ function validateAndEnrich(raw, payload, prior, response, nowIso, publicSnapshot
         : candidate
     );
   }
-  if (raw.outcome === 'REJECTED' && raw.candidates.some((c) => c.disposition !== 'rejected')) throw new Error('AMAZON_LEAF_REJECTED_WITH_SURVIVORS');
   if (payload.stage === 'EVIDENCE_QA' && raw.outcome === 'PASS' && raw.candidates.some((c) => c.disposition === 'continue')) {
     throw new Error('AMAZON_LEAF_Q2_UNFINISHED_CANDIDATE');
   }
@@ -1003,6 +1020,7 @@ module.exports = {
   fetchAmazonLeafAsins,
   normalizeDiscoveryWithSnapshots,
   reconcileCandidateRows,
+  normalizeAggregateOutcome,
   parseDisplayedUsdCents,
   parseAmazonBoughtPastMonthLowerBound,
   qualifyAmazonMonthlyDemand,
