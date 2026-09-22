@@ -205,7 +205,7 @@ function firstMatch(html, regex) {
 
 async function fetchAmazonPublicSnapshot(asin, fetchImpl = fetch) {
   if (!/^[A-Z0-9]{10}$/.test(String(asin || ''))) throw new Error('AMAZON_PUBLIC_ASIN_INVALID');
-  const url = \`https://www.amazon.com/dp/\${asin}\`;
+  const url = `https://www.amazon.com/dp/${asin}`;
   let response;
   try {
     response = await fetchImpl(url, {
@@ -215,7 +215,7 @@ async function fetchAmazonPublicSnapshot(asin, fetchImpl = fetch) {
       signal: AbortSignal.timeout(20000),
     });
   } catch (error) {
-    return { asin, url, ok:false, status:0, reason:\`fetch_error:\${String(error?.name || error?.message || 'unknown').slice(0,80)}\` };
+    return { asin, url, ok:false, status:0, reason:`fetch_error:${String(error?.name || error?.message || 'unknown').slice(0,80)}` };
   }
 
   const finalUrl = String(response.url || url);
@@ -225,7 +225,7 @@ async function fetchAmazonPublicSnapshot(asin, fetchImpl = fetch) {
     return { asin, url, ok:false, status:response.status, reason:'amazon_redirect_scope_violation' };
   }
 
-  if (!response.ok) return { asin, url, ok:false, status:response.status, reason:\`http_\${response.status}\` };
+  if (!response.ok) return { asin, url, ok:false, status:response.status, reason:`http_${response.status}` };
   const html = await response.text();
   if (html.length < 10000 || html.length > 3_500_000) return { asin, url, ok:false, status:response.status, reason:'unexpected_body_size' };
   if (/Robot Check|Type the characters you see in this image|captcha/i.test(html)) {
@@ -256,7 +256,7 @@ async function fetchAmazonPublicSnapshot(asin, fetchImpl = fetch) {
     availability:availability.slice(0,120),
     boughtPastMonth:boughtPastMonth.slice(0,160),
     bytes:html.length,
-    sourceReceipt:\`amazon-public-http:\${receiptHash}\`,
+    sourceReceipt:`amazon-public-http:${receiptHash}`,
   };
 }
 
@@ -270,12 +270,12 @@ async function collectAmazonPublicSnapshots(asins, fetchImpl = fetch) {
 function snapshotClaim(snapshot) {
   if (!snapshot?.ok) return '';
   return [
-    \`Exact public Amazon product page verified for ASIN \${snapshot.asin}\`,
-    \`title="\${snapshot.title}"\`,
-    snapshot.rating ? \`rating=\${snapshot.rating}\` : '',
-    snapshot.ratingsCount ? \`ratings=\${snapshot.ratingsCount}\` : '',
-    snapshot.availability ? \`availability=\${snapshot.availability}\` : '',
-    snapshot.boughtPastMonth ? \`purchase_signal="\${snapshot.boughtPastMonth}"\` : '',
+    `Exact public Amazon product page verified for ASIN ${snapshot.asin}`,
+    `title="${snapshot.title}"`,
+    snapshot.rating ? `rating=${snapshot.rating}` : '',
+    snapshot.ratingsCount ? `ratings=${snapshot.ratingsCount}` : '',
+    snapshot.availability ? `availability=${snapshot.availability}` : '',
+    snapshot.boughtPastMonth ? `purchase_signal="${snapshot.boughtPastMonth}"` : '',
   ].filter(Boolean).join('; ').slice(0,700);
 }
 
@@ -289,22 +289,22 @@ function normalizeDiscoveryWithSnapshots(raw, snapshots) {
       return {
         ...candidate,
         disposition:'continue',
-        reason:\`Exact public Amazon product page independently verified (HTTP \${snap.status}); discovery may advance. \${candidate.reason || ''}\`.trim().slice(0,900),
+        reason:`Exact public Amazon product page independently verified (HTTP ${snap.status}); discovery may advance. ${candidate.reason || ''}`.trim().slice(0,900),
         title:snap.title || candidate.title,
         amazonUrl:snap.url,
-        demandSignal:[candidate.demandSignal, snap.boughtPastMonth ? \`Amazon page signal: \${snap.boughtPastMonth}\` : '', snap.rating ? \`Rating: \${snap.rating}; \${snap.ratingsCount || ''}\` : ''].filter(Boolean).join(' | ').slice(0,900),
+        demandSignal:[candidate.demandSignal, snap.boughtPastMonth ? `Amazon page signal: ${snap.boughtPastMonth}` : '', snap.rating ? `Rating: ${snap.rating}; ${snap.ratingsCount || ''}` : ''].filter(Boolean).join(' | ').slice(0,900),
       };
     }
     return {
       ...candidate,
       disposition:'blocked',
-      reason:\`Exact public Amazon page verification failed (\${snap?.reason || 'no_snapshot'}); candidate cannot advance from discovery.\`,
+      reason:`Exact public Amazon page verification failed (${snap?.reason || 'no_snapshot'}); candidate cannot advance from discovery.`,
     };
   });
   if (verified > 0) {
     raw.outcome='PASS';
     raw.blockers=[];
-    raw.summary=\`\${verified}/\${raw.candidates.length} proposed ASINs independently verified on exact public Amazon product pages; verified candidates may advance to demand validation.\`;
+    raw.summary=`${verified}/${raw.candidates.length} proposed ASINs independently verified on exact public Amazon product pages; verified candidates may advance to demand validation.`;
   } else {
     raw.outcome='BLOCKED';
     raw.blockers=['No proposed ASIN could be independently verified on an exact public Amazon product page.'];
