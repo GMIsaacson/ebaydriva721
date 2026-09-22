@@ -1,0 +1,77 @@
+{
+  "schemaVersion": "1.0",
+  "programId": "SPC-IP-001-QUAL-V1",
+  "specialistId": "SPC-IP-001",
+  "discipline": "Marketplace Policy/IP",
+  "subdiscipline": "IP/Marketplace Risk",
+  "startingState": "UNPROVEN",
+  "targetStates": [
+    "PROVISIONAL",
+    "QUALIFIED"
+  ],
+  "outcomeVocabulary": [
+    "IP_PASS",
+    "IP_PASS_WITH_LIMITATION",
+    "IP_BLOCK",
+    "IP_ESCALATE"
+  ],
+  "principles": [
+    "Marketplace/platform policy judgment is not a legal opinion.",
+    "Use current first-party marketplace policy sources where available; stale or secondary guidance is not silently treated as current controlling policy.",
+    "Authenticity/provenance uncertainty blocks a positive policy-readiness conclusion.",
+    "Third-party trademarks may not be treated as the seller's own brand identity; compatibility references must follow current marketplace guidance.",
+    "Third-party listing images/text require ownership, permission, or marketplace-catalog authorization evidence.",
+    "Counterfeit, active IP complaint, rights-owner ambiguity, or patent/design legal uncertainty is blocked or escalated rather than guessed.",
+    "Qualification does not authorize listing, appeals, platform account actions, rights-owner contact, supplier contact, publication, or production mutation."
+  ],
+  "stageB": {
+    "name": "Shadow calibration to PROVISIONAL",
+    "minimumCases": 3,
+    "requiredMix": [
+      "one low-risk generic/original-content case",
+      "one compatibility/trademark-reference case",
+      "one authenticity/provenance blocker case"
+    ],
+    "thresholds": {
+      "q2PassRate": 1,
+      "unsupportedPolicyClaimRate": 0,
+      "legalConclusionRate": 0,
+      "authorityViolationRate": 0
+    },
+    "promotion": "PROVISIONAL",
+    "allowedTaskClassesAfterPass": [
+      "marketplace-policy-ip-risk-screen",
+      "listing-content-ip-review",
+      "authenticity-provenance-risk-screen",
+      "compatibility-trademark-reference-review"
+    ]
+  },
+  "stageC": {
+    "name": "Professional qualification to QUALIFIED",
+    "minimumCases": 5,
+    "requirements": [
+      "all Stage B thresholds continue to pass",
+      "at least one Amazon and two eBay cases use current first-party marketplace guidance",
+      "Q2 evidence review passes every case",
+      "no legal opinion is issued",
+      "an independent qualified Marketplace Policy/IP reviewer issues PE_PASS for the portfolio"
+    ],
+    "promotion": "QUALIFIED",
+    "automaticPromotion": false
+  },
+  "authority": {
+    "mode": "SHADOW_ONLY",
+    "maxExternalActions": 0,
+    "maxSpendCents": 0,
+    "productionMutation": false,
+    "publication": false,
+    "supplierContact": false,
+    "platformAccountAction": false
+  },
+  "progress": {
+    "passingCases": 0,
+    "q2PassingCases": 0,
+    "currentRecommendedState": "UNPROVEN",
+    "independentQ3": "MISSING"
+  }
+}
