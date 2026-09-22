@@ -849,6 +849,7 @@ function normalizeDiscoveryWithSnapshots(raw, snapshots) {
         title:snap.title || candidate.title,
         amazonUrl:snap.url,
         demandSignal:[candidate.demandSignal, snap.boughtPastMonth ? `Amazon page signal: ${snap.boughtPastMonth}` : '', snap.rating ? `Rating: ${snap.rating}; ${snap.ratingsCount || ''}` : ''].filter(Boolean).join(' | ').slice(0,900),
+        economicsEvidence:candidate.economicsEvidence || saleEvidencePacket(candidate.asin,snap),
       };
     }
     return {
@@ -1052,6 +1053,41 @@ function saleEvidencePacket(asin, snapshot) {
     packaging:null,
     riskReserve:null,
   };
+}
+
+
+function demandSnapshotsFromDiscoveryReceipt(priorRow) {
+  if (!priorRow?.stageResult || priorRow.stageResult.stage !== 'ASIN_DISCOVERY') return [];
+  const rows=[];
+  for(const candidate of priorRow.stageResult.candidates || []) {
+    if (!['continue','research_candidate'].includes(candidate.disposition)) continue;
+    const text=String(candidate.demandSignal || '');
+    const match=text.match(/([0-9]+(?:\.[0-9]+)?\s*[kKmM]?\s*\+?\s*bought\s+in\s+past\s+month)/i);
+    if (!match) continue;
+    const saleCents=candidate.economicsEvidence?.sale?.amountCents;
+    rows.push({
+      asin:candidate.asin,
+      url:candidate.amazonUrl || `https://www.amazon.com/dp/${candidate.asin}`,
+      selectedAsin:candidate.asin,
+      ok:true,
+      status:200,
+      title:candidate.title || '',
+      rating:'',
+      ratingsCount:'',
+      displayedPrice:Number.isSafeInteger(saleCents) && saleCents > 0 ? `$${(saleCents/100).toFixed(2)}` : '',
+      availability:'',
+      boughtPastMonth:match[1],
+      bytes:0,
+      sourceReceipt:`prior:${priorRow.commandId}`,
+      verificationMode:'governed_discovery_handoff',
+    });
+  }
+  return rows;
+}
+
+function mergeDemandSnapshots(directSnapshots, fallbackSnapshots) {
+  const fallback=new Map((fallbackSnapshots || []).map((row)=>[row.asin,row]));
+  return (directSnapshots || []).map((row)=>row?.ok ? row : (fallback.get(row?.asin) || row));
 }
 
 function parseDisplayedUsdCents(value) {
@@ -1516,10 +1552,14 @@ async function processAmazonLeafStage({ apiKey, command, profileSet, deps }) {
     }
   }
   if (payload.stage === 'DEMAND_VALIDATION' && prior.length) {
-    publicSnapshots = await collectAmazonPublicSnapshots(
+    const directSnapshots = await collectAmazonPublicSnapshots(
       prior[0].stageResult.candidates
         .filter((c)=>c.disposition === 'continue' || c.disposition === 'research_candidate')
         .map((c)=>c.asin)
+    );
+    publicSnapshots = mergeDemandSnapshots(
+      directSnapshots,
+      demandSnapshotsFromDiscoveryReceipt(prior[0])
     );
   }
   if (payload.stage === 'LANDED_COST' && prior.length) {
@@ -1648,6 +1688,8 @@ module.exports = {
   selectAmazonDeepResearchCandidates,
   buildSourcingTargets,
   normalizeDiscoveryWithSnapshots,
+  demandSnapshotsFromDiscoveryReceipt,
+  mergeDemandSnapshots,
   reconcileCandidateRows,
   normalizeAggregateOutcome,
   parseDisplayedUsdCents,
