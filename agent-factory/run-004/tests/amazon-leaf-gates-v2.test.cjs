@@ -526,3 +526,35 @@ test('prescreenCommandId is valid only for ASIN_DISCOVERY', () => {
     }),
   }),/AMAZON_PRESCREEN_HANDOFF_STAGE_INVALID/);
 });
+
+test('demand validation falls back to governed discovery evidence when Amazon HTTP is unavailable', () => {
+  const worker=require('../runtime/amazon-leaf-worker-executor-v2.cjs');
+  const priorRow={
+    commandId:'WC-DISCOVERY-001',
+    stageResult:{
+      stage:'ASIN_DISCOVERY',
+      candidates:[{
+        asin:'B000C2AHWC',
+        disposition:'continue',
+        title:'FEL-PRO ES 72856 Engine Cylinder Head Bolt Set for Chevrolet K1500',
+        amazonUrl:'https://www.amazon.com/dp/B000C2AHWC',
+        demandSignal:'Amazon page signal: 50+ bought in past month',
+        economicsEvidence:{
+          sale:{amountCents:2617},
+        },
+      }],
+    },
+  };
+  const fallback=worker.demandSnapshotsFromDiscoveryReceipt(priorRow);
+  assert.equal(fallback.length,1);
+  assert.equal(fallback[0].boughtPastMonth,'50+ bought in past month');
+  assert.equal(fallback[0].displayedPrice,'$26.17');
+  assert.equal(fallback[0].sourceReceipt,'prior:WC-DISCOVERY-001');
+
+  const merged=worker.mergeDemandSnapshots(
+    [{asin:'B000C2AHWC',ok:false,status:200,reason:'selected_asin_unresolved'}],
+    fallback
+  );
+  assert.equal(merged[0].ok,true);
+  assert.equal(merged[0].verificationMode,'governed_discovery_handoff');
+});
