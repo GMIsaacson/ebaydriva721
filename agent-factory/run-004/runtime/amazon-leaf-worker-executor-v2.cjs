@@ -622,6 +622,18 @@ function scoreAmazonLeafOpportunity(snapshots) {
   const candidateQualityScore=Math.round(topCandidateAverageScore*0.35);
   const priceRoomScore=medianQualifiedPriceCents === null ? 0 : medianQualifiedPriceCents >= 1500 ? 15 : medianQualifiedPriceCents >= 1000 ? 10 : medianQualifiedPriceCents >= 800 ? 5 : 0;
   const opportunityScore=Math.max(0,Math.min(100,demandBreadthScore+signalRateScore+candidateQualityScore+priceRoomScore));
+  if (!(snapshots || []).length) {
+    return {
+      policyVersion:'amazon-opportunity-prescreen/1.0.0',
+      sampleSize:0,
+      demandQualifiedCount:0,
+      demandSignalRate:0,
+      medianQualifiedPriceCents:null,
+      topCandidateAverageScore:0,
+      opportunityScore:0,
+      decision:'unscorable',
+    };
+  }
   return {
     policyVersion:'amazon-opportunity-prescreen/1.0.0',
     sampleSize:(snapshots || []).length,
