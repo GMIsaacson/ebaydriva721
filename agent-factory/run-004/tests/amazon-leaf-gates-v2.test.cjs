@@ -135,3 +135,44 @@ test('source cost alone exceeds Amazon sale and kills even when inbound shipping
   assert.equal(out.candidates[0].economicsEvidence.sale.amountCents,669);
 });
 
+
+test('terminal candidate omission is reconciled without losing audit rows', () => {
+  const prior=[{
+    stageResult:{candidates:[
+      {asin:'B000000001',disposition:'continue',reason:'active'},
+      {asin:'B000000002',disposition:'blocked',reason:'terminal blocker'},
+    ]},
+  }];
+  const raw={candidates:[
+    {asin:'B000000001',disposition:'continue',reason:'active next'},
+  ]};
+  const out=require('../runtime/amazon-leaf-worker-executor-v2.cjs').reconcileCandidateRows(raw,prior);
+  assert.deepEqual(out.candidates.map((x)=>x.asin),['B000000001','B000000002']);
+  assert.equal(out.candidates[1].disposition,'blocked');
+  assert.equal(out.candidates[1].reason,'terminal blocker');
+});
+
+test('active candidate omission remains fail-closed', () => {
+  const prior=[{
+    stageResult:{candidates:[
+      {asin:'B000000001',disposition:'continue',reason:'active'},
+      {asin:'B000000002',disposition:'continue',reason:'also active'},
+    ]},
+  }];
+  const raw={candidates:[{asin:'B000000001',disposition:'continue',reason:'active next'}]};
+  assert.throws(
+    ()=>require('../runtime/amazon-leaf-worker-executor-v2.cjs').reconcileCandidateRows(raw,prior),
+    /AMAZON_LEAF_ACTIVE_CANDIDATE_DROPPED/
+  );
+});
+
+test('unexpected candidate remains fail-closed', () => {
+  const prior=[{
+    stageResult:{candidates:[{asin:'B000000001',disposition:'continue',reason:'active'}]},
+  }];
+  const raw={candidates:[{asin:'B999999999',disposition:'continue',reason:'unexpected'}]};
+  assert.throws(
+    ()=>require('../runtime/amazon-leaf-worker-executor-v2.cjs').reconcileCandidateRows(raw,prior),
+    /AMAZON_LEAF_UNEXPECTED_CANDIDATE/
+  );
+});
