@@ -24,6 +24,7 @@ const AMAZON_SOURCE_CLASS_PRIORITY = Object.freeze([
 ]);
 
 const STAGE_SPECIALISTS = Object.freeze({
+  OBSERVE: { specialistId: 'AGT-RESEARCH-VALIDATION-001', qualificationState: 'TESTING', taskClass: 'leaf-basic-observation', independentReview: false },
   PRESCREEN: { specialistId: 'AGT-RESEARCH-VALIDATION-001', qualificationState: 'TESTING', taskClass: 'leaf-opportunity-prescreen', independentReview: false },
   ASIN_DISCOVERY: { specialistId: 'AGT-RESEARCH-VALIDATION-001', qualificationState: 'TESTING', taskClass: 'public-marketplace-discovery', independentReview: false },
   DEMAND_VALIDATION: { specialistId: 'AGT-RESEARCH-VALIDATION-001', qualificationState: 'TESTING', taskClass: 'marketplace-demand-validation', independentReview: false },
@@ -338,6 +339,126 @@ function buildPrescreenPrompt(payload) {
     'Do not fabricate ASINs or prices. If you cannot support a row with public evidence, omit it.',
     'Return structured JSON only.',
   ].join('\n');
+}
+
+function buildObservationPrompt(payload) {
+  return [
+    'You are executing the governed SourceMargin Amazon basic leaf observation job.',
+    `Run: ${payload.runId}; Amazon US leaf: ${payload.leafName} (${payload.leafId}).`,
+    `Find up to 20 distinct current Amazon.com product-detail pages that genuinely belong to this leaf/category or are direct exact-name matches.`,
+    'This is DATA COLLECTION ONLY. Do not score, qualify, reject, source, or calculate economics.',
+    'Use public web search only. Do not log in, contact sellers, purchase, list, publish, or mutate anything.',
+    'Return exact canonical product URLs in the form https://www.amazon.com/dp/ASIN.',
+    'Capture title and ASIN for every supported row.',
+    'Capture current Amazon displayed price in integer cents only when visible; otherwise null.',
+    'Capture exact "bought in past month" text only when visible; otherwise null.',
+    'Capture availability only when visible; otherwise null.',
+    'Missing price, demand, rating, or availability is NOT a failure and must not cause an otherwise valid ASIN to be omitted.',
+    'Do not infer demand from ratings, reviews, rank, popularity, or search position.',
+    'Do not fabricate ASINs. Omit only rows that cannot be tied to a public Amazon product-detail page.',
+    'Return structured JSON only.',
+  ].join('\n');
+}
+
+async function processAmazonLeafObserve({apiKey,command,profileSet,deps,payload,specialist}) {
+  const {callOpenAIRequest,WorkerCore,submitReceipt,model}=deps;
+  const response=await callOpenAIRequest(apiKey,{
+    prompt:buildObservationPrompt(payload),
+    schema:PRESCREEN_RESULT_SCHEMA,
+    schemaName:'amazon_leaf_observation_result',
+    maxOutputTokens:6500,
+    maxToolCalls:5,
+    reasoningEffort:'low',
+  });
+  const usage=responseUsage(response);
+  const raw=JSON.parse(WorkerCore.extractResponseText(response));
+  const snapshots=normalizePrescreenWebCandidates(raw).slice(0,20);
+  const nowIso=new Date().toISOString();
+  const outcome=snapshots.length ? 'PASS' : 'BLOCKED';
+  const stageResult={
+    runId:payload.runId,
+    leafId:payload.leafId,
+    stage:'OBSERVE',
+    outcome,
+    summary:snapshots.length
+      ? `Basic census captured ${snapshots.length} Amazon ASIN observation(s). Missing price/demand fields were retained as unknown and did not block collection.`
+      : 'Basic census found no supportable Amazon product-detail rows in the bounded public-search pass.',
+    blockers:snapshots.length ? [] : ['No supportable Amazon product-detail rows found in bounded observation search.'],
+    coverage:'partial',
+    mode:'basic_observation_only',
+    candidates:snapshots.map((snapshot,index)=>({
+      asin:snapshot.asin,
+      leafRank:index+1,
+      title:snapshot.title,
+      amazonUrl:snapshot.url,
+      displayedPrice:snapshot.displayedPrice || null,
+      boughtPastMonthText:snapshot.boughtPastMonth || null,
+      availability:snapshot.availability || null,
+      evidenceClaim:snapshot.evidenceClaim || '',
+    })),
+  };
+
+  const estimatedCostCents=WorkerCore.estimateModelCostCents(
+    {input_tokens:usage.inputTokens,output_tokens:usage.outputTokens},
+    WorkerCore.pricingForModel(model),
+    usage.webSearchCalls
+  );
+  if(estimatedCostCents > Number(command.modelBudgetCents || 0)) throw new Error('MODEL_BUDGET_EXCEEDED');
+  const profile=WorkerCore.getTeamProfile(profileSet,command.team.id);
+  const receipt={
+    schemaVersion:'1.1',
+    commandId:command.commandId,
+    terminalState:'DELIVERED',
+    summary:`Amazon ${payload.leafName} OBSERVE: ${outcome}`,
+    detail:stageResult.summary,
+    steps:[
+      {name:'Specialist binding',detail:`${specialist.specialistId} / ${specialist.qualificationState} / ${specialist.taskClass}`},
+      {name:'OBSERVE',detail:stageResult.summary},
+    ],
+    completedAt:nowIso,
+    externalActionsPerformed:0,
+    spendCents:0,
+    productionMutation:false,
+    teamExecutionProfile:WorkerCore.profileIdentity(profileSet,profile),
+    specialistExecution:{
+      specialistId:specialist.specialistId,
+      qualificationState:specialist.qualificationState,
+      taskClass:specialist.taskClass,
+      independentReview:false,
+      runId:payload.runId,
+      leafId:payload.leafId,
+      stage:'OBSERVE',
+      reviewedCommandIds:[],
+    },
+    researchUsage:{
+      webSearchCalls:usage.webSearchCalls,
+      webSearchReceiptIds:usage.webSearchIds,
+      maxToolCalls:5,
+      publicHttpRequests:0,
+      publicHttpVerified:0,
+      publicHttpReceipts:[],
+    },
+    stageResult,
+    modelExecution:{
+      provider:'openai',
+      model,
+      responseId:String(response?.id || '').slice(0,120) || null,
+      inputTokens:usage.inputTokens,
+      outputTokens:usage.outputTokens,
+      estimatedCostCents,
+      webSearchCalls:usage.webSearchCalls,
+      webSearchCostCents:usage.webSearchCalls,
+    },
+  };
+  await submitReceipt(receipt);
+  return {
+    commandId:command.commandId,
+    terminalState:'DELIVERED',
+    estimatedCostCents,
+    profile:receipt.teamExecutionProfile,
+    specialistExecution:receipt.specialistExecution,
+    stageResult,
+  };
 }
 
 async function processAmazonLeafPrescreen({apiKey,command,profileSet,deps,payload,specialist}) {
@@ -1542,6 +1663,10 @@ async function processAmazonLeafStage({ apiKey, command, profileSet, deps }) {
   const { callOpenAIRequest, WorkerCore, submitReceipt, controlRequest, model } = deps;
   const payload = parsePayload(command);
   const specialist = STAGE_SPECIALISTS[payload.stage];
+  if (payload.stage === 'OBSERVE') {
+    if (payload.priorCommandIds.length) throw new Error('AMAZON_OBSERVE_PRIOR_REFS_FORBIDDEN');
+    return processAmazonLeafObserve({apiKey,command,profileSet,deps,payload,specialist});
+  }
   if (payload.stage === 'PRESCREEN') {
     if (payload.priorCommandIds.length) throw new Error('AMAZON_PRESCREEN_PRIOR_REFS_FORBIDDEN');
     return processAmazonLeafPrescreen({apiKey,command,profileSet,deps,payload,specialist});
@@ -1692,6 +1817,7 @@ module.exports = {
   prescreenAmazonLeaf,
   normalizePrescreenWebCandidates,
   mergePrescreenPriceEnrichment,
+  processAmazonLeafObserve,
   processAmazonLeafPrescreen,
   calculateAmazonSourceTargets,
   scoreAmazonPrescreenSnapshot,
