@@ -362,48 +362,116 @@ function buildObservationPrompt(payload) {
 
 async function processAmazonLeafObserve({apiKey,command,profileSet,deps,payload,specialist}) {
   const {callOpenAIRequest,WorkerCore,submitReceipt,model}=deps;
-  const response=await callOpenAIRequest(apiKey,{
-    prompt:buildObservationPrompt(payload),
-    schema:PRESCREEN_RESULT_SCHEMA,
-    schemaName:'amazon_leaf_observation_result',
-    maxOutputTokens:6500,
-    maxToolCalls:5,
-    reasoningEffort:'low',
-  });
-  const usage=responseUsage(response);
-  const raw=JSON.parse(WorkerCore.extractResponseText(response));
-  const snapshots=normalizePrescreenWebCandidates(raw).slice(0,20);
+  let mode='browser_leaf_page';
+  let browserResult=null;
+  let response=null;
+  let usage={inputTokens:0,outputTokens:0,webSearchCalls:0,webSearchIds:[]};
+  let candidates=[];
+
+  try{
+    const controller=new AbortController();
+    const timeout=setTimeout(()=>controller.abort(),240000);
+    try{
+      const r=await fetch('http://amazon-census-browser-v1:8791/census',{
+        method:'POST',
+        headers:{'content-type':'application/json'},
+        body:JSON.stringify({leafId:payload.leafId,limit:24,enrichSeller:true}),
+        signal:controller.signal,
+      });
+      browserResult=await r.json();
+      if(!r.ok||!browserResult?.ok) throw new Error(browserResult?.error||'AMAZON_BROWSER_CENSUS_FAILED');
+    }finally{
+      clearTimeout(timeout);
+    }
+
+    candidates=(Array.isArray(browserResult.results)?browserResult.results:[])
+      .filter(row=>/^[A-Z0-9]{10}$/.test(String(row?.asin||'')))
+      .slice(0,24)
+      .map((row,index)=>({
+        asin:String(row.asin),
+        leafRank:Number(row.rank)||index+1,
+        title:String(row.title||'').trim(),
+        amazonUrl:`https://www.amazon.com/dp/${row.asin}`,
+        displayedPrice:row.observedPriceText||row.cardPriceText||null,
+        boughtPastMonthText:row.boughtPastMonthText||null,
+        availability:row.availability||null,
+        sellerName:row.sellerName||null,
+        sellerId:row.sellerId||null,
+        sellerUrl:row.sellerUrl||null,
+        ratingText:row.ratingText||null,
+        reviewCountText:row.reviewCountText||null,
+        sponsored:row.sponsored==null?null:Boolean(row.sponsored),
+        sourcePageRank:Number(row.rank)||index+1,
+        sourcePageUrl:browserResult.sourceUrl||`https://www.amazon.com/b?node=${payload.leafId}`,
+        cardPriceText:row.cardPriceText||null,
+        detailPriceText:row.detailPriceText||null,
+        detailError:row.detailError||null,
+        evidenceClaim:`Observed from Amazon browse-node page ${payload.leafId}; product detail used for seller/demand enrichment when available.`,
+      }));
+    if(!candidates.length) throw new Error('AMAZON_BROWSER_CENSUS_EMPTY');
+  }catch(browserError){
+    mode='bounded_web_search_fallback';
+    response=await callOpenAIRequest(apiKey,{
+      prompt:buildObservationPrompt(payload),
+      schema:PRESCREEN_RESULT_SCHEMA,
+      schemaName:'amazon_leaf_observation_result',
+      maxOutputTokens:6500,
+      maxToolCalls:5,
+      reasoningEffort:'low',
+    });
+    usage=responseUsage(response);
+    const raw=JSON.parse(WorkerCore.extractResponseText(response));
+    const snapshots=normalizePrescreenWebCandidates(raw).slice(0,20);
+    candidates=snapshots.map((snapshot,index)=>({
+      asin:snapshot.asin,
+      leafRank:index+1,
+      title:snapshot.title,
+      amazonUrl:snapshot.url,
+      displayedPrice:snapshot.displayedPrice||null,
+      boughtPastMonthText:snapshot.boughtPastMonth||null,
+      availability:snapshot.availability||null,
+      sellerName:null,
+      sellerId:null,
+      sellerUrl:null,
+      ratingText:null,
+      reviewCountText:null,
+      sponsored:null,
+      sourcePageRank:null,
+      sourcePageUrl:null,
+      cardPriceText:null,
+      detailPriceText:null,
+      detailError:null,
+      evidenceClaim:snapshot.evidenceClaim||'',
+    }));
+  }
+
   const nowIso=new Date().toISOString();
-  const outcome=snapshots.length ? 'PASS' : 'BLOCKED';
+  const outcome=candidates.length?'PASS':'BLOCKED';
+  const priceCount=candidates.filter(row=>row.displayedPrice).length;
+  const sellerCount=candidates.filter(row=>row.sellerName).length;
+  const demandCount=candidates.filter(row=>row.boughtPastMonthText).length;
   const stageResult={
     runId:payload.runId,
     leafId:payload.leafId,
     stage:'OBSERVE',
     outcome,
-    summary:snapshots.length
-      ? `Basic census captured ${snapshots.length} Amazon ASIN observation(s). Missing price/demand fields were retained as unknown and did not block collection.`
-      : 'Basic census found no supportable Amazon product-detail rows in the bounded public-search pass.',
-    blockers:snapshots.length ? [] : ['No supportable Amazon product-detail rows found in bounded observation search.'],
-    coverage:'partial',
-    mode:'basic_observation_only',
-    candidates:snapshots.map((snapshot,index)=>({
-      asin:snapshot.asin,
-      leafRank:index+1,
-      title:snapshot.title,
-      amazonUrl:snapshot.url,
-      displayedPrice:snapshot.displayedPrice || null,
-      boughtPastMonthText:snapshot.boughtPastMonth || null,
-      availability:snapshot.availability || null,
-      evidenceClaim:snapshot.evidenceClaim || '',
-    })),
+    summary:candidates.length
+      ? `Basic census captured ${candidates.length} Amazon ASIN observation(s): ${priceCount} with price, ${sellerCount} with current seller, ${demandCount} with visible monthly-purchase signal. Missing enrichments remain unknown and do not block collection.`
+      : 'Basic census found no supportable Amazon product rows.',
+    blockers:candidates.length?[]:['No supportable Amazon product rows found.'],
+    coverage:mode==='browser_leaf_page'?'page_1':'partial',
+    mode,
+    candidates,
   };
 
-  const estimatedCostCents=WorkerCore.estimateModelCostCents(
-    {input_tokens:usage.inputTokens,output_tokens:usage.outputTokens},
-    WorkerCore.pricingForModel(model),
-    usage.webSearchCalls
-  );
-  if(estimatedCostCents > Number(command.modelBudgetCents || 0)) throw new Error('MODEL_BUDGET_EXCEEDED');
+  const estimatedCostCents=response
+    ? WorkerCore.estimateModelCostCents(
+        {input_tokens:usage.inputTokens,output_tokens:usage.outputTokens},
+        WorkerCore.pricingForModel(model),
+        usage.webSearchCalls
+      )
+    : 0;
+  if(estimatedCostCents>Number(command.modelBudgetCents||0)) throw new Error('MODEL_BUDGET_EXCEEDED');
   const profile=WorkerCore.getTeamProfile(profileSet,command.team.id);
   const receipt={
     schemaVersion:'1.1',
@@ -433,16 +501,16 @@ async function processAmazonLeafObserve({apiKey,command,profileSet,deps,payload,
     researchUsage:{
       webSearchCalls:usage.webSearchCalls,
       webSearchReceiptIds:usage.webSearchIds,
-      maxToolCalls:5,
-      publicHttpRequests:0,
-      publicHttpVerified:0,
+      maxToolCalls:mode==='browser_leaf_page'?0:5,
+      publicHttpRequests:mode==='browser_leaf_page'?candidates.length+1:0,
+      publicHttpVerified:mode==='browser_leaf_page'?candidates.length:0,
       publicHttpReceipts:[],
     },
     stageResult,
     modelExecution:{
       provider:'openai',
       model,
-      responseId:String(response?.id || '').slice(0,120) || null,
+      responseId:String(response?.id||'').slice(0,120)||null,
       inputTokens:usage.inputTokens,
       outputTokens:usage.outputTokens,
       estimatedCostCents,
