@@ -1,0 +1,30 @@
+{
+  "decision_id": "A0-SOURCEMARGIN-SOURCE-GRAPH-CONTROL-001",
+  "status": "PASS",
+  "verdict": "EXTEND",
+  "owner": "Aberdeen Technologies",
+  "decided_at": "2026-09-22",
+  "business_outcome": "Expose canonical SourceMargin Source Graph run, queue, blocker, reconstruction and readiness telemetry inside the existing Factory Control surface so the owner can see whether Seller Mine / Supplier Mine / Product Trace work is progressing without opening a second control plane.",
+  "existing_owner_scan": "Reviewed existing Factory Work Control v2, FactoryShell, n8n Control Center, UI Hub, Run 004 Source-to-Marketplace ownership, Run 008 retry/dead-letter/cancellation ownership, Agent 000 / Work Control execution ownership, the SourceMargin State Reconciler and Completion Guard, and canonical SourceMargin Supabase source_graph entities/edges plus Source Graph run/task state. Existing owners are sufficient; the missing capability is only an operator-facing projection.",
+  "reuse_candidates_checked": [
+    "FactoryShell / Work Control v2",
+    "Existing Firebase-authenticated Vercel API pattern used by api/n8n-control.js",
+    "Run 004 SourceMargin orchestration and specialist ownership",
+    "Run 008 retry/dead-letter/cancellation controls",
+    "Agent 000 / Work Control execution-state ownership",
+    "SourceMargin public read-only Source Graph control dashboard RPC",
+    "SourceMargin source_graph_runs and source_graph_resolution_tasks canonical operational state"
+  ],
+  "duplication_analysis": "Do not create a Source Graph mini-factory, scheduler, database, workflow-control service, alternate retry system, or publication controller. Extend the existing FactoryShell with a read-only Source Graph Operations route. The Vercel API is a bounded authenticated projection adapter only; canonical data remains in SourceMargin Supabase and execution authority remains with Work Control / existing governed workers.",
+  "residual_unowned_loop": "Source Graph operational state -> authenticated Factory owner view -> inspect runs, queue, blockers, next action and measured rates. Control buttons remain disabled until an existing governed Source Graph execution adapter is explicitly authorized; this change performs no pause/restart/retry mutation, supplier outreach, purchasing, spending, Sample Ready promotion or customer publication.",
+  "covers_paths": [
+    "src/App.jsx",
+    "src/FactoryShell.jsx",
+    "src/SourceGraphControl.jsx",
+    "src/source-graph-control.css",
+    "src/sourceGraphControlApi.js",
+    "api/source-graph-control.js",
+    "api/_firebase-auth.js"
+  ],
+  "evidence_ref": "SourceMargin docs/SOURCE_GRAPH_FOUNDATION.md; GMIsaacson/sourcemargin1.0 issue #19 and draft PR #20; Source Graph Experiment 001 fixed first-20 benchmark"
+}
