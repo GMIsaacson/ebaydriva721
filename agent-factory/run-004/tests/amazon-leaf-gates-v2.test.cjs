@@ -176,3 +176,48 @@ test('unexpected candidate remains fail-closed', () => {
     /AMAZON_LEAF_UNEXPECTED_CANDIDATE/
   );
 });
+
+test('mixed rejected and blocked candidates normalize aggregate outcome to BLOCKED', () => {
+  const worker=require('../runtime/amazon-leaf-worker-executor-v2.cjs');
+  const raw={
+    outcome:'REJECTED',
+    summary:'No candidate may advance.',
+    blockers:[],
+    candidates:[
+      {asin:'B000000001',disposition:'rejected'},
+      {asin:'B000000002',disposition:'blocked'},
+    ],
+  };
+  const out=worker.normalizeAggregateOutcome(raw);
+  assert.equal(out.outcome,'BLOCKED');
+  assert.match(out.summary,/normalized to BLOCKED/i);
+  assert.ok(out.blockers.some((x)=>/evidence-blocked/i.test(x)));
+});
+
+test('aggregate REJECTED remains fail-closed when an active survivor exists', () => {
+  const worker=require('../runtime/amazon-leaf-worker-executor-v2.cjs');
+  const raw={
+    outcome:'REJECTED',
+    summary:'bad aggregate',
+    blockers:[],
+    candidates:[
+      {asin:'B000000001',disposition:'rejected'},
+      {asin:'B000000002',disposition:'continue'},
+    ],
+  };
+  assert.throws(()=>worker.normalizeAggregateOutcome(raw),/AMAZON_LEAF_REJECTED_WITH_SURVIVORS/);
+});
+
+test('all rejected candidates may retain aggregate REJECTED', () => {
+  const worker=require('../runtime/amazon-leaf-worker-executor-v2.cjs');
+  const raw={
+    outcome:'REJECTED',
+    summary:'all rejected',
+    blockers:[],
+    candidates:[
+      {asin:'B000000001',disposition:'rejected'},
+      {asin:'B000000002',disposition:'rejected'},
+    ],
+  };
+  assert.equal(worker.normalizeAggregateOutcome(raw).outcome,'REJECTED');
+});
