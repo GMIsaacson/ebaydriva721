@@ -497,6 +497,12 @@ function economicsEvidenceAssessments(candidates) {
 function normalizeEconomicsEvidenceStage(raw, prior) {
   const latest = new Map(prior.at(-1).stageResult.candidates.map((candidate) => [candidate.asin, candidate]));
   const evidenceUrls = new Set(raw.evidence.map((item) => item.url));
+  for (const row of prior) {
+    for (const item of Array.isArray(row.stageResult?.evidence) ? row.stageResult.evidence : []) {
+      if (item?.url) evidenceUrls.add(item.url);
+    }
+  }
+  evidenceUrls.add(AmazonEconomicsEvidence.feeSchedule.sourceUrl);
   raw.candidates = raw.candidates.map((candidate) => {
     const before = latest.get(candidate.asin);
     if (!candidate.economicsEvidence) {
