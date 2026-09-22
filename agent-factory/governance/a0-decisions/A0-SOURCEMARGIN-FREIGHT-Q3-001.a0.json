@@ -1,0 +1,78 @@
+{
+  "decision_id": "A0-SOURCEMARGIN-FREIGHT-Q3-001",
+  "status": "PASS",
+  "verdict": "EXTEND",
+  "owner": "Aberdeen Technologies",
+  "decided_at": "2026-09-22",
+  "business_outcome": "Close the genuine independent freight/import Q3 capability gap required by G2.5 without creating a new team, scheduler, database, control center, or SourceMargin execution plane.",
+  "existing_owner_scan": "Reviewed FACTORY-G2.5-PROFESSIONAL-CAPABILITY, SPC-FREIGHT-001, SPC-EVID-001, SPC-QA-001, the SourceMargin A0 capability map, Run 004, Work Control, and A0-SOURCEMARGIN-RESOLVER-EXEC-001. G2.5 explicitly prohibits a material author from serving as independent Q3 reviewer for the same discipline. No existing registered specialist is both QUALIFIED in Freight/Import/Landed Cost and eligible as an independent reviewer. Therefore the missing capability is a narrow reviewer-only specialist identity inside the existing Professional Capability framework, not a new operational team.",
+  "reuse_candidates_checked": [
+    "SPC-FREIGHT-001 — Freight/Import/Landed Cost authoring specialist; cannot self-review",
+    "SPC-EVID-001 — QUALIFIED Q2 evidence reviewer; domain-professional Q3 explicitly excluded",
+    "SPC-QA-001 — QUALIFIED Q1 deterministic/test reviewer; domain-professional review explicitly excluded",
+    "Run 004 — existing source-to-marketplace owner",
+    "Professional Capability framework / G2.5",
+    "Work Control governed execution"
+  ],
+  "duplication_analysis": "REUSE covers execution, evidence QA, deterministic QA and freight authoring. EXTEND is required only for independent freight/import professional review because the governing standard forbids author self-review and Q1/Q2 cannot substitute for Q3. SPC-FREIGHT-Q3-001 is reviewer-only, has no production mutation or supplier-contact authority, and cannot author freight work. It is not a new team or execution system.",
+  "residual_unowned_loop": "Take an already-authored freight/import/landed-cost portfolio -> independently assess professional judgment quality, boundary handling, evidence sufficiency and remediation -> issue one PE_* result -> stop. The reviewer may not alter the authored record, mutate production, contact suppliers, spend, purchase, publish, certify customs/legal advice, or review its own authored work.",
+  "covers_paths": [
+    ".github/workflows/run-004-freight-specialist-qualification.yml",
+    "agent-factory/governance/specialist-registry-v1.0.json",
+    "agent-factory/governance/SOURCEMARGIN_A0_CAPABILITY_MAP.md",
+    "agent-factory/governance/team-professional-retrofit-v1.0.json",
+    "agent-factory/run-004/README.md",
+    "agent-factory/run-004/calibration/freight-specialist-qualification-v1.json",
+    "agent-factory/run-004/calibration/freight-calibration-sellerhook-kettle-004.receipt.json",
+    "agent-factory/run-004/calibration/freight-calibration-ups-exw-005.receipt.json",
+    "agent-factory/run-004/calibration/freight-q3-reviewer-qualification-v1.json",
+    "agent-factory/run-004/calibration/freight-q3-reviewer-a.receipt.json",
+    "agent-factory/run-004/calibration/freight-q3-reviewer-b.receipt.json",
+    "agent-factory/run-004/calibration/freight-q3-reviewer-c.receipt.json",
+    "agent-factory/run-004/tests/freight-specialist-qualification.test.cjs",
+    "agent-factory/run-004/tests/freight-q3-reviewer-qualification.test.cjs",
+    "agent-factory/governance/a0-decisions/A0-SOURCEMARGIN-FREIGHT-Q3-001.a0.json"
+  ],
+  "evidence_ref": "G2.5 standard requires independent Q3; reviewer calibration commands WC-20260922054008-9256832a16, WC-20260922054011-536bfd678e, WC-20260922054014-a8c5689157; aggregate qualification Q2 WC-20260922054041-c7e55d71bd = QUALIFICATION_Q2_PASS. Freight author Stage C case evidence now includes five passing cases with five Q2 PASS receipts and two quote-backed reconciliation cases.",
+  "authority_boundary": {
+    "phase": "REVIEW_ONLY",
+    "allowed": [
+      "read supplied freight/import/landed-cost artifacts and cited evidence",
+      "perform bounded read-only evidence checks when explicitly authorized",
+      "issue PE_PASS, PE_PASS_WITH_LIMITATION, PE_RETURN, PE_ESCALATE, or PE_FAIL",
+      "specify evidence-oriented remediation",
+      "emit internal reviewer receipts"
+    ],
+    "denied": [
+      "author the freight/import work being reviewed",
+      "self-review",
+      "mutate SourceMargin or Factory production state",
+      "claim/complete SourceMargin resolver tasks",
+      "contact suppliers or send RFQs",
+      "purchase, bid, list, message, or spend",
+      "publish customer opportunities",
+      "customs legal opinion",
+      "tax advice",
+      "create a new team, scheduler, database, control center, or autonomous execution plane"
+    ]
+  },
+  "shadow_exit_criteria": [
+    "Three reviewer calibration cases match their preregistered gold outcomes exactly.",
+    "The adversarial DDP case is hard-failed and every seeded professional defect is identified.",
+    "Correct cautious/incomplete authoring is not failed merely because evidence is incomplete.",
+    "QUOTED evidence is never upgraded to VERIFIED without support.",
+    "Aggregate independent Q2 returns QUALIFICATION_Q2_PASS.",
+    "Reviewer registry record is QUALIFIED, reviewer-only, eligibleAsReviewer=true, and explicitly excludes authoring/self-review/production mutation.",
+    "SPC-FREIGHT-001 remains PROVISIONAL until a separate independent portfolio Q3 is actually executed and returns PE_PASS."
+  ],
+  "calibration_result": {
+    "specialist_id": "SPC-FREIGHT-Q3-001",
+    "qualification_state": "QUALIFIED",
+    "reviewer_only": true,
+    "cases_passed": 3,
+    "cases_required": 3,
+    "aggregate_q2": "QUALIFICATION_Q2_PASS",
+    "external_actions": 0,
+    "production_mutations": 0
+  }
+}

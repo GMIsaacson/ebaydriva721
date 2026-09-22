@@ -1,0 +1,110 @@
+{
+  "programId": "SPC-FREIGHT-001-QUAL-V1",
+  "caseId": "PUBLIC-QUOTE-SELLERHOOK-KETTLE-004",
+  "specialistId": "SPC-FREIGHT-001",
+  "mode": "SHADOW",
+  "workControlCommandId": "WC-20260922053813-4c45ae66fb",
+  "q2CommandId": "WC-20260922053852-4b9e73ad93",
+  "components": [
+    {
+      "component": "product_cost",
+      "status": "QUOTED",
+      "amount": 3.85,
+      "evidenceBasis": "Third-party Sellerhook supplier-check report records $3.85/unit for 1,260 units.",
+      "minimumAdditionalEvidence": [
+        "supplier-issued commercial quotation or invoice",
+        "exact SKU/configuration",
+        "quote date/validity"
+      ]
+    },
+    {
+      "component": "packaging_cost",
+      "status": "BLOCKED",
+      "amount": null,
+      "evidenceBasis": "No packaging surcharge/charge supplied.",
+      "minimumAdditionalEvidence": [
+        "packaging specification and charge or included-term evidence"
+      ]
+    },
+    {
+      "component": "international_freight",
+      "status": "QUOTED",
+      "amount": 0.9182539683,
+      "evidenceBasis": "Third-party supplier-check report records $1,157 sea freight to Los Angeles for 1,260 units.",
+      "minimumAdditionalEvidence": [
+        "supplier/carrier/forwarder-issued quote or final freight invoice",
+        "Incoterm",
+        "mode details",
+        "validity",
+        "included/excluded charges"
+      ]
+    },
+    {
+      "component": "duty_tariff",
+      "status": "BLOCKED",
+      "amount": null,
+      "evidenceBasis": "No duty/tariff or customs-entry evidence supplied.",
+      "minimumAdditionalEvidence": [
+        "HTS classification",
+        "origin",
+        "customs value",
+        "duty/entry evidence"
+      ]
+    },
+    {
+      "component": "inspection_cost",
+      "status": "BLOCKED",
+      "amount": null,
+      "evidenceBasis": "No inspection cost supplied.",
+      "minimumAdditionalEvidence": [
+        "inspection scope and fee or included-term evidence"
+      ]
+    },
+    {
+      "component": "prep_labeling",
+      "status": "BLOCKED",
+      "amount": null,
+      "evidenceBasis": "No prep/labeling cost supplied.",
+      "minimumAdditionalEvidence": [
+        "prep/label requirements and charge"
+      ]
+    },
+    {
+      "component": "domestic_inbound_freight",
+      "status": "BLOCKED",
+      "amount": null,
+      "evidenceBasis": "Only sea freight to Los Angeles was supplied; no U.S. inland/final-mile cost supplied.",
+      "minimumAdditionalEvidence": [
+        "inland origin/destination and carrier/3PL quote or final charge"
+      ]
+    }
+  ],
+  "productionCertification": {
+    "certified": false,
+    "reason": "Quote-backed secondary evidence is sufficient for calibration reconciliation only; it is not final-charge evidence or complete landed cost."
+  },
+  "modeledTotal": {
+    "amount": null,
+    "status": "UNKNOWN"
+  },
+  "nextEvidence": [
+    "obtain supplier-issued quote/invoice tied to exact SKU and quantity",
+    "obtain final carrier/forwarder freight invoice or equivalent charge record",
+    "obtain duty/customs/tax and remaining landed-cost component evidence"
+  ],
+  "forbiddenClaimsMade": [],
+  "q2": {
+    "reviewerId": "SPC-EVID-001",
+    "result": "PASS"
+  },
+  "authorityUsage": {
+    "externalActions": 0,
+    "spendCents": 0,
+    "productionMutation": false
+  },
+  "caseResult": "PASS",
+  "caseResultReason": "Correct quote normalization, arithmetic, provenance scoping, and quote-vs-final-charge distinction; Q2 PASS.",
+  "quoteReconciliationCountsTowardStageC": true,
+  "quoteEvidenceLevel": "REAL_PUBLIC_SECONDARY_QUOTE_REPORT",
+  "evidenceUrl": "https://assets.ctfassets.net/0yu6ph4occja/5hYBBVs5SmonHyF8YRgPEn/5b98986a58f4ec32559c749ae141ac9c/Sellerhook_Supplier_Check.pdf"
+}

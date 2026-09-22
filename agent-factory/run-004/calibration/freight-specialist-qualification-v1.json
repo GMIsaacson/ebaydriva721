@@ -83,8 +83,9 @@
     "automaticPromotion": false
   },
   "currentKnownBlockers": [
-    "No independent qualified logistics/freight Q3 reviewer is currently registered.",
-    "Stage C still requires at least two additional passing cases, including at least one additional real quote/final-charge reconciliation case.",
+    "All Stage C case-count and quote-reconciliation thresholds are now met, but independent Q3 has not yet been executed.",
+    "SPC-FREIGHT-Q3-001 has passed reviewer calibration and is available for the required independent portfolio review.",
+    "Production certification remains denied until independent Q3 returns PE_PASS and the registry is promoted in a separate evidence-bearing change.",
     "Thermal Pads itself still lacks quote-backed packaging, international freight, duty/tariff, inspection, prep/labeling, and domestic inbound values."
   ],
   "authority": {
@@ -96,10 +97,10 @@
     "publication": false
   },
   "progress": {
-    "passingCases": 3,
+    "passingCases": 5,
     "requiredForProvisional": 3,
-    "q2PassingCases": 3,
-    "actualReconciliationCases": 1,
+    "q2PassingCases": 5,
+    "actualReconciliationCases": 2,
     "currentRecommendedState": "PROVISIONAL",
     "caseMix": {
       "incompleteBlockCase": "SM-AMZ-THERMAL-PADS-001",
@@ -131,15 +132,32 @@
         "result": "PASS",
         "category": "incoterm-tariff",
         "notes": "Handled DDP without double-counting duty; authoritative classification evidence was caveated; unverified current rate and duty dollars remained blocked."
+      },
+      {
+        "caseId": "PUBLIC-QUOTE-SELLERHOOK-KETTLE-004",
+        "workControlCommandId": "WC-20260922053813-4c45ae66fb",
+        "q2CommandId": "WC-20260922053852-4b9e73ad93",
+        "result": "PASS",
+        "category": "quote-backed-secondary-reconciliation",
+        "notes": "Normalized third-party supplier-check report quote; goods/freight remained QUOTED, not final-charge VERIFIED; Q2 PASS."
+      },
+      {
+        "caseId": "UPS-DIM-WEIGHT-EXW-005",
+        "workControlCommandId": "WC-20260922053834-078e83d61c",
+        "q2CommandId": "WC-20260922053920-7d6a8d68a1",
+        "result": "PASS",
+        "category": "dimensional-weight-incoterm-boundary",
+        "notes": "Verified UPS dimensional-weight rule and 50 lb billable weight, preserved EXW scope, and refused to invent freight dollars; Q2 PASS."
       }
     ],
     "stageCProgress": {
-      "totalCases": 3,
+      "totalCases": 5,
       "requiredTotalCases": 5,
-      "realQuoteOrFinalChargeCases": 1,
+      "realQuoteOrFinalChargeCases": 2,
       "requiredRealQuoteOrFinalChargeCases": 2,
       "independentQ3": "MISSING",
-      "estimateErrorEvidence": "NOT_YET_APPLICABLE"
+      "qualifiedReviewerAvailable": "SPC-FREIGHT-Q3-001",
+      "estimateErrorEvidence": "NOT_APPLICABLE_NO_ESTIMATION_CASES"
     }
   }
 }

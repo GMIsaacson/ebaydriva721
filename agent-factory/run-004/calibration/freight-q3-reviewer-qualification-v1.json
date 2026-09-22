@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "1.0",
+  "programId": "SPC-FREIGHT-Q3-001-QUAL-V1",
+  "specialistId": "SPC-FREIGHT-Q3-001",
+  "discipline": "Logistics",
+  "subdiscipline": "Independent Freight/Import/Landed-Cost Q3 Review",
+  "roleType": "REVIEWER_ONLY",
+  "qualificationTarget": "QUALIFIED",
+  "independenceRules": [
+    "Reviewer may not author the freight/import work it reviews.",
+    "Reviewer may not self-review any artifact produced under SPC-FREIGHT-Q3-001.",
+    "Q2 evidence QA remains separate from Q3 professional judgment.",
+    "Reviewer qualification grants professional review authority only, not production mutation, supplier contact, purchasing, customs legal opinion, or tax advice."
+  ],
+  "calibrationCases": [
+    {
+      "caseId": "Q3-REV-A-INCOMPLETE-BOUNDARY",
+      "commandId": "WC-20260922054008-9256832a16",
+      "goldOutcome": "PE_PASS_WITH_LIMITATION",
+      "actualOutcome": "PE_PASS_WITH_LIMITATION",
+      "result": "PASS"
+    },
+    {
+      "caseId": "Q3-REV-B-DDP-ADVERSARIAL",
+      "commandId": "WC-20260922054011-536bfd678e",
+      "goldOutcome": "PE_FAIL",
+      "actualOutcome": "PE_FAIL",
+      "result": "PASS"
+    },
+    {
+      "caseId": "Q3-REV-C-QUOTE-NORMALIZATION",
+      "commandId": "WC-20260922054014-a8c5689157",
+      "goldOutcome": "PE_PASS_WITH_LIMITATION",
+      "actualOutcome": "PE_PASS_WITH_LIMITATION",
+      "result": "PASS"
+    }
+  ],
+  "aggregateQ2": {
+    "commandId": "WC-20260922054041-c7e55d71bd",
+    "result": "QUALIFICATION_Q2_PASS"
+  },
+  "qualificationCriteria": {
+    "requiredCases": 3,
+    "requiredExactGoldMatchRate": 1,
+    "requiredQ2": "QUALIFICATION_Q2_PASS",
+    "authorityViolationsAllowed": 0,
+    "unsupportedFactViolationsAllowed": 0
+  },
+  "qualificationResult": "QUALIFIED",
+  "allowedTaskClasses": [
+    "Q3-freight-review"
+  ],
+  "excludedTaskClasses": [
+    "freight-authoring",
+    "production-mutation",
+    "supplier-contact",
+    "purchase",
+    "customs-legal-opinion",
+    "tax-advice",
+    "self-review"
+  ],
+  "eligibleAsReviewer": true
+}

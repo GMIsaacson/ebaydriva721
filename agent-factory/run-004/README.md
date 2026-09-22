@@ -253,3 +253,14 @@ The qualification harness explicitly rejects fabricated freight values, relabeli
 - Production certification: **DENIED**.
 - Independent reviewer eligibility: **NO**.
 - Stage C remaining: 5 total cases minimum, 2 real quote/final-charge reconciliations minimum, estimate-error evidence where estimates are requested, and independent qualified logistics/freight Q3 `PE_PASS`.
+
+
+### Stage C freight cases and independent Q3 reviewer
+
+`SPC-FREIGHT-001` now has five passing calibration cases with independent Q2 PASS on every case. Two cases count as quote-backed reconciliation evidence: the exact-SKU Car Seat Gap Filler visible freight quote and the public Sellerhook supplier-check quote report.
+
+Case 5 independently verified UPS dimensional-weight handling and EXW scope without inventing freight dollars.
+
+The required independent reviewer gap is now filled by reviewer-only specialist `SPC-FREIGHT-Q3-001`. Its reviewer qualification used three preregistered gold cases: cautious incomplete evidence → `PE_PASS_WITH_LIMITATION`; adversarial DDP/duty/fabricated-freight case → `PE_FAIL`; bounded quote normalization → `PE_PASS_WITH_LIMITATION`. Aggregate Q2 returned `QUALIFICATION_Q2_PASS`.
+
+The authoring specialist remains `PROVISIONAL` until that reviewer performs the separate five-case portfolio Q3 and returns `PE_PASS`. The reviewer is not allowed to author freight work, self-review, mutate production, contact suppliers, purchase, provide customs legal opinions, or provide tax advice.

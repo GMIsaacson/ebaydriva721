@@ -8,8 +8,10 @@ on:
       - 'agent-factory/run-004/contracts/freight-specialist-calibration-receipt.schema.json'
       - 'agent-factory/run-004/runtime/freight-specialist-qualification.cjs'
       - 'agent-factory/run-004/tests/freight-specialist-qualification.test.cjs'
+      - 'agent-factory/run-004/tests/freight-q3-reviewer-qualification.test.cjs'
       - 'agent-factory/governance/specialist-registry-v1.0.json'
       - 'agent-factory/governance/a0-decisions/A0-SOURCEMARGIN-RESOLVER-EXEC-001.a0.json'
+      - 'agent-factory/governance/a0-decisions/A0-SOURCEMARGIN-FREIGHT-Q3-001.a0.json'
   workflow_dispatch:
 
 permissions:
@@ -24,7 +26,7 @@ jobs:
         with:
           node-version: '22'
       - name: Run freight qualification tests
-        run: node --test agent-factory/run-004/tests/freight-specialist-qualification.test.cjs
+        run: node --test agent-factory/run-004/tests/freight-specialist-qualification.test.cjs agent-factory/run-004/tests/freight-q3-reviewer-qualification.test.cjs
       - name: Validate program and registry remain fail-closed
         run: |
           node - <<'NODE'
@@ -32,6 +34,8 @@ jobs:
           const program=JSON.parse(fs.readFileSync('agent-factory/run-004/calibration/freight-specialist-qualification-v1.json','utf8'));
           const registry=JSON.parse(fs.readFileSync('agent-factory/governance/specialist-registry-v1.0.json','utf8'));
           const s=registry.records.find(x=>x.specialistId==='SPC-FREIGHT-001');
+          const reviewerProgram=JSON.parse(fs.readFileSync('agent-factory/run-004/calibration/freight-q3-reviewer-qualification-v1.json','utf8'));
+          const reviewer=registry.records.find(x=>x.specialistId==='SPC-FREIGHT-Q3-001');
           if(!s) throw new Error('SPC-FREIGHT-001 missing');
           if(s.qualificationProgramId!==program.programId) throw new Error('Qualification program mismatch');
           if(program.authority.maxExternalActions!==0 || program.authority.maxSpendCents!==0 || program.authority.productionMutation!==false) throw new Error('Authority expanded');
@@ -48,5 +52,11 @@ jobs:
             for(const x of program.stageB.stillExcluded){ if(!s.excludedTaskClasses.includes(x)) throw new Error('Missing provisional exclusion: '+x); }
           }
           if(s.qualificationState==='QUALIFIED' && !stageCPass) throw new Error('QUALIFIED without Stage C + Q3');
-          console.log('Freight qualification state is evidence-derived and fail-closed:',s.qualificationState);
+          if(!reviewer) throw new Error('SPC-FREIGHT-Q3-001 missing');
+          if(reviewerProgram.qualificationResult!=='QUALIFIED') throw new Error('Reviewer program not qualified');
+          if(reviewerProgram.aggregateQ2?.result!=='QUALIFICATION_Q2_PASS') throw new Error('Reviewer Q2 qualification missing');
+          if(reviewer.qualificationState!=='QUALIFIED' || reviewer.eligibleAsReviewer!==true) throw new Error('Reviewer registry state invalid');
+          if(!reviewer.allowedTaskClasses.includes('Q3-freight-review')) throw new Error('Reviewer task class missing');
+          for(const x of ['freight-authoring','self-review','production-mutation']){ if(!reviewer.excludedTaskClasses.includes(x)) throw new Error('Reviewer independence exclusion missing: '+x); }
+          console.log('Freight qualification state is evidence-derived and fail-closed:',s.qualificationState,'reviewer:',reviewer.qualificationState);
           NODE
