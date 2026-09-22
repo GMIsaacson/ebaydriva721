@@ -1,0 +1,41 @@
+name: Run 004 Freight Specialist Qualification
+
+on:
+  pull_request:
+    branches: [master]
+    paths:
+      - 'agent-factory/run-004/calibration/**'
+      - 'agent-factory/run-004/contracts/freight-specialist-calibration-receipt.schema.json'
+      - 'agent-factory/run-004/runtime/freight-specialist-qualification.cjs'
+      - 'agent-factory/run-004/tests/freight-specialist-qualification.test.cjs'
+      - 'agent-factory/governance/specialist-registry-v1.0.json'
+      - 'agent-factory/governance/a0-decisions/A0-SOURCEMARGIN-RESOLVER-EXEC-001.a0.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  qualification-harness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run freight qualification tests
+        run: node --test agent-factory/run-004/tests/freight-specialist-qualification.test.cjs
+      - name: Validate program and registry remain fail-closed
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const program=JSON.parse(fs.readFileSync('agent-factory/run-004/calibration/freight-specialist-qualification-v1.json','utf8'));
+          const registry=JSON.parse(fs.readFileSync('agent-factory/governance/specialist-registry-v1.0.json','utf8'));
+          const s=registry.records.find(x=>x.specialistId==='SPC-FREIGHT-001');
+          if(!s) throw new Error('SPC-FREIGHT-001 missing');
+          if(s.qualificationState!=='UNPROVEN') throw new Error('Premature specialist promotion');
+          if(s.qualificationProgramId!==program.programId) throw new Error('Qualification program mismatch');
+          if(program.authority.maxExternalActions!==0 || program.authority.maxSpendCents!==0 || program.authority.productionMutation!==false) throw new Error('Authority expanded');
+          if(program.stageC.automaticPromotion!==false) throw new Error('QUALIFIED promotion must be manual/Q3-gated');
+          console.log('Freight qualification program is fail-closed and specialist remains UNPROVEN.');
+          NODE
