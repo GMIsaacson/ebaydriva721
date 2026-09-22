@@ -1,0 +1,17 @@
+{
+  "scheduleVersion": "amazon-us-referral-fees/2026-09-22",
+  "marketplace": "amazon-us",
+  "observedAt": "2026-09-22",
+  "sourceUrl": "https://sell.amazon.com/pricing",
+  "sourceType": "amazon_first_party",
+  "coverage": "partial",
+  "note": "Fee category must be evidenced separately; Amazon states fee category may differ from the customer-facing store category.",
+  "categories": {
+    "Business, Industrial, and Scientific Supplies": { "rateBps": 1200, "minimumCents": 30 },
+    "Tools and Home Improvement": { "rateBps": 1500, "minimumCents": 30 },
+    "Office Products": { "rateBps": 1500, "minimumCents": 30 },
+    "Home and Kitchen": { "rateBps": 1500, "minimumCents": 30 },
+    "Lawn and Garden": { "rateBps": 1500, "minimumCents": 30 },
+    "Everything Else": { "rateBps": 1500, "minimumCents": 30 }
+  }
+}
