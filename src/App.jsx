@@ -20,6 +20,7 @@ import WorkControlV2 from "./WorkControlV2";
 import FactoryShell from "./FactoryShell";
 import UIHub from "./UIHub";
 import N8nControlCenter from "./N8nControlCenter";
+import SourceGraphControl from "./SourceGraphControl";
 
 const PublicLayout = () => (
   <div className="App">
@@ -47,6 +48,14 @@ const App = () => {
             <Route
               path="n8n"
               element={<ErrorBoundary><N8nControlCenter /></ErrorBoundary>}
+            />
+            <Route
+              path="source-graph"
+              element={
+                <ProtectedRoute>
+                  <ErrorBoundary><SourceGraphControl /></ErrorBoundary>
+                </ProtectedRoute>
+              }
             />
           </Route>
 
