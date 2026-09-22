@@ -1,6 +1,6 @@
 # Plant Labels bounded controller — implementation candidate
 
-**Deployment status: BLOCKED / NOT LAUNCHED.** This is a tested controller and server-side research checkpoint adapter, not proof of an autonomous research run. No discovery, supplier research or customer publication has occurred.
+**Live acceptance status (2026-09-22): COMPLETED / ZERO QUALIFYING OPPORTUNITIES.** The bounded Plant Labels run `SM-AMZ-PLANT-LABELS-001` executed through ASIN discovery, demand validation, sourcing, landed cost, economics, and independent Q2 evidence review in governed Work Control. The run retained five candidates and ended with all five blocked on evidence; none became SAMPLE_READY or publishable. No supplier contact, purchase, listing, publication, spend, or customer-facing mutation occurred.
 
 Scope: Amazon US Plant Labels `14623206011`; run `SM-AMZ-PLANT-LABELS-001`; existing Run 004 and Work Control. Existing Factory owns execution, existing Supabase research tables own the research projection. No separate service, scheduler, database or worker fleet.
 
@@ -51,3 +51,25 @@ The SQL function was tested in a transaction on the existing Supabase project, i
 Rollback: stop the existing invocation first; preserve command IDs, checkpoints and events; remove the added invocation and revoke service_role EXECUTE on the new function. Do not delete research history or revert unrelated factory changes. A stopped controller does not automatically cancel an in-flight worker.
 
 Remaining live acceptance: authenticated execution access, public retrieval binding, strict result/routing proof, normalized research materialization, independent Q2/Q3 and completion receipts. No end-to-end success is claimed.
+
+
+## 2026-09-22 live acceptance record
+
+Run: `SM-AMZ-PLANT-LABELS-001` — Amazon US Plant Labels `14623206011`.
+
+| Stage | Governed command | Outcome |
+| --- | --- | --- |
+| ASIN_DISCOVERY | `WC-20260922070924-4aeaa779f6` | PASS — 3/5 exact Amazon pages verified; 2 blocked |
+| DEMAND_VALIDATION | `WC-20260922071250-81456a8c7c` | PASS — 3 candidates retained for sourcing |
+| SOURCING | `WC-20260922071351-86c075740f` | PASS — 2 exact source-equivalent offers; 1 additional candidate blocked |
+| LANDED_COST | `WC-20260922072101-e7d8047ad2` | BLOCKED — inbound shipping/freight unresolved for both surviving sourced offers |
+| ECONOMICS | `WC-20260922072138-ef6390ace6` | BLOCKED — no complete evidence-backed economics packet |
+| EVIDENCE_QA | `WC-20260922072217-dab511df2a` | BLOCKED — independent Q2 confirmed all five final blocked dispositions |
+
+Final funnel: 5 discovered → 3 demand-validated → 2 source-equivalent → 0 landed-cost complete → 0 economics-complete → 0 research candidates / SAMPLE_READY / publishable.
+
+Acceptance defects found during the run:
+- LANDED_COST initially treated ECONOMICS-owned buckets as a terminal freight blocker. The worker contract now enforces stage ownership deterministically; fix commit `56bdbfb029c15c6242f378838cb114973c222e53`.
+- A generic Run 004 final-reconciliation command does not hydrate prior governed receipts automatically. The dedicated Amazon leaf stage executor does hydrate explicit `priorCommandIds`; future generic reconciliation should reuse that receipt-loading mechanism rather than duplicate research context.
+
+This run demonstrates evidence-preserving stage progression, terminal-disposition retention, specialist binding, independent Q2 separation, and fail-closed behavior. It does not establish exhaustive leaf coverage or customer publication readiness.
