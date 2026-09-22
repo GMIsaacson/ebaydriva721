@@ -207,7 +207,9 @@ function nextRunAt(workflow) {
 
 function workflowHealth(workflow) {
   const reasons = [];
-  const dependencies = [];
+  const dependencies = Array.isArray(workflow.dependencies)
+    ? workflow.dependencies.map((dep) => ({ ...dep }))
+    : [];
   const special = workflow.special || {};
   const now = Date.now();
 
@@ -220,7 +222,14 @@ function workflowHealth(workflow) {
   }
 
   if (String(special.gmailState || '').toLowerCase() === 'needs_reconnect') {
-    dependencies.push({ code: 'gmail', state: 'attention', label: 'Gmail reconnect required' });
+    const existing = dependencies.find((dep) => dep.key === 'gmail' || dep.code === 'gmail');
+    if (existing) {
+      existing.state = 'attention';
+      existing.label = existing.label || 'Gmail reconnect required';
+      existing.detail = existing.detail || 'Gmail authorization requires reconnection.';
+    } else {
+      dependencies.push({ code: 'gmail', key: 'gmail', name: 'Gmail', category: 'oauth', state: 'attention', label: 'Gmail reconnect required' });
+    }
     reasons.push({ code: 'dependency_gmail', severity: 'high', label: 'Gmail dependency requires reconnection' });
   }
 
@@ -267,7 +276,7 @@ function workflowHealth(workflow) {
     state: reasons.length ? 'attention' : 'ready',
     primaryReason,
     reasons,
-    dependencies: dependencies.length ? dependencies : [{ code: 'known_dependencies', state: 'healthy', label: 'No known dependency issue reported' }],
+    dependencies: dependencies.length ? dependencies : [{ code: 'known_dependencies', key: 'known_dependencies', name: 'Known dependencies', state: 'healthy', label: 'No known dependency issue reported' }],
     outcome,
   };
 }
@@ -289,6 +298,7 @@ function normalizeWorkflow(row) {
     latestExecution: latest,
     latestCompleted: row.latestCompleted || null,
     special: row.special || null,
+    dependencies: Array.isArray(row.dependencies) ? row.dependencies : [],
     nodes: Array.isArray(row.nodes) ? row.nodes.map((node, index) => ({
       order: Number(node?.order || index + 1),
       name: node?.name || `Node ${index + 1}`,
@@ -362,10 +372,14 @@ async function snapshot(user = null) {
     coverage: {
       mode: 'managed-factory-workflows',
       managed: Number(live.metrics?.managed ?? workflows.length),
-      executionHistory: 'latest-per-workflow',
-      executionHistoryNote: 'The current workflow service exposes the latest execution for each managed workflow, not the full n8n execution ledger.',
+      executionHistory: live.capabilities?.executionLedger ? 'full-ledger-endpoint' : 'latest-per-workflow',
+      executionHistoryNote: live.capabilities?.executionLedger
+        ? 'Full managed-workflow execution history is available through the paginated execution ledger.'
+        : 'The workflow service currently exposes only the latest execution for each managed workflow.',
       note: 'Live Factory-managed workflow set. n8n itself remains private on localhost.',
     },
+    version: live.version || null,
+    capabilities: live.capabilities || {},
     owner,
     writeGateConfigured: Boolean(owner?.enrolled),
     writeEnabled: Boolean(owner?.isOwner),
@@ -436,6 +450,34 @@ async function resultFor(req) {
   return upstream(`/api/result?id=${encodeURIComponent(workflowId)}`);
 }
 
+async function executionsFor(req) {
+  const parsed = new URL(req.url, 'https://control.local');
+  const params = new URLSearchParams();
+  for (const key of ['workflowId','status','limit','offset']) {
+    const value = parsed.searchParams.get(key);
+    if (value != null && value !== '') params.set(key, value);
+  }
+  const qs = params.toString();
+  return upstream('/api/executions' + (qs ? '?' + qs : ''));
+}
+
+async function executionDetailFor(req) {
+  const parsed = new URL(req.url, 'https://control.local');
+  const id = String(parsed.searchParams.get('execution') || '').trim();
+  if (!/^\d+$/.test(id)) throw Object.assign(new Error('INVALID_EXECUTION_ID'), { status: 400 });
+  return upstream('/api/executions/' + encodeURIComponent(id));
+}
+
+async function diagnosisFor(req) {
+  const parsed = new URL(req.url, 'https://control.local');
+  const workflowId = safeId(parsed.searchParams.get('diagnose'));
+  return upstream('/api/diagnose?id=' + encodeURIComponent(workflowId));
+}
+
+async function dependenciesFor() {
+  return upstream('/api/dependencies');
+}
+
 async function handleWrite(req, res, user) {
   const body = req.body && typeof req.body === 'object' ? req.body : {};
   const action = String(body.action || '').toLowerCase();
@@ -481,6 +523,10 @@ module.exports = async function handler(req, res) {
       const user = await optionalUser(req);
       const parsed = new URL(req.url, 'https://control.local');
       if (parsed.searchParams.has('result')) return json(res, 200, await resultFor(req));
+      if (parsed.searchParams.has('executions')) return json(res, 200, await executionsFor(req));
+      if (parsed.searchParams.has('execution')) return json(res, 200, await executionDetailFor(req));
+      if (parsed.searchParams.has('diagnose')) return json(res, 200, await diagnosisFor(req));
+      if (parsed.searchParams.has('dependencies')) return json(res, 200, await dependenciesFor());
       return json(res, 200, await snapshot(user));
     }
 
