@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useAuth } from "./AuthProvider";
-import { controlWorkflow, enrollWorkflowOwner, fetchN8nSnapshot, fetchWorkflowResult } from "./n8nControlApi";
+import { controlWorkflow, enrollWorkflowOwner, fetchN8nSnapshot, fetchWorkflowDiagnosis, fetchWorkflowResult } from "./n8nControlApi";
 import "./n8n-control.css";
 
 function fmtTime(value) {
@@ -99,6 +99,87 @@ function ResultSummary({ result, workflow }) {
   );
 }
 
+function DiagnosisView({ data }) {
+  const diagnosis = data?.diagnosis || {};
+  const recovery = diagnosis?.recovery || {};
+  const dependencies = Array.isArray(data?.dependencies) ? data.dependencies : [];
+  const nodeRuns = Array.isArray(data?.latestExecution?.nodeRuns) ? data.latestExecution.nodeRuns : [];
+  const failed = nodeRuns.filter((node) => node.status === "error");
+  const capabilities = [
+    ["Run now", recovery.runNow],
+    ["Retry execution", recovery.retryExecution],
+    ["Test dependency", recovery.testDependency],
+    ["Reconnect dependency", recovery.reconnectDependency],
+  ];
+
+  return (
+    <div className="n8nc-diagnosis">
+      <section className="n8nc-diagnosis-summary">
+        <div>
+          <span>DIAGNOSIS</span>
+          <h3>{diagnosis.title || "No specific failure classified"}</h3>
+          <p>{diagnosis.explanation || "The workflow is available for inspection; no classified problem was returned."}</p>
+        </div>
+        <Status value={diagnosis.category || data?.state || "unknown"} />
+      </section>
+
+      <div className="n8nc-diagnosis-grid">
+        <section>
+          <div className="n8nc-diagnosis-head"><span>DEPENDENCIES</span><b>{dependencies.length}</b></div>
+          <div className="n8nc-dependency-list">
+            {dependencies.map((dep) => (
+              <article key={dep.key}>
+                <div><strong>{dep.name}</strong><Status value={dep.state || "unknown"} /></div>
+                <p>{dep.detail || "No active dependency probe is registered."}</p>
+                <small>{(dep.nodes || []).join(" · ") || `${dep.nodeCount || 0} workflow nodes`}</small>
+              </article>
+            ))}
+            {!dependencies.length && <div className="n8nc-node-empty">No dependencies detected from this workflow graph.</div>}
+          </div>
+        </section>
+
+        <section>
+          <div className="n8nc-diagnosis-head"><span>SAFE RECOVERY CAPABILITIES</span></div>
+          <div className="n8nc-recovery-matrix">
+            {capabilities.map(([label, available]) => (
+              <div key={label}>
+                <strong>{label}</strong>
+                <Status value={available ? "available" : "not_available"} />
+              </div>
+            ))}
+          </div>
+          <p className="n8nc-diagnosis-note">{recovery.note || "Actions stay disabled until a validated recovery adapter exists."}</p>
+        </section>
+      </div>
+
+      <section className="n8nc-node-diagnostics">
+        <div className="n8nc-diagnosis-head">
+          <span>LATEST EXECUTION · NODE TRACE</span>
+          <b>{failed.length ? `${failed.length} failed` : `${nodeRuns.length} nodes`}</b>
+        </div>
+        <div className="n8nc-node-run-list">
+          {nodeRuns.map((node) => (
+            <div key={`${node.order}-${node.name}`} className={node.status === "error" ? "error" : ""}>
+              <span className="n8nc-node-order">{node.order}</span>
+              <div>
+                <strong>{node.name}</strong>
+                <small>{node.status}{node.executionTimeMs != null ? ` · ${fmtDuration(node.executionTimeMs)}` : ""}</small>
+                {node.error?.message && <p>{node.error.message}</p>}
+              </div>
+              <Status value={node.status} />
+            </div>
+          ))}
+          {!nodeRuns.length && <div className="n8nc-node-empty">No node execution trace is available yet.</div>}
+        </div>
+      </section>
+
+      {data?.latestExecution?.privacy?.note && (
+        <div className="n8nc-privacy-note"><strong>Privacy boundary:</strong> {data.latestExecution.privacy.note}</div>
+      )}
+    </div>
+  );
+}
+
 export default function N8nControlCenter() {
   const { currentUser } = useAuth();
   const [snapshot, setSnapshot] = useState(null);
@@ -109,6 +190,7 @@ export default function N8nControlCenter() {
   const [error, setError] = useState(null);
   const [notice, setNotice] = useState("");
   const [resultView, setResultView] = useState(null);
+  const [diagnosisView, setDiagnosisView] = useState(null);
   const [claimCode, setClaimCode] = useState("");
   const [claimBusy, setClaimBusy] = useState(false);
 
@@ -232,10 +314,21 @@ export default function N8nControlCenter() {
     }
   };
 
+  const openDiagnosis = async (workflow) => {
+    setDiagnosisView({ workflow, loading: true, payload: null, error: null });
+    try {
+      const payload = await fetchWorkflowDiagnosis(currentUser, workflow.id);
+      setDiagnosisView({ workflow, loading: false, payload, error: null });
+    } catch (err) {
+      setDiagnosisView({ workflow, loading: false, payload: null, error: err.message });
+    }
+  };
+
   const nav = [
     ["overview", "Overview"],
     ["attention", "Needs attention"],
     ["workflows", "Workflows"],
+    ["diagnostics", "Diagnostics"],
     ["executions", "Executions"],
     ["failures", "Execution errors"],
     ["schedules", "Schedules"],
@@ -245,7 +338,9 @@ export default function N8nControlCenter() {
     ? filteredWorkflows.length
     : section === "attention"
       ? attention.length
-      : section === "failures"
+      : section === "diagnostics"
+        ? filteredWorkflows.length
+        : section === "failures"
         ? failures.length
         : section === "schedules"
           ? scheduled.length
@@ -582,6 +677,7 @@ export default function N8nControlCenter() {
 
                     <div className="n8nc-workflow-actions">
                       <button className="n8nc-result-button" onClick={() => openResult(workflow)}>View latest result</button>
+                      <button className="n8nc-troubleshoot-button" onClick={() => openDiagnosis(workflow)}>Troubleshoot</button>
                       <button
                         disabled={!snapshot?.writeEnabled || busyId === workflow.id}
                         onClick={() => handleControl(workflow, paused ? "resume" : "pause")}
@@ -603,6 +699,28 @@ export default function N8nControlCenter() {
             </div>
 
             {!filteredWorkflows.length && <Empty title="No workflows found">Adjust the search or refresh the live backend.</Empty>}
+          </section>
+        )}
+
+        {section === "diagnostics" && (
+          <section className="n8nc-panel">
+            <div className="n8nc-panel-head">
+              <div><span>WORKFLOW DIAGNOSTICS</span><h2>Inspect any managed n8n workflow</h2></div>
+              <small>Classify failures, inspect dependencies, trace nodes, and see which recovery actions are safe.</small>
+            </div>
+            <div className="n8nc-diagnostic-list">
+              {filteredWorkflows.map((workflow) => (
+                <article key={workflow.id}>
+                  <div>
+                    <Status value={workflow.health?.state || workflow.operationalState} />
+                    <strong>{workflow.name}</strong>
+                    <small>{workflow.health?.primaryReason?.label || "No classified blocker detected"} · {workflow.id}</small>
+                  </div>
+                  <button onClick={() => openDiagnosis(workflow)}>Troubleshoot</button>
+                </article>
+              ))}
+            </div>
+            {!filteredWorkflows.length && <Empty title="No workflows found">Adjust the search to inspect a managed workflow.</Empty>}
           </section>
         )}
 
@@ -705,6 +823,26 @@ export default function N8nControlCenter() {
             {resultView.error && <div className="n8nc-result-error">{resultView.error}</div>}
             {!resultView.loading && !resultView.error && (
               <ResultSummary result={resultView.payload} workflow={resultView.workflow} />
+            )}
+          </section>
+        </div>
+      )}
+
+      {diagnosisView && (
+        <div className="n8nc-result-modal" onMouseDown={(event) => { if (event.target === event.currentTarget) setDiagnosisView(null); }}>
+          <section className="n8nc-diagnosis-modal">
+            <div className="n8nc-result-head">
+              <div>
+                <span>WORKFLOW TROUBLESHOOTING</span>
+                <h2>{diagnosisView.workflow.name}</h2>
+                <small>{diagnosisView.workflow.id} · live n8n operational diagnosis</small>
+              </div>
+              <button onClick={() => setDiagnosisView(null)}>Close</button>
+            </div>
+            {diagnosisView.loading && <div className="n8nc-result-body">Inspecting workflow, dependencies, and latest node trace…</div>}
+            {diagnosisView.error && <div className="n8nc-result-error">{diagnosisView.error}</div>}
+            {!diagnosisView.loading && !diagnosisView.error && (
+              <DiagnosisView data={diagnosisView.payload} />
             )}
           </section>
         </div>
