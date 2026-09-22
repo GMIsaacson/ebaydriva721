@@ -1,0 +1,35 @@
+name: Source Graph Factory Control checks
+
+on:
+  pull_request:
+    branches:
+      - feat/factory-work-control-v2-preview
+    paths:
+      - "src/**"
+      - "api/**"
+      - "tests/source-graph-control-contract.test.cjs"
+      - "agent-factory/governance/**"
+      - "package*.json"
+      - ".github/workflows/source-graph-factory-control.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: node --test tests/source-graph-control-contract.test.cjs
+      - run: node --test agent-factory/governance/a0-guard.test.cjs
+      - run: node agent-factory/governance/a0-guard.cjs --base "origin/${{ github.base_ref }}"
+      - run: npm run build
