@@ -37,6 +37,46 @@ export async function fetchWorkflowResult(user, workflowId) {
   return readJson(response);
 }
 
+export async function fetchWorkflowDiagnosis(user, workflowId) {
+  const response = await fetch(`/api/n8n-control?diagnose=${encodeURIComponent(workflowId)}`, {
+    method: "GET",
+    headers: await authHeaders(user),
+    cache: "no-store",
+  });
+  return readJson(response);
+}
+
+export async function fetchWorkflowDependencies(user) {
+  const response = await fetch("/api/n8n-control?dependencies=1", {
+    method: "GET",
+    headers: await authHeaders(user),
+    cache: "no-store",
+  });
+  return readJson(response);
+}
+
+export async function fetchExecutions(user, params = {}) {
+  const query = new URLSearchParams({ executions: "1" });
+  for (const key of ["workflowId", "status", "limit", "offset"]) {
+    if (params[key] !== undefined && params[key] !== null && params[key] !== "") query.set(key, String(params[key]));
+  }
+  const response = await fetch(`/api/n8n-control?${query.toString()}`, {
+    method: "GET",
+    headers: await authHeaders(user),
+    cache: "no-store",
+  });
+  return readJson(response);
+}
+
+export async function fetchExecutionDetail(user, executionId) {
+  const response = await fetch(`/api/n8n-control?execution=${encodeURIComponent(executionId)}`, {
+    method: "GET",
+    headers: await authHeaders(user),
+    cache: "no-store",
+  });
+  return readJson(response);
+}
+
 export async function controlWorkflow(user, workflowId, action) {
   const response = await fetch("/api/n8n-control", {
     method: "POST",
