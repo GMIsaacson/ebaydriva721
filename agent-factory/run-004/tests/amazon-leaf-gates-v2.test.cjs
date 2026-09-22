@@ -558,3 +558,36 @@ test('demand validation falls back to governed discovery evidence when Amazon HT
   assert.equal(merged[0].ok,true);
   assert.equal(merged[0].verificationMode,'governed_discovery_handoff');
 });
+
+test('pre-economics stages strip placeholder economics inputs', () => {
+  const worker=require('../runtime/amazon-leaf-worker-executor-v2.cjs');
+  const raw={
+    candidates:[{
+      asin:'B000C2AHWC',
+      disposition:'continue',
+      economicsInputs:{
+        collectedRevenueCents:2617,
+        sourceCostCents:0,
+        inboundFreightCents:0,
+        marketplaceFeesCents:0,
+        outboundShippingCents:0,
+        packagingCents:0,
+        riskReserveCents:0,
+      },
+    }],
+  };
+  const cleaned=worker.sanitizeEconomicsInputsForStage(raw,'DEMAND_VALIDATION');
+  assert.equal(cleaned.candidates[0].economicsInputs,null);
+
+  const economicsRaw={
+    candidates:[{
+      asin:'B000C2AHWC',
+      disposition:'continue',
+      economicsInputs:{collectedRevenueCents:2617},
+    }],
+  };
+  assert.deepEqual(
+    worker.sanitizeEconomicsInputsForStage(economicsRaw,'ECONOMICS').candidates[0].economicsInputs,
+    {collectedRevenueCents:2617}
+  );
+});
