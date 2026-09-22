@@ -190,3 +190,50 @@
 @media(max-width:1180px){.n8nc-metrics{grid-template-columns:repeat(4,1fr)}}
 @media(max-width:900px){.n8nc-metrics{grid-template-columns:repeat(2,1fr)}.n8nc-result-kpis{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:800px){.n8nc-health-banner{align-items:flex-start;flex-direction:column;gap:5px}.n8nc-health-banner small{text-align:left}.n8nc-attention-list>div{align-items:flex-start;flex-direction:column}.n8nc-capability-note{align-items:flex-start;flex-direction:column}.n8nc-result-kpis{grid-template-columns:1fr 1fr}}
+
+
+/* Operations control plane: execution inspector, dependencies, troubleshooting */
+.n8nc-pagination{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:12px;padding-top:10px;border-top:1px solid #eaecf0}
+.n8nc-pagination>span{font-size:9px;color:#667085;font-weight:750}
+.n8nc-pagination>div{display:flex;gap:6px}
+.n8nc-pagination button{border:1px solid #d0d5dd;background:#fff;color:#344054;border-radius:8px;padding:7px 10px;font-size:9px;font-weight:800;cursor:pointer}
+.n8nc-pagination button:disabled{opacity:.4;cursor:not-allowed}
+
+.n8nc-dependency-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.n8nc-dependency-grid>article{border:1px solid #eaecf0;background:#fff;border-radius:12px;padding:12px;min-width:0}
+.n8nc-dependency-grid>article.attention{border-color:#fedf89;background:#fffcf5}
+.n8nc-dependency-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.n8nc-dependency-head span{font-size:8px;text-transform:uppercase;letter-spacing:.06em;color:#98a2b3;font-weight:900}
+.n8nc-dependency-head h3{margin:3px 0 0;font-size:13px;color:#101828}
+.n8nc-dependency-grid p{margin:9px 0 0;font-size:9px;line-height:1.45;color:#667085}
+.n8nc-dependency-grid small{display:block;margin-top:8px;font-size:8px;line-height:1.4;color:#b54708}
+.n8nc-dependency-workflows{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}
+.n8nc-dependency-workflows span{border:1px solid #eaecf0;background:#f9fafb;border-radius:999px;padding:4px 7px;font-size:8px;color:#475467}
+
+.n8nc-inspector,.n8nc-diagnosis{margin-top:14px}
+.n8nc-node-runs{margin-top:12px;border:1px solid #eaecf0;border-radius:10px;overflow:hidden}
+.n8nc-node-runs>div{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:9px;align-items:center;padding:9px 10px;border-top:1px solid #f2f4f7;background:#fff}
+.n8nc-node-runs>div:first-child{border-top:0}
+.n8nc-node-runs>div.error{background:#fff7f6}
+.n8nc-node-runs strong{display:block;font-size:10px;color:#344054}
+.n8nc-node-runs small{display:block;margin-top:2px;font-size:8px;line-height:1.4;color:#667085}
+.n8nc-privacy-note{margin:10px 0 0;padding:9px 10px;border:1px solid #b2ddff;background:#eff8ff;border-radius:9px;font-size:9px;line-height:1.45;color:#175cd3}
+
+.n8nc-diagnosis-summary{border:1px solid #eaecf0;border-radius:11px;background:#f9fafb;padding:12px}
+.n8nc-diagnosis-summary h3{margin:8px 0 0;font-size:15px;color:#101828}
+.n8nc-diagnosis-summary p{margin:5px 0 0;font-size:10px;line-height:1.5;color:#475467}
+.n8nc-diagnosis-block{margin-top:10px;border:1px solid #eaecf0;border-radius:11px;padding:11px}
+.n8nc-diagnosis-block>span{display:block;margin-bottom:7px;font-size:8px;letter-spacing:.06em;color:#98a2b3;font-weight:900}
+.n8nc-diagnosis-block>div{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 10px;padding:7px 0;border-top:1px solid #f2f4f7}
+.n8nc-diagnosis-block>div:first-of-type{border-top:0}
+.n8nc-diagnosis-block strong{font-size:10px;color:#344054}
+.n8nc-diagnosis-block small{grid-column:1/-1;font-size:8px;line-height:1.4;color:#667085}
+.n8nc-recovery-contract{margin-top:10px;border:1px solid #fedf89;background:#fffcf5;border-radius:11px;padding:11px}
+.n8nc-recovery-contract strong{font-size:10px;color:#b54708}
+.n8nc-recovery-contract p{margin:5px 0 0;font-size:9px;line-height:1.45;color:#667085}
+
+.n8nc-status-authentication,.n8nc-status-rate_limit,.n8nc-status-timeout,.n8nc-status-database,.n8nc-status-webhook,.n8nc-status-network,.n8nc-status-execution,.n8nc-status-paused{background:#fffaeb;border-color:#fedf89;color:#b54708}
+.n8nc-status-not_run{background:#f2f4f7;border-color:#d0d5dd;color:#667085}
+
+@media(max-width:1100px){.n8nc-dependency-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:760px){.n8nc-dependency-grid{grid-template-columns:1fr}.n8nc-pagination{align-items:flex-start;flex-direction:column}}
