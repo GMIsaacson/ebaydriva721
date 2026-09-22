@@ -1,6 +1,8 @@
 'use strict';
 const test=require('node:test');
 const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
 const {evaluateCalibrationReceipt,qualificationStatus}=require('../runtime/freight-specialist-qualification.cjs');
 
 const unsupported=['packaging_cost','international_freight','duty_tariff','inspection_cost','prep_labeling','domestic_inbound_freight'];
@@ -67,4 +69,17 @@ test('qualification cannot move on one case or without independent Q3',()=>{
     estimateErrorsPct:[8,12],
     independentQ3:'PE_PASS'
   }).recommendedState,'QUALIFIED');
+});
+
+
+test('recorded Thermal Pads calibration receipt passes the deterministic guard and Q2',()=>{
+  const receiptPath=path.join(__dirname,'..','calibration','freight-calibration-thermal-pads-001.receipt.json');
+  const receipt=JSON.parse(fs.readFileSync(receiptPath,'utf8'));
+  const out=evaluateCalibrationReceipt(receipt,caseSpec);
+  assert.equal(out.pass,true,JSON.stringify(out.violations));
+  assert.equal(receipt.q2.result,'PASS');
+  assert.equal(receipt.caseResult,'PASS');
+  const status=qualificationStatus({caseResults:[{pass:true}],q2Results:['PASS']});
+  assert.equal(status.recommendedState,'UNPROVEN');
+  assert.equal(status.metrics.cases,1);
 });
