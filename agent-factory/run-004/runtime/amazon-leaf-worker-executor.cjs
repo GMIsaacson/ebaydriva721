@@ -237,8 +237,20 @@ async function fetchAmazonPublicSnapshot(asin, fetchImpl = fetch) {
   const ratingsCount = firstMatch(html, /id=["']acrCustomerReviewText["'][^>]*>([\s\S]*?)<\/span>/i);
   const availability = firstMatch(html, /id=["']availability["'][^>]*>[\s\S]*?<span[^>]*>([\s\S]*?)<\/span>/i);
   const boughtPastMonth = firstMatch(html, /([^<>]{0,120}\bbought in past month\b[^<>]{0,120})/i);
-  const pageAsin = new RegExp(asin, 'i').test(html);
-  if (!pageAsin || !title) return { asin, url, ok:false, status:response.status, reason:'product_identity_not_verified' };
+  const selectedAsin =
+    firstMatch(html, /id=["']ASIN["'][^>]*value=["']([^"']+)["']/i) ||
+    firstMatch(html, /name=["']ASIN["'][^>]*value=["']([^"']+)["']/i) ||
+    firstMatch(html, /["']currentAsin["']\s*:\s*["']([^"']+)["']/i);
+  if (!title || selectedAsin !== asin) {
+    return {
+      asin,
+      url,
+      ok:false,
+      status:response.status,
+      selectedAsin:selectedAsin || '',
+      reason:selectedAsin ? 'selected_asin_mismatch' : 'selected_asin_unresolved',
+    };
+  }
 
   const receiptHash = createHash('sha256')
     .update(JSON.stringify({asin,title,rating,ratingsCount,availability,boughtPastMonth,status:response.status,bytes:html.length}))
@@ -248,6 +260,7 @@ async function fetchAmazonPublicSnapshot(asin, fetchImpl = fetch) {
   return {
     asin,
     url,
+    selectedAsin,
     ok:true,
     status:response.status,
     title:title.slice(0,300),
@@ -411,7 +424,11 @@ async function processAmazonLeafStage({ apiKey, command, profileSet, deps }) {
   const prior = await loadPriorResults(payload, controlRequest);
   let publicSnapshots = [];
   if (payload.stage === 'DEMAND_VALIDATION' && prior.length) {
-    publicSnapshots = await collectAmazonPublicSnapshots(prior[0].stageResult.candidates.map((c)=>c.asin));
+    publicSnapshots = await collectAmazonPublicSnapshots(
+      prior[0].stageResult.candidates
+        .filter((c)=>c.disposition === 'continue' || c.disposition === 'research_candidate')
+        .map((c)=>c.asin)
+    );
   }
   const maxToolCalls = payload.stage === 'ECONOMICS' ? 1 : payload.stage === 'EVIDENCE_QA' ? 1 : 2;
   const response = await callOpenAIRequest(apiKey, {
