@@ -69,9 +69,59 @@
     "platformAccountAction": false
   },
   "progress": {
-    "passingCases": 0,
-    "q2PassingCases": 0,
-    "currentRecommendedState": "UNPROVEN",
-    "independentQ3": "MISSING"
-  }
+    "passingCases": 5,
+    "q2PassingCases": 5,
+    "currentRecommendedState": "QUALIFIED",
+    "independentQ3": "PE_PASS",
+    "independentQ3Reviewer": "SPC-IP-Q3-001",
+    "authorQ2CommandId": "WC-20260922060801-35a1317baf",
+    "portfolioQ3CommandId": "WC-20260922060851-831644e731",
+    "outcomeNormalizationCommandId": "WC-20260922060931-f479f032fe",
+    "finalQ2AuditCommandId": "WC-20260922060951-820a903e12",
+    "promotionEvidenceStatus": "COMPLETE",
+    "cases": [
+      {
+        "caseId": "IP-CAL-001",
+        "platform": "ebay",
+        "commandId": "WC-20260922060538-e755768a24",
+        "outcome": "IP_PASS",
+        "q2": "PASS"
+      },
+      {
+        "caseId": "IP-CAL-002",
+        "platform": "ebay",
+        "commandId": "WC-20260922060541-d809b9fb71",
+        "outcome": "IP_BLOCK",
+        "q2": "PASS"
+      },
+      {
+        "caseId": "IP-CAL-003",
+        "platform": "ebay",
+        "commandId": "WC-20260922060544-5c4150bed6",
+        "outcome": "IP_BLOCK",
+        "q2": "PASS"
+      },
+      {
+        "caseId": "IP-CAL-004",
+        "platform": "ebay",
+        "commandId": "WC-20260922060547-7f23c70aac",
+        "outcome": "IP_BLOCK",
+        "q2": "PASS"
+      },
+      {
+        "caseId": "IP-CAL-005",
+        "platform": "amazon",
+        "commandId": "WC-20260922060550-331b55751e",
+        "outcome": "IP_PASS_WITH_LIMITATION",
+        "q2": "PASS"
+      }
+    ]
+  },
+  "qualificationResult": "QUALIFIED",
+  "standingLimitations": [
+    "Qualification covers bounded marketplace policy/IP risk screening, not legal advice or legal non-infringement clearance.",
+    "Current platform evidence and candidate facts must be rechecked when stale or changed.",
+    "Technical compatibility/equivalence remains a separate product/category professional discipline.",
+    "No platform account/listing action, supplier contact, purchase/spend, production mutation or customer publication authority is granted."
+  ]
 }
