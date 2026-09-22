@@ -125,6 +125,7 @@ function stageInstructions(stage) {
     'Amazon "bought in past month" is a rounded lower-bound signal, not an exact 30-day sales count.',
     'Use exact HTTPS product-detail URLs whenever making listing- or supplier-specific claims. Search/category pages are corroboration only.',
     'If evidence is unavailable or access barriers prevent verification, use BLOCKED rather than guessing.',
+    'The blockers array is ONLY for stage-wide blockers. Candidate-specific failures belong in that candidate\'s disposition/reason. A stage may PASS with some blocked/rejected candidates if at least one survivor can legitimately advance; in that case blockers must be empty.',
     'Return all monetary inputs in integer U.S. cents only when directly evidenced or deterministically derivable from evidenced values.',
   ];
   const byStage = {
@@ -235,6 +236,7 @@ async function fetchAmazonPublicSnapshot(asin, fetchImpl = fetch) {
   const title = firstMatch(html, /id=["']productTitle["'][^>]*>([\s\S]*?)<\/span>/i);
   const rating = firstMatch(html, /id=["']acrPopover["'][^>]*title=["']([^"']+)["']/i);
   const ratingsCount = firstMatch(html, /id=["']acrCustomerReviewText["'][^>]*>([\s\S]*?)<\/span>/i);
+  const displayedPrice = firstMatch(html, /id=["']corePrice_feature_div["'][\s\S]{0,6000}?class=["']a-offscreen["'][^>]*>\s*(\$[0-9,]+(?:\.[0-9]{2})?)/i);
   const availability = firstMatch(html, /id=["']availability["'][^>]*>[\s\S]*?<span[^>]*>([\s\S]*?)<\/span>/i);
   const boughtPastMonth = firstMatch(html, /([^<>]{0,120}\bbought in past month\b[^<>]{0,120})/i);
   const selectedAsin =
@@ -266,6 +268,7 @@ async function fetchAmazonPublicSnapshot(asin, fetchImpl = fetch) {
     title:title.slice(0,300),
     rating:rating.slice(0,100),
     ratingsCount:ratingsCount.slice(0,100),
+    displayedPrice:displayedPrice.slice(0,40),
     availability:availability.slice(0,120),
     boughtPastMonth:boughtPastMonth.slice(0,160),
     bytes:html.length,
@@ -287,6 +290,7 @@ function snapshotClaim(snapshot) {
     `title="${snapshot.title}"`,
     snapshot.rating ? `rating=${snapshot.rating}` : '',
     snapshot.ratingsCount ? `ratings=${snapshot.ratingsCount}` : '',
+    snapshot.displayedPrice ? `displayed_price=${snapshot.displayedPrice}` : '',
     snapshot.availability ? `availability=${snapshot.availability}` : '',
     snapshot.boughtPastMonth ? `purchase_signal="${snapshot.boughtPastMonth}"` : '',
   ].filter(Boolean).join('; ').slice(0,700);
