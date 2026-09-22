@@ -6,6 +6,7 @@ const AmazonEconomicsEvidence = require('./amazon-economics-evidence.cjs');
 const MARKER = '[AMAZON_LEAF_STAGE_V2]';
 const MAX_CANDIDATES = 5;
 const AMAZON_PRESCREEN_POOL_SIZE = 30;
+const AMAZON_PRESCREEN_HTTP_CONCURRENCY = 5;
 const AMAZON_DEEP_RESEARCH_LIMIT = 5;
 const AMAZON_PREFERRED_SOURCE_SHARE_BPS = 4500;
 const AMAZON_MIN_SUPPORTED_REFERRAL_RATE_BPS = 1200;
@@ -420,8 +421,17 @@ async function fetchAmazonPublicSnapshot(asin, fetchImpl = fetch) {
 async function collectAmazonPublicSnapshots(asins, fetchImpl = fetch, limit = MAX_CANDIDATES) {
   if (!Number.isSafeInteger(limit) || limit < 1 || limit > AMAZON_PRESCREEN_POOL_SIZE) throw new Error('AMAZON_PUBLIC_SNAPSHOT_LIMIT_INVALID');
   const unique=[...new Set((asins || []).map((x)=>String(x || '').trim()).filter((x)=>/^[A-Z0-9]{10}$/.test(x)))].slice(0,limit);
-  const out=[];
-  for (const asin of unique) out.push(await fetchAmazonPublicSnapshot(asin, fetchImpl));
+  const out=new Array(unique.length);
+  let cursor=0;
+  const worker=async()=>{
+    while (true) {
+      const index=cursor++;
+      if (index >= unique.length) return;
+      out[index]=await fetchAmazonPublicSnapshot(unique[index], fetchImpl);
+    }
+  };
+  const concurrency=Math.min(AMAZON_PRESCREEN_HTTP_CONCURRENCY,unique.length || 1);
+  await Promise.all(Array.from({length:concurrency},()=>worker()));
   return out;
 }
 
@@ -1222,6 +1232,7 @@ module.exports = {
   MARKER,
   MAX_CANDIDATES,
   AMAZON_PRESCREEN_POOL_SIZE,
+  AMAZON_PRESCREEN_HTTP_CONCURRENCY,
   AMAZON_DEEP_RESEARCH_LIMIT,
   AMAZON_PREFERRED_SOURCE_SHARE_BPS,
   AMAZON_SOURCE_CLASS_PRIORITY,
