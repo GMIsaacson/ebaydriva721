@@ -83,3 +83,26 @@ test('recorded Thermal Pads calibration receipt passes the deterministic guard a
   assert.equal(status.recommendedState,'UNPROVEN');
   assert.equal(status.metrics.cases,1);
 });
+
+
+test('three recorded calibration cases satisfy Stage B and recommend PROVISIONAL',()=>{
+  const calibrationDir=path.join(__dirname,'..','calibration');
+  const cases=[
+    {file:'freight-calibration-thermal-pads-001.receipt.json',spec:{unsupportedComponents:['packaging_cost','international_freight','duty_tariff','inspection_cost','prep_labeling','domestic_inbound_freight'],modeledTotalOnly:true,modeledTotal:2.05}},
+    {file:'freight-calibration-car-seat-gap-002.receipt.json',spec:{unsupportedComponents:['packaging_cost','duty_tariff','inspection_cost','prep_labeling','domestic_inbound_freight'],modeledTotalOnly:false}},
+    {file:'freight-calibration-ddp-tariff-003.receipt.json',spec:{unsupportedComponents:['product_cost','packaging_cost','international_freight','duty_tariff','inspection_cost','prep_labeling','domestic_inbound_freight'],modeledTotalOnly:false}}
+  ];
+  const results=[]; const q2=[];
+  for(const entry of cases){
+    const receipt=JSON.parse(fs.readFileSync(path.join(calibrationDir,entry.file),'utf8'));
+    const out=evaluateCalibrationReceipt(receipt,entry.spec);
+    assert.equal(out.pass,true,entry.file+': '+JSON.stringify(out.violations));
+    assert.equal(receipt.q2.result,'PASS');
+    assert.equal(receipt.caseResult,'PASS');
+    results.push({pass:true}); q2.push('PASS');
+  }
+  const status=qualificationStatus({caseResults:results,q2Results:q2,actualReconciliationCases:1});
+  assert.equal(status.recommendedState,'PROVISIONAL');
+  assert.equal(status.provisionalEligible,true);
+  assert.equal(status.qualifiedEligible,false);
+});
