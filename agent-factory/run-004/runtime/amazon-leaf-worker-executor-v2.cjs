@@ -932,7 +932,7 @@ async function prescreenAmazonLeaf(leafId, fetchImpl = fetch) {
   const verified=snapshots.filter((snapshot)=>snapshot?.ok);
   return {
     leafId:String(leafId),
-    policyVersion:'amazon-opportunity-prescreen/1.0.0',
+    policyVersion:'amazon-opportunity-prescreen/1.0.1',
     poolSize:AMAZON_PRESCREEN_POOL_SIZE,
     deepResearchLimit:AMAZON_DEEP_RESEARCH_LIMIT,
     snapshots:verified,
@@ -1012,7 +1012,7 @@ function calculateAmazonSourceTargets(salePriceCents) {
     absoluteSourceCostCeilingCents,
     preferredSourceTargetCents,
     preferredSourceShareBps:AMAZON_PREFERRED_SOURCE_SHARE_BPS,
-    policyVersion:'amazon-opportunity-prescreen/1.0.0',
+    policyVersion:'amazon-opportunity-prescreen/1.0.1',
   };
 }
 
@@ -1029,9 +1029,17 @@ function scoreAmazonPrescreenSnapshot(snapshot, demandThresholdUnits = AMAZON_MI
   const price=parseDisplayedUsdCents(snapshot?.displayedPrice);
   const demandLowerBoundUnits=parseAmazonBoughtPastMonthLowerBound(snapshot?.boughtPastMonth);
   const signals=[];
+  if (/\bAmazon Basics\b/i.test(String(snapshot?.title || ''))) return {
+    asin:snapshot.asin,
+    score:0,
+    eligibleForDeepResearch:false,
+    exclusionReason:'MARKETPLACE_PRIVATE_LABEL',
+    demandLowerBoundUnits,
+    sourceTargets:price === null ? null : calculateAmazonSourceTargets(price),
+    signals:['marketplace_private_label']
+  };
   if (price === null) return {asin:snapshot?.asin || '',score:0,eligibleForDeepResearch:false,exclusionReason:'PRICE_UNVERIFIED',demandLowerBoundUnits,sourceTargets:null,signals:['price_unverified']};
   const sourceTargets=calculateAmazonSourceTargets(price);
-  if (/\bAmazon Basics\b/i.test(String(snapshot?.title || ''))) return {asin:snapshot.asin,score:0,eligibleForDeepResearch:false,exclusionReason:'MARKETPLACE_PRIVATE_LABEL',demandLowerBoundUnits,sourceTargets,signals:['marketplace_private_label']};
   if (demandLowerBoundUnits === null) return {asin:snapshot.asin,score:0,eligibleForDeepResearch:false,exclusionReason:'MONTHLY_DEMAND_UNVERIFIED',demandLowerBoundUnits:null,sourceTargets,signals:['monthly_demand_unverified']};
   if (demandLowerBoundUnits < demandThresholdUnits) return {asin:snapshot.asin,score:0,eligibleForDeepResearch:false,exclusionReason:'BELOW_MONTHLY_DEMAND_THRESHOLD',demandLowerBoundUnits,sourceTargets,signals:['below_monthly_demand_threshold']};
 
@@ -1102,7 +1110,7 @@ function scoreAmazonLeafOpportunity(snapshots) {
   const opportunityScore=Math.max(0,Math.min(100,demandBreadthScore+signalRateScore+candidateQualityScore+priceRoomScore));
   if (!(snapshots || []).length) {
     return {
-      policyVersion:'amazon-opportunity-prescreen/1.0.0',
+      policyVersion:'amazon-opportunity-prescreen/1.0.1',
       sampleSize:0,
       demandQualifiedCount:0,
       demandSignalRate:0,
@@ -1114,7 +1122,7 @@ function scoreAmazonLeafOpportunity(snapshots) {
     };
   }
   return {
-    policyVersion:'amazon-opportunity-prescreen/1.0.0',
+    policyVersion:'amazon-opportunity-prescreen/1.0.1',
     sampleSize:(snapshots || []).length,
     demandQualifiedCount:qualified.length,
     demandSignalRate,
