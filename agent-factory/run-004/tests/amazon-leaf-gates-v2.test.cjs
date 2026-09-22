@@ -325,3 +325,11 @@ test('sourcing targets are derived deterministically from carried Amazon sale ev
   assert.equal(targets[0].preferredSourceTargetCents,1349);
   assert.equal(targets[0].absoluteSourceCostCeilingCents,2638);
 });
+
+test('empty Amazon category-page sample is unscorable, not falsely deprioritized', () => {
+  const worker=require('../runtime/amazon-leaf-worker-executor-v2.cjs');
+  const score=worker.scoreAmazonLeafOpportunity([]);
+  assert.equal(score.decision,'unscorable');
+  assert.equal(score.sampleSize,0);
+  assert.equal(score.opportunityScore,0);
+});
