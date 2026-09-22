@@ -274,3 +274,32 @@ The reviewer then performed the separate five-case portfolio Q3. The initial rev
 `SPC-FREIGHT-001` may now issue an internal landed-cost professional certification only when the case-specific material evidence is complete. Qualification is a capability property, not a shortcut around evidence gates.
 
 The qualification does **not** authorize SourceMargin resolver claim/write-back, customer publication, supplier outreach, purchases, spending, customs legal opinions, tax advice, or self-review. Those remain under separate A0/authority controls. Run 004 as a whole remains professionally BLOCKED where another material discipline—such as marketplace policy/IP or category-specific product judgment—has not been qualified or bound.
+
+
+## Marketplace Policy/IP qualification and candidate-level PCM
+
+`SPC-IP-001` is now **QUALIFIED** under `SPC-IP-001-QUAL-V1`.
+
+Qualification evidence:
+- five author calibration cases across eBay and Amazon;
+- five of five corrected independent Q2 case audits PASS;
+- reviewer-only `SPC-IP-Q3-001` qualified on three preregistered gold cases;
+- final independent portfolio Q3 normalized to `PE_PASS`;
+- final independent qualification Q2 = PASS / promotion evidence COMPLETE.
+
+The capability is intentionally bounded. It may certify a SourceMargin candidate's **marketplace-policy/IP risk screen** against current platform evidence and candidate facts. It does not provide legal IP advice, technical compatibility certification, rights-owner guarantees, marketplace account actions, listing/publication authority, supplier contact, purchase/spend, or production mutation.
+
+### Candidate-level professional routing
+
+`runtime/source-margin-professional-router.cjs` builds a Professional Capability Manifest for each candidate.
+
+Rules:
+- **Marketplace Policy/IP is always required** before customer/publication readiness.
+- **Freight/import** is required when cross-border import or landed-cost professional certification is material.
+- **Product/Category Specification is conditional**, not a permanent global role.
+- Category expertise is required for compatibility/fitment, vehicle fitment, electrical/electronic function, safety-critical or regulated products, medical/health claims, material or chemical performance, structural/load-bearing claims, branded-equivalence, patent/design risk, installation/modification, and similar technically material claims.
+- A candidate may omit category-specialist review only when it is explicitly characterized as a generic commodity with simple specifications and none of the material-risk flags is present.
+- Unknown category complexity **fails closed**: absence of risk data is not treated as proof of low risk.
+- When category expertise is required, both a job-specific QUALIFIED specialist and independent QUALIFIED reviewer must be bound. There is no universal product expert.
+
+This changes Run 004 from a permanent global professional blocker into a **candidate-gated professional system**: a missing category specialist blocks the affected candidate, not every SourceMargin candidate.
