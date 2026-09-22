@@ -108,7 +108,7 @@ test('three recorded calibration cases satisfy Stage B and recommend PROVISIONAL
 });
 
 
-test('five recorded calibration cases satisfy Stage C case thresholds but remain PROVISIONAL without Q3',()=>{
+test('five recorded calibration cases meet Stage C case thresholds and require Q3 for qualification',()=>{
   const calibrationDir=path.join(__dirname,'..','calibration');
   const entries=[
     ['freight-calibration-thermal-pads-001.receipt.json',{unsupportedComponents:['packaging_cost','international_freight','duty_tariff','inspection_cost','prep_labeling','domestic_inbound_freight'],modeledTotalOnly:true,modeledTotal:2.05}],
@@ -126,12 +126,39 @@ test('five recorded calibration cases satisfy Stage C case thresholds but remain
     assert.equal(receipt.caseResult,'PASS');
     results.push({pass:true}); q2.push('PASS');
   }
-  const status=qualificationStatus({caseResults:results,q2Results:q2,actualReconciliationCases:2,independentQ3:null});
-  assert.equal(status.recommendedState,'PROVISIONAL');
-  assert.equal(status.provisionalEligible,true);
-  assert.equal(status.qualifiedEligible,false);
+  const withoutQ3=qualificationStatus({caseResults:results,q2Results:q2,actualReconciliationCases:2,independentQ3:null});
+  assert.equal(withoutQ3.recommendedState,'PROVISIONAL');
+  assert.equal(withoutQ3.qualifiedEligible,false);
+  const withQ3=qualificationStatus({caseResults:results,q2Results:q2,actualReconciliationCases:2,independentQ3:'PE_PASS'});
+  assert.equal(withQ3.recommendedState,'QUALIFIED');
+  assert.equal(withQ3.qualifiedEligible,true);
+});
+
+test('recorded final portfolio Q3 and Q2 audit promote SPC-FREIGHT-001 to QUALIFIED',()=>{
+  const calibrationDir=path.join(__dirname,'..','calibration');
   const program=JSON.parse(fs.readFileSync(path.join(calibrationDir,'freight-specialist-qualification-v1.json'),'utf8'));
+  const finalQ3=JSON.parse(fs.readFileSync(path.join(calibrationDir,'freight-q3-final-portfolio.receipt.json'),'utf8'));
+  const registry=JSON.parse(fs.readFileSync(path.join(__dirname,'..','..','governance','specialist-registry-v1.0.json'),'utf8'));
+  const subject=registry.records.find(x=>x.specialistId==='SPC-FREIGHT-001');
+  assert.equal(program.qualificationResult,'QUALIFIED');
+  assert.equal(program.progress.currentRecommendedState,'QUALIFIED');
   assert.equal(program.progress.stageCProgress.totalCases,5);
   assert.equal(program.progress.stageCProgress.realQuoteOrFinalChargeCases,2);
-  assert.equal(program.progress.stageCProgress.independentQ3,'MISSING');
+  assert.equal(program.progress.stageCProgress.independentQ3,'PE_PASS');
+  assert.equal(program.progress.stageCProgress.q3Q2Audit,'PASS');
+  assert.equal(program.progress.stageCProgress.promotionEvidenceStatus,'COMPLETE');
+  assert.equal(finalQ3.professionalOutcome,'PE_PASS');
+  assert.equal(finalQ3.promotionRecommendation,'QUALIFIED');
+  assert.equal(finalQ3.q2Audit.qualificationQ2,'PASS');
+  assert.equal(finalQ3.q2Audit.q3OutcomeAccepted,'PE_PASS');
+  assert.equal(finalQ3.q2Audit.promotionEvidenceStatus,'COMPLETE');
+  assert.equal(finalQ3.authorityUsage.externalActions,0);
+  assert.equal(finalQ3.authorityUsage.spendCents,0);
+  assert.equal(finalQ3.authorityUsage.productionMutation,false);
+  assert.equal(subject.qualificationState,'QUALIFIED');
+  assert.ok(subject.allowedTaskClasses.includes('landed-cost-professional-certification'));
+  assert.equal(subject.eligibleAsReviewer,false);
+  for(const x of ['independent-review','customs-legal-opinion','tax-advice','production-mutation','publication','purchase']){
+    assert.ok(subject.excludedTaskClasses.includes(x),'missing qualified exclusion '+x);
+  }
 });

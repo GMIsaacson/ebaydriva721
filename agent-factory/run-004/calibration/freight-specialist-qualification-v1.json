@@ -82,12 +82,7 @@
     "promotion": "QUALIFIED",
     "automaticPromotion": false
   },
-  "currentKnownBlockers": [
-    "All Stage C case-count and quote-reconciliation thresholds are now met, but independent Q3 has not yet been executed.",
-    "SPC-FREIGHT-Q3-001 has passed reviewer calibration and is available for the required independent portfolio review.",
-    "Production certification remains denied until independent Q3 returns PE_PASS and the registry is promoted in a separate evidence-bearing change.",
-    "Thermal Pads itself still lacks quote-backed packaging, international freight, duty/tariff, inspection, prep/labeling, and domestic inbound values."
-  ],
+  "currentKnownBlockers": [],
   "authority": {
     "mode": "SHADOW_ONLY",
     "maxExternalActions": 0,
@@ -101,7 +96,7 @@
     "requiredForProvisional": 3,
     "q2PassingCases": 5,
     "actualReconciliationCases": 2,
-    "currentRecommendedState": "PROVISIONAL",
+    "currentRecommendedState": "QUALIFIED",
     "caseMix": {
       "incompleteBlockCase": "SM-AMZ-THERMAL-PADS-001",
       "quoteBackedFreightCase": "RUN004-CAR-SEAT-GAP-FREIGHT-002",
@@ -155,9 +150,23 @@
       "requiredTotalCases": 5,
       "realQuoteOrFinalChargeCases": 2,
       "requiredRealQuoteOrFinalChargeCases": 2,
-      "independentQ3": "MISSING",
+      "independentQ3": "PE_PASS",
       "qualifiedReviewerAvailable": "SPC-FREIGHT-Q3-001",
-      "estimateErrorEvidence": "NOT_APPLICABLE_NO_ESTIMATION_CASES"
+      "estimateErrorEvidence": "NOT_APPLICABLE_NO_ESTIMATION_CASES",
+      "independentQ3Reviewer": "SPC-FREIGHT-Q3-001",
+      "portfolioQ3CommandId": "WC-20260922054728-ece811e159",
+      "outcomeNormalizationCommandId": "WC-20260922054804-5ffb8e4d3c",
+      "q3Q2Audit": "PASS",
+      "q3Q2AuditCommandId": "WC-20260922054825-9aa06a8ff5",
+      "promotionEvidenceStatus": "COMPLETE",
+      "qualificationCompletedAt": "2026-09-22T05:48:32.421Z"
     }
-  }
+  },
+  "qualificationResult": "QUALIFIED",
+  "standingLimitations": [
+    "QUALIFIED capability does not waive case-specific evidence completeness; incomplete landed-cost inputs still block certification for that case.",
+    "Customs legal opinion and tax advice remain outside scope.",
+    "Independent review of the specialist's own authored work remains prohibited.",
+    "SourceMargin production mutation, publication, supplier contact and purchase/spend authority remain separately governed and are not granted by this qualification."
+  ]
 }

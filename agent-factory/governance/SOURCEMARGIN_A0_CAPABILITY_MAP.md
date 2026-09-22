@@ -29,10 +29,10 @@ Supabase remains the SourceMargin live operational research truth. GitHub remain
 | Deterministic/test QA | SPC-QA-001 | REUSE | QUALIFIED Q1 reviewer. |
 | Retry/dead-letter/cancellation/recovery primitives | Run 008 Operations Core | REUSE | No separate operations/state-control service. |
 | SourceMargin current-state reconciliation | Run 004 using Run 008/Work Control patterns | EXTEND | Genuine gap: reconcile Supabase + Work Control + GitHub into one typed state receipt; fail closed on drift. |
-| Freight/import/landed-cost professional judgment | SPC-FREIGHT-001 | EXTEND/QUALIFY existing capability | PROVISIONAL. Stage C case thresholds are now complete: 5/5 passing cases, 5/5 Q2 PASS, 2 quote-backed reconciliations. Awaiting independent portfolio Q3 before QUALIFIED. |
+| Freight/import/landed-cost professional judgment | SPC-FREIGHT-001 | REUSE — QUALIFIED | QUALIFIED after 5/5 passing cases, 5/5 Q2 PASS, 2 quote-backed reconciliations, independent portfolio Q3 `PE_PASS`, and final Q2 qualification audit PASS. Evidence-complete professional certification is allowed; production mutation/publication remains separately denied. |
 | Marketplace policy/IP judgment | SPC-IP-001 | EXTEND/QUALIFY existing capability | Currently UNPROVEN. |
 | Product/category specification judgment | Job-specific qualified specialist | BLOCKED until bound | Do not create a generic universal category expert. Bind only when material. |
-| Freight/import independent Q3 | SPC-FREIGHT-Q3-001 + Professional Capability framework | EXTEND/CALIBRATE | Reviewer-only specialist is QUALIFIED and eligible for freight Q3 after 3/3 gold calibrations + aggregate Q2 PASS. Portfolio Q3 for SPC-FREIGHT-001 has not yet been executed. |
+| Freight/import independent Q3 | SPC-FREIGHT-Q3-001 + Professional Capability framework | REUSE — QUALIFIED | Reviewer-only specialist is QUALIFIED; final SPC-FREIGHT-001 portfolio review returned `PE_PASS` and the independent Q2 qualification audit accepted the outcome. |
 | Software/UI changes to SourceMargin | Run 014 / Run 015 | REUSE when needed | These are shared production capabilities, not permanent SourceMargin subteams. |
 
 ## Genuine extension: State Reconciliation
@@ -67,11 +67,12 @@ Fail-closed rules:
 
 ## Professional-readiness constraint
 
-Canonical Factory retrofit still marks Run 004 as professionally BLOCKED. Freight/import Stage C case thresholds are complete and a QUALIFIED independent freight Q3 reviewer now exists, but the freight portfolio Q3 has not yet been executed; marketplace policy/IP and category-professional review also remain unproven/unbound.
+Canonical Factory retrofit still marks Run 004 as professionally BLOCKED overall, but the freight/import gap is closed: `SPC-FREIGHT-001` is QUALIFIED and its independent portfolio Q3 returned `PE_PASS`. Marketplace policy/IP and category-professional review remain unproven/unbound, so those separate disciplines can still block product-level commercial readiness when material.
 
 Therefore:
 - research, discovery, evidence collection, demand validation, supplier search and deterministic economics may continue within their allowed/provisional scopes;
-- no unsupported “profitable”, “BUY-ready”, or equivalent commercial readiness claim may be promoted until the gating professional capabilities and Q3 are satisfied.
+- freight/import professional certification may now be issued only when the case-specific required evidence is complete;
+- no unsupported “profitable”, “BUY-ready”, or equivalent commercial readiness claim may be promoted while another material gating discipline (for example policy/IP or category specification) remains unqualified or unbound.
 
 ## Immediate Work Control handoff
 

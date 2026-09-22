@@ -227,7 +227,7 @@ Promotion from recommendation packets to actual Work Control command creation re
 
 `SPC-FREIGHT-001` is now under the governed calibration program `SPC-FREIGHT-001-QUAL-V1`.
 
-The program does **not** promote the specialist merely because a qualification harness exists. Stage B evidence has now passed, so the canonical registry is `PROVISIONAL`; production certification remains denied until Stage C and independent logistics Q3 pass.
+The program does **not** promote the specialist merely because a qualification harness exists. Stage C evidence and independent logistics Q3 have now passed, so the canonical registry is `QUALIFIED`. This permits evidence-bounded landed-cost professional certification when the underlying case inputs are complete; it does not grant production mutation, publication, supplier-contact, purchase, customs-legal, or tax authority.
 
 Promotion rules:
 
@@ -239,20 +239,23 @@ Stage B calibration set: (1) Thermal Pads incomplete/block case; (2) Car Seat Ga
 
 Work Control command `WC-20260922050446-195dc8e863` attempted the first shadow calibration. The governed worker failed closed before model execution with `OPENAI_HTTP_429` / `credit_balance_exhausted`. It used 0 input tokens, 0 output tokens, $0 model cost, 0 external actions, and made no production mutation.
 
-That initial runtime failure was not counted as a professional case. After the runtime was restored, Thermal Pads passed as case 1 with independent Q2 PASS. Cases 2 and 3 also passed with Q2 PASS, satisfying the three-case Stage B mix. `SPC-FREIGHT-001` is therefore `PROVISIONAL`, not `QUALIFIED`.
+That initial runtime failure was not counted as a professional case. After runtime recovery, the five-case qualification portfolio passed with independent Q2 on every case, two quote-backed reconciliation cases satisfied Stage C, and the independent freight Q3 returned `PE_PASS`. `SPC-FREIGHT-001` is now `QUALIFIED`.
 
 The qualification harness explicitly rejects fabricated freight values, relabeling modeled landed cost as verified, external authority use, and production certification while material inputs remain unresolved.
 
 
-### Current freight qualification status — Stage B passed
+### Current freight qualification status — QUALIFIED
 
 - Case 1: Thermal Pads incomplete/block — PASS, Q2 PASS.
 - Case 2: Car Seat Gap Filler exact-SKU visible freight quote — PASS, Q2 PASS.
 - Case 3: controlled DDP + tariff-classification fixture — PASS, Q2 PASS.
-- Stage B result: **PROVISIONAL**.
-- Production certification: **DENIED**.
-- Independent reviewer eligibility: **NO**.
-- Stage C remaining: 5 total cases minimum, 2 real quote/final-charge reconciliations minimum, estimate-error evidence where estimates are requested, and independent qualified logistics/freight Q3 `PE_PASS`.
+- Stage B result: **PASS**.
+- Stage C portfolio: **5/5 PASS; 5/5 Q2 PASS; 2 quote-backed reconciliations**.
+- Independent portfolio Q3: **PE_PASS** (`WC-20260922054728-ece811e159`; normalized outcome `WC-20260922054804-5ffb8e4d3c`).
+- Final independent qualification Q2: **PASS / promotion evidence COMPLETE** (`WC-20260922054825-9aa06a8ff5`).
+- Specialist state: **QUALIFIED**.
+- Evidence-complete landed-cost professional certification: **ALLOWED**.
+- Production mutation, publication, supplier contact, purchase/spend, customs legal opinion, tax advice, and self-review: **DENIED / separately governed**.
 
 
 ### Stage C freight cases and independent Q3 reviewer
@@ -263,4 +266,11 @@ Case 5 independently verified UPS dimensional-weight handling and EXW scope with
 
 The required independent reviewer gap is now filled by reviewer-only specialist `SPC-FREIGHT-Q3-001`. Its reviewer qualification used three preregistered gold cases: cautious incomplete evidence → `PE_PASS_WITH_LIMITATION`; adversarial DDP/duty/fabricated-freight case → `PE_FAIL`; bounded quote normalization → `PE_PASS_WITH_LIMITATION`. Aggregate Q2 returned `QUALIFICATION_Q2_PASS`.
 
-The authoring specialist remains `PROVISIONAL` until that reviewer performs the separate five-case portfolio Q3 and returns `PE_PASS`. The reviewer is not allowed to author freight work, self-review, mutate production, contact suppliers, purchase, provide customs legal opinions, or provide tax advice.
+The reviewer then performed the separate five-case portfolio Q3. The initial review returned an unambiguous PASS/Stage C qualified judgment; a controlled normalization emitted the required exact token `PE_PASS`, and a separate Q2 audit accepted that outcome with promotion evidence `COMPLETE`. The authoring specialist is now `QUALIFIED`. `SPC-FREIGHT-Q3-001` remains reviewer-only and may not author freight work, self-review, mutate production, contact suppliers, purchase, provide customs legal opinions, or provide tax advice.
+
+
+### Qualification boundary after PE_PASS
+
+`SPC-FREIGHT-001` may now issue an internal landed-cost professional certification only when the case-specific material evidence is complete. Qualification is a capability property, not a shortcut around evidence gates.
+
+The qualification does **not** authorize SourceMargin resolver claim/write-back, customer publication, supplier outreach, purchases, spending, customs legal opinions, tax advice, or self-review. Those remain under separate A0/authority controls. Run 004 as a whole remains professionally BLOCKED where another material discipline—such as marketplace policy/IP or category-specific product judgment—has not been qualified or bound.
