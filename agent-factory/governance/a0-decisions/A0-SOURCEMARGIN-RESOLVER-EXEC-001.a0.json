@@ -1,0 +1,66 @@
+{
+  "decision_id": "A0-SOURCEMARGIN-RESOLVER-EXEC-001",
+  "status": "PASS",
+  "verdict": "EXTEND",
+  "owner": "Aberdeen Technologies",
+  "decided_at": "2026-09-21",
+  "business_outcome": "Allow SourceMargin resolver gaps to be tested through the existing Factory execution model without creating a second agent system, while preserving fail-closed publication semantics and preventing unqualified supplier/freight judgments or unauthorized production mutation.",
+  "existing_owner_scan": "Reviewed A0-SOURCEMARGIN-STATE-001, A0-SOURCEMARGIN-COMPLETION-001, A0-SOURCEMARGIN-ACQ-DISPATCH-001, Run 004 DataScout Source-to-Marketplace, Run 008 Operations Core, Work Control, Agent 000, the SourceMargin A0 capability map, the Factory specialist registry, the professional-readiness retrofit, and the live SourceMargin resolver interface introduced in GMIsaacson/Eb-Al at merge a0ea19b3522608e5207c44a275ddefb9a741050d. Run 004 already owns source-to-marketplace research, Work Control already owns execution state, Run 008 already owns deterministic retry/dead-letter/recovery patterns, SPC-SOURCE-001 already owns supplier search/comparison, SPC-EVID-001 owns Q2 evidence verification, SPC-ECON-001 plus SW-DS-ECONOMICS-001 own unit-economics calculation, and SPC-FREIGHT-001 already exists for freight/import/landed-cost work but remains UNPROVEN. No new team, scheduler, database, control center, or standalone worker system is justified.",
+  "reuse_candidates_checked": [
+    "Run 004 — DataScout Source-to-Marketplace",
+    "Agent 000 / Work Control",
+    "Run 008 — Operations Core",
+    "SPC-SOURCE-001 Marketplace Supplier Sourcing",
+    "SPC-EVID-001 Evidence/Claim Verification",
+    "SPC-ECON-001 Unit Economics",
+    "SW-DS-ECONOMICS-001 deterministic economics",
+    "SPC-FREIGHT-001 Freight/Import/Landed Cost",
+    "SW-DS-STATE-RECONCILER-001",
+    "SW-DS-COMPLETION-GUARD-001",
+    "Existing SourceMargin Supabase resolver task queue and bounded resolver RPC contract"
+  ],
+  "duplication_analysis": "REUSE is sufficient for ownership, supplier research, evidence QA, economics, execution-state control, and recovery. EXTEND is required only for the narrow adapter that translates a SourceMargin resolver task into an internal Factory shadow assignment and returns a provenance-bound proposed-result receipt. Supplier Verification and Landed Cost are task classes routed to existing specialist capabilities, not new canonical agents. The extension must not create a SourceMargin mini-factory, duplicate scheduler, alternate project state store, or independent task authority. Because SPC-FREIGHT-001 is UNPROVEN, landed-cost professional verification remains blocked in production; shadow work may collect and structure evidence but may not certify a cost as professionally verified or promote BUY-ready/profitable readiness.",
+  "residual_unowned_loop": "Read one SourceMargin resolver task without claiming or mutating it -> create one idempotent internal Work Control shadow assignment keyed to the SourceMargin task ID -> route supplier-link work to SPC-SOURCE-001 with SPC-EVID-001 Q2 verification, and landed-cost work to the existing freight/import capability in SHADOW/UNPROVEN mode plus deterministic economics -> emit a structured proposed-result/evidence receipt -> compare it against the resolver contract and evidence rules -> stop. Phase 1 explicitly performs no SourceMargin claim/complete/fail mutation, no SAMPLE_READY promotion, no customer publication, no supplier contact/RFQ, no authenticated marketplace action, no purchase/bid, no spend, and no authority expansion. Production write-back requires a later fresh owner authorization after shadow exit criteria pass.",
+  "covers_paths": [
+    "agent-factory/run-004/runtime/sourcemargin-resolver-shadow-adapter.cjs",
+    "agent-factory/run-004/contracts/sourcemargin-resolver-shadow.schema.json",
+    "agent-factory/run-004/contracts/registry.json",
+    "agent-factory/run-004/README.md"
+  ],
+  "evidence_ref": "agent-factory/governance/SOURCEMARGIN_A0_CAPABILITY_MAP.md; agent-factory/governance/specialist-registry-v1.0.json; agent-factory/governance/team-professional-retrofit-v1.0.json; agent-factory/governance/a0-decisions/A0-SOURCEMARGIN-STATE-001.a0.json; agent-factory/governance/a0-decisions/A0-SOURCEMARGIN-COMPLETION-001.a0.json; agent-factory/governance/a0-decisions/A0-SOURCEMARGIN-ACQ-DISPATCH-001.a0.json; GMIsaacson/Eb-Al merge a0ea19b3522608e5207c44a275ddefb9a741050d; SourceMargin Thermal Pads resolver state on 2026-09-21: 8 queued resolver tasks, RESEARCH_SAMPLE_READY, 0 publishable SAMPLE_READY.",
+  "authority_boundary": {
+    "phase": "SHADOW_ONLY",
+    "allowed": [
+      "read bounded SourceMargin resolver/task status",
+      "create internal idempotent Work Control shadow assignment after implementation approval",
+      "analyze supplied or separately authorized public evidence",
+      "produce proposed structured supplier/cost evidence",
+      "run deterministic economics in shadow",
+      "run Q1/Q2 review",
+      "emit internal receipts"
+    ],
+    "denied": [
+      "claim, complete, fail, or otherwise mutate SourceMargin resolver tasks",
+      "write canonical supplier evidence or landed-cost components",
+      "mark supplier evidence verified in production",
+      "mark landed-cost professional judgment verified",
+      "promote RESEARCH_SAMPLE_READY to SAMPLE_READY",
+      "publish customer opportunities",
+      "contact suppliers or send RFQs",
+      "authenticated marketplace actions",
+      "purchase, bid, list, message, or spend",
+      "create a new team, scheduler, database, control center, or autonomous SourceMargin execution plane"
+    ]
+  },
+  "shadow_exit_criteria": [
+    "All eight current Thermal Pads resolver tasks can be mirrored by stable SourceMargin task ID without claiming them.",
+    "Repeat execution is idempotent and creates no duplicate Work Control assignment for the same task/version.",
+    "Supplier-link shadow work either returns a durable exact-product evidence proposal with provenance or blocks explicitly; search/PLA/session URLs cannot be promoted as canonical evidence.",
+    "Landed-cost shadow work never invents missing values and never labels SPC-FREIGHT-001 output production-verified while that specialist remains UNPROVEN.",
+    "Q2 evidence verification independently checks every proposed externally sourced claim; deterministic economics refuses missing required inputs.",
+    "SourceMargin canonical state, resolver task status, SAMPLE_READY count, supplier records, economics records, publication state, external-action count, and spend remain unchanged during the pilot.",
+    "A typed shadow receipt records task ID, specialist route, evidence, proposed result, blockers, Q1/Q2 state, runtime, and authority usage.",
+    "Only after these criteria pass may a fresh A0/owner decision consider bounded production claim/write-back authority."
+  ],
+  "prior_production_change_disposition": "The already-applied SourceMargin resolver schema/UI changes are retained as a fail-closed domain-project input because no Factory worker currently consumes them and they reduce false publication. This A0 record does not retroactively authorize those production mutations; it governs the Factory execution integration from this point forward."
+}
