@@ -467,6 +467,14 @@ function normalizeDiscoveryWithSnapshots(raw, snapshots) {
   return raw;
 }
 
+function parseDisplayedUsdCents(value) {
+  const match=String(value || '').replaceAll(',','').match(/\$\s*([0-9]+(?:\.[0-9]{1,2})?)/);
+  if (!match) return null;
+  const amount=Number(match[1]);
+  if (!Number.isFinite(amount) || amount <= 0) return null;
+  return Math.round(amount * 100);
+}
+
 function parseAmazonBoughtPastMonthLowerBound(value) {
   if (!value) return null;
   const text = String(value).replaceAll(',', '').trim();
@@ -582,7 +590,7 @@ function economicsEvidenceAssessments(candidates) {
     });
 }
 
-function normalizeLandedCostFastKill(raw, prior) {
+function normalizeLandedCostFastKill(raw, prior, publicSnapshots = []) {
   const latest = new Map(prior.at(-1).stageResult.candidates.map((candidate) => [candidate.asin, candidate]));
   const evidenceUrls = new Set(raw.evidence.map((item) => item.url));
   for (const row of prior) {
@@ -590,6 +598,10 @@ function normalizeLandedCostFastKill(raw, prior) {
       if (item?.url) evidenceUrls.add(item.url);
     }
   }
+  for (const snapshot of publicSnapshots) {
+    if (snapshot?.ok && snapshot.url) evidenceUrls.add(snapshot.url);
+  }
+  const snapshotsByAsin = new Map(publicSnapshots.filter((x)=>x?.ok).map((x)=>[x.asin,x]));
 
   let killed = 0;
   raw.candidates = raw.candidates.map((candidate) => {
@@ -597,10 +609,29 @@ function normalizeLandedCostFastKill(raw, prior) {
     if (before && ['blocked','rejected'].includes(before.disposition)) return candidate;
     if (candidate.disposition !== 'continue' || !candidate.economicsEvidence) return candidate;
 
+    const snapshot = snapshotsByAsin.get(candidate.asin);
+    if (!candidate.economicsEvidence.sale && snapshot?.displayedPrice) {
+      const amountCents = parseDisplayedUsdCents(snapshot.displayedPrice);
+      if (amountCents !== null) {
+        candidate.economicsEvidence = {
+          ...candidate.economicsEvidence,
+          sale: {
+            amountCents,
+            evidence: {
+              state:'OBSERVED',
+              sourceUrl:snapshot.url,
+              observedAt:new Date().toISOString(),
+              claim:`Exact public Amazon product page displayed ${snapshot.displayedPrice} for ASIN ${candidate.asin} during LANDED_COST verification.`,
+              policyVersion:null,
+            },
+          },
+        };
+      }
+    }
+
     const requiredEntries = [
       candidate.economicsEvidence.sale,
       candidate.economicsEvidence.sourceCost,
-      candidate.economicsEvidence.inboundFreight,
     ];
     if (requiredEntries.some((entry) => !entry?.evidence?.sourceUrl || !evidenceUrls.has(entry.evidence.sourceUrl))) {
       return candidate;
@@ -838,6 +869,13 @@ async function processAmazonLeafStage({ apiKey, command, profileSet, deps }) {
         .map((c)=>c.asin)
     );
   }
+  if (payload.stage === 'LANDED_COST' && prior.length) {
+    publicSnapshots = await collectAmazonPublicSnapshots(
+      prior.at(-1).stageResult.candidates
+        .filter((c)=>c.disposition === 'continue' || c.disposition === 'research_candidate')
+        .map((c)=>c.asin)
+    );
+  }
   const maxToolCalls = ['ASIN_DISCOVERY','DEMAND_VALIDATION','ECONOMICS','EVIDENCE_QA'].includes(payload.stage) ? 0 : payload.stage === 'ECONOMICS_EVIDENCE' ? 2 : 1;
   const response = await callOpenAIRequest(apiKey, {
     prompt: buildPrompt(payload, specialist, prior, publicSnapshots),
@@ -854,7 +892,7 @@ async function processAmazonLeafStage({ apiKey, command, profileSet, deps }) {
     raw = normalizeDiscoveryWithSnapshots(raw, publicSnapshots.filter((x)=>raw.candidates.some((c)=>c.asin===x.asin)));
   }
   if (payload.stage === 'DEMAND_VALIDATION') raw = normalizeDemandValidationWithSnapshots(raw, publicSnapshots);
-  if (payload.stage === 'LANDED_COST') raw = normalizeLandedCostFastKill(raw, prior);
+  if (payload.stage === 'LANDED_COST') raw = normalizeLandedCostFastKill(raw, prior, publicSnapshots);
   if (payload.stage === 'ECONOMICS_EVIDENCE') raw = normalizeEconomicsEvidenceStage(raw, prior);
   if (payload.stage === 'ECONOMICS') raw = normalizeDeterministicEconomicsStage(raw, prior);
   const nowIso = new Date().toISOString();
@@ -936,6 +974,7 @@ module.exports = {
   collectAmazonPublicSnapshots,
   fetchAmazonLeafAsins,
   normalizeDiscoveryWithSnapshots,
+  parseDisplayedUsdCents,
   parseAmazonBoughtPastMonthLowerBound,
   qualifyAmazonMonthlyDemand,
   normalizeDemandValidationWithSnapshots,
