@@ -1,5 +1,7 @@
 'use strict';
 
+const { createHash } = require('node:crypto');
+
 const MARKER = '[AMAZON_LEAF_STAGE_V1]';
 const RUN_ID = 'SM-AMZ-PLANT-LABELS-001';
 const LEAF_ID = '14623206011';
@@ -176,7 +178,143 @@ function responseUsage(response) {
   };
 }
 
-function validateAndEnrich(raw, payload, prior, response, nowIso) {
+
+const AMAZON_PUBLIC_HEADERS = Object.freeze({
+  'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/153.0.0.0 Safari/537.36',
+  'accept-language': 'en-US,en;q=0.9',
+  'accept': 'text/html,application/xhtml+xml',
+});
+
+function decodeHtmlText(value) {
+  return String(value || '')
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&#39;|&#x27;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function firstMatch(html, regex) {
+  const match = String(html || '').match(regex);
+  return match ? decodeHtmlText(match[1]) : '';
+}
+
+async function fetchAmazonPublicSnapshot(asin, fetchImpl = fetch) {
+  if (!/^[A-Z0-9]{10}$/.test(String(asin || ''))) throw new Error('AMAZON_PUBLIC_ASIN_INVALID');
+  const url = \`https://www.amazon.com/dp/\${asin}\`;
+  let response;
+  try {
+    response = await fetchImpl(url, {
+      method: 'GET',
+      headers: AMAZON_PUBLIC_HEADERS,
+      redirect: 'follow',
+      signal: AbortSignal.timeout(20000),
+    });
+  } catch (error) {
+    return { asin, url, ok:false, status:0, reason:\`fetch_error:\${String(error?.name || error?.message || 'unknown').slice(0,80)}\` };
+  }
+
+  const finalUrl = String(response.url || url);
+  let final;
+  try { final = new URL(finalUrl); } catch { return { asin, url, ok:false, status:response.status, reason:'invalid_final_url' }; }
+  if (final.protocol !== 'https:' || !/(^|\.)amazon\.com$/i.test(final.hostname)) {
+    return { asin, url, ok:false, status:response.status, reason:'amazon_redirect_scope_violation' };
+  }
+
+  if (!response.ok) return { asin, url, ok:false, status:response.status, reason:\`http_\${response.status}\` };
+  const html = await response.text();
+  if (html.length < 10000 || html.length > 3_500_000) return { asin, url, ok:false, status:response.status, reason:'unexpected_body_size' };
+  if (/Robot Check|Type the characters you see in this image|captcha/i.test(html)) {
+    return { asin, url, ok:false, status:response.status, reason:'access_challenge' };
+  }
+
+  const title = firstMatch(html, /id=["']productTitle["'][^>]*>([\s\S]*?)<\/span>/i);
+  const rating = firstMatch(html, /id=["']acrPopover["'][^>]*title=["']([^"']+)["']/i);
+  const ratingsCount = firstMatch(html, /id=["']acrCustomerReviewText["'][^>]*>([\s\S]*?)<\/span>/i);
+  const availability = firstMatch(html, /id=["']availability["'][^>]*>[\s\S]*?<span[^>]*>([\s\S]*?)<\/span>/i);
+  const boughtPastMonth = firstMatch(html, /([^<>]{0,120}\bbought in past month\b[^<>]{0,120})/i);
+  const pageAsin = new RegExp(asin, 'i').test(html);
+  if (!pageAsin || !title) return { asin, url, ok:false, status:response.status, reason:'product_identity_not_verified' };
+
+  const receiptHash = createHash('sha256')
+    .update(JSON.stringify({asin,title,rating,ratingsCount,availability,boughtPastMonth,status:response.status,bytes:html.length}))
+    .digest('hex')
+    .slice(0,24);
+
+  return {
+    asin,
+    url,
+    ok:true,
+    status:response.status,
+    title:title.slice(0,300),
+    rating:rating.slice(0,100),
+    ratingsCount:ratingsCount.slice(0,100),
+    availability:availability.slice(0,120),
+    boughtPastMonth:boughtPastMonth.slice(0,160),
+    bytes:html.length,
+    sourceReceipt:\`amazon-public-http:\${receiptHash}\`,
+  };
+}
+
+async function collectAmazonPublicSnapshots(asins, fetchImpl = fetch) {
+  const unique=[...new Set((asins || []).map((x)=>String(x || '').trim()).filter((x)=>/^[A-Z0-9]{10}$/.test(x)))].slice(0,MAX_CANDIDATES);
+  const out=[];
+  for (const asin of unique) out.push(await fetchAmazonPublicSnapshot(asin, fetchImpl));
+  return out;
+}
+
+function snapshotClaim(snapshot) {
+  if (!snapshot?.ok) return '';
+  return [
+    \`Exact public Amazon product page verified for ASIN \${snapshot.asin}\`,
+    \`title="\${snapshot.title}"\`,
+    snapshot.rating ? \`rating=\${snapshot.rating}\` : '',
+    snapshot.ratingsCount ? \`ratings=\${snapshot.ratingsCount}\` : '',
+    snapshot.availability ? \`availability=\${snapshot.availability}\` : '',
+    snapshot.boughtPastMonth ? \`purchase_signal="\${snapshot.boughtPastMonth}"\` : '',
+  ].filter(Boolean).join('; ').slice(0,700);
+}
+
+function normalizeDiscoveryWithSnapshots(raw, snapshots) {
+  const byAsin=new Map(snapshots.map((x)=>[x.asin,x]));
+  let verified=0;
+  raw.candidates=raw.candidates.map((candidate)=>{
+    const snap=byAsin.get(candidate.asin);
+    if (snap?.ok) {
+      verified++;
+      return {
+        ...candidate,
+        disposition:'continue',
+        reason:\`Exact public Amazon product page independently verified (HTTP \${snap.status}); discovery may advance. \${candidate.reason || ''}\`.trim().slice(0,900),
+        title:snap.title || candidate.title,
+        amazonUrl:snap.url,
+        demandSignal:[candidate.demandSignal, snap.boughtPastMonth ? \`Amazon page signal: \${snap.boughtPastMonth}\` : '', snap.rating ? \`Rating: \${snap.rating}; \${snap.ratingsCount || ''}\` : ''].filter(Boolean).join(' | ').slice(0,900),
+      };
+    }
+    return {
+      ...candidate,
+      disposition:'blocked',
+      reason:\`Exact public Amazon page verification failed (\${snap?.reason || 'no_snapshot'}); candidate cannot advance from discovery.\`,
+    };
+  });
+  if (verified > 0) {
+    raw.outcome='PASS';
+    raw.blockers=[];
+    raw.summary=\`\${verified}/\${raw.candidates.length} proposed ASINs independently verified on exact public Amazon product pages; verified candidates may advance to demand validation.\`;
+  } else {
+    raw.outcome='BLOCKED';
+    raw.blockers=['No proposed ASIN could be independently verified on an exact public Amazon product page.'];
+    raw.summary='Discovery stopped because exact public Amazon product-page verification failed for every proposed ASIN.';
+  }
+  raw.coverage='partial';
+  return raw;
+}
+
+function validateAndEnrich(raw, payload, prior, response, nowIso, publicSnapshots = []) {
   if (!raw || typeof raw !== 'object') throw new Error('AMAZON_LEAF_RESULT_INVALID');
   const usage = responseUsage(response);
   const expectedAsins = prior.length ? prior[0].stageResult.candidates.map((c) => c.asin).sort() : null;
@@ -213,7 +351,8 @@ function validateAndEnrich(raw, payload, prior, response, nowIso) {
   }
 
   const freshRequired = new Set(['ASIN_DISCOVERY','DEMAND_VALIDATION','SOURCING','LANDED_COST','EVIDENCE_QA']);
-  if (raw.outcome === 'PASS' && freshRequired.has(payload.stage) && usage.webSearchCalls < 1) {
+  const verifiedPublicHttp = publicSnapshots.filter((x) => x?.ok).length;
+  if (raw.outcome === 'PASS' && freshRequired.has(payload.stage) && usage.webSearchCalls + verifiedPublicHttp < 1) {
     raw.outcome = 'BLOCKED';
     raw.blockers = [...raw.blockers, 'Fresh public-research tool receipt missing for this stage.'];
     raw.candidates = raw.candidates.map((c) => c.disposition === 'continue' || c.disposition === 'research_candidate'
@@ -229,6 +368,9 @@ function validateAndEnrich(raw, payload, prior, response, nowIso) {
     const receipt = usage.webSearchIds.length ? usage.webSearchIds[index % usage.webSearchIds.length] : fallbackReceipt;
     return { url: e.url, observedAt: nowIso, claim: String(e.claim || '').slice(0, 700), sourceReceipt: receipt };
   });
+  for (const snapshot of publicSnapshots.filter((x)=>x?.ok)) {
+    evidence.push({url:snapshot.url,observedAt:nowIso,claim:snapshotClaim(snapshot),sourceReceipt:snapshot.sourceReceipt});
+  }
 
   return {
     runId: RUN_ID,
@@ -243,7 +385,7 @@ function validateAndEnrich(raw, payload, prior, response, nowIso) {
   };
 }
 
-function buildPrompt(payload, specialist, prior) {
+function buildPrompt(payload, specialist, prior, publicSnapshots = []) {
   return [
     'You are executing one governed stage of a SourceMargin Amazon leaf research acceptance run.',
     `Run: ${RUN_ID}; Amazon US leaf: Plant Labels (${LEAF_ID}); stage: ${payload.stage}.`,
@@ -256,6 +398,7 @@ function buildPrompt(payload, specialist, prior) {
     ...(Array.isArray(payload.economicsReview) && payload.economicsReview.length
       ? ['', 'CONTROLLER-COMPUTED DETERMINISTIC ECONOMICS (review evidence, not model arithmetic):', JSON.stringify(payload.economicsReview)]
       : []),
+    ...(publicSnapshots.length ? ['', 'DETERMINISTIC EXACT AMAZON PUBLIC-PAGE SNAPSHOTS (allowlisted extraction; raw HTML excluded):', JSON.stringify(publicSnapshots)] : []),
     '',
     'Use public web search as needed within the tool budget. Return only the required structured JSON. Evidence entries must contain exact HTTPS URLs and specific claims; timestamps and retrieval receipt IDs are attached by the worker after tool execution.',
   ].join('\n');
@@ -266,18 +409,26 @@ async function processAmazonLeafStage({ apiKey, command, profileSet, deps }) {
   const payload = parsePayload(command);
   const specialist = STAGE_SPECIALISTS[payload.stage];
   const prior = await loadPriorResults(payload, controlRequest);
-  const maxToolCalls = payload.stage === 'ECONOMICS' ? 1 : payload.stage === 'EVIDENCE_QA' ? 2 : 3;
+  let publicSnapshots = [];
+  if (payload.stage === 'DEMAND_VALIDATION' && prior.length) {
+    publicSnapshots = await collectAmazonPublicSnapshots(prior[0].stageResult.candidates.map((c)=>c.asin));
+  }
+  const maxToolCalls = payload.stage === 'ECONOMICS' ? 1 : payload.stage === 'EVIDENCE_QA' ? 1 : 2;
   const response = await callOpenAIRequest(apiKey, {
-    prompt: buildPrompt(payload, specialist, prior),
+    prompt: buildPrompt(payload, specialist, prior, publicSnapshots),
     schema: RESULT_SCHEMA,
     schemaName: 'amazon_leaf_stage_result',
     maxOutputTokens: 3600,
     maxToolCalls,
     reasoningEffort: 'low',
   });
-  const raw = JSON.parse(WorkerCore.extractResponseText(response));
+  let raw = JSON.parse(WorkerCore.extractResponseText(response));
+  if (payload.stage === 'ASIN_DISCOVERY') {
+    publicSnapshots = await collectAmazonPublicSnapshots(raw.candidates.map((c)=>c.asin));
+    raw = normalizeDiscoveryWithSnapshots(raw, publicSnapshots);
+  }
   const nowIso = new Date().toISOString();
-  const stageResult = validateAndEnrich(raw, payload, prior, response, nowIso);
+  const stageResult = validateAndEnrich(raw, payload, prior, response, nowIso, publicSnapshots);
   const usage = responseUsage(response);
   const estimatedCostCents = WorkerCore.estimateModelCostCents(
     { input_tokens: usage.inputTokens, output_tokens: usage.outputTokens },
@@ -317,6 +468,9 @@ async function processAmazonLeafStage({ apiKey, command, profileSet, deps }) {
       webSearchCalls: usage.webSearchCalls,
       webSearchReceiptIds: usage.webSearchIds,
       maxToolCalls,
+      publicHttpRequests: publicSnapshots.length,
+      publicHttpVerified: publicSnapshots.filter((x)=>x?.ok).length,
+      publicHttpReceipts: publicSnapshots.filter((x)=>x?.ok).map((x)=>x.sourceReceipt),
     },
     stageResult,
     modelExecution: {
@@ -348,6 +502,9 @@ module.exports = {
   MAX_CANDIDATES,
   STAGE_SPECIALISTS,
   RESULT_SCHEMA,
+  fetchAmazonPublicSnapshot,
+  collectAmazonPublicSnapshots,
+  normalizeDiscoveryWithSnapshots,
   shouldUse,
   parsePayload,
   loadPriorResults,
