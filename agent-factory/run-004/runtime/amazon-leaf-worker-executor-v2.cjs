@@ -759,9 +759,37 @@ function normalizeDeterministicEconomicsStage(raw, prior) {
   return raw;
 }
 
+function reconcileCandidateRows(raw, prior) {
+  if (!prior.length) return raw;
+  const expected = prior[0].stageResult.candidates.map((candidate) => candidate.asin);
+  const expectedSet = new Set(expected);
+  const latest = new Map(prior.at(-1).stageResult.candidates.map((candidate) => [candidate.asin, candidate]));
+  const seen = new Set();
+
+  for (const candidate of raw.candidates) {
+    if (!expectedSet.has(candidate.asin)) throw new Error('AMAZON_LEAF_UNEXPECTED_CANDIDATE');
+    if (seen.has(candidate.asin)) throw new Error('AMAZON_LEAF_DUPLICATE_CANDIDATE');
+    seen.add(candidate.asin);
+  }
+
+  for (const asin of expected) {
+    if (seen.has(asin)) continue;
+    const before = latest.get(asin);
+    if (!before || !['blocked','rejected'].includes(before.disposition)) {
+      throw new Error('AMAZON_LEAF_ACTIVE_CANDIDATE_DROPPED');
+    }
+    raw.candidates.push({ ...before });
+    seen.add(asin);
+  }
+
+  raw.candidates.sort((a,b) => expected.indexOf(a.asin) - expected.indexOf(b.asin));
+  return raw;
+}
+
 function validateAndEnrich(raw, payload, prior, response, nowIso, publicSnapshots = []) {
   if (!raw || typeof raw !== 'object') throw new Error('AMAZON_LEAF_RESULT_INVALID');
   const usage = responseUsage(response);
+  if (payload.stage !== 'ASIN_DISCOVERY') raw = reconcileCandidateRows(raw, prior);
   const expectedAsins = prior.length ? prior[0].stageResult.candidates.map((c) => c.asin).sort() : null;
   const gotAsins = raw.candidates.map((c) => c.asin).sort();
   if (payload.stage === 'ASIN_DISCOVERY') {
@@ -974,6 +1002,7 @@ module.exports = {
   collectAmazonPublicSnapshots,
   fetchAmazonLeafAsins,
   normalizeDiscoveryWithSnapshots,
+  reconcileCandidateRows,
   parseDisplayedUsdCents,
   parseAmazonBoughtPastMonthLowerBound,
   qualifyAmazonMonthlyDemand,
