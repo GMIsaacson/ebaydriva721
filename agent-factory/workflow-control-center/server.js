@@ -12,6 +12,7 @@ let firebaseCertCache = { expiresAt: 0, certs: {} };
 const ACTION_URL = process.env.ACTION_URL || 'http://172.24.0.1:8791/control';
 const ACTION_TOKEN = process.env.ACTION_TOKEN || '';
 const MANAGED_WORKFLOWS = ['ACQ001FACTORYDEMO','CI001HEARTBEATV1','DEMO10SCONTROLLED','EMAILINTELV1','FACTORYARCHWATCHV1','OPP011LIVEWATCH003','SOURCEMARGINACQDISPATCHG6','SMEBAYLEAFCENSUS259340'];
+const CONTROL_PLANE_VERSION = '7.0';
 const pool = new Pool({
   host: process.env.PGHOST || 'postgres',
   port: Number(process.env.PGPORT || 5432),
@@ -294,6 +295,185 @@ async function serviceJson(url, timeoutMs = 1800) {
   } finally { clearTimeout(timer); }
 }
 
+
+function dependencyKind(node) {
+  const type = String(node?.type || '').toLowerCase();
+  const name = String(node?.name || '').toLowerCase();
+  if (type.includes('gmail') || name.includes('gmail')) return { key: 'gmail', name: 'Gmail', category: 'oauth' };
+  if (type.includes('googlesheets') || name.includes('google sheet')) return { key: 'google_sheets', name: 'Google Sheets', category: 'oauth' };
+  if (type.includes('postgres') || name.includes('postgres')) return { key: 'postgres', name: 'PostgreSQL', category: 'database' };
+  if (type.includes('supabase') || name.includes('supabase')) return { key: 'supabase', name: 'Supabase', category: 'database' };
+  if (type.includes('slack') || name.includes('slack')) return { key: 'slack', name: 'Slack', category: 'oauth' };
+  if (type.includes('openai') || name.includes('openai')) return { key: 'openai', name: 'OpenAI', category: 'api' };
+  if (type.includes('http') || name.includes('http request')) return { key: 'external_http', name: 'External HTTP API', category: 'api' };
+  if (type.includes('webhook') || name.includes('webhook')) return { key: 'webhook', name: 'Webhook endpoint', category: 'trigger' };
+  return null;
+}
+
+function dependencyInventory(nodes, special) {
+  const found = new Map();
+  for (const node of Array.isArray(nodes) ? nodes : []) {
+    const dep = dependencyKind(node);
+    if (!dep) continue;
+    const previous = found.get(dep.key) || { ...dep, nodeCount: 0, nodes: [], state: 'unknown', detail: 'Discovered from the workflow graph; no active probe is registered.' };
+    previous.nodeCount += 1;
+    if (previous.nodes.length < 8) previous.nodes.push(node?.name || 'Unnamed node');
+    found.set(dep.key, previous);
+  }
+  if (found.has('gmail') && String(special?.gmailState || '').toLowerCase() === 'needs_reconnect') {
+    found.set('gmail', { ...found.get('gmail'), state: 'attention', detail: 'Gmail authorization requires reconnection.', recovery: { adapter: 'oauth_reconnect', available: false, reason: 'Safe in-cockpit OAuth recovery adapter is not deployed yet.' } });
+  }
+  return [...found.values()];
+}
+
+function redactErrorText(value) {
+  return String(value || '')
+    .replace(/Bearer\s+[A-Za-z0-9._~+\/=-]+/gi, 'Bearer [redacted]')
+    .replace(/((?:api[_-]?key|token|secret|password|authorization)\s*[:=]\s*)[^\s,;]+/gi, '$1[redacted]')
+    .replace(/([?&](?:key|token|secret|password|api_key)=)[^&\s]+/gi, '$1[redacted]')
+    .slice(0, 1800);
+}
+
+function executionNodeRuns(parsed, workflowNodes) {
+  const runData = parsed?.resultData?.runData && typeof parsed.resultData.runData === 'object' ? parsed.resultData.runData : {};
+  const ordered = [];
+  for (const node of Array.isArray(workflowNodes) ? workflowNodes : []) if (node?.name && !ordered.includes(node.name)) ordered.push(node.name);
+  for (const name of Object.keys(runData)) if (!ordered.includes(name)) ordered.push(name);
+  return ordered.map((name, index) => {
+    const runs = Array.isArray(runData[name]) ? runData[name] : [];
+    const latest = runs.length ? runs[runs.length - 1] : null;
+    const error = latest?.error || null;
+    return {
+      order: index + 1,
+      name,
+      status: !latest ? 'not_run' : error ? 'error' : 'success',
+      runs: runs.length,
+      executionTimeMs: Number.isFinite(Number(latest?.executionTime)) ? Number(latest.executionTime) : null,
+      error: error ? { name: redactErrorText(error.name || error.type || 'NodeError'), message: redactErrorText(error.message || error.description || 'Node failed.'), description: redactErrorText(error.description || '') } : null,
+    };
+  });
+}
+
+function boundedInt(value, fallback, min, max) {
+  const n = Number.parseInt(String(value ?? ''), 10);
+  return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : fallback;
+}
+
+async function executionLedger(searchParams) {
+  const workflowId = searchParams.get('workflowId');
+  const status = searchParams.get('status');
+  const limit = boundedInt(searchParams.get('limit'), 25, 1, 100);
+  const offset = boundedInt(searchParams.get('offset'), 0, 0, 100000);
+  const params = [MANAGED_WORKFLOWS];
+  const where = ['e."workflowId" = ANY($1::text[])', 'e."deletedAt" IS NULL'];
+  if (workflowId) {
+    if (!MANAGED_WORKFLOWS.includes(workflowId)) return { ok: true, total: 0, limit, offset, executions: [] };
+    params.push(workflowId); where.push('e."workflowId"=$' + params.length);
+  }
+  if (status) { params.push(String(status)); where.push('e.status=$' + params.length); }
+  params.push(limit); const limitRef = '$' + params.length;
+  params.push(offset); const offsetRef = '$' + params.length;
+  const sql = [
+    'SELECT e.id,e.status,e.mode,e.finished,e."retryOf",e."retrySuccessId",',
+    ' e."startedAt",e."stoppedAt",e."waitTill",e."workflowId",e."jsonSizeBytes",w.name AS workflow_name,',
+    ' count(*) OVER()::int AS total_count',
+    'FROM execution_entity e JOIN workflow_entity w ON w.id=e."workflowId"',
+    'WHERE ' + where.join(' AND '),
+    'ORDER BY e."startedAt" DESC NULLS LAST,e.id DESC',
+    'LIMIT ' + limitRef + ' OFFSET ' + offsetRef
+  ].join('\n');
+  const result = await pool.query(sql, params);
+  const executions = result.rows.map(row => ({
+    id: String(row.id), workflowId: row.workflowId, workflowName: row.workflow_name,
+    status: row.status || 'unknown', mode: row.mode || null, finished: !!row.finished,
+    retryOf: row.retryOf || null, retrySuccessId: row.retrySuccessId || null,
+    startedAt: row.startedAt || null, stoppedAt: row.stoppedAt || null, waitTill: row.waitTill || null,
+    durationMs: durationMs(row.startedAt, row.stoppedAt), jsonSizeBytes: Number(row.jsonSizeBytes || 0)
+  }));
+  const total = Number(result.rows[0]?.total_count || 0);
+  return { ok: true, scope: 'managed-factory-workflows', total, limit, offset, hasMore: offset + executions.length < total, executions };
+}
+
+async function executionDetail(executionId) {
+  const id = Number.parseInt(String(executionId || ''), 10);
+  if (!Number.isFinite(id) || id <= 0) throw Object.assign(new Error('Invalid execution id.'), { status: 400 });
+  const sql = [
+    'SELECT e.id,e.status,e.mode,e.finished,e."retryOf",e."retrySuccessId",',
+    ' e."startedAt",e."stoppedAt",e."waitTill",e."workflowId",e."jsonSizeBytes",',
+    ' d.data,w.name AS workflow_name,w.nodes',
+    'FROM execution_entity e JOIN workflow_entity w ON w.id=e."workflowId"',
+    'LEFT JOIN execution_data d ON d."executionId"=e.id',
+    'WHERE e.id=$1 AND e."workflowId" = ANY($2::text[]) AND e."deletedAt" IS NULL LIMIT 1'
+  ].join('\n');
+  const result = await pool.query(sql, [id, MANAGED_WORKFLOWS]);
+  if (!result.rows.length) throw Object.assign(new Error('Execution not found in managed workflow scope.'), { status: 404 });
+  const row = result.rows[0];
+  let parsed = null, decodeError = null;
+  if (row.data) { try { parsed = flattedParse(row.data); } catch (error) { decodeError = redactErrorText(error.message); } }
+  const nodes = parseMaybe(row.nodes, []);
+  const nodeRuns = parsed ? executionNodeRuns(parsed, nodes) : nodes.map((node, index) => ({ order: index + 1, name: node?.name || ('Node ' + (index + 1)), status: 'unknown', runs: 0, executionTimeMs: null, error: null }));
+  const rawError = parsed?.resultData?.error || null;
+  const error = rawError ? { name: redactErrorText(rawError.name || rawError.type || 'ExecutionError'), message: redactErrorText(rawError.message || rawError.description || 'Execution failed.'), description: redactErrorText(rawError.description || ''), node: redactErrorText(rawError.node?.name || rawError.node || '') } : null;
+  return {
+    ok: true,
+    execution: { id: String(row.id), workflowId: row.workflowId, workflowName: row.workflow_name, status: row.status || 'unknown', mode: row.mode || null, finished: !!row.finished, retryOf: row.retryOf || null, retrySuccessId: row.retrySuccessId || null, startedAt: row.startedAt || null, stoppedAt: row.stoppedAt || null, waitTill: row.waitTill || null, durationMs: durationMs(row.startedAt, row.stoppedAt), jsonSizeBytes: Number(row.jsonSizeBytes || 0) },
+    error, decodeError, nodeRuns,
+    privacy: { rawInputsExposed: false, rawOutputsExposed: false, note: 'Only state, timings, and redacted errors are exposed. Raw node payloads remain private.' }
+  };
+}
+
+function diagnose(workflow, detail) {
+  const dep = (workflow?.dependencies || []).find(item => item.state === 'attention');
+  const failedNode = (detail?.nodeRuns || []).find(item => item.status === 'error') || null;
+  const error = detail?.error || failedNode?.error || null;
+  const message = [dep?.detail, error?.message, error?.description].filter(Boolean).join(' ').toLowerCase();
+  let category = 'operational', title = 'Workflow requires review', explanation = 'Review dependency state and the latest execution before applying recovery.';
+  if (dep?.category === 'oauth' || /oauth|credential|unauthoriz|401|token.*expir|reconnect/.test(message)) {
+    category = 'authentication'; title = (dep?.name || 'External service') + ' authentication requires attention'; explanation = 'An authenticated dependency is blocking useful work even if scheduler ticks still succeed.';
+  } else if (/429|rate.?limit|too many requests/.test(message)) {
+    category = 'rate_limit'; title = 'External service rate limit detected'; explanation = 'The provider is throttling requests; immediate retry can repeat the failure.';
+  } else if (/timeout|timed out|etimedout|econnreset/.test(message)) {
+    category = 'timeout'; title = 'Dependency timeout detected'; explanation = 'A node exceeded its response window or lost the upstream connection.';
+  } else if (/column .* does not exist|relation .* does not exist|sql|postgres|database|schema/.test(message)) {
+    category = 'database'; title = 'Database or schema issue detected'; explanation = 'The failure appears related to database availability, SQL, or an expected schema object.';
+  } else if (/webhook|404|not found/.test(message)) {
+    category = 'webhook'; title = 'Webhook or endpoint registration issue detected'; explanation = 'A trigger or endpoint may no longer be registered at the expected path.';
+  } else if (/econnrefused|dns|enotfound|network|socket/.test(message)) {
+    category = 'network'; title = 'Network dependency issue detected'; explanation = 'The workflow could not reach an upstream service or host.';
+  } else if (error) {
+    category = 'execution'; title = 'n8n execution failure detected'; explanation = 'The latest failed execution contains a node or workflow error that needs inspection.';
+  } else if (workflow?.operationalState === 'paused') {
+    category = 'paused'; title = 'Workflow is paused'; explanation = 'The workflow will not accept its normal triggers until resumed.';
+  }
+  return {
+    category, title, explanation,
+    evidence: { dependency: dep || null, executionError: detail?.error || null, failedNode },
+    recovery: { lifecycle: { pause: true, resume: true, reregister: true }, testDependency: false, reconnectDependency: false, runNow: false, retryExecution: false, note: 'Unsupported actions remain disabled until a validated adapter exists.' }
+  };
+}
+
+async function diagnoseWorkflow(workflowId) {
+  if (!MANAGED_WORKFLOWS.includes(workflowId)) throw Object.assign(new Error('Workflow is not managed by this control center.'), { status: 404 });
+  const snap = await workflowSnapshot();
+  const workflow = snap.workflows.find(item => item.id === workflowId);
+  if (!workflow) throw Object.assign(new Error('Workflow not found.'), { status: 404 });
+  let detail = null;
+  if (workflow.latestExecution?.id) { try { detail = await executionDetail(workflow.latestExecution.id); } catch {} }
+  return { ok: true, workflowId, workflowName: workflow.name, state: workflow.operationalState, dependencies: workflow.dependencies || [], latestExecution: detail, diagnosis: diagnose(workflow, detail), checkedAt: new Date().toISOString() };
+}
+
+async function dependencySnapshot() {
+  const snap = await workflowSnapshot();
+  const groups = new Map();
+  for (const workflow of snap.workflows) for (const dep of workflow.dependencies || []) {
+    const current = groups.get(dep.key) || { key: dep.key, name: dep.name, category: dep.category, state: 'unknown', workflows: [], affected: 0, recovery: dep.recovery || null };
+    current.workflows.push({ id: workflow.id, name: workflow.name, state: dep.state, detail: dep.detail });
+    if (dep.state === 'attention') { current.state = 'attention'; current.affected += 1; current.recovery = dep.recovery || current.recovery; }
+    groups.set(dep.key, current);
+  }
+  return { ok: true, checkedAt: new Date().toISOString(), dependencies: [...groups.values()].sort((a,b) => a.state === 'attention' ? -1 : b.state === 'attention' ? 1 : a.name.localeCompare(b.name)) };
+}
+
 async function workflowSnapshot() {
   const sql = `
     SELECT w.id,w.name,w.active,w.nodes,w."staticData",
@@ -363,6 +543,7 @@ async function workflowSnapshot() {
       } : null,
       errors24h: row.errors_24h,
       special,
+      dependencies: dependencyInventory(nodes, special),
       nodes: nodes.map((node, index) => ({
         order: index + 1,
         name: node?.name || `Node ${index + 1}`,
@@ -374,7 +555,7 @@ async function workflowSnapshot() {
   const metrics = metricsResult.rows[0];
   metrics.published = workflows.filter(w => w.published).length;
   metrics.managed = workflows.length;
-  return { ok: true, checkedAt: new Date().toISOString(), metrics, workflows };
+  return { ok: true, checkedAt: new Date().toISOString(), version: CONTROL_PLANE_VERSION, capabilities: { lifecycle: { pause: true, resume: true, reregister: true }, executionLedger: true, nodeInspection: true, troubleshooting: true, dependencyInventory: true, testDependency: false, reconnectDependency: false, runNow: false, retryExecution: false }, metrics, workflows };
 }
 
 
@@ -545,6 +726,10 @@ const server = http.createServer(async (req, res) => {
     if (u.pathname === '/' || u.pathname === '/index.html') return html(res, PAGE);
     if (u.pathname === '/health') return json(res, 200, { ok: true, service: 'workflow-control-center' });
     if (u.pathname === '/api/workflows') return json(res, 200, await workflowSnapshot());
+    if (u.pathname === '/api/executions' && req.method === 'GET') return json(res, 200, await executionLedger(u.searchParams));
+    if (/^\/api\/executions\/\d+$/.test(u.pathname) && req.method === 'GET') return json(res, 200, await executionDetail(u.pathname.split('/').pop()));
+    if (u.pathname === '/api/diagnose' && req.method === 'GET') { const id = u.searchParams.get('id'); if (!id) return json(res, 400, { ok: false, error: 'Missing workflow id.' }); return json(res, 200, await diagnoseWorkflow(id)); }
+    if (u.pathname === '/api/dependencies' && req.method === 'GET') return json(res, 200, await dependencySnapshot());
     if (u.pathname === '/api/architecture') return json(res, 200, await architectureSnapshot());
     if (u.pathname === '/api/owner' && req.method === 'GET') return json(res, 200, await ownerStatus(req));
     if (u.pathname === '/api/owner/enroll' && req.method === 'POST') {
