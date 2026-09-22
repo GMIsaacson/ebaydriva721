@@ -221,3 +221,24 @@ It may **not**:
 Agent 000 remains accountable. Work Control remains the only execution-state owner. Run 008 remains the retry/dead-letter/recovery boundary.
 
 Promotion from recommendation packets to actual Work Control command creation requires a **fresh bounded owner authorization and architecture review**. This G6 approval does not authorize that promotion.
+
+
+## Freight / landed-cost specialist qualification
+
+`SPC-FREIGHT-001` is now under the governed calibration program `SPC-FREIGHT-001-QUAL-V1`.
+
+The program does **not** promote the specialist merely because a qualification harness exists. The canonical registry remains `UNPROVEN` until evidence thresholds pass.
+
+Promotion rules:
+
+- `UNPROVEN -> PROVISIONAL`: at least three passing shadow cases, including one correct incomplete/block case, one quote-backed case and one Incoterm/tariff case; Q2 must pass every case; unsupported estimate rate, deterministic arithmetic error rate and authority-violation rate must all remain zero.
+- `PROVISIONAL -> QUALIFIED`: at least five total cases, at least two reconciled against real quote/final-charge evidence, acceptable estimate error where estimation was explicitly requested, and independent qualified logistics/freight Q3 with `PE_PASS`.
+- No automatic promotion is allowed.
+
+First calibration case: Thermal Pads / Amazon ASIN `B096ZNHY8F`.
+
+Work Control command `WC-20260922050446-195dc8e863` attempted the first shadow calibration. The governed worker failed closed before model execution with `OPENAI_HTTP_429` / `credit_balance_exhausted`. It used 0 input tokens, 0 output tokens, $0 model cost, 0 external actions, and made no production mutation.
+
+That runtime failure is **not** counted as a failed professional case and **not** counted as a pass. The specialist therefore remains `UNPROVEN`. The case should be retried only after the governed worker runtime is restored.
+
+The qualification harness explicitly rejects fabricated freight values, relabeling modeled landed cost as verified, external authority use, and production certification while material inputs remain unresolved.

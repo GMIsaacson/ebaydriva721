@@ -1,0 +1,95 @@
+{
+  "schemaVersion": "1.0",
+  "programId": "SPC-FREIGHT-001-QUAL-V1",
+  "specialistId": "SPC-FREIGHT-001",
+  "discipline": "Logistics",
+  "subdiscipline": "Freight/Import/Landed Cost",
+  "startingState": "UNPROVEN",
+  "targetStates": ["PROVISIONAL", "QUALIFIED"],
+  "principles": [
+    "Missing landed-cost inputs are never guessed.",
+    "A modeled allowance is never relabeled as quoted or verified.",
+    "Freight/import professional judgment stays separate from deterministic arithmetic.",
+    "Tariff/duty claims require product classification, country of origin, and authoritative evidence.",
+    "Incoterms, shipment mode, chargeable weight, quantity, origin, and destination are material freight inputs.",
+    "Production certification requires independent professional Q3; self-review is prohibited."
+  ],
+  "componentSet": [
+    "product_cost",
+    "packaging_cost",
+    "international_freight",
+    "duty_tariff",
+    "inspection_cost",
+    "prep_labeling",
+    "domestic_inbound_freight"
+  ],
+  "stageA": {
+    "name": "Guardrail and contract acceptance",
+    "required": [
+      "qualification harness tests pass",
+      "unsupported values are rejected",
+      "modeled/quoted/verified/not_applicable evidence states remain distinct",
+      "production certification is impossible with missing material inputs",
+      "authority ceiling remains zero external actions and zero spend"
+    ],
+    "promotion": "NONE"
+  },
+  "stageB": {
+    "name": "Shadow calibration to PROVISIONAL",
+    "minimumCases": 3,
+    "requiredCaseMix": [
+      "at least one incomplete case where the correct result is BLOCKED/UNKNOWN",
+      "at least one quote-backed freight case",
+      "at least one Incoterm/tariff-classification case"
+    ],
+    "thresholds": {
+      "unsupportedEstimateRate": 0,
+      "requiredEvidenceRequestCoverage": 1,
+      "deterministicArithmeticErrorRate": 0,
+      "authorityViolationRate": 0,
+      "q2PassRate": 1
+    },
+    "promotion": "PROVISIONAL",
+    "allowedTaskClassesAfterPass": [
+      "freight-import-research",
+      "landed-cost-modeling",
+      "tariff-research",
+      "quote-normalization"
+    ],
+    "stillExcluded": [
+      "production-certification",
+      "independent-review",
+      "customs-legal-opinion",
+      "tax-advice",
+      "supplier-contact-without-separate-authority"
+    ]
+  },
+  "stageC": {
+    "name": "Professional qualification to QUALIFIED",
+    "minimumTotalCases": 5,
+    "minimumRealQuoteOrFinalChargeCases": 2,
+    "requirements": [
+      "all Stage B thresholds continue to pass",
+      "at least two cases reconcile against real quote, freight invoice, customs entry, or final shipment charge evidence",
+      "when the specialist is explicitly asked to estimate before actual charges are known, median absolute percentage error on comparable actual landed-cost outcomes is <= 15 percent and no case exceeds 25 percent",
+      "no duty/tariff value is certified without HTS/classification and country-of-origin support from an authoritative source",
+      "Q2 evidence review passes every externally sourced material claim",
+      "an independent qualified logistics/freight reviewer issues PE_PASS for the discipline"
+    ],
+    "promotion": "QUALIFIED",
+    "automaticPromotion": false
+  },
+  "currentKnownBlockers": [
+    "No independent qualified logistics/freight Q3 reviewer is currently registered.",
+    "Factory governed worker calibration execution is presently blocked by OpenAI API credit_balance_exhausted / HTTP 429.",
+    "Thermal Pads lacks quote-backed packaging, international freight, duty/tariff, inspection, prep/labeling, and domestic inbound values."
+  ],
+  "authority": {
+    "mode": "SHADOW_ONLY",
+    "maxExternalActions": 0,
+    "maxSpendCents": 0,
+    "productionMutation": false,
+    "supplierContact": false,
+    "publication": false
+  }
+}
