@@ -477,7 +477,6 @@ async function processAmazonLeafPrescreen({apiKey,command,profileSet,deps,payloa
       provider:'openai',
       model,
       responseId:String(response?.id || '').slice(0,120) || null,
-      responseIds:responseIds.map((id)=>id.slice(0,120)),
       inputTokens:usage.inputTokens,
       outputTokens:usage.outputTokens,
       estimatedCostCents,
