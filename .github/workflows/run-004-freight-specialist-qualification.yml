@@ -12,6 +12,7 @@ on:
       - 'agent-factory/governance/specialist-registry-v1.0.json'
       - 'agent-factory/governance/a0-decisions/A0-SOURCEMARGIN-RESOLVER-EXEC-001.a0.json'
       - 'agent-factory/governance/a0-decisions/A0-SOURCEMARGIN-FREIGHT-Q3-001.a0.json'
+      - 'agent-factory/governance/a0-decisions/A0-SOURCEMARGIN-FREIGHT-QUALIFY-001.a0.json'
   workflow_dispatch:
 
 permissions:
@@ -43,7 +44,7 @@ jobs:
           const p=program.progress||{};
           const stageBPass=Number(p.passingCases||0)>=Number(program.stageB.minimumCases||0) && Number(p.q2PassingCases||0)===Number(p.passingCases||0) && p.caseMix?.satisfied===true;
           const c=p.stageCProgress||{};
-          const stageCPass=Number(c.totalCases||0)>=Number(program.stageC.minimumTotalCases||0) && Number(c.realQuoteOrFinalChargeCases||0)>=Number(program.stageC.minimumRealQuoteOrFinalChargeCases||0) && c.independentQ3==='PE_PASS';
+          const stageCPass=Number(c.totalCases||0)>=Number(program.stageC.minimumTotalCases||0) && Number(c.realQuoteOrFinalChargeCases||0)>=Number(program.stageC.minimumRealQuoteOrFinalChargeCases||0) && c.independentQ3==='PE_PASS' && c.q3Q2Audit==='PASS' && c.promotionEvidenceStatus==='COMPLETE';
           if(stageCPass && s.qualificationState!=='QUALIFIED') throw new Error('Stage C passed but registry not QUALIFIED');
           if(!stageCPass && stageBPass && s.qualificationState!=='PROVISIONAL') throw new Error('Stage B passed but registry not PROVISIONAL');
           if(!stageBPass && s.qualificationState!=='UNPROVEN') throw new Error('Premature specialist promotion');
@@ -52,6 +53,11 @@ jobs:
             for(const x of program.stageB.stillExcluded){ if(!s.excludedTaskClasses.includes(x)) throw new Error('Missing provisional exclusion: '+x); }
           }
           if(s.qualificationState==='QUALIFIED' && !stageCPass) throw new Error('QUALIFIED without Stage C + Q3');
+          if(s.qualificationState==='QUALIFIED'){
+            if(!s.allowedTaskClasses.includes('landed-cost-professional-certification')) throw new Error('Qualified certification task class missing');
+            for(const x of ['independent-review','customs-legal-opinion','tax-advice','production-mutation','publication','purchase']){ if(!s.excludedTaskClasses.includes(x)) throw new Error('Qualified exclusion missing: '+x); }
+            if(s.eligibleAsReviewer!==false) throw new Error('Authoring specialist may not become its own Q3 reviewer');
+          }
           if(!reviewer) throw new Error('SPC-FREIGHT-Q3-001 missing');
           if(reviewerProgram.qualificationResult!=='QUALIFIED') throw new Error('Reviewer program not qualified');
           if(reviewerProgram.aggregateQ2?.result!=='QUALIFICATION_Q2_PASS') throw new Error('Reviewer Q2 qualification missing');
