@@ -1,0 +1,51 @@
+{
+  "schemaVersion": "1.0",
+  "programId": "SPC-FREIGHT-001-QUAL-V1",
+  "caseId": "SM-AMZ-THERMAL-PADS-001",
+  "attemptId": "WC-20260922050446-195dc8e863",
+  "attemptedAt": "2026-09-22T05:04:46.706Z",
+  "mode": "SHADOW",
+  "input": {
+    "benchmarkAsin": "B096ZNHY8F",
+    "modeledProductCost": 1.00,
+    "currentModeledLandedCost": 2.05,
+    "unallocatedAllowance": 1.05,
+    "unverifiedComponents": [
+      "packaging_cost",
+      "international_freight",
+      "duty_tariff",
+      "inspection_cost",
+      "prep_labeling",
+      "domestic_inbound_freight"
+    ],
+    "missingMaterialInputs": [
+      "DDP/FOB/EXW quote",
+      "carton dimensions and weight",
+      "ship mode",
+      "shipment quantity",
+      "destination terms",
+      "HTS classification",
+      "country-of-origin tariff treatment",
+      "actual inbound quote"
+    ]
+  },
+  "workControl": {
+    "teamId": "RUN-004",
+    "terminalState": "FAILED",
+    "error": "OPENAI_HTTP_429",
+    "errorType": "insufficient_quota",
+    "errorCode": "credit_balance_exhausted",
+    "inputTokens": 0,
+    "outputTokens": 0,
+    "estimatedCostCents": 0,
+    "externalActionsPerformed": 0,
+    "spendCents": 0,
+    "productionMutation": false
+  },
+  "qualificationEffect": {
+    "casePass": false,
+    "reason": "No specialist output was produced; runtime quota failure is not evidence for or against professional competence.",
+    "specialistStateAfterAttempt": "UNPROVEN",
+    "retryAllowedAfterRuntimeRestored": true
+  }
+}
