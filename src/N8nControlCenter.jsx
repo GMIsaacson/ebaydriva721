@@ -59,6 +59,46 @@ function Empty({ title, children }) {
   );
 }
 
+function briefResult(payload) {
+  if (payload == null) return "No stored result payload.";
+  if (typeof payload === "string" || typeof payload === "number" || typeof payload === "boolean") return String(payload);
+  if (Array.isArray(payload)) return `${payload.length} item${payload.length === 1 ? "" : "s"} returned by the result node.`;
+  const preferred = ["summary", "message", "outcome", "decision", "status", "detail", "reason"];
+  for (const key of preferred) {
+    const value = payload?.[key];
+    if (typeof value === "string" && value.trim()) return value.trim();
+  }
+  const simple = Object.entries(payload || {})
+    .filter(([, value]) => ["string", "number", "boolean"].includes(typeof value))
+    .slice(0, 4)
+    .map(([key, value]) => `${key}: ${String(value)}`);
+  return simple.length ? simple.join(" · ") : "Structured result returned. Open Raw JSON for the complete payload.";
+}
+
+function ResultSummary({ result, workflow }) {
+  const payload = result?.payload;
+  const outcome = workflow?.health?.outcome;
+  return (
+    <div className="n8nc-result-summary">
+      <div className="n8nc-result-kpis">
+        <div><span>Workflow readiness</span><strong><Status value={workflow?.health?.state || "unknown"} /></strong></div>
+        <div><span>Useful outcome</span><strong><Status value={outcome?.state || "unknown"} /></strong></div>
+        <div><span>Execution</span><strong>{result?.execution?.status || "—"}</strong></div>
+        <div><span>Result node</span><strong>{result?.node || "—"}</strong></div>
+      </div>
+      <div className="n8nc-result-narrative">
+        <span>WHAT HAPPENED</span>
+        <p>{result?.message || briefResult(payload)}</p>
+        {outcome?.detail && <small>{outcome.detail}</small>}
+      </div>
+      <details className="n8nc-result-raw">
+        <summary>Raw JSON / evidence payload</summary>
+        <pre>{payload == null ? (result?.message || "No stored result payload.") : JSON.stringify(payload, null, 2)}</pre>
+      </details>
+    </div>
+  );
+}
+
 export default function N8nControlCenter() {
   const { currentUser } = useAuth();
   const [snapshot, setSnapshot] = useState(null);
@@ -106,6 +146,11 @@ export default function N8nControlCenter() {
         row.about?.purpose,
         row.about?.reads,
         row.about?.produces,
+        row.health?.state,
+        row.health?.outcome?.state,
+        row.health?.outcome?.label,
+        ...(row.health?.reasons || []).map((reason) => reason.label),
+        ...(row.health?.dependencies || []).map((dependency) => dependency.label),
         ...(row.nodes || []).flatMap((node) => [node.name, node.type]),
       ].join(" ").toLowerCase().includes(needle)
     );
@@ -124,6 +169,11 @@ export default function N8nControlCenter() {
     [filteredWorkflows]
   );
 
+  const attention = useMemo(
+    () => filteredWorkflows.filter((row) => row.health?.state === "attention"),
+    [filteredWorkflows]
+  );
+
   const scheduled = useMemo(
     () => filteredWorkflows.filter((row) => row.scheduled),
     [filteredWorkflows]
@@ -136,8 +186,11 @@ export default function N8nControlCenter() {
 
   const handleControl = async (workflow, action) => {
     if (!snapshot?.writeEnabled || busyId) return;
-    const verb = action === "pause" ? "Pause" : action === "resume" ? "Resume" : "Restart";
-    if (!window.confirm(`${verb} ${workflow.name}?\n\nThis changes the live n8n workflow state.`)) return;
+    const verb = action === "pause" ? "Pause" : action === "resume" ? "Resume" : "Re-register";
+    const detail = action === "restart"
+      ? "This re-registers the workflow and can briefly restart the n8n runtime."
+      : "This changes the live workflow trigger state.";
+    if (!window.confirm(`${verb} ${workflow.name}?\n\n${detail}`)) return;
 
     setBusyId(workflow.id);
     setNotice("");
@@ -181,19 +234,22 @@ export default function N8nControlCenter() {
 
   const nav = [
     ["overview", "Overview"],
+    ["attention", "Needs attention"],
     ["workflows", "Workflows"],
     ["executions", "Executions"],
-    ["failures", "Failures"],
+    ["failures", "Execution errors"],
     ["schedules", "Schedules"],
   ];
 
   const visibleCount = section === "workflows"
     ? filteredWorkflows.length
-    : section === "failures"
-      ? failures.length
-      : section === "schedules"
-        ? scheduled.length
-        : filteredExecutions.length;
+    : section === "attention"
+      ? attention.length
+      : section === "failures"
+        ? failures.length
+        : section === "schedules"
+          ? scheduled.length
+          : filteredExecutions.length;
 
   return (
     <div className="n8nc-page">
@@ -207,6 +263,7 @@ export default function N8nControlCenter() {
           {nav.map(([key, label]) => (
             <button key={key} className={section === key ? "active" : ""} onClick={() => setSection(key)}>
               <span>{label}</span>
+              {key === "attention" && attention.length > 0 && <b>{attention.length}</b>}
               {key === "failures" && failures.length > 0 && <b>{failures.length}</b>}
             </button>
           ))}
@@ -315,16 +372,35 @@ export default function N8nControlCenter() {
           </section>
         )}
 
+        <section className="n8nc-health-banner">
+          <div>
+            <span>FACTORY AUTOMATION HEALTH</span>
+            <strong>{snapshot?.metrics?.needsAttention ? `${snapshot.metrics.needsAttention} workflow${snapshot.metrics.needsAttention === 1 ? "" : "s"} need attention` : "No current operational blockers detected"}</strong>
+          </div>
+          <small>Execution success and operational readiness are measured separately.</small>
+        </section>
+
         <section className="n8nc-metrics">
-          <Metric value={snapshot?.metrics?.workflows} label="Managed workflows" />
-          <Metric value={snapshot?.metrics?.activeWorkflows} label="Active" />
-          <Metric value={snapshot?.metrics?.scheduledWorkflows} label="Scheduled" />
-          <Metric value={snapshot?.metrics?.executions24h} label="Executions · 24h" />
-          <Metric value={snapshot?.metrics?.failures24h} label="Errors · 24h" />
+          <Metric value={snapshot?.metrics?.workflows} label="Managed workflows" note={`${snapshot?.metrics?.activeWorkflows ?? "—"} active · ${snapshot?.metrics?.scheduledWorkflows ?? "—"} scheduled`} />
           <Metric
             value={snapshot?.metrics?.successRate24h == null ? "—" : `${snapshot.metrics.successRate24h}%`}
-            label="Success rate · 24h"
+            label="Execution health · 24h"
+            note={`${snapshot?.metrics?.executions24h ?? "—"} executions`}
           />
+          <Metric
+            value={snapshot?.metrics?.workflows ? `${snapshot?.metrics?.readyWorkflows ?? 0}/${snapshot.metrics.workflows}` : "—"}
+            label="Workflow readiness"
+            note={snapshot?.metrics?.readinessRate == null ? "No readiness signal" : `${snapshot.metrics.readinessRate}% ready`}
+          />
+          <Metric value={snapshot?.metrics?.needsAttention ?? "—"} label="Needs attention" note="Dependencies, stale schedules, pauses, errors" />
+          <Metric value={snapshot?.metrics?.dependencyIssues ?? "—"} label="Dependency issues" note="Known external blockers" />
+          <Metric
+            value={snapshot?.metrics?.outcomeBlocked ? `${snapshot.metrics.outcomeBlocked} blocked` : snapshot?.metrics?.outcomeHealthy ? `${snapshot.metrics.outcomeHealthy} healthy` : "—"}
+            label="Useful outcomes"
+            note={`${snapshot?.metrics?.outcomeUnknown ?? "—"} not yet instrumented`}
+          />
+          <Metric value={snapshot?.metrics?.running ?? "—"} label="Running now" />
+          <Metric value={snapshot?.metrics?.failures24h ?? "—"} label="Execution errors · 24h" />
         </section>
 
         <div className="n8nc-toolbar">
@@ -337,6 +413,38 @@ export default function N8nControlCenter() {
 
         {section === "overview" && (
           <>
+            <section className={`n8nc-attention ${attention.length ? "has-issues" : "clear"}`}>
+              <div className="n8nc-attention-head">
+                <div>
+                  <span>NEEDS ATTENTION</span>
+                  <h2>{attention.length ? "Operational issues that execution success does not show" : "No current operational blockers"}</h2>
+                </div>
+                <b>{attention.length}</b>
+              </div>
+              {attention.length ? (
+                <div className="n8nc-attention-list">
+                  {attention.slice(0, 6).map((workflow) => (
+                    <div key={workflow.id}>
+                      <div className="n8nc-attention-copy">
+                        <strong>{workflow.name}</strong>
+                        <span>{workflow.health?.primaryReason?.label || "Operational review required"}</span>
+                        <small>
+                          Execution: {workflow.latestExecution?.status || "none"} · Outcome: {workflow.health?.outcome?.label || "unknown"}
+                          {workflow.nextRunAt ? ` · Next expected ${fmtTime(workflow.nextRunAt)}` : ""}
+                        </small>
+                      </div>
+                      <div className="n8nc-row-actions">
+                        <Status value={workflow.health?.primaryReason?.severity || "attention"} />
+                        <button onClick={() => openResult(workflow)}>Inspect</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p>Execution telemetry, schedule freshness, expected active state, and known dependencies are all within the current guardrails.</p>
+              )}
+            </section>
+
             <section className="n8nc-grid n8nc-overview-grid">
               <article className="n8nc-panel">
                 <div className="n8nc-panel-head">
@@ -373,8 +481,8 @@ export default function N8nControlCenter() {
 
             <section className="n8nc-panel n8nc-recent">
               <div className="n8nc-panel-head">
-                <div><span>LATEST BY WORKFLOW</span><h2>Most recent executions</h2></div>
-                <button className="n8nc-text-button" onClick={() => setSection("executions")}>View all →</button>
+                <div><span>LATEST BY WORKFLOW</span><h2>Most recent execution snapshot</h2></div>
+                <button className="n8nc-text-button" onClick={() => setSection("executions")}>Inspect snapshot →</button>
               </div>
               <ExecutionTable rows={filteredExecutions} />
             </section>
@@ -401,6 +509,14 @@ export default function N8nControlCenter() {
                         <h3>{workflow.name}</h3>
                       </div>
                       <Status value={workflow.operationalState} />
+                    </div>
+
+                    <div className={`n8nc-workflow-health ${workflow.health?.state || "unknown"}`}>
+                      <div>
+                        <Status value={workflow.health?.state || "unknown"} />
+                        <strong>{workflow.health?.primaryReason?.label || "Operational checks passed"}</strong>
+                      </div>
+                      <p>{workflow.health?.outcome?.label || "Useful outcome not instrumented"}{workflow.health?.outcome?.detail ? ` · ${workflow.health.outcome.detail}` : ""}</p>
                     </div>
 
                     <div className="n8nc-workflow-purpose">
@@ -451,13 +567,17 @@ export default function N8nControlCenter() {
 
                     <dl className="n8nc-workflow-meta">
                       <div><dt>Cadence</dt><dd>{workflow.schedule}</dd></div>
-                      <div><dt>Latest run</dt><dd>{lastRun ? `${lastRun.status} · ${fmtTime(lastRun.startedAt)}` : "No run recorded"}</dd></div>
+                      <div><dt>Next expected</dt><dd>{workflow.nextRunAt ? fmtTime(workflow.nextRunAt) : workflow.scheduled ? "Not calculable" : "On demand"}</dd></div>
+                      <div><dt>Latest execution</dt><dd>{lastRun ? `${lastRun.status} · ${fmtTime(lastRun.startedAt)}` : "No run recorded"}</dd></div>
                       <div><dt>Last completed</dt><dd>{completed ? `${fmtTime(completed.stoppedAt)} · ${fmtDuration(completed.durationMs)}` : "—"}</dd></div>
+                      <div><dt>Dependency health</dt><dd>{(workflow.health?.dependencies || []).some((dep) => dep.state === "attention") ? "Attention required" : "No known issue"}</dd></div>
                       <div><dt>Errors · 24h</dt><dd className={workflow.errors24h ? "n8nc-workflow-error-value" : ""}>{workflow.errors24h || 0}</dd></div>
                     </dl>
 
-                    {workflow.id === "EMAILINTELV1" && workflow.special?.gmailState === "needs_reconnect" && (
-                      <div className="n8nc-workflow-alert">Gmail connection needs attention before this workflow can process mail.</div>
+                    {(workflow.health?.reasons || []).length > 0 && (
+                      <div className="n8nc-workflow-alert">
+                        {(workflow.health.reasons || []).map((reason) => reason.label).join(" · ")}
+                      </div>
                     )}
 
                     <div className="n8nc-workflow-actions">
@@ -472,9 +592,9 @@ export default function N8nControlCenter() {
                       <button
                         disabled={!snapshot?.writeEnabled || busyId === workflow.id}
                         onClick={() => handleControl(workflow, "restart")}
-                        title={!snapshot?.writeEnabled ? "Owner lifecycle controls are not configured" : "Restart workflow registration/runtime"}
+                        title={!snapshot?.writeEnabled ? "Owner lifecycle controls are not configured" : "Re-register workflow triggers; this may briefly restart the n8n runtime"}
                       >
-                        Restart
+                        Re-register
                       </button>
                     </div>
                   </article>
@@ -489,18 +609,47 @@ export default function N8nControlCenter() {
         {section === "executions" && (
           <section className="n8nc-panel">
             <div className="n8nc-panel-head">
-              <div><span>LATEST EXECUTION SNAPSHOT</span><h2>Latest run for each managed workflow</h2></div>
-              <small>Execution payloads load only when you request a result.</small>
+              <div><span>EXECUTION VISIBILITY</span><h2>Latest execution per managed workflow</h2></div>
+              <small>{snapshot?.coverage?.executionHistoryNote || "The current backend exposes latest-per-workflow execution state."}</small>
+            </div>
+            <div className="n8nc-capability-note">
+              <strong>Not a full execution ledger yet.</strong>
+              <span>The cockpit is explicitly showing the backend's current visibility boundary rather than labeling this snapshot as complete history.</span>
             </div>
             <ExecutionTable rows={filteredExecutions} />
             {!filteredExecutions.length && <Empty title="No execution records">No managed workflow has a latest execution in the live snapshot.</Empty>}
           </section>
         )}
 
+        {section === "attention" && (
+          <section className="n8nc-panel">
+            <div className="n8nc-panel-head">
+              <div><span>OPERATIONAL ATTENTION QUEUE</span><h2>Workflows whose real health differs from execution status</h2></div>
+              <b>{attention.length}</b>
+            </div>
+            <div className="n8nc-attention-list">
+              {attention.map((workflow) => (
+                <div key={workflow.id}>
+                  <div className="n8nc-attention-copy">
+                    <strong>{workflow.name}</strong>
+                    <span>{workflow.health?.primaryReason?.label || "Operational review required"}</span>
+                    <small>{(workflow.health?.reasons || []).map((reason) => reason.label).join(" · ")}</small>
+                  </div>
+                  <div className="n8nc-row-actions">
+                    <Status value={workflow.health?.primaryReason?.severity || "attention"} />
+                    <button onClick={() => openResult(workflow)}>Inspect result</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            {!attention.length && <Empty title="No operational attention items">No dependency, readiness, schedule freshness, or execution issues are currently detected.</Empty>}
+          </section>
+        )}
+
         {section === "failures" && (
           <section className="n8nc-panel">
             <div className="n8nc-panel-head">
-              <div><span>FAILURE QUEUE</span><h2>Managed workflows needing attention</h2></div>
+              <div><span>EXECUTION ERROR QUEUE</span><h2>Workflows with actual n8n execution errors</h2></div>
               <b>{failures.length}</b>
             </div>
             <div className="n8nc-list">
@@ -511,7 +660,7 @@ export default function N8nControlCenter() {
                 </div>
               ))}
             </div>
-            {!failures.length && <Empty title="No failures found">The live backend reports zero errors for managed workflows in the last 24 hours.</Empty>}
+            {!failures.length && <Empty title="No execution errors found">The live backend reports zero n8n execution errors in the last 24 hours. Operational blockers can still appear under Needs attention.</Empty>}
           </section>
         )}
 
@@ -526,7 +675,7 @@ export default function N8nControlCenter() {
                 <article key={workflow.id}>
                   <div><Status value={workflow.operationalState} /><span>{workflow.schedule}</span></div>
                   <h3>{workflow.name}</h3>
-                  <p>{workflow.latestCompleted ? `Last completed ${fmtTime(workflow.latestCompleted.stoppedAt)} · ${fmtDuration(workflow.latestCompleted.durationMs)}` : "No completed run in live snapshot"}</p>
+                  <p>{workflow.latestCompleted ? `Last completed ${fmtTime(workflow.latestCompleted.stoppedAt)} · ${fmtDuration(workflow.latestCompleted.durationMs)}` : "No completed run in live snapshot"}{workflow.nextRunAt ? ` · next expected ${fmtTime(workflow.nextRunAt)}` : ""}</p>
                   <button className="n8nc-text-button" onClick={() => openResult(workflow)}>View latest result →</button>
                 </article>
               ))}
@@ -536,8 +685,8 @@ export default function N8nControlCenter() {
         )}
 
         <footer className="n8nc-footer">
-          <span>n8n stays private on localhost · Vercel is the direct read/analysis cockpit.</span>
-          <span>Telemetry: open cockpit read · Mutations: owner-gated and authenticated</span>
+          <span>n8n stays private on localhost · Vercel is the operational cockpit.</span>
+          <span>Execution success ≠ business health · Mutations remain owner-gated and authenticated</span>
         </footer>
       </main>
 
@@ -555,11 +704,7 @@ export default function N8nControlCenter() {
             {resultView.loading && <div className="n8nc-result-body">Loading result…</div>}
             {resultView.error && <div className="n8nc-result-error">{resultView.error}</div>}
             {!resultView.loading && !resultView.error && (
-              <pre className="n8nc-result-body">
-                {resultView.payload?.payload == null
-                  ? (resultView.payload?.message || "No stored result payload.")
-                  : JSON.stringify(resultView.payload.payload, null, 2)}
-              </pre>
+              <ResultSummary result={resultView.payload} workflow={resultView.workflow} />
             )}
           </section>
         </div>
