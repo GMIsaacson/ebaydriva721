@@ -87,3 +87,51 @@ test('landed-cost fast kill terminates mathematically impossible route before fe
   assert.match(out.candidates[0].reason,/-1047 cents/);
   assert.equal(out.outcome,'REJECTED');
 });
+
+test('source cost alone exceeds Amazon sale and kills even when inbound shipping is unresolved', () => {
+  const amazon='https://www.amazon.com/dp/B0FK2BSZW1';
+  const source='https://www.lowes.com/pd/example';
+  const prior=[{
+    commandId:'WC-SOURCE',
+    stageResult:{
+      evidence:[{url:amazon},{url:source}],
+      candidates:[{asin:'B0FK2BSZW1',disposition:'continue'}],
+    },
+  }];
+  const raw={
+    outcome:'PASS',
+    summary:'landed',
+    blockers:[],
+    evidence:[{url:source}],
+    candidates:[{
+      asin:'B0FK2BSZW1',
+      disposition:'continue',
+      reason:'continue',
+      economicsInputs:null,
+      economicsEvidence:{
+        schemaVersion:'amazon-economics-evidence/1.0.0',
+        marketplace:'amazon-us',
+        asin:'B0FK2BSZW1',
+        sale:null,
+        sourceCost:{amountCents:6748,evidence:evidence(source)},
+        inboundFreight:null,
+        fulfillmentMode:'UNRESOLVED',
+        sellingPlan:'UNRESOLVED',
+        feeCategory:null,
+        referralFeeBasis:null,
+        otherMarketplaceFees:null,
+        packageFacts:null,
+        fbaFulfillment:null,
+        fbmOutboundShipping:null,
+        packaging:null,
+        riskReserve:null,
+      },
+    }],
+  };
+  const snapshots=[{asin:'B0FK2BSZW1',ok:true,url:amazon,displayedPrice:'$6.69'}];
+  const out=normalizeLandedCostFastKill(raw,prior,snapshots);
+  assert.equal(out.candidates[0].disposition,'rejected');
+  assert.match(out.candidates[0].reason,/-6079 cents/);
+  assert.equal(out.candidates[0].economicsEvidence.sale.amountCents,669);
+});
+
