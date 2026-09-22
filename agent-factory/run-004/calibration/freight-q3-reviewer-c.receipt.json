@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "1.0",
+  "programId": "SPC-FREIGHT-Q3-001-QUAL-V1",
+  "caseId": "Q3-REV-C-QUOTE-NORMALIZATION",
+  "commandId": "WC-20260922054014-a8c5689157",
+  "goldOutcome": "PE_PASS_WITH_LIMITATION",
+  "actualOutcome": "PE_PASS_WITH_LIMITATION",
+  "result": "PASS",
+  "keyFindings": [
+    "validated arithmetic",
+    "preserved QUOTED vs VERIFIED",
+    "distinguished secondary supplier-check report from final charge",
+    "specified primary/final evidence needed for production certification"
+  ],
+  "authorityUsage": {
+    "externalActions": 0,
+    "spendCents": 0,
+    "productionMutation": false
+  }
+}
