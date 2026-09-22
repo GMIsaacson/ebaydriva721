@@ -905,6 +905,10 @@ function medianPrescreen(values) {
 function scoreAmazonLeafOpportunity(snapshots) {
   const rows=(snapshots || []).map((snapshot)=>scoreAmazonPrescreenSnapshot(snapshot));
   const qualified=rows.filter((row)=>row.eligibleForDeepResearch);
+  const priceBlockedDemandCount=rows.filter((row)=>
+    row.exclusionReason === 'PRICE_UNVERIFIED' &&
+    (row.demandLowerBoundUnits || 0) >= AMAZON_MIN_MONTHLY_DEMAND_LOWER_BOUND
+  ).length;
   const prices=qualified.map((row)=>row.sourceTargets?.salePriceCents).filter(Number.isFinite);
   const top=[...qualified].sort((a,b)=>b.score-a.score).slice(0,AMAZON_DEEP_RESEARCH_LIMIT);
   const demandSignalRate=snapshots?.length ? qualified.length/snapshots.length : 0;
@@ -923,6 +927,7 @@ function scoreAmazonLeafOpportunity(snapshots) {
       demandSignalRate:0,
       medianQualifiedPriceCents:null,
       topCandidateAverageScore:0,
+      priceBlockedDemandCount:0,
       opportunityScore:0,
       decision:'unscorable',
     };
@@ -934,8 +939,15 @@ function scoreAmazonLeafOpportunity(snapshots) {
     demandSignalRate,
     medianQualifiedPriceCents,
     topCandidateAverageScore,
+    priceBlockedDemandCount,
     opportunityScore,
-    decision:opportunityScore >= 65 ? 'priority' : opportunityScore >= 45 ? 'watch' : 'deprioritize',
+    decision:qualified.length === 0 && priceBlockedDemandCount > 0
+      ? 'data_blocked'
+      : opportunityScore >= 65
+        ? 'priority'
+        : opportunityScore >= 45
+          ? 'watch'
+          : 'deprioritize',
   };
 }
 
