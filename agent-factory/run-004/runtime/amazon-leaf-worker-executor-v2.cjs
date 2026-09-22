@@ -5,7 +5,21 @@ const AmazonEconomicsEvidence = require('./amazon-economics-evidence.cjs');
 
 const MARKER = '[AMAZON_LEAF_STAGE_V2]';
 const MAX_CANDIDATES = 5;
+const AMAZON_PRESCREEN_POOL_SIZE = 30;
+const AMAZON_DEEP_RESEARCH_LIMIT = 5;
+const AMAZON_PREFERRED_SOURCE_SHARE_BPS = 4500;
+const AMAZON_MIN_SUPPORTED_REFERRAL_RATE_BPS = 1200;
+const AMAZON_MIN_SUPPORTED_REFERRAL_FEE_CENTS = 30;
 const AMAZON_MIN_MONTHLY_DEMAND_LOWER_BOUND = 25;
+const AMAZON_SOURCE_CLASS_PRIORITY = Object.freeze([
+  'manufacturer_factory',
+  'authorized_distributor',
+  'wholesale_distributor',
+  'importer_master_distributor',
+  'b2b_marketplace',
+  'liquidation_closeout',
+  'retail',
+]);
 
 const STAGE_SPECIALISTS = Object.freeze({
   ASIN_DISCOVERY: { specialistId: 'AGT-RESEARCH-VALIDATION-001', qualificationState: 'TESTING', taskClass: 'public-marketplace-discovery', independentReview: false },
@@ -207,6 +221,12 @@ function parsePayload(command) {
   if (!spec) throw new Error('AMAZON_LEAF_STAGE_INVALID');
   if (payload.specialist !== spec.specialistId) throw new Error('AMAZON_LEAF_SPECIALIST_MISMATCH');
   if (!Array.isArray(payload.priorCommandIds) || payload.priorCommandIds.length > 6) throw new Error('AMAZON_LEAF_PRIOR_REFS_INVALID');
+  if (payload.candidateAsins != null) {
+    if (payload.stage !== 'ASIN_DISCOVERY') throw new Error('AMAZON_LEAF_CANDIDATE_ASINS_STAGE_INVALID');
+    if (!Array.isArray(payload.candidateAsins) || payload.candidateAsins.length < 1 || payload.candidateAsins.length > MAX_CANDIDATES) throw new Error('AMAZON_LEAF_CANDIDATE_ASINS_INVALID');
+    payload.candidateAsins=[...new Set(payload.candidateAsins.map((asin)=>String(asin || '').trim()))];
+    if (payload.candidateAsins.length < 1 || payload.candidateAsins.length > MAX_CANDIDATES || payload.candidateAsins.some((asin)=>!/^[A-Z0-9]{10}$/.test(asin))) throw new Error('AMAZON_LEAF_CANDIDATE_ASINS_INVALID');
+  }
   return payload;
 }
 
@@ -247,6 +267,8 @@ function stageInstructions(stage, payload) {
     ],
     SOURCING: [
       'For prior candidates still marked continue, find exact public supplier product-detail/SKU pages and compare must-preserve attributes: item type, material, dimensions/configuration, and pack quantity.',
+      'Search source classes in this order: manufacturer/factory -> authorized distributor -> wholesale distributor -> importer/master distributor -> B2B marketplace -> liquidation/closeout -> retail. Retail is an equivalence fallback, not the preferred acquisition route.',
+      'Use the controller-computed preferred source target as the first search objective. The absolute source-cost ceiling is a permissive impossibility bound based only on the lowest supported referral-fee rate; it is NOT proof of profitability and must not be treated as landed cost.',
       'SPC-SOURCE-001 is PROVISIONAL: supplier search/comparison only. Do not make freight/import or policy/IP professional judgments.',
       'If exact source configuration or pack equivalence is unresolved, mark that candidate blocked rather than using a category/search price.',
     ],
@@ -395,15 +417,17 @@ async function fetchAmazonPublicSnapshot(asin, fetchImpl = fetch) {
   };
 }
 
-async function collectAmazonPublicSnapshots(asins, fetchImpl = fetch) {
-  const unique=[...new Set((asins || []).map((x)=>String(x || '').trim()).filter((x)=>/^[A-Z0-9]{10}$/.test(x)))].slice(0,MAX_CANDIDATES);
+async function collectAmazonPublicSnapshots(asins, fetchImpl = fetch, limit = MAX_CANDIDATES) {
+  if (!Number.isSafeInteger(limit) || limit < 1 || limit > AMAZON_PRESCREEN_POOL_SIZE) throw new Error('AMAZON_PUBLIC_SNAPSHOT_LIMIT_INVALID');
+  const unique=[...new Set((asins || []).map((x)=>String(x || '').trim()).filter((x)=>/^[A-Z0-9]{10}$/.test(x)))].slice(0,limit);
   const out=[];
   for (const asin of unique) out.push(await fetchAmazonPublicSnapshot(asin, fetchImpl));
   return out;
 }
 
-async function fetchAmazonLeafAsins(leafId, fetchImpl = fetch) {
+async function fetchAmazonLeafAsins(leafId, fetchImpl = fetch, limit = MAX_CANDIDATES) {
   if (!/^[0-9]{5,20}$/.test(String(leafId || ''))) throw new Error('AMAZON_LEAF_ID_INVALID');
+  if (!Number.isSafeInteger(limit) || limit < 1 || limit > AMAZON_PRESCREEN_POOL_SIZE) throw new Error('AMAZON_LEAF_ASIN_LIMIT_INVALID');
   const url = `https://www.amazon.com/b?node=${leafId}`;
   const response = await fetchImpl(url, {
     method: 'GET', headers: AMAZON_PUBLIC_HEADERS, redirect: 'follow', signal: AbortSignal.timeout(20000),
@@ -414,9 +438,26 @@ async function fetchAmazonLeafAsins(leafId, fetchImpl = fetch) {
   const asins = [];
   for (const match of html.matchAll(/\/dp\/([A-Z0-9]{10})/g)) {
     if (!asins.includes(match[1])) asins.push(match[1]);
-    if (asins.length >= MAX_CANDIDATES) break;
+    if (asins.length >= limit) break;
   }
   return asins;
+}
+
+async function prescreenAmazonLeaf(leafId, fetchImpl = fetch) {
+  const asins=await fetchAmazonLeafAsins(leafId,fetchImpl,AMAZON_PRESCREEN_POOL_SIZE);
+  const snapshots=await collectAmazonPublicSnapshots(asins,fetchImpl,AMAZON_PRESCREEN_POOL_SIZE);
+  const verified=snapshots.filter((snapshot)=>snapshot?.ok);
+  return {
+    leafId:String(leafId),
+    policyVersion:'amazon-opportunity-prescreen/1.0.0',
+    poolSize:AMAZON_PRESCREEN_POOL_SIZE,
+    deepResearchLimit:AMAZON_DEEP_RESEARCH_LIMIT,
+    snapshots:verified,
+    leafScore:scoreAmazonLeafOpportunity(verified),
+    selected:selectAmazonDeepResearchCandidates(verified,AMAZON_DEEP_RESEARCH_LIMIT),
+    selectedAsins:selectAmazonDeepResearchCandidates(verified,AMAZON_DEEP_RESEARCH_LIMIT).map((row)=>row.asin),
+    sourceClassPriority:[...AMAZON_SOURCE_CLASS_PRIORITY],
+  };
 }
 
 function snapshotClaim(snapshot) {
@@ -465,6 +506,166 @@ function normalizeDiscoveryWithSnapshots(raw, snapshots) {
   }
   raw.coverage='partial';
   return raw;
+}
+
+function calculateAmazonSourceTargets(salePriceCents) {
+  if (!Number.isSafeInteger(salePriceCents) || salePriceCents <= 0) throw new Error('AMAZON_PRESCREEN_PRICE_INVALID');
+  const minimumSupportedReferralFeeCents = Math.max(
+    Math.ceil((salePriceCents * AMAZON_MIN_SUPPORTED_REFERRAL_RATE_BPS) / 10000),
+    AMAZON_MIN_SUPPORTED_REFERRAL_FEE_CENTS
+  );
+  const absoluteSourceCostCeilingCents = Math.max(0, salePriceCents - minimumSupportedReferralFeeCents - 1);
+  const preferredSourceTargetCents = Math.max(
+    0,
+    Math.min(
+      absoluteSourceCostCeilingCents,
+      Math.floor((salePriceCents * AMAZON_PREFERRED_SOURCE_SHARE_BPS) / 10000)
+    )
+  );
+  return {
+    salePriceCents,
+    minimumSupportedReferralFeeCents,
+    absoluteSourceCostCeilingCents,
+    preferredSourceTargetCents,
+    preferredSourceShareBps:AMAZON_PREFERRED_SOURCE_SHARE_BPS,
+    policyVersion:'amazon-opportunity-prescreen/1.0.0',
+  };
+}
+
+function prescreenSpecRichness(title) {
+  const value=String(title || '');
+  let score=0;
+  if (/\b\d+(?:\.\d+)?\s*(?:in|inch|inches|ft|mm|cm|m)\b/i.test(value)) score+=4;
+  if (/\b\d+\s*(?:pack|pk|pcs|pieces|count|ct|rolls?)\b/i.test(value)) score+=4;
+  if (/\b(?:stainless|steel|nylon|vinyl|rubber|silicone|aluminum|copper|brass|plastic)\b/i.test(value)) score+=2;
+  return Math.min(score,10);
+}
+
+function scoreAmazonPrescreenSnapshot(snapshot, demandThresholdUnits = AMAZON_MIN_MONTHLY_DEMAND_LOWER_BOUND) {
+  const price=parseDisplayedUsdCents(snapshot?.displayedPrice);
+  const demandLowerBoundUnits=parseAmazonBoughtPastMonthLowerBound(snapshot?.boughtPastMonth);
+  const signals=[];
+  if (price === null) return {asin:snapshot?.asin || '',score:0,eligibleForDeepResearch:false,exclusionReason:'PRICE_UNVERIFIED',demandLowerBoundUnits,sourceTargets:null,signals:['price_unverified']};
+  const sourceTargets=calculateAmazonSourceTargets(price);
+  if (/\bAmazon Basics\b/i.test(String(snapshot?.title || ''))) return {asin:snapshot.asin,score:0,eligibleForDeepResearch:false,exclusionReason:'MARKETPLACE_PRIVATE_LABEL',demandLowerBoundUnits,sourceTargets,signals:['marketplace_private_label']};
+  if (demandLowerBoundUnits === null) return {asin:snapshot.asin,score:0,eligibleForDeepResearch:false,exclusionReason:'MONTHLY_DEMAND_UNVERIFIED',demandLowerBoundUnits:null,sourceTargets,signals:['monthly_demand_unverified']};
+  if (demandLowerBoundUnits < demandThresholdUnits) return {asin:snapshot.asin,score:0,eligibleForDeepResearch:false,exclusionReason:'BELOW_MONTHLY_DEMAND_THRESHOLD',demandLowerBoundUnits,sourceTargets,signals:['below_monthly_demand_threshold']};
+
+  let score=0;
+  if (demandLowerBoundUnits >= 1000) { score+=40; signals.push('demand_1000_plus'); }
+  else if (demandLowerBoundUnits >= 100) { score+=30; signals.push('demand_100_plus'); }
+  else { score+=20; signals.push('demand_25_plus'); }
+
+  if (price >= 1500 && price <= 6000) { score+=25; signals.push('preferred_price_band'); }
+  else if ((price >= 1000 && price < 1500) || (price > 6000 && price <= 10000)) { score+=15; signals.push('acceptable_price_band'); }
+  else if (price >= 800 && price < 1000) { score+=5; signals.push('thin_price_band'); }
+  else if (price < 800) { score-=20; signals.push('low_sale_price'); }
+  else { score+=12; signals.push('high_price_band'); }
+
+  const richness=prescreenSpecRichness(snapshot?.title);
+  score+=richness;
+  if (richness >= 6) signals.push('standardized_spec_rich_title');
+
+  if (sourceTargets.preferredSourceTargetCents >= 1000) { score+=15; signals.push('meaningful_preferred_source_budget'); }
+  else if (sourceTargets.preferredSourceTargetCents >= 500) { score+=10; signals.push('moderate_preferred_source_budget'); }
+  else if (sourceTargets.preferredSourceTargetCents >= 200) { score+=5; signals.push('small_preferred_source_budget'); }
+
+  if (/in stock/i.test(String(snapshot?.availability || ''))) { score+=5; signals.push('in_stock'); }
+
+  return {
+    asin:snapshot.asin,
+    score:Math.max(0,Math.min(100,score)),
+    eligibleForDeepResearch:true,
+    exclusionReason:null,
+    demandLowerBoundUnits,
+    sourceTargets,
+    signals,
+  };
+}
+
+function selectAmazonDeepResearchCandidates(snapshots, limit = AMAZON_DEEP_RESEARCH_LIMIT) {
+  if (!Number.isSafeInteger(limit) || limit < 1 || limit > 10) throw new Error('AMAZON_DEEP_RESEARCH_LIMIT_INVALID');
+  return (snapshots || [])
+    .map((snapshot)=>scoreAmazonPrescreenSnapshot(snapshot))
+    .filter((candidate)=>candidate.eligibleForDeepResearch)
+    .sort((a,b)=>b.score-a.score || (b.demandLowerBoundUnits || 0)-(a.demandLowerBoundUnits || 0))
+    .slice(0,limit);
+}
+
+function medianPrescreen(values) {
+  if (!values.length) return null;
+  const sorted=[...values].sort((a,b)=>a-b);
+  const middle=Math.floor(sorted.length/2);
+  return sorted.length % 2 ? sorted[middle] : Math.round((sorted[middle-1]+sorted[middle])/2);
+}
+
+function scoreAmazonLeafOpportunity(snapshots) {
+  const rows=(snapshots || []).map((snapshot)=>scoreAmazonPrescreenSnapshot(snapshot));
+  const qualified=rows.filter((row)=>row.eligibleForDeepResearch);
+  const prices=qualified.map((row)=>row.sourceTargets?.salePriceCents).filter(Number.isFinite);
+  const top=[...qualified].sort((a,b)=>b.score-a.score).slice(0,AMAZON_DEEP_RESEARCH_LIMIT);
+  const demandSignalRate=snapshots?.length ? qualified.length/snapshots.length : 0;
+  const medianQualifiedPriceCents=medianPrescreen(prices);
+  const topCandidateAverageScore=top.length ? Math.round(top.reduce((sum,row)=>sum+row.score,0)/top.length) : 0;
+  const demandBreadthScore=Math.min(25,qualified.length*5);
+  const signalRateScore=Math.round(Math.min(1,demandSignalRate)*25);
+  const candidateQualityScore=Math.round(topCandidateAverageScore*0.35);
+  const priceRoomScore=medianQualifiedPriceCents === null ? 0 : medianQualifiedPriceCents >= 1500 ? 15 : medianQualifiedPriceCents >= 1000 ? 10 : medianQualifiedPriceCents >= 800 ? 5 : 0;
+  const opportunityScore=Math.max(0,Math.min(100,demandBreadthScore+signalRateScore+candidateQualityScore+priceRoomScore));
+  return {
+    policyVersion:'amazon-opportunity-prescreen/1.0.0',
+    sampleSize:(snapshots || []).length,
+    demandQualifiedCount:qualified.length,
+    demandSignalRate,
+    medianQualifiedPriceCents,
+    topCandidateAverageScore,
+    opportunityScore,
+    decision:opportunityScore >= 65 ? 'priority' : opportunityScore >= 45 ? 'watch' : 'deprioritize',
+  };
+}
+
+function buildSourcingTargets(prior) {
+  if (!prior?.length) return [];
+  return prior.at(-1).stageResult.candidates
+    .filter((candidate)=>candidate.disposition === 'continue' || candidate.disposition === 'research_candidate')
+    .map((candidate)=>{
+      const saleCents=candidate.economicsEvidence?.sale?.amountCents;
+      if (!Number.isSafeInteger(saleCents) || saleCents <= 0) return null;
+      return {asin:candidate.asin,...calculateAmazonSourceTargets(saleCents)};
+    })
+    .filter(Boolean);
+}
+
+function saleEvidencePacket(asin, snapshot) {
+  const amountCents=parseDisplayedUsdCents(snapshot?.displayedPrice);
+  if (amountCents === null || !snapshot?.url) return null;
+  return {
+    schemaVersion:'amazon-economics-evidence/1.0.0',
+    marketplace:'amazon-us',
+    asin,
+    sale:{
+      amountCents,
+      evidence:{
+        state:'OBSERVED',
+        sourceUrl:snapshot.url,
+        observedAt:new Date().toISOString(),
+        claim:`Exact public Amazon product page displayed ${snapshot.displayedPrice} for ASIN ${asin}.`,
+        policyVersion:null,
+      },
+    },
+    sourceCost:null,
+    inboundFreight:null,
+    fulfillmentMode:'UNRESOLVED',
+    sellingPlan:'UNRESOLVED',
+    feeCategory:null,
+    referralFeeBasis:null,
+    otherMarketplaceFees:null,
+    packageFacts:null,
+    fbaFulfillment:null,
+    fbmOutboundShipping:null,
+    packaging:null,
+    riskReserve:null,
+  };
 }
 
 function parseDisplayedUsdCents(value) {
@@ -519,6 +720,7 @@ function normalizeDemandValidationWithSnapshots(raw, snapshots) {
       snap.boughtPastMonth || '',
       snap.rating ? `Rating: ${snap.rating}; ${snap.ratingsCount || ''}` : '',
     ].filter(Boolean).join(' | ').slice(0,900);
+    const observedSaleEvidence = saleEvidencePacket(candidate.asin, snap);
 
     if (qualification.disposition === 'continue') {
       continuing++;
@@ -527,6 +729,7 @@ function normalizeDemandValidationWithSnapshots(raw, snapshots) {
         disposition:'continue',
         demandSignal,
         reason:`Verified Amazon monthly-purchase lower bound is ${qualification.lowerBoundUnits}, meeting SourceMargin's >=${qualification.thresholdUnits}/month demand gate. Rounded badges remain lower bounds, not exact sales counts.`,
+        economicsEvidence: observedSaleEvidence || candidate.economicsEvidence,
       };
     }
     if (qualification.disposition === 'rejected') {
@@ -819,6 +1022,10 @@ function validateAndEnrich(raw, payload, prior, response, nowIso, publicSnapshot
     const latest = new Map(prior.at(-1).stageResult.candidates.map((c) => [c.asin, c]));
     for (const candidate of raw.candidates) {
       const before = latest.get(candidate.asin);
+      if (before?.economicsEvidence?.sale) {
+        if (!candidate.economicsEvidence) candidate.economicsEvidence = before.economicsEvidence;
+        else if (!candidate.economicsEvidence.sale) candidate.economicsEvidence = { ...candidate.economicsEvidence, sale: before.economicsEvidence.sale };
+      }
       if (before && ['ECONOMICS','EVIDENCE_QA'].includes(payload.stage) && before.economicsEvidence) candidate.economicsEvidence = before.economicsEvidence;
       if (before && ['rejected','blocked'].includes(before.disposition) && candidate.disposition !== before.disposition) {
         throw new Error('AMAZON_LEAF_TERMINAL_DISPOSITION_REOPENED');
@@ -887,6 +1094,7 @@ function buildPrompt(payload, specialist, prior, publicSnapshots = []) {
     '',
     'PRIOR GOVERNED RECEIPTS (read-only authoritative handoff context):',
     prior.length ? JSON.stringify(compactPrior(prior)) : '(none; discovery starts here)',
+    ...(payload.stage === 'SOURCING' ? ['', 'DETERMINISTIC SOURCE-PRICE TARGETS (screening guidance, not final economics):', JSON.stringify(buildSourcingTargets(prior)), 'SOURCE CLASS PRIORITY:', JSON.stringify(AMAZON_SOURCE_CLASS_PRIORITY)] : []),
     ...(payload.economicsPolicy ? ['', 'EXPLICIT AMAZON ECONOMICS POLICY INPUT (never infer missing fields):', JSON.stringify(payload.economicsPolicy)] : []),
     ...(Array.isArray(payload.economicsReview) && payload.economicsReview.length
       ? ['', 'CONTROLLER-COMPUTED DETERMINISTIC ECONOMICS (review evidence, not model arithmetic):', JSON.stringify(payload.economicsReview)]
@@ -904,8 +1112,10 @@ async function processAmazonLeafStage({ apiKey, command, profileSet, deps }) {
   const prior = await loadPriorResults(payload, controlRequest);
   let publicSnapshots = [];
   if (payload.stage === 'ASIN_DISCOVERY') {
-    const seedAsins = await fetchAmazonLeafAsins(payload.leafId);
-    publicSnapshots = await collectAmazonPublicSnapshots(seedAsins);
+    const seedAsins = payload.candidateAsins?.length
+      ? payload.candidateAsins
+      : await fetchAmazonLeafAsins(payload.leafId, fetch, MAX_CANDIDATES);
+    publicSnapshots = await collectAmazonPublicSnapshots(seedAsins, fetch, MAX_CANDIDATES);
   }
   if (payload.stage === 'DEMAND_VALIDATION' && prior.length) {
     publicSnapshots = await collectAmazonPublicSnapshots(
@@ -1011,6 +1221,10 @@ async function processAmazonLeafStage({ apiKey, command, profileSet, deps }) {
 module.exports = {
   MARKER,
   MAX_CANDIDATES,
+  AMAZON_PRESCREEN_POOL_SIZE,
+  AMAZON_DEEP_RESEARCH_LIMIT,
+  AMAZON_PREFERRED_SOURCE_SHARE_BPS,
+  AMAZON_SOURCE_CLASS_PRIORITY,
   AMAZON_MIN_MONTHLY_DEMAND_LOWER_BOUND,
   STAGE_SPECIALISTS,
   RESULT_SCHEMA,
@@ -1018,6 +1232,12 @@ module.exports = {
   fetchAmazonPublicSnapshot,
   collectAmazonPublicSnapshots,
   fetchAmazonLeafAsins,
+  prescreenAmazonLeaf,
+  calculateAmazonSourceTargets,
+  scoreAmazonPrescreenSnapshot,
+  scoreAmazonLeafOpportunity,
+  selectAmazonDeepResearchCandidates,
+  buildSourcingTargets,
   normalizeDiscoveryWithSnapshots,
   reconcileCandidateRows,
   normalizeAggregateOutcome,
