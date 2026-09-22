@@ -28,7 +28,17 @@
     "agent-factory/run-004/calibration/ip-policy-q3-reviewer-qualification-v1.json",
     "agent-factory/run-004/runtime/source-margin-professional-router.cjs",
     "agent-factory/run-004/tests/ip-policy-specialist-qualification.test.cjs",
-    "agent-factory/run-004/tests/source-margin-professional-router.test.cjs"
+    "agent-factory/run-004/tests/source-margin-professional-router.test.cjs",
+    "agent-factory/run-004/runtime/ip-policy-specialist-qualification.cjs",
+    "agent-factory/run-004/calibration/ip-policy-calibration-ebay-generic-001.receipt.json",
+    "agent-factory/run-004/calibration/ip-policy-calibration-ebay-compatibility-002.receipt.json",
+    "agent-factory/run-004/calibration/ip-policy-calibration-ebay-authenticity-003.receipt.json",
+    "agent-factory/run-004/calibration/ip-policy-calibration-ebay-content-004.receipt.json",
+    "agent-factory/run-004/calibration/ip-policy-calibration-amazon-compatibility-005.receipt.json",
+    "agent-factory/run-004/calibration/ip-policy-q3-reviewer-a.receipt.json",
+    "agent-factory/run-004/calibration/ip-policy-q3-reviewer-b.receipt.json",
+    "agent-factory/run-004/calibration/ip-policy-q3-reviewer-c.receipt.json",
+    "agent-factory/run-004/calibration/ip-policy-q3-final-portfolio.receipt.json"
   ],
   "evidence_ref": "Current master cef3f04b2ec249520cd44e0e3fa6c8c4ecba88ef. Canonical registry: SPC-IP-001 = UNPROVEN. SourceMargin A0 map: Marketplace Policy/IP = unproven; Product/category specification = job-specific qualified specialist, blocked until bound. Existing core professional-capability.cjs already provides per-job PCM validation/readiness. Official marketplace calibration evidence will be restricted to current first-party Amazon/eBay policy sources where available, with legal conclusions explicitly out of scope.",
   "authority_boundary": {
@@ -68,5 +78,20 @@
     "lowRiskBypass": "ONLY_WHEN_EXPLICIT_LOW_RISK_CRITERIA_PASS",
     "missingRequiredSpecialist": "BLOCKED",
     "noGenericUniversalExpert": true
+  },
+  "implementation_result": {
+    "authorSpecialist": "SPC-IP-001",
+    "authorState": "QUALIFIED",
+    "authorCases": "5/5 PASS",
+    "authorQ2": "WC-20260922060801-35a1317baf = PASS",
+    "reviewerSpecialist": "SPC-IP-Q3-001",
+    "reviewerState": "QUALIFIED",
+    "reviewerCalibration": "3/3 gold match",
+    "reviewerQ2": "WC-20260922060829-772a13e144 = PASS",
+    "portfolioQ3": "WC-20260922060851-831644e731",
+    "normalizedOutcome": "WC-20260922060931-f479f032fe = PE_PASS / QUALIFIED",
+    "finalQ2": "WC-20260922060951-820a903e12 = PASS / COMPLETE",
+    "candidateRouter": "Implemented fail-closed per-candidate PCM routing; Marketplace Policy/IP always gates publication, while product/category specialist binding is conditional on explicit technical/regulatory risk and defaults to required when low risk is not established.",
+    "productionAuthority": "UNCHANGED — no SourceMargin write-back, publication, supplier contact, purchase, spend or platform account authority."
   }
 }
