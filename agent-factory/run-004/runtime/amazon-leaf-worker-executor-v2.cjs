@@ -607,7 +607,7 @@ function normalizeLandedCostFastKill(raw, prior, publicSnapshots = []) {
   raw.candidates = raw.candidates.map((candidate) => {
     const before = latest.get(candidate.asin);
     if (before && ['blocked','rejected'].includes(before.disposition)) return candidate;
-    if (candidate.disposition !== 'continue' || !candidate.economicsEvidence) return candidate;
+    if (!candidate.economicsEvidence) return candidate;
 
     const snapshot = snapshotsByAsin.get(candidate.asin);
     if (!candidate.economicsEvidence.sale && snapshot?.displayedPrice) {
