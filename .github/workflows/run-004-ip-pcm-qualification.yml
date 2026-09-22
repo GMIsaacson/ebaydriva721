@@ -1,0 +1,66 @@
+name: Run 004 IP Policy and PCM Qualification
+
+on:
+  pull_request:
+    branches: [master]
+    paths:
+      - 'agent-factory/run-004/calibration/ip-policy-**'
+      - 'agent-factory/run-004/runtime/ip-policy-specialist-qualification.cjs'
+      - 'agent-factory/run-004/runtime/source-margin-professional-router.cjs'
+      - 'agent-factory/run-004/tests/ip-policy-specialist-qualification.test.cjs'
+      - 'agent-factory/run-004/tests/source-margin-professional-router.test.cjs'
+      - 'agent-factory/governance/specialist-registry-v1.0.json'
+      - 'agent-factory/governance/SOURCEMARGIN_A0_CAPABILITY_MAP.md'
+      - 'agent-factory/governance/team-professional-retrofit-v1.0.json'
+      - 'agent-factory/governance/a0-decisions/A0-SOURCEMARGIN-IP-PCM-001.a0.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  qualification-and-routing:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run IP qualification and PCM routing tests
+        run: |
+          node --test             agent-factory/run-004/tests/ip-policy-specialist-qualification.test.cjs             agent-factory/run-004/tests/source-margin-professional-router.test.cjs
+      - name: Validate canonical qualification remains bounded
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const program=JSON.parse(fs.readFileSync('agent-factory/run-004/calibration/ip-policy-specialist-qualification-v1.json','utf8'));
+          const reviewerProgram=JSON.parse(fs.readFileSync('agent-factory/run-004/calibration/ip-policy-q3-reviewer-qualification-v1.json','utf8'));
+          const finalQ3=JSON.parse(fs.readFileSync('agent-factory/run-004/calibration/ip-policy-q3-final-portfolio.receipt.json','utf8'));
+          const registry=JSON.parse(fs.readFileSync('agent-factory/governance/specialist-registry-v1.0.json','utf8'));
+          const author=registry.records.find(x=>x.specialistId==='SPC-IP-001');
+          const reviewer=registry.records.find(x=>x.specialistId==='SPC-IP-Q3-001');
+
+          if(program.qualificationResult!=='QUALIFIED') throw new Error('SPC-IP-001 program not QUALIFIED');
+          if(program.progress?.passingCases!==5 || program.progress?.q2PassingCases!==5) throw new Error('IP case/Q2 evidence incomplete');
+          if(program.progress?.independentQ3!=='PE_PASS') throw new Error('IP independent Q3 missing');
+          if(author?.qualificationState!=='QUALIFIED') throw new Error('SPC-IP-001 registry state invalid');
+          if(author?.eligibleAsReviewer!==false) throw new Error('SPC-IP-001 may not self-review');
+          if(!author.allowedTaskClasses.includes('marketplace-policy-ip-professional-certification')) throw new Error('IP certification task class missing');
+          for(const x of ['independent-review','legal-opinion','platform-account-action','production-mutation','publication','purchase']){
+            if(!author.excludedTaskClasses.includes(x)) throw new Error('SPC-IP-001 exclusion missing: '+x);
+          }
+
+          if(reviewerProgram.qualificationResult!=='QUALIFIED') throw new Error('SPC-IP-Q3-001 program not QUALIFIED');
+          if(reviewerProgram.aggregateQ2?.result!=='PASS') throw new Error('Reviewer Q2 qualification missing');
+          if(reviewer?.qualificationState!=='QUALIFIED' || reviewer?.eligibleAsReviewer!==true) throw new Error('Reviewer registry state invalid');
+          if(!reviewer.allowedTaskClasses.includes('Q3-marketplace-policy-ip-review')) throw new Error('Reviewer task class missing');
+          for(const x of ['policy-ip-authoring','self-review','legal-opinion','production-mutation']){
+            if(!reviewer.excludedTaskClasses.includes(x)) throw new Error('Reviewer exclusion missing: '+x);
+          }
+
+          if(finalQ3.professionalOutcome!=='PE_PASS') throw new Error('Final IP Q3 is not PE_PASS');
+          if(finalQ3.q2Audit?.qualificationQ2!=='PASS' || finalQ3.q2Audit?.promotionEvidenceStatus!=='COMPLETE') throw new Error('Final IP promotion Q2 incomplete');
+          if(finalQ3.authorityUsage?.externalActions!==0 || finalQ3.authorityUsage?.spendCents!==0 || finalQ3.authorityUsage?.productionMutation!==false) throw new Error('IP qualification expanded authority');
+
+          console.log('SPC-IP-001 QUALIFIED; reviewer independent; authority remains bounded.');
+          NODE
