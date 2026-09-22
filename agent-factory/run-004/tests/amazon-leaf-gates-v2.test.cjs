@@ -253,7 +253,7 @@ test('30-ASIN prescreen ranks high-demand, higher-value standardized candidates 
     absoluteSourceCostCeilingCents:2638,
     preferredSourceTargetCents:1349,
     preferredSourceShareBps:4500,
-    policyVersion:'amazon-opportunity-prescreen/1.0.0',
+    policyVersion:'amazon-opportunity-prescreen/1.0.1',
   });
 });
 
@@ -623,4 +623,18 @@ test('observation-only stage retains ASINs even when price and demand are missin
   assert.equal(rows[0].asin,'B012345678');
   assert.equal(rows[0].displayedPrice,'');
   assert.equal(rows[0].boughtPastMonth,'');
+});
+
+test('marketplace private label is excluded before missing-price resolution', () => {
+  const worker=require('../runtime/amazon-leaf-worker-executor-v2.cjs');
+  const row=worker.scoreAmazonPrescreenSnapshot({
+    asin:'B07ZTW34SC',
+    title:'Amazon Basics 14-Piece Nylon Spring Clamp Set',
+    displayedPrice:'',
+    boughtPastMonth:'500+ bought in past month',
+    availability:'',
+  });
+  assert.equal(row.eligibleForDeepResearch,false);
+  assert.equal(row.exclusionReason,'MARKETPLACE_PRIVATE_LABEL');
+  assert.equal(row.sourceTargets,null);
 });
