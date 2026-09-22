@@ -225,11 +225,11 @@ async function tick({store, workControl, bindings, now = () => new Date()}) {
 
   const actualModelCost = Number(receipt?.modelExecution?.estimatedCostCents ?? 0);
   const observedCalls = observedResearchCalls(receipt);
-  const reconciledModelBudget = Math.max(
+  const reconciledModelBudget = Math.round(Math.max(
     0,
     state.modelBudgetCommittedCents - STAGE_MODEL_BUDGET_CENTS
       + (Number.isFinite(actualModelCost) && actualModelCost >= 0 ? actualModelCost : STAGE_MODEL_BUDGET_CENTS),
-  );
+  ) * 100) / 100;
 
   if (receipt.terminalState !== 'DELIVERED') {
     return save({
