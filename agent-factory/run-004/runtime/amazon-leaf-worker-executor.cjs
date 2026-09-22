@@ -245,6 +245,9 @@ function buildPrompt(payload, specialist, prior) {
     '',
     'PRIOR GOVERNED RECEIPTS (read-only authoritative handoff context):',
     prior.length ? JSON.stringify(compactPrior(prior)) : '(none; discovery starts here)',
+    ...(Array.isArray(payload.economicsReview) && payload.economicsReview.length
+      ? ['', 'CONTROLLER-COMPUTED DETERMINISTIC ECONOMICS (review evidence, not model arithmetic):', JSON.stringify(payload.economicsReview)]
+      : []),
     '',
     'Use public web search as needed within the tool budget. Return only the required structured JSON. Evidence entries must contain exact HTTPS URLs and specific claims; timestamps and retrieval receipt IDs are attached by the worker after tool execution.',
   ].join('\n');
