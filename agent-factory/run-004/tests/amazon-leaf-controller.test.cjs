@@ -3,7 +3,7 @@ const test=require('node:test'); const assert=require('node:assert/strict');
 const {tick,initial,validateResult,STAGES,RUN,LEAF}=require('../runtime/amazon-leaf-controller.cjs');
 const {makePorts}=require('../runtime/amazon-leaf-ports.cjs');
 const at='2026-09-22T14:00:00.000Z';
-const bindings={executionReceipt:'fixture',publicResearchReceipt:'fixture',writebackReceipt:'fixture',run004TeamId:'DS-S2M-004'};
+const bindings={executionReceipt:'fixture',publicResearchReceipt:'fixture',writebackReceipt:'fixture',run004TeamId:'RUN-004'};
 function harness(){
  let state=null,calls=0,reply=null;
  return {store:{read:async()=>structuredClone(state),compareAndSet:async(v,n)=>{if((state?.version||0)!==v)throw Error('CHECKPOINT_CONFLICT');state=structuredClone(n);}},
@@ -14,13 +14,14 @@ function result(stage){return {runId:RUN,leafId:LEAF,stage,outcome:'PASS',summar
  evidence:[{url:'https://www.amazon.com/dp/B000000001',observedAt:at,claim:'Fixture only',sourceReceipt:'fixture-retrieval'}],
  candidates:[{asin:'B000000001',disposition:stage==='EVIDENCE_QA'?'research_candidate':'continue',reason:'Fixture',
  economicsInputs:{collectedRevenueCents:1000,sourceCostCents:200,inboundFreightCents:100,marketplaceFeesCents:200,outboundShippingCents:100,packagingCents:50,riskReserveCents:50}}]};}
+function receipt(stage,body=result(stage)){const specialist=Object.fromEntries(STAGES)[stage];return {terminalState:'DELIVERED',stageResult:body,researchUsage:{webSearchCalls:stage==='ECONOMICS'?1:2},specialistExecution:{specialistId:specialist,stage,runId:RUN,leafId:LEAF,independentReview:stage==='EVIDENCE_QA'}};}
 test('preflight records blocker without dispatch',async()=>{const h=harness();await tick({...h,bindings:{}});assert.equal(h.state().phase,'BLOCKED');assert.equal(h.calls(),0);});
 test('six stage sequence is resumable, independent QA and never publication',async()=>{
  const h=harness();
  for(const [stage] of STAGES){
   h.reply(null);await tick(h);const id=h.state().commandId;assert.equal(h.state().phase,'WAITING');
   await tick(h);assert.equal(h.state().commandId,id);
-  h.reply({receipt:{terminalState:'DELIVERED',summary:JSON.stringify(result(stage))}});await tick(h);
+  h.reply({receipt:receipt(stage)});await tick(h);
  }
  assert.equal(h.state().phase,'RESEARCH_FINISHED');assert.equal(h.calls(),6);
  assert.equal(new Set(h.state().results.map(r=>r.commandId)).size,6);
@@ -31,7 +32,7 @@ test('two concurrent ticks cannot dispatch twice',async()=>{const h=harness();aw
 test('ambiguous dispatch never retried',async()=>{const h=harness();h.workControl.dispatch=async()=>{throw Error('timeout');};await tick(h);assert.equal(h.state().phase,'BLOCKED');await tick(h);assert.equal(h.state().events.filter(e=>e.kind==='DISPATCH_INTENT').length,1);});
 test('crash after intent stops for reconciliation',async()=>{const h=harness();const s={...initial(),version:1,phase:'DISPATCH_INTENT',events:[]};await h.store.compareAndSet(0,s);await tick(h);assert.equal(h.state().phase,'BLOCKED');assert.equal(h.calls(),0);});
 test('model narrative cannot masquerade as structured evidence',async()=>{const h=harness();await tick(h);h.reply({receipt:{terminalState:'DELIVERED',summary:'Looks profitable'}});await tick(h);assert.equal(h.state().phase,'BLOCKED');});
-test('dropping a candidate blocks the handoff',async()=>{const h=harness();await tick(h);h.reply({receipt:{terminalState:'DELIVERED',summary:JSON.stringify(result('ASIN_DISCOVERY'))}});await tick(h);await tick(h);const r=result('DEMAND_VALIDATION');r.candidates=[];h.reply({receipt:{terminalState:'DELIVERED',summary:JSON.stringify(r)}});await tick(h);assert.equal(h.state().events.at(-1).reason,'CANDIDATE_RECONCILIATION_FAILED');});
+test('dropping a candidate blocks the handoff',async()=>{const h=harness();await tick(h);h.reply({receipt:receipt('ASIN_DISCOVERY')});await tick(h);await tick(h);const r=result('DEMAND_VALIDATION');r.candidates=[];h.reply({receipt:receipt('DEMAND_VALIDATION',r)});await tick(h);assert.equal(h.state().events.at(-1).reason,'CANDIDATE_RECONCILIATION_FAILED');});
 test('auth failures stop immediately; server read retries are capped',async()=>{
  const h=harness();await tick(h);h.workControl.read=async()=>{const e=Error();e.status=503;throw e;};
  await tick(h);await tick(h);assert.equal(h.state().phase,'WAITING');await tick(h);assert.equal(h.state().phase,'BLOCKED');
