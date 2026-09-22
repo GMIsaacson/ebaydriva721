@@ -98,6 +98,14 @@ function instruction(state) {
   return text;
 }
 
+function observedResearchCalls(receipt) {
+  const web=Number(receipt?.researchUsage?.webSearchCalls ?? 0);
+  const http=Number(receipt?.researchUsage?.publicHttpRequests ?? 0);
+  const safeWeb=Number.isInteger(web)&&web>=0&&web<=20?web:0;
+  const safeHttp=Number.isInteger(http)&&http>=0&&http<=25?http:0;
+  return safeWeb+safeHttp;
+}
+
 function validateSpecialistReceipt(receipt, stageIndex) {
   const [stage, specialist] = STAGES[stageIndex];
   const sx = receipt?.specialistExecution;
@@ -216,6 +224,7 @@ async function tick({store, workControl, bindings, now = () => new Date()}) {
   }
 
   const actualModelCost = Number(receipt?.modelExecution?.estimatedCostCents ?? 0);
+  const observedCalls = observedResearchCalls(receipt);
   const reconciledModelBudget = Math.max(
     0,
     state.modelBudgetCommittedCents - STAGE_MODEL_BUDGET_CENTS
@@ -223,7 +232,11 @@ async function tick({store, workControl, bindings, now = () => new Date()}) {
   );
 
   if (receipt.terminalState !== 'DELIVERED') {
-    return save({phase:'BLOCKED', modelBudgetCommittedCents:reconciledModelBudget}, {
+    return save({
+      phase:'BLOCKED',
+      modelBudgetCommittedCents:reconciledModelBudget,
+      publicResearchCalls:state.publicResearchCalls + observedCalls,
+    }, {
       kind:'WORKER_BLOCKED',
       commandId:state.commandId,
       reason:receipt.terminalState || 'Unknown terminal state',
@@ -242,7 +255,11 @@ async function tick({store, workControl, bindings, now = () => new Date()}) {
       if (JSON.stringify(result.candidates.map(c => c.asin).sort()) !== JSON.stringify(prior)) fail('CANDIDATE_RECONCILIATION_FAILED');
     }
   } catch(error) {
-    return save({phase:'BLOCKED', modelBudgetCommittedCents:reconciledModelBudget}, {
+    return save({
+      phase:'BLOCKED',
+      modelBudgetCommittedCents:reconciledModelBudget,
+      publicResearchCalls:state.publicResearchCalls + observedCalls,
+    }, {
       kind:'INVALID_RESULT',
       reason:error.message,
       commandId:state.commandId,
@@ -288,6 +305,7 @@ module.exports = {
   MAX_PUBLIC_RESEARCH_CALLS,
   initial,
   validateResult,
+  observedResearchCalls,
   validateSpecialistReceipt,
   instruction,
   tick,
