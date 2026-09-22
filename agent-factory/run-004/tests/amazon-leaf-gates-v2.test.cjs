@@ -429,3 +429,16 @@ test('price enrichment rescues high-demand prescreen candidates from price-unver
   assert.equal(after.eligibleForDeepResearch,true);
   assert.ok(after.score > 0);
 });
+
+test('demand-rich missing-price leaf is data-blocked, not falsely deprioritized', () => {
+  const worker=require('../runtime/amazon-leaf-worker-executor-v2.cjs');
+  const score=worker.scoreAmazonLeafOpportunity([{
+    asin:'B07T288VN8',
+    title:'Nilight Battery Switch 12-48V Heavy Duty',
+    displayedPrice:'',
+    boughtPastMonth:'3K+ bought in past month',
+    availability:'',
+  }]);
+  assert.equal(score.decision,'data_blocked');
+  assert.equal(score.priceBlockedDemandCount,1);
+});
