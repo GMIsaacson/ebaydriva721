@@ -106,3 +106,32 @@ test('three recorded calibration cases satisfy Stage B and recommend PROVISIONAL
   assert.equal(status.provisionalEligible,true);
   assert.equal(status.qualifiedEligible,false);
 });
+
+
+test('five recorded calibration cases satisfy Stage C case thresholds but remain PROVISIONAL without Q3',()=>{
+  const calibrationDir=path.join(__dirname,'..','calibration');
+  const entries=[
+    ['freight-calibration-thermal-pads-001.receipt.json',{unsupportedComponents:['packaging_cost','international_freight','duty_tariff','inspection_cost','prep_labeling','domestic_inbound_freight'],modeledTotalOnly:true,modeledTotal:2.05}],
+    ['freight-calibration-car-seat-gap-002.receipt.json',{unsupportedComponents:['packaging_cost','duty_tariff','inspection_cost','prep_labeling','domestic_inbound_freight'],modeledTotalOnly:false}],
+    ['freight-calibration-ddp-tariff-003.receipt.json',{unsupportedComponents:['product_cost','packaging_cost','international_freight','duty_tariff','inspection_cost','prep_labeling','domestic_inbound_freight'],modeledTotalOnly:false}],
+    ['freight-calibration-sellerhook-kettle-004.receipt.json',{unsupportedComponents:['packaging_cost','duty_tariff','inspection_cost','prep_labeling','domestic_inbound_freight'],modeledTotalOnly:false}],
+    ['freight-calibration-ups-exw-005.receipt.json',{unsupportedComponents:['product_cost','packaging_cost','international_freight','duty_tariff','inspection_cost','prep_labeling','domestic_inbound_freight'],modeledTotalOnly:false}]
+  ];
+  const results=[]; const q2=[];
+  for(const [file,spec] of entries){
+    const receipt=JSON.parse(fs.readFileSync(path.join(calibrationDir,file),'utf8'));
+    const out=evaluateCalibrationReceipt(receipt,spec);
+    assert.equal(out.pass,true,file+': '+JSON.stringify(out.violations));
+    assert.equal(receipt.q2.result,'PASS');
+    assert.equal(receipt.caseResult,'PASS');
+    results.push({pass:true}); q2.push('PASS');
+  }
+  const status=qualificationStatus({caseResults:results,q2Results:q2,actualReconciliationCases:2,independentQ3:null});
+  assert.equal(status.recommendedState,'PROVISIONAL');
+  assert.equal(status.provisionalEligible,true);
+  assert.equal(status.qualifiedEligible,false);
+  const program=JSON.parse(fs.readFileSync(path.join(calibrationDir,'freight-specialist-qualification-v1.json'),'utf8'));
+  assert.equal(program.progress.stageCProgress.totalCases,5);
+  assert.equal(program.progress.stageCProgress.realQuoteOrFinalChargeCases,2);
+  assert.equal(program.progress.stageCProgress.independentQ3,'MISSING');
+});
