@@ -16,6 +16,9 @@ export default function FactoryShell() {
         <NavLink to="/factory-control/n8n" className={({ isActive }) => isActive ? "active" : ""}>
           <span>⌁</span> n8n
         </NavLink>
+        <NavLink to="/factory-control/source-graph" className={({ isActive }) => isActive ? "active" : ""}>
+          <span>◎</span> Source Graph
+        </NavLink>
       </nav>
     </div>
   );
