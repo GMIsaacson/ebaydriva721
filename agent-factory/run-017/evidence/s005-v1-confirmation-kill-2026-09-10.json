@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "1.0",
+  "setupId": "S005_RANGE_MEAN_REVERSION",
+  "version": 1,
+  "decision": "KILL",
+  "decisionDate": "2026-09-10",
+  "confirmationPeriod": ["2026-01-02","2026-05-29"],
+  "ruleRef": "agent-factory/run-017/config/preregistered-s005-v1.json",
+  "confirmationRef": "agent-factory/run-017/config/s005-v1-confirmation-block-2026h1.json",
+  "episodes": 28,
+  "averageDirectionalReturnPct": {"30m": -0.0495, "60m": -0.0474, "120m": -0.0443},
+  "hitRate60mPct": 50.0,
+  "worst60mPct": -0.8662,
+  "best60mPct": 0.3568,
+  "gate": {"minimumEpisodes":10,"average60mMustBePositive":true,"hitRate60mMustExceed50Pct":true},
+  "gatePass": false,
+  "interpretation": "The earlier June-September positive holdout had only six episodes and did not satisfy the preregistered minimum sample. The untouched January-May confirmation block was negative at 60 minutes with a 50% hit rate. S005 v1 is rejected and must not be threshold-retuned after inspection."
+}

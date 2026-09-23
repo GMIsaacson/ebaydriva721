@@ -1,0 +1,44 @@
+name: Run 017 Research Qualification
+
+on:
+  push:
+    paths:
+      - 'agent-factory/run-017/**'
+      - 'public/run017/**'
+      - '.github/workflows/run-017-research-qualification.yml'
+  pull_request:
+    paths:
+      - 'agent-factory/run-017/**'
+      - 'public/run017/**'
+
+jobs:
+  deterministic-gates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verify paper-only decision engine
+        run: node agent-factory/run-017/tests/decision-engine.test.cjs
+      - name: Verify replay and transaction-cost engine
+        run: node --test agent-factory/run-017/tests/replay-engine.test.cjs
+      - name: Assert broker routing stays disabled
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const p = JSON.parse(fs.readFileSync('agent-factory/run-017/governance/risk-policy.json','utf8'));
+          if (p.liveTradingEnabled !== false || p.brokerRoutingEnabled !== false || p.capitalAuthorityUsd !== 0) process.exit(1);
+          console.log('Broker authority gate: PASS');
+          NODE
+      - name: Run real-market underlying bootstrap replay
+        env:
+          RUN017_BOOTSTRAP_OUTPUT: run017-artifacts/bootstrap-latest.json
+        run: node agent-factory/run-017/scripts/run-bootstrap-replay.cjs
+      - name: Upload replay evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: run017-bootstrap-evidence
+          path: run017-artifacts/bootstrap-latest.json
+          if-no-files-found: error
+          retention-days: 30

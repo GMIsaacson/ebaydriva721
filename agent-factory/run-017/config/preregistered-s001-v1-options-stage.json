@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "1.0",
+  "registeredAt": "2026-09-10",
+  "setupId": "S001_FAILED_NEWS_BREAKDOWN",
+  "version": 1,
+  "signalRuleRef": "agent-factory/run-017/config/preregistered-s001-s002-v1.json",
+  "purpose": "Historical options-stage validation only. No live trade authority.",
+  "episodeSet": "All 14 S001 v1 episodes produced by the unchanged rule across 2025-01-02 through 2026-09-09.",
+  "instrument": "SPY same-day-expiration puts",
+  "structure": {
+    "type": "put_debit_spread",
+    "dte": 0,
+    "contracts": 1,
+    "longPutStrikeRule": "Nearest whole-dollar strike to SPY confirmation-bar close; 0.50 ties round upward.",
+    "shortPutStrikeRule": "Long put strike minus exactly $5.",
+    "expirationRule": "Same calendar date as signal episode.",
+    "entryTime": "S001 confirmation-bar close timestamp.",
+    "exitTime": "Exactly 60 minutes after entry.",
+    "missingContractOrBar": "NO_FILL; do not substitute another strike or expiration."
+  },
+  "executionModel": {
+    "mode": "AGGREGATE",
+    "referencePrice": "5-minute option aggregate close at the required timestamp.",
+    "costModelRef": "agent-factory/run-017/runtime/cost-model.cjs",
+    "aggregatePenaltyPctOfPremium": 0.03,
+    "aggregateMinPenaltyUsdPerLeg": 0.02,
+    "aggregateMaxPenaltyUsdPerLeg": 0.12,
+    "commissionPerContractPerLegSideUsd": 0.70,
+    "entry": "Long leg BUY at reference plus penalty; short leg SELL at reference minus penalty.",
+    "exit": "Long leg SELL at reference minus penalty; short leg BUY at reference plus penalty."
+  },
+  "passGate": {
+    "minimumFillableEpisodes": 10,
+    "averageNetPnlUsd": "> 0",
+    "totalNetPnlUsd": "> 0",
+    "winRatePct": "> 50",
+    "profitFactor": "> 1.20"
+  },
+  "interpretationLimit": "A PASS is an aggregate-bar options-stage result, not a final NBBO executable-edge claim. Historical bid/ask confirmation remains required before any live-capital consideration.",
+  "antiOverfitRule": "No strike width, DTE, entry time, exit horizon, cost assumption, or signal threshold may be changed after options performance is inspected. Any material change requires a new preregistered version."
+}

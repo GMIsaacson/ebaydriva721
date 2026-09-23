@@ -1,0 +1,44 @@
+{
+  "schemaVersion": "1.0",
+  "setupId": "S004_VWAP_RATES_CONFIRMATION",
+  "version": "v1-bootstrap",
+  "testedAt": "2026-09-10",
+  "dataSource": "Massive 5-minute aggregate bars",
+  "sample": {
+    "from": "2026-06-01",
+    "to": "2026-09-09",
+    "underlying": "SPY",
+    "proxies": {
+      "rates": "TLT",
+      "nasdaqRelative": "QQQ",
+      "breadth": "RSP"
+    }
+  },
+  "chronologicalSplit": {
+    "train": {
+      "episodes": 33,
+      "avg30mPct": -0.0323,
+      "avg60mPct": -0.0223,
+      "avg120mPct": -0.0665,
+      "hit60mPct": 54.55
+    },
+    "validation": {
+      "episodes": 11,
+      "avg30mPct": -0.0095,
+      "avg60mPct": -0.0225,
+      "avg120mPct": 0.0237,
+      "hit60mPct": 45.45
+    },
+    "holdout": {
+      "episodes": 12,
+      "avg30mPct": -0.0586,
+      "avg60mPct": -0.1073,
+      "avg120mPct": -0.1367,
+      "hit60mPct": 16.67
+    }
+  },
+  "gate": "KILLED_BOOTSTRAP",
+  "reason": "Preregistered cheap signal-level gate failed: holdout directional expectancy was negative at 30, 60, and 120 minutes and the 60-minute hit rate was 16.67%.",
+  "interpretation": "This does not establish that all VWAP/rates strategies fail. It rejects this frozen S004 v1 proxy implementation. Any materially different formulation must be preregistered as a new version before testing.",
+  "liveTradingAuthorityGranted": false
+}

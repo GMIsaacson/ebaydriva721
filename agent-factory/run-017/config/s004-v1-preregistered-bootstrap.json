@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "1.0",
+  "setupId": "S004_VWAP_RATES_CONFIRMATION",
+  "version": "v1-bootstrap",
+  "frozenBeforeResultInspection": true,
+  "purpose": "Cheap signal-level gate before historical options-spread replay.",
+  "universe": ["SPY"],
+  "barSizeMinutes": 5,
+  "sample": {
+    "from": "2026-06-01",
+    "to": "2026-09-09",
+    "session": "09:30-16:00 ET",
+    "chronologicalSplit": [0.6, 0.2, 0.2]
+  },
+  "proxyDefinitions": {
+    "rates": "TLT 5-minute bars; falling TLT confirms bearish/rising-rate impulse and rising TLT confirms bullish/falling-rate impulse.",
+    "nasdaqRelative": "QQQ return from session open relative to SPY return from session open.",
+    "breadth": "RSP return from session open used as an equal-weight breadth proxy; same directional sign as candidate.",
+    "vwap": "SPY cumulative intraday VWAP computed from bar volume and bar VWAP/typical price."
+  },
+  "entryWindowEt": ["10:00", "14:30"],
+  "longRule": {
+    "price": "SPY close >= cumulative VWAP * 1.0005",
+    "rates": "TLT return from session open >= +0.10%",
+    "confirmationsRequired": 2,
+    "confirmations": [
+      "QQQ return from open >= SPY return from open",
+      "RSP return from open > 0",
+      "current SPY bar volume >= average volume of prior 6 bars"
+    ]
+  },
+  "shortRule": {
+    "price": "SPY close <= cumulative VWAP * 0.9995",
+    "rates": "TLT return from session open <= -0.10%",
+    "confirmationsRequired": 2,
+    "confirmations": [
+      "QQQ return from open <= SPY return from open",
+      "RSP return from open < 0",
+      "current SPY bar volume >= average volume of prior 6 bars"
+    ]
+  },
+  "episodePolicy": {
+    "maxOneEntryPerDay": true,
+    "entryAt": "signal bar close",
+    "riskPctUnderlying": 0.0025,
+    "targetR": 1.5,
+    "stopR": 1.0,
+    "maxHoldMinutes": 120,
+    "sameBarStopTargetCollision": "STOP_FIRST_CONSERVATIVE"
+  },
+  "bootstrapGate": {
+    "minimumTotalEpisodes": 30,
+    "minimumHoldoutEpisodes": 6,
+    "killIfHoldoutAverageRLe": 0,
+    "killIfHoldoutProfitFactorLt": 1.0,
+    "advanceOnlyIf": [
+      "holdoutAverageR > 0",
+      "holdoutProfitFactor >= 1.0",
+      "minimum episode counts satisfied"
+    ],
+    "note": "Advance means eligible for options-history replay, not proven edge."
+  }
+}

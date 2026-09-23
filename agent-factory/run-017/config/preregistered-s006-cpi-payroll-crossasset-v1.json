@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "1.0",
+  "registeredAt": "2026-09-10",
+  "setupId": "S006_CPI_PAYROLL_FAILED_GAP_BREAKDOWN",
+  "version": 1,
+  "origin": "Derived from exploratory S001 event-subtype analysis; not independent on SPY.",
+  "diagnosticAssets": ["QQQ","IWM"],
+  "sample": ["2025-01-02","2026-09-09"],
+  "eventTypes": ["CPI","Employment Situation"],
+  "rule": {
+    "negativeEventGap": "09:30 ET open <= prior RTH close by at least 0.20%",
+    "signalWindowEt": ["09:45","11:15"],
+    "vwapFailure": "A bar closes below session VWAP after its high reaches within 0.10% of VWAP.",
+    "priceConfirmation": "The next 5-minute bar remains below VWAP and closes below the failure-bar close.",
+    "entryProxy": "Confirmation-bar close.",
+    "evaluationHorizonMinutes": 60,
+    "direction": "bearish"
+  },
+  "assetPassGate": {
+    "minimumEpisodes": 5,
+    "averageDirectionalReturn60mPct": "> 0",
+    "hitRate60mPct": "> 50"
+  },
+  "crossAssetAdvanceGate": "Both diagnostic assets must pass individually with unchanged thresholds.",
+  "interpretationLimit": "Cross-asset diagnostic only. A pass does not establish SPY options profitability or justify live trading.",
+  "antiOverfitRule": "No thresholds or event-type membership may be changed after diagnostic data are inspected."
+}

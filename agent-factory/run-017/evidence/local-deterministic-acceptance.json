@@ -1,0 +1,19 @@
+{
+  "runId": "SHORT-DURATION-INDEX-RESEARCH-017",
+  "qualification": "LOCAL_DETERMINISTIC_ACCEPTANCE",
+  "date": "2026-09-10",
+  "status": "PASS",
+  "scope": "Decision-engine and policy safety checks only; this is not evidence of trading edge and does not constitute live-trading promotion.",
+  "tests": {
+    "paperCandidatePassesWhenComplete": "PASS",
+    "staleMarketDataVeto": "PASS",
+    "liveRoutingRequestVeto": "PASS",
+    "undefinedRiskVeto": "PASS",
+    "lateZeroDteEntryVeto": "PASS"
+  },
+  "externalActions": 0,
+  "capitalAuthorityUsd": 0,
+  "liveTradingEnabled": false,
+  "brokerRoutingEnabled": false,
+  "nextGate": "Historical replay and out-of-sample research qualification"
+}

@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "1.0",
+  "date": "2026-09-10",
+  "setupId": "S001_FAILED_NEWS_BREAKDOWN",
+  "version": 1,
+  "classification": "EXPLORATORY_POSITIVE_NOT_OOS",
+  "pooledEpisodes": 14,
+  "pooledAverage60mPct": 0.1304,
+  "pooledHitRate60mPct": 64.29,
+  "eventSubtypeResults": {
+    "CPI": {"episodes":3,"average60mPct":0.4558,"hitRate60mPct":100.0},
+    "PAYROLL": {"episodes":5,"average60mPct":0.1815,"hitRate60mPct":80.0},
+    "PPI": {"episodes":6,"average60mPct":-0.0748,"hitRate60mPct":33.33},
+    "CPI_PLUS_PAYROLL": {"episodes":8,"average60mPct":0.2843,"hitRate60mPct":87.5,"bootstrap95PctMeanInterval":[0.0898,0.4668]}
+  },
+  "warning": "CPI_PLUS_PAYROLL was identified after inspecting subtype performance. It is therefore exploratory and cannot be treated as independent confirmation or a live trading edge.",
+  "nextAction": "Preregister a new CPI/payroll-only hypothesis and test on genuinely unseen data or an independent cross-asset diagnostic without changing thresholds."
+}

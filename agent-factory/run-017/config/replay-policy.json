@@ -1,0 +1,83 @@
+{
+  "schemaVersion": "1.0",
+  "frozenAt": "2026-09-10",
+  "purpose": "Pre-register historical qualification rules before inspecting setup performance.",
+  "authority": {
+    "mode": "RESEARCH_ONLY",
+    "liveTradingEnabled": false,
+    "brokerRoutingEnabled": false,
+    "capitalAuthorityUsd": 0
+  },
+  "dataTiers": {
+    "bootstrap": {
+      "name": "UNDERLYING_PROXY",
+      "purpose": "Cheap directional sanity check only; never qualifies options profitability.",
+      "minimumBarIntervalMinutes": 5,
+      "optionsPnlAllowed": false
+    },
+    "minuteOptions": {
+      "name": "OPTIONS_MINUTE_AGGREGATES",
+      "purpose": "Intermediate options replay using contract OHLC bars with conservative synthetic execution penalties.",
+      "optionsPnlAllowed": true,
+      "researchGradeFillClaimAllowed": false
+    },
+    "nbbo": {
+      "name": "OPTIONS_NBBO",
+      "purpose": "Research-grade replay using timestamped bid/ask quotes and observable spreads.",
+      "optionsPnlAllowed": true,
+      "researchGradeFillClaimAllowed": true
+    }
+  },
+  "splits": {
+    "developmentPct": 60,
+    "validationPct": 20,
+    "holdoutPct": 20,
+    "chronological": true,
+    "walkForwardRequired": true,
+    "holdoutRulesFrozen": true
+  },
+  "bootstrapGate": {
+    "scope": ["S003_OPENING_RANGE_RETEST"],
+    "minimumEpisodes": 20,
+    "statusIfBelowMinimum": "INCONCLUSIVE",
+    "killIf": {
+      "holdoutAverageRAtOrBelow": 0,
+      "holdoutProfitFactorBelow": 1.0
+    },
+    "note": "Passing bootstrap is only permission to spend more data/research effort; it is not evidence of an options edge."
+  },
+  "fullSetupGate": {
+    "minimumDevelopmentEpisodes": 150,
+    "minimumHoldoutEpisodes": 75,
+    "minimumNetAverageR": 0.08,
+    "minimumNetProfitFactor": 1.15,
+    "maximumDrawdownR": 12,
+    "maximumSingleMonthContributionPct": 35,
+    "minimumDistinctRegimes": 3,
+    "maximumCostShareOfGrossEdgePct": 50,
+    "bootstrapResamples": 5000,
+    "minimumBootstrapMedianR": 0,
+    "requiredSensitivityChecks": [
+      "worse-fill",
+      "one-bar-latency",
+      "parameter-neighborhood",
+      "exclude-best-month",
+      "exclude-top-5-trades"
+    ]
+  },
+  "shadowGate": {
+    "minimumSessions": 40,
+    "minimumEligibleSignals": 30,
+    "timestampBeforeOutcomeRequired": true,
+    "observableFillComparisonRequired": true,
+    "independentQ1Q2Q3Required": true,
+    "ownerApprovalRequiredForAnyPromotion": true
+  },
+  "setupDataRequirements": {
+    "S001_FAILED_NEWS_BREAKDOWN": ["underlying-intraday", "event-calendar", "rates-intraday", "breadth-intraday", "options-chain", "options-execution-data"],
+    "S002_FAILED_NEWS_REVERSAL": ["underlying-intraday", "event-calendar", "rates-intraday", "breadth-intraday", "options-chain", "options-execution-data"],
+    "S003_OPENING_RANGE_RETEST": ["underlying-intraday", "options-chain", "options-execution-data"],
+    "S004_VWAP_RATES_CONFIRMATION": ["underlying-intraday", "rates-intraday", "breadth-intraday", "options-chain", "options-execution-data"],
+    "S005_RANGE_MEAN_REVERSION": ["underlying-intraday", "event-calendar", "volatility-intraday", "options-chain", "options-execution-data"]
+  }
+}

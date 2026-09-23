@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "1.0",
+  "registeredAt": "2026-09-10",
+  "purpose": "Cheap SPY signal-level bootstrap. No options-edge claim and no broker action.",
+  "sample": ["2026-01-02","2026-09-09"],
+  "eventDays": {
+    "employmentSituation": ["2026-01-09","2026-02-11","2026-03-06","2026-04-03","2026-05-08","2026-06-05","2026-07-02","2026-08-07","2026-09-04"],
+    "cpi": ["2026-01-13","2026-02-13","2026-03-11","2026-04-10","2026-05-12","2026-06-10","2026-07-14","2026-08-12"],
+    "ppi": ["2026-01-14","2026-01-30","2026-02-27","2026-03-18","2026-04-14","2026-05-13","2026-06-11","2026-07-15","2026-08-13"]
+  },
+  "common": {
+    "negativeEventGap": "SPY 09:30 ET open <= prior RTH close by at least 0.20%",
+    "signalWindowEt": ["09:45","11:15"],
+    "evaluationHorizonsMinutes": [30,60,120],
+    "episodeSelection": "Maximum one episode per event day; first qualifying signal only."
+  },
+  "S001_FAILED_NEWS_BREAKDOWN": {
+    "version": 1,
+    "direction": "bearish",
+    "vwapFailure": "A bar closes below session VWAP after its high reaches within 0.10% of VWAP.",
+    "priceConfirmation": "The next 5-minute bar remains below VWAP and closes below the failure bar close.",
+    "entryProxy": "Confirmation-bar close.",
+    "directionalReturn": "Positive when SPY falls after entry."
+  },
+  "S002_FAILED_NEWS_REVERSAL": {
+    "version": 1,
+    "direction": "bullish",
+    "openingExtremeHolds": "No new session low is printed after 09:45 before the VWAP reclaim.",
+    "vwapReclaim": "A bar closes above session VWAP after the immediately prior bar closed at or below VWAP.",
+    "priceConfirmation": "The next 5-minute bar remains above VWAP and closes at or above the reclaim-bar close.",
+    "entryProxy": "Confirmation-bar close.",
+    "directionalReturn": "Positive when SPY rises after entry."
+  },
+  "bootstrapPassGate": {
+    "minimumEpisodes": 8,
+    "averageDirectionalReturn60mPct": "> 0",
+    "hitRate60mPct": "> 50",
+    "note": "If fewer than eight episodes occur, result is INSUFFICIENT rather than PASS. Any extension uses the identical frozen rule."
+  },
+  "antiOverfitRule": "No thresholds may be changed after performance inspection. Any material change requires a new version."
+}

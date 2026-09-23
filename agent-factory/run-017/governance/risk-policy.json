@@ -1,0 +1,44 @@
+{
+  "schemaVersion": "1.0",
+  "mode": "PAPER_ONLY",
+  "liveTradingEnabled": false,
+  "brokerRoutingEnabled": false,
+  "externalTradeAuthority": "NONE",
+  "capitalAuthorityUsd": 0,
+  "allowedUnderlyings": ["SPY", "SPX", "XSP"],
+  "allowedDte": {"min": 0, "max": 5},
+  "definedRiskRequired": true,
+  "maxSimulatedLossPctPerCandidate": 0.5,
+  "maxSimulatedDailyLossPct": 1.5,
+  "maxOpenPaperPositions": 2,
+  "lateDay0Dte": {
+    "newEntriesAfterEt": "15:30",
+    "allowed": false
+  },
+  "requiredCandidateFields": [
+    "setupId",
+    "underlying",
+    "dte",
+    "direction",
+    "thesis",
+    "invalidation",
+    "entryTrigger",
+    "exitPlan",
+    "structure",
+    "maxLossPct",
+    "dataAgeSeconds"
+  ],
+  "hardVetoes": [
+    "live-routing-requested",
+    "unsupported-underlying",
+    "dte-out-of-range",
+    "undefined-risk",
+    "missing-invalidation",
+    "missing-exit-plan",
+    "candidate-loss-over-limit",
+    "stale-market-data",
+    "late-0dte-entry",
+    "setup-not-in-library"
+  ],
+  "promotionRequiresOwnerApproval": true
+}
