@@ -1,0 +1,105 @@
+name: Run 011 opportunity intelligence G4-G5
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "agent-factory/run-011/**"
+      - ".github/workflows/run-011-g4-opportunity-intelligence.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: run-011-g4-g5-opportunity-intelligence
+  cancel-in-progress: false
+
+jobs:
+  policy-and-package:
+    name: Policy, tests, G5 shadow, package and application build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: node --test agent-factory/run-011/tests/*.test.cjs
+      - run: node agent-factory/run-011/scripts/validate-package.cjs
+      - name: Produce deterministic G4 demonstration evidence
+        run: node agent-factory/run-011/scripts/run-demo.cjs > /tmp/run-011-demo.json
+      - name: Produce real Calibration 001 G5 shadow evidence
+        run: node agent-factory/run-011/scripts/run-g5-shadow.cjs > /tmp/run-011-g5-shadow.json
+      - run: node node_modules/vite/bin/vite.js build
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: run-011-policy-and-shadow-evidence
+          path: |
+            /tmp/run-011-demo.json
+            /tmp/run-011-g5-shadow.json
+            agent-factory/run-011/fixtures/g4-demo.json
+            agent-factory/run-011/fixtures/g5-shadow.json
+          if-no-files-found: error
+          retention-days: 30
+
+  inactive-n8n:
+    name: Isolated inactive n8n validation
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Start isolated n8n 2.34.6
+        run: |
+          docker volume create run011_n8n_data
+          docker run --detach --name run011-n8n \
+            --publish 127.0.0.1:5678:5678 \
+            --volume run011_n8n_data:/home/node/.n8n \
+            --volume "$PWD:/repo:ro" \
+            --env N8N_DIAGNOSTICS_ENABLED=false \
+            --env N8N_VERSION_NOTIFICATIONS_ENABLED=false \
+            --env N8N_PUBLIC_API_DISABLED=true \
+            --env N8N_BLOCK_ENV_ACCESS_IN_NODE=true \
+            --env N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true \
+            --env N8N_SECURE_COOKIE=false \
+            n8nio/n8n:2.34.6
+          for attempt in $(seq 1 60); do if curl --fail --silent http://127.0.0.1:5678/healthz >/dev/null; then exit 0; fi; sleep 2; done
+          docker logs run011-n8n; exit 1
+      - name: Create isolated local owner
+        run: |
+          local_owner_password=$(openssl rand -hex 24)
+          setup_payload=$(jq -nc --arg password "$local_owner_password" '{email:"run011@example.invalid",firstName:"Run",lastName:"011",password:$password}')
+          for attempt in $(seq 1 30); do
+            status=$(curl --silent --show-error --output /tmp/run-011-owner-setup-response.json --write-out "%{http_code}" --header "Content-Type: application/json" --data "$setup_payload" http://127.0.0.1:5678/rest/owner/setup || true)
+            case "$status" in 200|201|204|409) exit 0 ;; esac; sleep 2
+          done
+          docker logs run011-n8n; exit 1
+      - name: Import inactive workflow
+        run: |
+          docker exec run011-n8n n8n import:workflow --input=/repo/agent-factory/run-011/n8n/run-011-opportunity-intelligence.workflow.json --activeState=false
+          docker stop run011-n8n
+      - name: Execute and validate internal result
+        run: |
+          docker run --rm --name run011-n8n-cli --volume run011_n8n_data:/home/node/.n8n --volume "$PWD:/repo:ro" --env N8N_DIAGNOSTICS_ENABLED=false --env N8N_VERSION_NOTIFICATIONS_ENABLED=false --env N8N_PUBLIC_API_DISABLED=true --env N8N_BLOCK_ENV_ACCESS_IN_NODE=true --env N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true n8nio/n8n:2.34.6 execute --id=RUN011G4OIT --rawOutput > /tmp/run-011-n8n-execution.json
+          node agent-factory/run-011/scripts/validate-n8n-execution.cjs /tmp/run-011-n8n-execution.json
+      - name: Verify inactive export
+        run: |
+          docker run --rm --name run011-n8n-export --volume run011_n8n_data:/home/node/.n8n --volume /tmp:/evidence --env N8N_DIAGNOSTICS_ENABLED=false --env N8N_VERSION_NOTIFICATIONS_ENABLED=false --env N8N_PUBLIC_API_DISABLED=true --env N8N_BLOCK_ENV_ACCESS_IN_NODE=true --env N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true n8nio/n8n:2.34.6 export:workflow --id=RUN011G4OIT --output=/evidence/run-011-n8n-export.json
+          node -e 'const fs=require("node:fs");const raw=JSON.parse(fs.readFileSync("/tmp/run-011-n8n-export.json","utf8"));const w=Array.isArray(raw)?raw[0]:raw;if(w.active!==false)throw new Error("workflow activated");if((w.nodes||[]).some((n)=>n.credentials))throw new Error("credentials added");process.stdout.write(JSON.stringify({result:"Pass",id:w.id,active:w.active,nodes:w.nodes.length,credentials:0})+"\n");'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: run-011-inactive-n8n-evidence
+          path: |
+            /tmp/run-011-n8n-execution.json
+            /tmp/run-011-n8n-export.json
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Destroy isolated n8n environment
+        if: always()
+        run: |
+          docker rm --force run011-n8n-cli run011-n8n-export || true
+          docker rm --force run011-n8n || true
+          docker volume rm run011_n8n_data || true
