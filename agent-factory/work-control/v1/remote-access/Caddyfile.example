@@ -1,0 +1,20 @@
+# Work Control v1 remote owner edge template.
+# Do not commit a real password hash here. Generate it on the target host.
+
+workcontrol.<SERVER-IP-HYPHENS>.sslip.io {
+    encode zstd gzip
+
+    basic_auth argon2id {
+        factory-owner <ARGON2ID_PASSWORD_HASH>
+    }
+
+    header {
+        Strict-Transport-Security "max-age=31536000"
+        X-Robots-Tag "noindex, nofollow, noarchive"
+        X-Content-Type-Options "nosniff"
+        Referrer-Policy "no-referrer"
+        -Server
+    }
+
+    reverse_proxy factory-work-control-v1:8787
+}

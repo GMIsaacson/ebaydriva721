@@ -1,0 +1,123 @@
+{
+  "product": "Work Control",
+  "version": "1.3.0-team-profiles",
+  "factoryDevelopmentLine": "develop/factory-v0.2",
+  "status": "CONTROLLED_OWNER_ACCESS_LIVE",
+  "scope": ["Teams", "Run Team", "See Work", "Approve/Reject", "View Results", "History", "Canonical Team Execution Profiles"],
+  "registry": {
+    "mode": "source-referenced-read-model",
+    "registeredRuns": 13,
+    "reservedRuns": [13],
+    "runnableRecords": 11,
+    "profiledRunnableRecords": 11
+  },
+  "controlApi": {
+    "mode": "GOVERNED_WORKER",
+    "hostBind": "127.0.0.1:8787",
+    "persistentLedger": true,
+    "workerExecutor": "CONNECTED_INTERNAL",
+    "workerHostPort": false,
+    "workerAuthentication": "SECRET_FILE_TOKEN"
+  },
+  "remoteOwnerAccess": {
+    "status": "LIVE_AUTHENTICATED",
+    "url": "https://workcontrol.159-65-169-244.sslip.io/",
+    "edge": "Caddy v2.11.4",
+    "tls": "LETS_ENCRYPT_AUTOMATIC",
+    "authentication": "HTTP_BASIC_ARGON2ID",
+    "ownerUsername": "factory-owner",
+    "plaintextPasswordInGit": false,
+    "plaintextPasswordOnServer": false,
+    "publicPorts": [80, 443],
+    "backendExposure": "PRIVATE_DOCKER_NETWORK_PLUS_HOST_LOOPBACK",
+    "unauthenticatedStatus": 401,
+    "authenticatedUiStatus": 200,
+    "authenticatedHealthVerified": true,
+    "robots": "NOINDEX_NOFOLLOW_NOARCHIVE"
+  },
+  "worker": {
+    "provider": "openai",
+    "api": "Responses API",
+    "model": "gpt-5.6-luna",
+    "maxOutputTokens": 1600,
+    "modelInvocationsPerClaim": 1,
+    "automaticModelRetries": false,
+    "structuredOutput": "STRICT_JSON_SCHEMA",
+    "responseStorage": false,
+    "defaultModelBudgetCents": 2,
+    "claimMode": "ATOMIC_NO_AUTO_EXPIRY",
+    "externalTools": []
+  },
+  "teamExecutionProfiles": {
+    "status": "LIVE",
+    "profileSetVersion": "2026-08-23.2",
+    "coverage": "11_OF_11_RUNNABLE",
+    "missingProfileBehavior": "FAIL_CLOSED_BEFORE_MODEL_EXECUTION",
+    "receiptAttestation": "PROFILE_SET_VERSION_PROFILE_VERSION_SOURCE_FIDELITY_EXECUTION_MODE_SHA256",
+    "canonicalInputs": ["mission", "roles/functions", "workflow stages", "evidence requirements", "gates", "forbidden claims/actions", "terminal criteria", "output contract"],
+    "run011CanonicalOitRubric": {
+      "Speed to revenue": 20,
+      "Strategic fit": 15,
+      "Automation potential": 15,
+      "Evidence strength": 15,
+      "Revenue potential": 15,
+      "Low execution effort": 10,
+      "Async/low-call operability": 5,
+      "Compounding/defensibility": 5
+    }
+  },
+  "credentialPosture": {
+    "openAiKeyPlaintextOnDisk": false,
+    "openAiKeyStorage": "RSA_ENCRYPTED_CIPHERTEXT",
+    "openAiKeyUse": "DECRYPT_IN_MEMORY_AT_WORKER_START",
+    "workerTokenInDockerConfigEnv": false,
+    "ownerPasswordStorage": "ARGON2ID_HASH_SERVER_LOCAL",
+    "ownerPasswordPlaintextRetained": false
+  },
+  "defaultCommandAuthority": {
+    "maxExternalActions": 0,
+    "maxSpendCents": 0,
+    "deploy": false,
+    "publish": false,
+    "message": false,
+    "destructiveActions": false,
+    "productionMutation": false
+  },
+  "approvalConsumption": "DISABLED",
+  "externalDeploymentAuthorized": false,
+  "productionMutationAuthorized": false,
+  "externalSpendAuthorizedCents": 0,
+  "tests": {
+    "runtimePassed": 53,
+    "runtimeFailed": 0,
+    "testedRuntimeCommit": "d477c28cd3bd852003ac522d1ad82f5eda49ed08",
+    "runtimeEvidence": ["docs/test-evidence.md", "docs/team-acceptance-sweep-2026-08-22.md", "docs/team-profile-acceptance-2026-08-23.md"],
+    "profileCoverage": "PASS",
+    "crossTeamDivergence": "PASS",
+    "frozenAndValidationLifecycleControls": "PASS",
+    "strictStructuredOutput": "PASS"
+  },
+  "securityReview": "PASS_INTERNAL_GOVERNED_PROFILED_WORKER_PLUS_AUTHENTICATED_HTTPS_EDGE",
+  "securityEvidence": ["docs/security-review.md", "remote-access/README.md", "docs/team-profile-acceptance-2026-08-23.md"],
+  "profileLiveProof": {
+    "opportunityIntelligenceCommand": "WC-20260823123231-7cebbd52df",
+    "opportunityIntelligenceTerminalState": "DELIVERED",
+    "opportunityIntelligenceProfileSetVersion": "2026-08-23.2",
+    "opportunityIntelligenceProfileSha256": "85a3eb618ad606a97422c85da43a593cfc178f9aa45c5bb71b03bb64c3066c1f",
+    "opportunityIntelligenceCanonicalScore": 61,
+    "softwareProductComparisonCommand": "WC-20260823122848-bed5542b33",
+    "run003BoundaryCommand": "WC-20260823122532-afbabd593c",
+    "run003TerminalState": "BLOCKED_OWNER",
+    "run002BoundaryCommand": "WC-20260823122532-f65b171ba8",
+    "run002TerminalState": "BLOCKED_OWNER",
+    "externalActions": 0,
+    "externalSpendCents": 0,
+    "productionMutation": false
+  },
+  "remainingArchitectureBoundary": "Team profiles reproduce canonical team contracts inside one governed model execution. They do not yet instantiate separately isolated model processes for each specialist role or produce inter-agent handoff receipts.",
+  "recoveryBaseline": {
+    "branch": "archive/factory-v0.1.0",
+    "commit": "37392d74728a44c3e502959c09e6400de40b846e"
+  },
+  "nextBoundary": "Choose between role-isolated multi-agent orchestration and bounded connector/tool execution. Either remains a separate future gate; no authority was granted by the profile layer."
+}
