@@ -1,0 +1,23 @@
+name: Run 008 Readiness Engine
+
+on:
+  pull_request:
+    paths:
+      - 'agent-factory/run-008/runtime/readiness-engine.cjs'
+      - 'agent-factory/run-008/contracts/micro-workflow-readiness.v0.1.schema.json'
+      - 'agent-factory/run-008/tests/readiness-engine.test.cjs'
+      - 'agent-factory/run-008/READINESS-ENGINE.md'
+      - 'agent-factory/governance/a0-decisions/A0-FACTORY-READINESS-ENGINE-001.a0.json'
+      - '.github/workflows/run-008-readiness-engine.yml'
+  workflow_dispatch:
+
+jobs:
+  readiness-engine:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Test deterministic ingredient-driven readiness
+        run: node --test agent-factory/run-008/tests/readiness-engine.test.cjs

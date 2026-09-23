@@ -1,0 +1,22 @@
+{
+  "decision_id": "A0-FACTORY-READINESS-ENGINE-001",
+  "status": "PASS",
+  "verdict": "EXTEND",
+  "owner": "Aberdeen Technologies",
+  "decided_at": "2026-09-23",
+  "business_outcome": "Allow independent Factory micro-workflows to become dispatch-ready as soon as their declared input facts and gates are satisfied, reducing unnecessary serial waiting while preserving existing Work Control, authority, evidence, retry, and completion semantics.",
+  "existing_owner_scan": "Reviewed Run 008 Operations Core dependency/blocker graph, event/idempotency contracts and recovery primitives; Agent 000 / Work Control execution-state ownership; Run 004 SourceMargin orchestration and completion/state-reconciliation controls; Factory Core hybrid topology rules; n8n execution infrastructure; and current SourceMargin A0 decisions that explicitly prohibit creation of a second scheduler/control plane for SourceMargin-local work.",
+  "reuse_candidates_checked": [
+    "Run 008 Operations Core — existing Dependency & Blocker Graph, idempotency, heartbeat, recovery and authority primitives",
+    "Agent 000 / Work Control — existing execution ledger, claiming and terminal-state authority",
+    "Run 004 DataScout Source-to-Marketplace — existing SourceMargin domain execution owner",
+    "Factory Core hybrid topology — existing orchestrator/capability/assurance model",
+    "n8n — existing connector/execution transport where useful"
+  ],
+  "duplication_analysis": "REUSE remains the architectural decision for execution authority, state, retries, recovery, orchestration transport and domain ownership. EXTEND is required only because Run 008 can currently represent dependencies and blocker health but cannot deterministically evaluate a versioned micro-workflow prerequisite contract against a subject snapshot and emit an idempotent READY/WAITING/BLOCKED readiness decision. This change creates no new run, database, control center, scheduler authority, SourceMargin worker plane, or external-action authority.",
+  "residual_unowned_loop": "Given a versioned micro-workflow contract plus a subject fact snapshot: validate the contract -> evaluate hard blockers -> evaluate required ingredients -> produce deterministic READY, WAITING or BLOCKED state with exact missing/blocking facts -> derive an idempotent proposed work key -> aggregate multiple independent readiness decisions for coordinator visibility -> stop. Phase 0.1 performs no task claim, no Work Control mutation, no n8n execution, no production schedule, no external action, no spend, and no domain writeback.",
+  "covers_paths": [
+    "agent-factory/run-008/"
+  ],
+  "evidence_ref": "Run 008 canonical dependency/blocker graph and Operations Core contracts on master; Factory Core hybrid topology contract; SourceMargin A0 capability map and resolver-execution decisions reviewed 2026-09-23."
+}
