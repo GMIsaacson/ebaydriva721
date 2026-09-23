@@ -125,20 +125,38 @@
       }
     },
     "blockPredicate": {
-      "allOf": [
-        { "$ref": "#/$defs/predicate" },
-        {
-          "type": "object",
-          "required": ["reason"],
-          "properties": {
-            "reason": {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 240
-            }
-          }
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fact", "operator", "reason"],
+      "properties": {
+        "fact": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "operator": {
+          "enum": [
+            "EXISTS",
+            "NOT_EXISTS",
+            "EQ",
+            "NEQ",
+            "IN",
+            "NOT_IN",
+            "GTE",
+            "LTE",
+            "GT",
+            "LT",
+            "TRUE",
+            "FALSE"
+          ]
+        },
+        "value": {},
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 240
         }
-      ]
+      }
     }
   }
 }
