@@ -1,0 +1,30 @@
+{
+  "decision_id": "A0-CAP39-UI-001",
+  "status": "PASS",
+  "verdict": "EXTEND",
+  "owner": "Aberdeen",
+  "decided_at": "2026-08-18T21:58:00-05:00",
+  "business_outcome": "Provide a clear read-only portfolio command UI over the existing CAP-39 Executive dashboard so the owner can manage many projects, KPIs, risks and commitments without creating a second source of truth.",
+  "existing_owner_scan": "CAP-39 Executive dashboard already owns executive aggregation; the Master Project Registry owns project state; Outcome & KPI Scorecard owns metrics; Global Risk & Incident Register owns risk; Master Work Calendar owns commitments; project control centers own project-local detail.",
+  "reuse_candidates_checked": [
+    "CAP-39 Executive dashboard",
+    "Master Project Registry",
+    "Outcome & KPI Scorecard",
+    "Global Risk & Incident Register",
+    "Master Work Calendar",
+    "Project Control Center — Resume Here Standard"
+  ],
+  "duplication_analysis": "Do not create a new canonical database, control center, project registry, KPI store or authority system. The UI is presentation only and may later read canonical data through approved read-only adapters.",
+  "residual_unowned_loop": "Implement a bounded static read-only portfolio command interface with preview data, search/filter/drill-down behavior, explicit source-of-truth labels and no write/deploy/payment/outbound authority.",
+  "covers_paths": [
+    "agent-factory/cap-39"
+  ],
+  "evidence_ref": "Notion A0-CAP39-UI-001 — Portfolio Dashboard UI Extension",
+  "authority": {
+    "external_actions": false,
+    "recurring_schedule": false,
+    "spend_cents": 0,
+    "payment_actions": false,
+    "outbound_sales": false
+  }
+}
