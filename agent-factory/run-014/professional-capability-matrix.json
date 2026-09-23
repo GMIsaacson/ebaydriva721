@@ -1,0 +1,204 @@
+{
+  "schemaVersion": "1.0",
+  "gateId": "G2.5",
+  "runId": "SW-PROD-014",
+  "status": "STAGED_FOR_REVALIDATION",
+  "professionalCapabilities": [
+    {
+      "stageId": "product-definition",
+      "workProduct": "Professionally complete product definition and requirements package",
+      "requiredDisciplines": ["product-management", "requirements-engineering", "domain-analysis"],
+      "assignedSpecialists": ["product-management", "requirements-engineering", "domain-analysis"],
+      "specialistBindings": [
+        {"discipline":"product-management","specialistId":"product-manager-014"},
+        {"discipline":"requirements-engineering","specialistId":"requirements-engineer-014"},
+        {"discipline":"domain-analysis","specialistId":"domain-analyst-014"}
+      ],
+      "evidenceStandards": [
+        "problem and user/business outcome rationale",
+        "traceable functional and non-functional requirements",
+        "explicit acceptance criteria and edge cases",
+        "domain rules and terminology evidence",
+        "scope tradeoff and assumption record"
+      ],
+      "qa": {
+        "type": "professional_excellence",
+        "disciplines": ["product-management", "requirements-engineering", "domain-analysis"],
+        "acceptanceCriteria": [
+          "problem framing is decision-useful and outcome-oriented",
+          "requirements are testable, unambiguous and traceable",
+          "domain rules are internally consistent and evidence-backed",
+          "package meets a strong senior product/requirements practitioner standard"
+        ],
+        "independent": true,
+        "reviewer": "product-quality-reviewer-014"
+      }
+    },
+    {
+      "stageId": "system-architecture",
+      "workProduct": "System and data architecture plan with explicit tradeoffs",
+      "requiredDisciplines": ["software-architecture", "data-architecture"],
+      "assignedSpecialists": ["software-architecture", "data-architecture"],
+      "specialistBindings": [
+        {"discipline":"software-architecture","specialistId":"software-architect"},
+        {"discipline":"data-architecture","specialistId":"data-architect-014"}
+      ],
+      "evidenceStandards": [
+        "reuse-first architecture rationale",
+        "component and interface boundaries",
+        "data ownership and lifecycle model",
+        "failure, recovery and observability design",
+        "security-relevant trust boundaries",
+        "documented tradeoffs and rejected alternatives"
+      ],
+      "qa": {
+        "type": "professional_excellence",
+        "disciplines": ["software-architecture", "data-architecture"],
+        "acceptanceCriteria": [
+          "architecture is coherent, maintainable and proportionate to requirements",
+          "data boundaries preserve integrity and recoverability",
+          "operational and failure behavior is designed rather than implied",
+          "architecture meets a strong senior architect standard"
+        ],
+        "independent": true,
+        "reviewer": "architecture-quality-reviewer-014"
+      }
+    },
+    {
+      "stageId": "ux-ui",
+      "workProduct": "Production-grade user experience and interface specification/implementation when a user-facing interface is material",
+      "requiredDisciplines": ["ux-architecture", "interaction-design", "visual-design", "design-systems", "responsive-design", "accessibility", "frontend-ui-engineering"],
+      "assignedSpecialists": ["ux-architecture", "interaction-design", "visual-design", "design-systems", "responsive-design", "accessibility", "frontend-ui-engineering"],
+      "specialistBindings": [
+        {"discipline":"ux-architecture","specialistId":"uix-ux-architect-015","serviceRunId":"UIX-015"},
+        {"discipline":"interaction-design","specialistId":"uix-interaction-designer-015","serviceRunId":"UIX-015"},
+        {"discipline":"visual-design","specialistId":"uix-art-director-015","serviceRunId":"UIX-015"},
+        {"discipline":"design-systems","specialistId":"uix-design-system-015","serviceRunId":"UIX-015"},
+        {"discipline":"responsive-design","specialistId":"uix-responsive-accessibility-015","serviceRunId":"UIX-015"},
+        {"discipline":"accessibility","specialistId":"uix-responsive-accessibility-015","serviceRunId":"UIX-015"},
+        {"discipline":"frontend-ui-engineering","specialistId":"uix-frontend-polish-015","serviceRunId":"UIX-015"}
+      ],
+      "evidenceStandards": [
+        "task-flow and information-architecture rationale",
+        "interaction states including loading, empty, success and error",
+        "visual direction and typography evidence",
+        "design-system delta",
+        "mobile/tablet/desktop viewport evidence",
+        "keyboard/focus/contrast/readability evidence",
+        "functional-preservation evidence"
+      ],
+      "qa": {
+        "type": "professional_excellence",
+        "disciplines": ["ux-architecture", "interaction-design", "visual-design", "design-systems", "responsive-design", "accessibility", "frontend-ui-engineering"],
+        "acceptanceCriteria": [
+          "UIX-100 >= 92 when UIX scoring applies",
+          "critical UX, responsive and accessibility dimensions >= 90",
+          "no unresolved critical blocker",
+          "business logic and approved user outcomes are preserved"
+        ],
+        "independent": true,
+        "reviewer": "uix-qa-015",
+        "serviceRunId": "UIX-015"
+      },
+      "dependency": "Claims of proven UI excellence require Run 015 to complete its real G4 shadow qualification. Until then this stage is designed but not empirically proven."
+    },
+    {
+      "stageId": "software-implementation",
+      "workProduct": "Professionally engineered application change set across applicable software layers",
+      "requiredDisciplines": ["frontend-engineering", "backend-engineering", "data-engineering", "integration-engineering", "platform-release-engineering"],
+      "assignedSpecialists": ["frontend-engineering", "backend-engineering", "data-engineering", "integration-engineering", "platform-release-engineering"],
+      "specialistBindings": [
+        {"discipline":"frontend-engineering","specialistId":"frontend-engineer-014"},
+        {"discipline":"backend-engineering","specialistId":"backend-engineer-014"},
+        {"discipline":"data-engineering","specialistId":"data-engineer-014"},
+        {"discipline":"integration-engineering","specialistId":"integration-engineer-014"},
+        {"discipline":"platform-release-engineering","specialistId":"platform-release-engineer-014"}
+      ],
+      "evidenceStandards": [
+        "requirements-to-code traceability",
+        "bounded source/configuration diff",
+        "layer-appropriate automated tests",
+        "error and failure-path handling",
+        "data migration/recovery evidence when applicable",
+        "integration idempotency/retry evidence when applicable",
+        "build and runtime compatibility evidence",
+        "maintainability and observability rationale"
+      ],
+      "qa": {
+        "type": "dual",
+        "disciplines": ["frontend-engineering", "backend-engineering", "data-engineering", "integration-engineering", "platform-release-engineering"],
+        "acceptanceCriteria": [
+          "automated tests and failure-path evidence pass",
+          "implementation is readable, maintainable and proportionate",
+          "error handling, observability and rollback behavior are explicit",
+          "no specialist layer is represented only by the Implementation Coordinator",
+          "change set meets a strong senior software-engineering standard"
+        ],
+        "independent": true,
+        "reviewer": "engineering-quality-reviewer-014"
+      }
+    },
+    {
+      "stageId": "test-and-security",
+      "workProduct": "Independent test engineering and application-security evidence",
+      "requiredDisciplines": ["test-engineering", "application-security"],
+      "assignedSpecialists": ["test-engineering", "application-security"],
+      "specialistBindings": [
+        {"discipline":"test-engineering","specialistId":"test-engineering"},
+        {"discipline":"application-security","specialistId":"security-dependency"}
+      ],
+      "evidenceStandards": [
+        "independent regression and boundary tests",
+        "negative and failure-path tests",
+        "authentication/authorization boundary review",
+        "dependency and dangerous-default review",
+        "data exposure and abuse-case review",
+        "unresolved finding list with severity"
+      ],
+      "qa": {
+        "type": "professional_excellence",
+        "disciplines": ["test-engineering", "application-security"],
+        "acceptanceCriteria": [
+          "test strategy covers material requirements and credible failure modes",
+          "security review covers trust boundaries and material abuse cases",
+          "critical/high findings are not waived by implementation owners",
+          "evidence meets strong professional test and application-security standards"
+        ],
+        "independent": true,
+        "reviewer": "challenger-qa"
+      }
+    },
+    {
+      "stageId": "release-and-handoff",
+      "workProduct": "Release candidate and operations handoff package",
+      "requiredDisciplines": ["release-engineering", "operational-readiness"],
+      "assignedSpecialists": ["release-engineering", "operational-readiness"],
+      "specialistBindings": [
+        {"discipline":"release-engineering","specialistId":"platform-release-engineer-014"},
+        {"discipline":"operational-readiness","specialistId":"release-handoff"}
+      ],
+      "evidenceStandards": [
+        "release notes and versioned change summary",
+        "environment/configuration requirements",
+        "rollback and recovery instructions",
+        "known limitations and unresolved risks",
+        "typed Run 008 operations handoff",
+        "authority and deployment-target verification"
+      ],
+      "qa": {
+        "type": "dual",
+        "disciplines": ["release-engineering", "operational-readiness"],
+        "acceptanceCriteria": [
+          "release can be understood and reversed by an independent operator",
+          "known risks and limitations are explicit",
+          "deployment authority is not inferred from technical readiness",
+          "handoff meets a strong professional release/operations-readiness standard"
+        ],
+        "independent": true,
+        "reviewer": "challenger-qa"
+      }
+    }
+  ],
+  "acceptedLimitations": [],
+  "revalidationRule": "G2.5 design PASS is necessary but not sufficient to claim the remediated Run 014 topology is proven. One bounded non-production assignment must exercise the specialist handoffs and independent professional-quality reviews."
+}

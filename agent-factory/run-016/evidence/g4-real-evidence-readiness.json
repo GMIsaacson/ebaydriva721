@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "1.0",
+  "runId": "WORLD-TECHNOLOGY-INTELLIGENCE-016",
+  "gate": "G4-PROFESSIONAL-REAL-EVIDENCE",
+  "status": "BLOCKED_FACTORY_CAPABILITY",
+  "reason": "SPECIALIST_EXECUTION_PROVIDER_NOT_CONFIGURED",
+  "proven": [
+    "G2.5 professional capability design PASS",
+    "on-demand domain specialist routing PASS",
+    "10-case mixed-domain routing shadow PASS",
+    "fail-closed specialist execution adapter implemented"
+  ],
+  "notYetProven": [
+    "specialist model execution on current public evidence",
+    "independent professional review of those model outputs",
+    "expert-grade interpretation quality across high-risk and cross-domain cases"
+  ],
+  "requiredNext": {
+    "provider": "A Factory-authorized model/provider callable by the Run016 specialist executor",
+    "authority": "Explicit non-zero model-call spend authorization if the provider is billable, or an approved zero-cost provider",
+    "casePack": "Bounded current public evidence cases with direct evidence references",
+    "acceptance": "Independent discipline-specific review must PASS; assistant-authored analysis and deterministic fixtures do not count as professional execution evidence"
+  },
+  "authority": {
+    "externalActions": 0,
+    "maxSpendCents": 0,
+    "publish": false,
+    "message": false
+  },
+  "auditComplete": false
+}

@@ -1,0 +1,21 @@
+name: Run 016 G4 Specialist Routing Shadow
+
+on:
+  pull_request:
+    paths:
+      - 'agent-factory/run-016/**'
+      - '.github/workflows/run016-g4-specialist-routing-shadow.yml'
+  workflow_dispatch:
+
+jobs:
+  run016-g4-routing-shadow:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Prove bounded specialist routing behavior
+        run: node --test agent-factory/run-016/tests/g4-specialist-routing-shadow.test.cjs

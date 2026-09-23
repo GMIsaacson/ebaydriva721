@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "1.0",
+  "gateId": "G2.5",
+  "asOfCommit": "67388cc333222ea376d89caee0eb2ff092c645d3",
+  "factoryCoreVersion": "1.3.0",
+  "newRunCompilerEnforcement": "PASS",
+  "rules": {
+    "testMode": "NOT_REQUIRED_TEST",
+    "preCutoverRun": "G2.5_PENDING",
+    "postCutoverRunWithoutMatrix": "BLOCKED",
+    "postCutoverRunWithIncompleteSpecialistCoverage": "BLOCKED",
+    "postCutoverRunWithCorrectnessOnlyQa": "BLOCKED",
+    "postCutoverRunWithCompleteMatrix": "PASS"
+  },
+  "cutoverDate": "2026-08-29",
+  "legacyPortfolioStatus": "OPEN",
+  "promotionPathStatus": "REQUIRES_SEPARATE_VERIFICATION",
+  "canonicalPackageReconciliation": {
+    "missing": ["run-007", "run-010", "run-011", "run-012"],
+    "nonCanonical": ["Alibaba-to-eBay Public Sourcing Intelligence"]
+  },
+  "acceptedLimitations": 0,
+  "auditComplete": false,
+  "note": "This record supersedes the earlier Factory Core matrix statement that team-builder did not invoke G2.5. The compiler is now wired. The Factory-wide audit remains open because legacy teams remain G2.5_PENDING or BLOCKED, canonical package drift remains, and independent promotion/activation paths still need fail-closed G2.5 verification."
+}

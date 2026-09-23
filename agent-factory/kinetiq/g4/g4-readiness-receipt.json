@@ -1,0 +1,16 @@
+{
+  "schemaVersion":"1.0",
+  "teamId":"KINETIQ-WEBSITE-BUSINESS",
+  "gate":"G4",
+  "decision":"BLOCKED",
+  "terminalState":"BLOCKED_FACTORY_CAPABILITY",
+  "reasonCodes":["SPECIALIST_EXECUTION_RUNTIME_MISSING","TEN_REAL_SHADOW_CASES_NOT_EXECUTED","INDEPENDENT_PROFESSIONAL_COMPARISON_NOT_EXECUTED"],
+  "g25DesignStatus":"PASS",
+  "modelExecutionStatus":"NOT_PROVEN",
+  "realShadowCasesCompleted":0,
+  "minimumRequired":10,
+  "externalActionsPerformed":0,
+  "spendCents":0,
+  "deploymentsPerformed":0,
+  "nextAction":"Implement and authorize a bounded Kinetiq specialist execution/model runtime, then execute 10 real public-evidence shadow cases under g4-shadow-contract.json. Do not substitute assistant-authored judgments or deterministic fixtures for team execution."
+}

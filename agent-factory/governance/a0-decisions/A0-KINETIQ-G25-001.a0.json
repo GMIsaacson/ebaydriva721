@@ -1,0 +1,31 @@
+{
+  "decision_id": "A0-KINETIQ-G25-001",
+  "status": "PASS",
+  "verdict": "EXTEND",
+  "owner": "Aberdeen Technologies",
+  "decided_at": "2026-08-29",
+  "business_outcome": "Remediate Website Business / Kinetiq so operational workflow coverage cannot be mistaken for professional capability completeness.",
+  "existing_owner_scan": "Reuse the existing Kinetiq operational loops and preserve their authority limits. Reuse Run 015 for professional UI/UX/design work and Run 014 for professional software engineering work rather than creating duplicate specialist teams.",
+  "reuse_candidates_checked": [
+    "Kinetiq-Agent-Team-Control-Center.xlsx operational registry and authority matrix",
+    "Run 014 Software Product Engineering Team",
+    "Run 015 UI Excellence Team",
+    "Factory Core G2.5 professional capability gate"
+  ],
+  "duplication_analysis": "The remediation adds professional specialist ownership and independent excellence review around existing Kinetiq loops. It does not create a duplicate website engineering or UI team.",
+  "residual_unowned_loop": "Qualification, diagnosis, outreach, proposal, production, QA, and customer success currently contain overloaded professional responsibilities that require explicit specialist binding and independent review.",
+  "covers_paths": ["agent-factory/kinetiq/"],
+  "authority": {
+    "external_actions": 0,
+    "max_spend_cents": 0,
+    "deploy": false,
+    "publish": false,
+    "production_mutation": false,
+    "customer_contact": false,
+    "proposal_send": false,
+    "delivery": false,
+    "invoice_issue": false
+  },
+  "promotion_boundary": "G4, G5 and G6 remain blocked exactly as documented in the Kinetiq control center until real shadow, controlled-action infrastructure, live E2E evidence, and owner promotion exist.",
+  "evidence_ref": "Kinetiq-Agent-Team-Control-Center.xlsx; agent-factory/kinetiq/professional-capability-matrix.json"
+}
