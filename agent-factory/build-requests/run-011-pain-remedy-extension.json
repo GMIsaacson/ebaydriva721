@@ -1,0 +1,65 @@
+{
+  "teamName": "Opportunity Intelligence / OUCS — Pain & Remedy Extension",
+  "purpose": "Extend Run 011 so every material signal is evaluated for forward value, pain inversion, reverse-business opportunities, executable remedies, evidence-backed economics, Factory fit and explicit kill criteria, with owner-discovered misses converted into regression tests.",
+  "domain": "opportunity-intelligence",
+  "topologyMode": "hybrid",
+  "governance": {
+    "mode": "RUN",
+    "a0Decision": {
+      "decisionId": "A0-OUCS-011-PRR-001",
+      "status": "PASS",
+      "verdict": "EXTEND",
+      "owner": "Aberdeen Technologies",
+      "decidedAt": "2026-09-15",
+      "reuseEvidence": [
+        "Run 011 Opportunity Intelligence / OUCS ownership reviewed",
+        "Agent 000 operating-manager role reused",
+        "Independent opportunity Q3 reused",
+        "Factory Core hybrid component rules reused"
+      ],
+      "residualUnownedLoop": "Pain inversion, reverse-business analysis, remedy mapping and missed-opportunity regression were not permanently owned."
+    }
+  },
+  "requestedRunNumber": 11,
+  "existingRunNumbers": [4, 5, 6, 8, 9, 14, 15, 16],
+  "reservedRunNumbers": [13],
+  "authority": {
+    "maxExternalActions": 0,
+    "maxSpendCents": 0,
+    "deploy": false,
+    "allowedActions": [
+      "read approved public-source evidence",
+      "write local opportunity evidence",
+      "prepare typed opportunity handoff packages"
+    ]
+  },
+  "capabilities": [
+    {"id":"control","name":"Opportunity Intelligence Control","componentType":"workflow","role":"orchestrator","responsibility":"Own bounded signal routing, run identity, typed handoffs, terminal states and authority accounting."},
+    {"id":"signal-normalizer","name":"Opportunity Signal Normalizer","componentType":"software","role":"capability","responsibility":"Normalize incoming technology, dataset, regulatory, platform, market and complaint signals into a common evidence-linked packet."},
+    {"id":"prr-001","name":"Pain and Remedy Radar","componentType":"agent","role":"capability","responsibility":"Perform pain inversion and reverse-business analysis while separating observed facts from hypotheses and naming required falsification evidence."},
+    {"id":"rm-001","name":"Remedy Mapper","componentType":"agent","role":"capability","responsibility":"Map lawful technical, legal, informational and operational remedies, authorization requirements, automation path, residue, failure modes and kill criteria."},
+    {"id":"market-evidence","name":"Market Evidence Packager","componentType":"software","role":"capability","responsibility":"Package attributable evidence of payment, substitutes, demand, complaints, incumbent pricing and adoption without inventing validation."},
+    {"id":"factory-fit","name":"Factory Fit Mapper","componentType":"software","role":"capability","responsibility":"Map candidate requirements to existing Factory capabilities, missing adapters, expected human work and measurable implementation gaps."},
+    {"id":"scope-gate","name":"Sensitive Scope Gate","componentType":"decision-support","role":"assurance","independentAssurance":true,"responsibility":"Fail closed on raw personal-profile resale, stalking/doxxing, minor targeting, regulated eligibility decisioning and other disallowed sensitive-data opportunity patterns."},
+    {"id":"opportunity-score","name":"Deterministic Opportunity Scorer","componentType":"software","role":"capability","responsibility":"Apply the fixed 100-point nine-dimension rubric and cap evidence-free or kill-criteria-free candidates at WATCH."},
+    {"id":"miss-registry","name":"Missed Opportunity Regression Registry","componentType":"data-store","role":"capability","responsibility":"Persist owner-discovered misses, root causes, expected concepts and calibration cases so discovery improvements can be regression tested."},
+    {"id":"regression-runner","name":"Opportunity Regression Runner","componentType":"software","role":"capability","responsibility":"Run all MISS cases and fail when expected opportunity concepts, safety gates or minimum scores are not recovered."},
+    {"id":"independent-opportunity-q3","name":"Independent Opportunity Q3","componentType":"decision-support","role":"assurance","independentAssurance":true,"responsibility":"Independently challenge evidence, scoring, remedy viability, regulatory assumptions and Factory-fit claims before VALIDATED is permitted."},
+    {"id":"opportunity-registry-adapter","name":"Opportunity Registry Adapter","componentType":"service","role":"capability","responsibility":"Prepare typed registry records and next-action packages without claiming downstream acceptance or execution."},
+    {"id":"owner-decision","name":"Owner Opportunity Decision","componentType":"human-gate","role":"approval","responsibility":"Retain strategy, capital, launch, external-action and material-risk approval authority."}
+  ],
+  "handoffs": [
+    {"from":"control","to":"signal-normalizer","contract":"opportunity_signal_v1"},
+    {"from":"signal-normalizer","to":"prr-001","contract":"normalized_opportunity_signal_v1"},
+    {"from":"prr-001","to":"rm-001","contract":"pain_inversion_v1"},
+    {"from":"rm-001","to":"market-evidence","contract":"remedy_map_v1"},
+    {"from":"market-evidence","to":"factory-fit","contract":"market_evidence_pack_v1"},
+    {"from":"factory-fit","to":"scope-gate","contract":"candidate_factory_fit_v1"},
+    {"from":"scope-gate","to":"opportunity-score","contract":"scope_approved_candidate_v1"},
+    {"from":"opportunity-score","to":"independent-opportunity-q3","contract":"scored_opportunity_candidate_v1"},
+    {"from":"miss-registry","to":"regression-runner","contract":"missed_opportunity_case_v1"},
+    {"from":"regression-runner","to":"independent-opportunity-q3","contract":"regression_evidence_v1"},
+    {"from":"independent-opportunity-q3","to":"opportunity-registry-adapter","contract":"q3_opportunity_decision_v1"},
+    {"from":"opportunity-registry-adapter","to":"owner-decision","contract":"opportunity_registry_candidate_v1"}
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "remedy_map_v1",
+  "type": "object",
+  "required": ["painId", "remedyClasses", "availableMechanisms", "successEvidence", "failureModes", "killCriteria"],
+  "properties": {
+    "painId": {"type": "string", "minLength": 1},
+    "remedyClasses": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "availableMechanisms": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "authorizationRequirements": {"type": "array", "items": {"type": "string"}},
+    "jurisdictionDependencies": {"type": "array", "items": {"type": "string"}},
+    "automationSteps": {"type": "array", "items": {"type": "string"}},
+    "humanExceptionSteps": {"type": "array", "items": {"type": "string"}},
+    "nonRemovableResidue": {"type": "array", "items": {"type": "string"}},
+    "successEvidence": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "failureModes": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "killCriteria": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "uncertainties": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": false
+}
