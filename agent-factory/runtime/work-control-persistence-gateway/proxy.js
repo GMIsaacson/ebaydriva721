@@ -323,7 +323,7 @@ async function executeMicroWorker({workflow,serviceUrl,commandId}){
         summary:record.receipt.summary||null,
         detail:record.receipt.detail||null
       }));
-      return {state:'FAILED_CLOSED',commandId,terminalState:'FAILED'};
+      return {state:'FAILED_CLOSED',commandId,terminalState:'FAILED',summary:record.receipt.summary||null,detail:record.receipt.detail||null};
     }
     throw Object.assign(new Error('FACTORY_COORDINATOR_EXECUTOR_FAILED'),{
       kind:'FACTORY_COORDINATOR',workflow,commandId,statusCode:response.status,detail:body.slice(0,800)
@@ -334,23 +334,55 @@ async function executeMicroWorker({workflow,serviceUrl,commandId}){
 
 async function dispatchRun(spec){
   return enqueueWorkflow(spec.workflow,async()=>{
-    const created=await createGovernedCommand(spec);
-    if(created.state!=='DISPATCHED')return created;
-    const execution=await executeMicroWorker({
+    const runOnce=async(runSpec)=>{
+      const created=await createGovernedCommand(runSpec);
+      if(created.state!=='DISPATCHED')return created;
+      const execution=await executeMicroWorker({
+        workflow:runSpec.workflow,
+        serviceUrl:runSpec.serviceUrl,
+        commandId:created.commandId
+      });
+      if(execution.state!=='COMPLETED'){
+        return {
+          state:execution.state,
+          commandId:null,
+          failedCommandId:created.commandId,
+          runId:created.runId,
+          terminalState:execution.terminalState||null,
+          summary:execution.summary||null,
+          detail:execution.detail||null
+        };
+      }
+      return {...created,state:'COMPLETED'};
+    };
+
+    const first=await runOnce(spec);
+    const retryable=
+      first.state==='FAILED_CLOSED'&&
+      String(first.detail||'').includes('CANONICAL_STAGE_PERSISTENCE_FAILED');
+
+    if(!retryable)return first;
+
+    const retryRunId=String(spec.runId||spec?.payload?.runId||'')+'-R1';
+    const retrySpec={
+      ...spec,
+      runId:retryRunId,
+      payload:{...(spec.payload||{}),runId:retryRunId}
+    };
+    console.log(JSON.stringify({
+      event:'FACTORY_COORDINATOR_RETRYING_TRANSIENT_FAILURE',
       workflow:spec.workflow,
-      serviceUrl:spec.serviceUrl,
-      commandId:created.commandId
-    });
-    if(execution.state!=='COMPLETED'){
-      return {
-        state:execution.state,
-        commandId:null,
-        failedCommandId:created.commandId,
-        runId:created.runId,
-        terminalState:execution.terminalState||null
-      };
-    }
-    return {...created,state:'COMPLETED'};
+      failedCommandId:first.failedCommandId||null,
+      originalRunId:spec.runId||null,
+      retryRunId,
+      reason:first.detail||null
+    }));
+    const retry=await runOnce(retrySpec);
+    return {
+      ...retry,
+      retried:true,
+      priorFailedCommandId:first.failedCommandId||null
+    };
   });
 }
 
