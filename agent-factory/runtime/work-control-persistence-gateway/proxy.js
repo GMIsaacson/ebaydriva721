@@ -432,7 +432,7 @@ async function coordinateAfterPersistence(receipt,governance,persistedKind){
           runId:demandRunId,leafId,leafName,
           contractVersion:'amazon-demand-validation-v1',
           specialist:'AGT-RESEARCH-VALIDATION-001',
-          sourceCensusCommandId,
+          sourceCensusCommandId:sourceCommandId,
           candidateAsins:asins
         },
         budget:2,
@@ -449,7 +449,7 @@ async function coordinateAfterPersistence(receipt,governance,persistedKind){
           runId:evidenceRunId,leafId,leafName,
           contractVersion:'amazon-listing-evidence-v1',
           specialist:'AGT-AMAZON-LISTING-CLASSIFIER-001',
-          sourceCensusCommandId,
+          sourceCensusCommandId:sourceCommandId,
           demandValidationCommandId:demand.commandId,
           targetAsins:asins
         },
