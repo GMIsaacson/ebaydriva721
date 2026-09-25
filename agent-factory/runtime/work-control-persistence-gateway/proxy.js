@@ -22,6 +22,7 @@ const PRODUCT_NORMALIZATION_V1_PERSIST=process.env.PRODUCT_NORMALIZATION_V1_PERS
 const PRODUCT_CLUSTERING_V1_PERSIST=process.env.PRODUCT_CLUSTERING_V1_PERSIST_URL||'https://aittnuqrrenkencygfje.supabase.co/functions/v1/amazon-product-clustering-v1-persistence';
 const ATTRIBUTE_RESOLUTION_V1_PERSIST=process.env.ATTRIBUTE_RESOLUTION_V1_PERSIST_URL||'https://aittnuqrrenkencygfje.supabase.co/functions/v1/amazon-product-attribute-resolution-v1-persistence';
 const PRODUCT_GRAPH_PROMOTION_V1_PERSIST=process.env.PRODUCT_GRAPH_PROMOTION_V1_PERSIST_URL||'https://aittnuqrrenkencygfje.supabase.co/functions/v1/product-graph-promotion-v1-persistence';
+const SALE_OBSERVATION_READ=process.env.SALE_OBSERVATION_READ_URL||'https://aittnuqrrenkencygfje.supabase.co/functions/v1/amazon-sale-observation-read-v1';
 const TOKEN=fs.readFileSync('/secret/token','utf8').trim();
 
 function reply(res,code,obj){
@@ -40,6 +41,7 @@ const CONTRACT_MARKERS=Object.freeze({
   'amazon-demand-validation-v1':'[AMAZON_DEMAND_VALIDATION_V1]',
   'amazon-sourcing-v1':'[AMAZON_SOURCING_V1]',
   'amazon-supplier-discovery-v2':'[AMAZON_SUPPLIER_DISCOVERY_V2]',
+  'amazon-listing-evidence-v1':'[AMAZON_LISTING_EVIDENCE_V1]',
   'amazon-listing-classification-v1':'[AMAZON_LISTING_CLASSIFICATION_V1]',
   'amazon-pp-equivalence-v1':'[AMAZON_PP_EQUIVALENCE_V1]',
   'amazon-supplier-commercial-validity-v1':'[AMAZON_SUPPLIER_COMMERCIAL_VALIDITY_V1]',
@@ -228,102 +230,382 @@ function parseCommandPayload(command,marker){
   if(start<0)return {};
   try{return JSON.parse(tail.slice(start));}catch{return {};}
 }
+
 async function workControlState(){
   const response=await fetch(UP+'/api/v1/state',{method:'GET',headers:{'accept':'application/json'},signal:AbortSignal.timeout(5000)});
   if(!response.ok)throw Object.assign(new Error('FACTORY_COORDINATOR_STATE_UNAVAILABLE'),{kind:'FACTORY_COORDINATOR',statusCode:response.status});
   return response.json();
 }
-async function coordinateAfterPersistence(receipt,governance,persistedKind){
-  if(persistedKind!=='OBSERVE')return null;
-  if(String(receipt?.stageResult?.contractVersion||'')!=='amazon-leaf-census-v2')return null;
-  if(String(receipt?.stageResult?.outcome||'').toUpperCase()!=='PASS')return null;
 
-  const leafId=String(receipt?.stageResult?.leafId||'').trim();
-  const sourceCommandId=String(receipt?.commandId||'').trim();
-  const candidates=Array.isArray(receipt?.stageResult?.candidates)
-    ? [...new Set(receipt.stageResult.candidates.map(x=>String(x?.asin||'').trim()).filter(x=>/^B[A-Z0-9]{9}$/.test(x)))]
-    : [];
-  if(!leafId||!candidates.length){
-    console.log(JSON.stringify({event:'FACTORY_COORDINATOR_WAITING',reason:'CENSUS_FACTS_INCOMPLETE',leafId,sourceCommandId}));
-    return null;
-  }
+async function workControlCommand(commandId){
+  const response=await fetch(UP+'/api/v1/commands/'+encodeURIComponent(commandId),{method:'GET',headers:{'accept':'application/json'},signal:AbortSignal.timeout(5000)});
+  if(!response.ok)return null;
+  return response.json();
+}
 
-  const sourcePayload=parseCommandPayload(governance.command,'[AMAZON_LEAF_CENSUS_V2]');
-  const leafName=String(sourcePayload.leafName||'Unknown Leaf').trim().slice(0,120);
-  const sourceSuffix=sourceCommandId.replace(/[^A-Za-z0-9]/g,'').slice(-10).toUpperCase();
+const workflowQueues=new Map();
+function enqueueWorkflow(key,fn){
+  const prior=workflowQueues.get(key)||Promise.resolve();
+  const next=prior.catch(()=>{}).then(fn);
+  workflowQueues.set(key,next.finally(()=>{if(workflowQueues.get(key)===next)workflowQueues.delete(key);}));
+  return next;
+}
+
+async function createGovernedCommand({workflow,runId,marker,payload,budget=2,priority='high'}){
   const state=await workControlState();
   const serialized=JSON.stringify(state?.work||[]);
-  const batches=[];
-  for(let start=0;start<candidates.length;start+=24)batches.push({start,asins:candidates.slice(start,start+24)});
+  if(runId&&serialized.includes(runId)){
+    console.log(JSON.stringify({event:'FACTORY_COORDINATOR_IDEMPOTENT',workflow,runId}));
+    return {state:'EXISTS',commandId:null,runId};
+  }
+  const instruction=marker+' '+JSON.stringify(payload);
+  if(Buffer.byteLength(instruction,'utf8')>1950){
+    throw Object.assign(new Error('FACTORY_COORDINATOR_INSTRUCTION_TOO_LONG'),{kind:'FACTORY_COORDINATOR',workflow,bytes:Buffer.byteLength(instruction,'utf8')});
+  }
+  const response=await fetch(UP+'/api/v1/commands',{
+    method:'POST',
+    headers:{'content-type':'application/json','accept':'application/json'},
+    body:JSON.stringify({teamId:'RUN-004',priority,modelBudgetCents:budget,instruction}),
+    signal:AbortSignal.timeout(5000)
+  });
+  const body=await response.text();
+  if(!response.ok)throw Object.assign(new Error('FACTORY_COORDINATOR_DISPATCH_FAILED'),{kind:'FACTORY_COORDINATOR',workflow,statusCode:response.status,detail:body.slice(0,500)});
+  let created={};try{created=JSON.parse(body);}catch{}
+  const commandId=created?.command?.commandId||null;
+  if(!commandId)throw Object.assign(new Error('FACTORY_COORDINATOR_COMMAND_ACK_MISSING'),{kind:'FACTORY_COORDINATOR',workflow});
+  console.log(JSON.stringify({event:'FACTORY_COORDINATOR_DISPATCHED',workflow,runId,commandId}));
+  return {state:'DISPATCHED',commandId,runId};
+}
 
-  const dispatched=[];
-  for(const batch of batches){
-    const runId='SM-AMZ-DEMAND-'+leafId+'-'+sourceSuffix+'-B'+String(batch.start).padStart(3,'0');
-    if(serialized.includes(runId)){
-      dispatched.push({state:'EXISTS',runId,batchStart:batch.start});
-      continue;
+async function executeMicroWorker({workflow,serviceUrl,commandId}){
+  if(!commandId)return {state:'NOOP'};
+  const response=await fetch(serviceUrl,{
+    method:'POST',
+    headers:{'content-type':'application/json'},
+    body:JSON.stringify({expectedCommandId:commandId}),
+    signal:AbortSignal.timeout(300000)
+  });
+  const body=await response.text();
+  console.log(JSON.stringify({
+    event:response.ok?'FACTORY_COORDINATOR_EXECUTOR_COMPLETED':'FACTORY_COORDINATOR_EXECUTOR_FAILED',
+    workflow,commandId,status:response.status,detail:body.slice(0,800)
+  }));
+  if(!response.ok)throw Object.assign(new Error('FACTORY_COORDINATOR_EXECUTOR_FAILED'),{kind:'FACTORY_COORDINATOR',workflow,statusCode:response.status,detail:body.slice(0,800)});
+  return {state:'COMPLETED',commandId};
+}
+
+async function dispatchRun(spec){
+  return enqueueWorkflow(spec.workflow,async()=>{
+    const created=await createGovernedCommand(spec);
+    if(created.state!=='DISPATCHED')return created;
+    await executeMicroWorker({workflow:spec.workflow,serviceUrl:spec.serviceUrl,commandId:created.commandId});
+    return created;
+  });
+}
+
+function suffixFrom(commandId){
+  return String(commandId||'').replace(/[^A-Za-z0-9]/g,'').slice(-10).toUpperCase()||'AUTO';
+}
+
+function uniqueAsins(rows,key='asin'){
+  return [...new Set((Array.isArray(rows)?rows:[]).map(x=>String(x?.[key]||'').trim().toUpperCase()).filter(x=>/^B[A-Z0-9]{9}$/.test(x)))];
+}
+
+async function canonicalSaleObservations(leafId,asins){
+  if(!asins.length)return [];
+  const response=await fetch(SALE_OBSERVATION_READ,{
+    method:'POST',
+    headers:{'content-type':'application/json','x-source-margin-observe-token':TOKEN},
+    body:JSON.stringify({leafId,asins}),
+    signal:AbortSignal.timeout(15000)
+  });
+  const body=await response.text();
+  let payload={};try{payload=body?JSON.parse(body):{};}catch{}
+  if(!response.ok){
+    console.error(JSON.stringify({event:'FACTORY_COORDINATOR_OBSERVATION_READ_FAILED',leafId,status:response.status,detail:body.slice(0,500)}));
+    return [];
+  }
+  return Array.isArray(payload?.observations)?payload.observations:[];
+}
+
+async function coordinateAfterPersistence(receipt,governance,persistedKind){
+  const contract=String(receipt?.stageResult?.contractVersion||'');
+  const outcome=String(receipt?.stageResult?.outcome||'').toUpperCase();
+  const leafId=String(receipt?.stageResult?.leafId||'').trim();
+  const sourceCommandId=String(receipt?.commandId||'').trim();
+  if(outcome&&outcome!=='PASS')return null;
+  if(!leafId)return null;
+
+  // 1) Canonical census -> bounded demand validation -> listing evidence.
+  if(contract==='amazon-leaf-census-v2'){
+    const sourcePayload=parseCommandPayload(governance.command,'[AMAZON_LEAF_CENSUS_V2]');
+    const leafName=String(sourcePayload.leafName||'Unknown Leaf').trim().slice(0,120);
+    const candidates=uniqueAsins(receipt?.stageResult?.candidates);
+    if(!candidates.length){
+      console.log(JSON.stringify({event:'FACTORY_COORDINATOR_BRANCH_TERMINAL',workflow:'amazon-demand-validation-v1',leafId,reason:'NO_CENSUS_ASINS'}));
+      return null;
     }
+    const sourceSuffix=suffixFrom(sourceCommandId);
+    const batchSize=10;
+    for(let start=0;start<candidates.length;start+=batchSize){
+      const asins=candidates.slice(start,start+batchSize);
+      const batchTag='B'+String(start).padStart(3,'0');
+      const demandRunId='SM-AMZ-DEMAND-'+leafId+'-'+sourceSuffix+'-'+batchTag;
+      const demand=await dispatchRun({
+        workflow:'amazon-demand-validation-v1',
+        runId:demandRunId,
+        marker:'[AMAZON_DEMAND_VALIDATION_V1]',
+        payload:{
+          runId:demandRunId,leafId,leafName,
+          contractVersion:'amazon-demand-validation-v1',
+          specialist:'AGT-RESEARCH-VALIDATION-001',
+          sourceCensusCommandId,
+          candidateAsins:asins
+        },
+        budget:2,
+        serviceUrl:'http://amazon-demand-validator-v1:8793/run'
+      });
+      if(!demand.commandId)continue;
+      const evidenceRunId='SM-AMZ-LIST-EVID-'+leafId+'-'+sourceSuffix+'-'+batchTag;
+      await dispatchRun({
+        workflow:'amazon-listing-evidence-v1',
+        runId:evidenceRunId,
+        marker:'[AMAZON_LISTING_EVIDENCE_V1]',
+        payload:{
+          runId:evidenceRunId,leafId,leafName,
+          contractVersion:'amazon-listing-evidence-v1',
+          specialist:'AGT-AMAZON-LISTING-CLASSIFIER-001',
+          sourceCensusCommandId,
+          demandValidationCommandId:demand.commandId,
+          targetAsins:asins
+        },
+        budget:2,
+        serviceUrl:'http://amazon-listing-evidence-v1:8807/run'
+      });
+    }
+    return {state:'COORDINATED',workflow:'census-to-demand-and-listing-evidence',leafId};
+  }
 
-    const payload={
+  // 2) Listing evidence -> deterministic listing classification.
+  if(contract==='amazon-listing-evidence-v1'){
+    const sr=receipt.stageResult||{};
+    const evidence=Array.isArray(sr.evidence)?sr.evidence:[];
+    if(!evidence.length)return null;
+    const leafName=String(parseCommandPayload(governance.command,'[AMAZON_LISTING_EVIDENCE_V1]').leafName||'Unknown Leaf').trim().slice(0,120);
+    const candidateFacts=evidence.map(row=>[
+      String(row.asin||'').toUpperCase(),
+      row.brandName||null,
+      row.sellerName||null,
+      String(row.signalCode||'UN').toUpperCase(),
+      Number(row.confidencePct||35)
+    ]);
+    const runId='SM-AMZ-LIST-CLASS-'+leafId+'-'+suffixFrom(sourceCommandId);
+    await dispatchRun({
+      workflow:'amazon-listing-classification-v1',
       runId,
-      leafId,
-      leafName,
-      contractVersion:'amazon-demand-validation-v1',
-      specialist:'AGT-RESEARCH-VALIDATION-001',
-      candidateAsins:batch.asins
-    };
-    const instruction='[AMAZON_DEMAND_VALIDATION_V1] '+JSON.stringify(payload);
-    const response=await fetch(UP+'/api/v1/commands',{
-      method:'POST',
-      headers:{'content-type':'application/json','accept':'application/json'},
-      body:JSON.stringify({teamId:'RUN-004',priority:'high',modelBudgetCents:2,instruction}),
-      signal:AbortSignal.timeout(5000)
+      marker:'[AMAZON_LISTING_CLASSIFICATION_V1]',
+      payload:{
+        runId,leafId,leafName,
+        contractVersion:'amazon-listing-classification-v1',
+        specialist:'AGT-AMAZON-LISTING-CLASSIFIER-001',
+        sourceCensusCommandId:sr.sourceCensusCommandId||null,
+        demandValidationCommandId:sr.demandValidationCommandId||null,
+        listingEvidenceCommandId:sourceCommandId,
+        evidenceRef:sourceCommandId,
+        candidateFacts
+      },
+      budget:2,
+      serviceUrl:'http://amazon-listing-classifier-v1:8795/run'
     });
-    const body=await response.text();
-    if(!response.ok){
-      throw Object.assign(new Error('FACTORY_COORDINATOR_DISPATCH_FAILED'),{kind:'FACTORY_COORDINATOR',statusCode:response.status,detail:body.slice(0,500)});
+    return {state:'COORDINATED',workflow:'amazon-listing-classification-v1',leafId};
+  }
+
+  // 3) Classification + completed demand -> targeted supplier discovery.
+  if(contract==='amazon-listing-classification-v1'){
+    const commandPayload=parseCommandPayload(governance.command,'[AMAZON_LISTING_CLASSIFICATION_V1]');
+    const demandId=String(commandPayload.demandValidationCommandId||'');
+    const censusId=String(commandPayload.sourceCensusCommandId||'');
+    if(!demandId||!censusId){
+      console.log(JSON.stringify({event:'FACTORY_COORDINATOR_WAITING',workflow:'amazon-supplier-discovery-v2',leafId,reason:'LINEAGE_MISSING'}));
+      return null;
     }
-    let created={}; try{created=JSON.parse(body);}catch{}
-    const nextCommandId=created?.command?.commandId||null;
-    if(!nextCommandId)throw Object.assign(new Error('FACTORY_COORDINATOR_COMMAND_ACK_MISSING'),{kind:'FACTORY_COORDINATOR'});
-
-    dispatched.push({state:'DISPATCHED',nextCommandId,runId,batchStart:batch.start,candidateCount:batch.asins.length});
-    console.log(JSON.stringify({
-      event:'FACTORY_COORDINATOR_DISPATCHED',
-      sourceCommandId,nextCommandId,workflow:'amazon-demand-validation-v1',
-      leafId,leafName,batchStart:batch.start,candidateCount:batch.asins.length,runId
-    }));
-
-
+    const demandRecord=await workControlCommand(demandId);
+    if(demandRecord?.receipt?.terminalState!=='DELIVERED'){
+      console.log(JSON.stringify({event:'FACTORY_COORDINATOR_WAITING',workflow:'amazon-supplier-discovery-v2',leafId,reason:'DEMAND_RECEIPT_NOT_READY',demandId}));
+      return null;
+    }
+    const classifications=Array.isArray(receipt?.stageResult?.classifications)?receipt.stageResult.classifications:[];
+    const eligible=classifications
+      .filter(row=>!['STOP_NO_JUMP_ON','DEEP_CLASSIFICATION_REQUIRED'].includes(String(row?.sourcingRoute||'')))
+      .map(row=>String(row?.asin||'').toUpperCase())
+      .filter(x=>/^B[A-Z0-9]{9}$/.test(x))
+      .slice(0,20);
+    if(!eligible.length){
+      console.log(JSON.stringify({event:'FACTORY_COORDINATOR_BRANCH_TERMINAL',workflow:'amazon-supplier-discovery-v2',leafId,reason:'NO_ROUTE_ELIGIBLE_ASINS'}));
+      return null;
+    }
+    const leafName=String(commandPayload.leafName||'Unknown Leaf').trim().slice(0,120);
+    const runId='SM-AMZ-SUPPLIER-'+leafId+'-'+suffixFrom(sourceCommandId);
+    await dispatchRun({
+      workflow:'amazon-supplier-discovery-v2',
+      runId,
+      marker:'[AMAZON_SUPPLIER_DISCOVERY_V2]',
+      payload:{
+        runId,leafId,leafName,
+        contractVersion:'amazon-supplier-discovery-v2',
+        specialist:'SPC-SOURCE-001',
+        asinDiscoveryCommandId:censusId,
+        demandValidationCommandId:demandId,
+        listingClassificationCommandId:sourceCommandId,
+        excludeAsins:[],
+        targetAsins:eligible,
+        selectionScope:'COMMERCIAL_TRIAGE'
+      },
+      budget:10,
+      serviceUrl:'http://amazon-supplier-discovery-v2:8796/run'
+    });
+    return {state:'COORDINATED',workflow:'amazon-supplier-discovery-v2',leafId};
   }
-  const runnable=dispatched.filter(x=>x.state==='DISPATCHED'&&x.nextCommandId).map(x=>x.nextCommandId);
-  if(runnable.length){
-    void (async()=>{
-      for(const nextCommandId of runnable){
-        try{
-          const r=await fetch('http://amazon-demand-validator-v1:8793/run',{
-            method:'POST',
-            headers:{'content-type':'application/json'},
-            body:JSON.stringify({expectedCommandId:nextCommandId}),
-            signal:AbortSignal.timeout(300000)
-          });
-          const detail=(await r.text()).slice(0,800);
-          console.log(JSON.stringify({
-            event:r.ok?'FACTORY_COORDINATOR_EXECUTOR_COMPLETED':'FACTORY_COORDINATOR_EXECUTOR_FAILED',
-            workflow:'amazon-demand-validation-v1',nextCommandId,status:r.status,detail
-          }));
-          if(!r.ok)break;
-        }catch(error){
-          console.error(JSON.stringify({
-            event:'FACTORY_COORDINATOR_EXECUTOR_ERROR',
-            workflow:'amazon-demand-validation-v1',nextCommandId,error:String(error?.message||error)
-          }));
-          break;
-        }
-      }
-    })();
+
+  // 4) Supplier discovery -> PP equivalence for ASINs that actually have supplier candidates.
+  if(contract==='amazon-supplier-discovery-v2'){
+    const commandPayload=parseCommandPayload(governance.command,'[AMAZON_SUPPLIER_DISCOVERY_V2]');
+    const classificationId=String(commandPayload.listingClassificationCommandId||'');
+    if(!classificationId)return null;
+    const targetAsins=uniqueAsins(receipt?.stageResult?.candidates).slice(0,20);
+    if(!targetAsins.length){
+      console.log(JSON.stringify({event:'FACTORY_COORDINATOR_BRANCH_TERMINAL',workflow:'amazon-pp-equivalence-v1',leafId,reason:'NO_SUPPLIER_CANDIDATES'}));
+      return null;
+    }
+    const leafName=String(commandPayload.leafName||'Unknown Leaf').trim().slice(0,120);
+    const runId='SM-AMZ-PP-EQ-'+leafId+'-'+suffixFrom(sourceCommandId);
+    await dispatchRun({
+      workflow:'amazon-pp-equivalence-v1',
+      runId,
+      marker:'[AMAZON_PP_EQUIVALENCE_V1]',
+      payload:{
+        runId,leafId,leafName,
+        contractVersion:'amazon-pp-equivalence-v1',
+        specialist:'SPC-PP-EQUIV-001',
+        listingClassificationCommandId:classificationId,
+        supplierDiscoveryCommandIds:[sourceCommandId],
+        targetAsins
+      },
+      budget:10,
+      serviceUrl:'http://amazon-pp-equivalence-v1:8797/run'
+    });
+    return {state:'COORDINATED',workflow:'amazon-pp-equivalence-v1',leafId};
   }
-  return {state:'COORDINATED',workflow:'amazon-demand-validation-v1',leafId,sourceCommandId,batches:dispatched};
+
+  // 5) PP equivalence -> exact-pack commercial validity and/or case-break procurement.
+  if(contract==='amazon-pp-equivalence-v1'){
+    const commandPayload=parseCommandPayload(governance.command,'[AMAZON_PP_EQUIVALENCE_V1]');
+    const leafName=String(commandPayload.leafName||'Unknown Leaf').trim().slice(0,120);
+    const rows=Array.isArray(receipt?.stageResult?.results)?receipt.stageResult.results:[];
+    const exact=[...new Set(rows.filter(r=>r?.verdict==='EXACT_MATCH'&&r?.channelEligibility==='ELIGIBLE').map(r=>String(r.asin||'').toUpperCase()))].slice(0,20);
+    const caseBreak=[...new Set(rows.filter(r=>r?.verdict==='EXACT_PRODUCT_CASE_BREAK_REQUIRED'&&r?.channelEligibility==='ELIGIBLE').map(r=>String(r.asin||'').toUpperCase()))].slice(0,20);
+    if(exact.length){
+      const runId='SM-AMZ-COMM-'+leafId+'-'+suffixFrom(sourceCommandId);
+      await dispatchRun({
+        workflow:'amazon-supplier-commercial-validity-v1',
+        runId,
+        marker:'[AMAZON_SUPPLIER_COMMERCIAL_VALIDITY_V1]',
+        payload:{runId,leafId,leafName,contractVersion:'amazon-supplier-commercial-validity-v1',specialist:'SPC-SOURCE-001',ppEquivalenceCommandId:sourceCommandId,targetAsins:exact},
+        budget:10,
+        serviceUrl:'http://amazon-supplier-commercial-validity-v1:8798/run'
+      });
+    }
+    if(caseBreak.length){
+      const runId='SM-AMZ-CASE-BREAK-'+leafId+'-'+suffixFrom(sourceCommandId);
+      await dispatchRun({
+        workflow:'amazon-case-break-procurement-v1',
+        runId,
+        marker:'[AMAZON_CASE_BREAK_PROCUREMENT_V1]',
+        payload:{runId,leafId,leafName,contractVersion:'amazon-case-break-procurement-v1',specialist:'SPC-CASE-BREAK-001',ppEquivalenceCommandId:sourceCommandId,targetAsins:caseBreak},
+        budget:10,
+        serviceUrl:'http://amazon-case-break-procurement-v1:8804/run'
+      });
+    }
+    if(!exact.length&&!caseBreak.length){
+      console.log(JSON.stringify({event:'FACTORY_COORDINATOR_BRANCH_TERMINAL',workflow:'procurement',leafId,reason:'NO_EQUIVALENCE_ELIGIBLE_CANDIDATES'}));
+    }
+    return {state:'COORDINATED',workflow:'pp-to-procurement',leafId,exact:exact.length,caseBreak:caseBreak.length};
+  }
+
+  // 6a) Commercial validity -> landed cost.
+  if(contract==='amazon-supplier-commercial-validity-v1'){
+    const commandPayload=parseCommandPayload(governance.command,'[AMAZON_SUPPLIER_COMMERCIAL_VALIDITY_V1]');
+    const leafName=String(commandPayload.leafName||'Unknown Leaf').trim().slice(0,120);
+    const eligible=[...new Set((receipt?.stageResult?.results||[]).filter(r=>r?.orderability==='ORDERABLE_NOW').map(r=>String(r.asin||'').toUpperCase()))].slice(0,20);
+    if(!eligible.length){
+      console.log(JSON.stringify({event:'FACTORY_COORDINATOR_BRANCH_TERMINAL',workflow:'amazon-landed-cost-v1',leafId,reason:'NO_ORDERABLE_COMMERCIAL_CANDIDATES'}));
+      return null;
+    }
+    const runId='SM-AMZ-LANDED-'+leafId+'-'+suffixFrom(sourceCommandId);
+    await dispatchRun({
+      workflow:'amazon-landed-cost-v1',
+      runId,
+      marker:'[AMAZON_LANDED_COST_V1]',
+      payload:{runId,leafId,leafName,contractVersion:'amazon-landed-cost-v1',specialist:'SPC-LANDED-COST-001',commercialValidityCommandId:sourceCommandId,targetAsins:eligible},
+      budget:10,
+      serviceUrl:'http://amazon-landed-cost-v1:8799/run'
+    });
+    return {state:'COORDINATED',workflow:'amazon-landed-cost-v1',leafId};
+  }
+
+  // 6b) Case-break procurement -> landed cost.
+  if(contract==='amazon-case-break-procurement-v1'){
+    const commandPayload=parseCommandPayload(governance.command,'[AMAZON_CASE_BREAK_PROCUREMENT_V1]');
+    const leafName=String(commandPayload.leafName||'Unknown Leaf').trim().slice(0,120);
+    const eligible=[...new Set((receipt?.stageResult?.results||[]).filter(r=>r?.orderability==='ORDERABLE_CASE_BREAK').map(r=>String(r.asin||'').toUpperCase()))].slice(0,20);
+    if(!eligible.length){
+      console.log(JSON.stringify({event:'FACTORY_COORDINATOR_BRANCH_TERMINAL',workflow:'amazon-landed-cost-v1',leafId,reason:'NO_ORDERABLE_CASE_BREAK_CANDIDATES'}));
+      return null;
+    }
+    const runId='SM-AMZ-LANDED-'+leafId+'-'+suffixFrom(sourceCommandId);
+    await dispatchRun({
+      workflow:'amazon-landed-cost-v1',
+      runId,
+      marker:'[AMAZON_LANDED_COST_V1]',
+      payload:{runId,leafId,leafName,contractVersion:'amazon-landed-cost-v1',specialist:'SPC-LANDED-COST-001',caseBreakProcurementCommandId:sourceCommandId,targetAsins:eligible},
+      budget:10,
+      serviceUrl:'http://amazon-landed-cost-v1:8799/run'
+    });
+    return {state:'COORDINATED',workflow:'amazon-landed-cost-v1',leafId};
+  }
+
+  // 7) Landed cost -> Economics, but only with fresh canonical observation UUIDs.
+  if(contract==='amazon-landed-cost-v1'){
+    const commandPayload=parseCommandPayload(governance.command,'[AMAZON_LANDED_COST_V1]');
+    const leafName=String(commandPayload.leafName||'Unknown Leaf').trim().slice(0,120);
+    const asins=[...new Set((receipt?.stageResult?.results||[]).filter(r=>Number.isFinite(Number(r?.knownCostFloorUsd))).map(r=>String(r.asin||'').toUpperCase()))].slice(0,20);
+    if(!asins.length){
+      console.log(JSON.stringify({event:'FACTORY_COORDINATOR_BRANCH_TERMINAL',workflow:'amazon-economics-v1',leafId,reason:'NO_COST_FLOOR_READY_CANDIDATES'}));
+      return null;
+    }
+    const observations=await canonicalSaleObservations(leafId,asins);
+    if(!observations.length){
+      console.log(JSON.stringify({event:'FACTORY_COORDINATOR_WAITING',workflow:'amazon-economics-v1',leafId,reason:'NO_FRESH_CANONICAL_SALE_OBSERVATIONS',asins}));
+      return null;
+    }
+    const runId='SM-AMZ-ECON-'+leafId+'-'+suffixFrom(sourceCommandId);
+    await dispatchRun({
+      workflow:'amazon-economics-v1',
+      runId,
+      marker:'[AMAZON_ECONOMICS_V1]',
+      payload:{runId,leafId,leafName,contractVersion:'amazon-economics-v1',specialist:'SPC-ECON-001',landedCostCommandId:sourceCommandId,saleObservations:observations.map(o=>({asin:o.asin,observationId:o.observationId,observedPriceUsd:o.observedPriceUsd,sourceUrl:o.sourceUrl,observedAt:o.observedAt}))},
+      budget:2,
+      serviceUrl:'http://amazon-economics-v1:8800/run'
+    });
+    return {state:'COORDINATED',workflow:'amazon-economics-v1',leafId};
+  }
+
+  if(contract==='amazon-economics-v1'){
+    console.log(JSON.stringify({event:'FACTORY_COORDINATOR_BRANCH_COMPLETE',workflow:'amazon-economics-v1',leafId,commandId:sourceCommandId,counts:receipt?.stageResult?.counts||null}));
+    return {state:'COMPLETE',workflow:'amazon-economics-v1',leafId};
+  }
+
+  return null;
 }
 
 const server=http.createServer(async(req,res)=>{
@@ -340,6 +622,7 @@ const server=http.createServer(async(req,res)=>{
     const body=Buffer.concat(chunks);
     const pathname=String(req.url||'/').split('?')[0];
 
+    let coordinatorContext=null;
     if(req.method==='POST'&&pathname==='/api/v1/worker/receipts'){
       let receipt=null;
       try{receipt=JSON.parse(body.toString('utf8'));}catch{}
@@ -354,7 +637,7 @@ const server=http.createServer(async(req,res)=>{
             teamId:governance.teamId
           }));
           const persistedKind=await persistBeforeReceipt(receipt);
-          await coordinateAfterPersistence(receipt,governance,persistedKind);
+          coordinatorContext={receipt,governance,persistedKind};
         }catch(error){
           return reply(res,503,{
             error:'CANONICAL_STAGE_PERSISTENCE_FAILED',
@@ -381,6 +664,23 @@ const server=http.createServer(async(req,res)=>{
 
     const upstream=await fetch(UP+req.url,init);
     const out=Buffer.from(await upstream.arrayBuffer());
+
+    if(coordinatorContext&&upstream.ok){
+      void coordinateAfterPersistence(
+        coordinatorContext.receipt,
+        coordinatorContext.governance,
+        coordinatorContext.persistedKind
+      ).catch(error=>{
+        console.error(JSON.stringify({
+          event:'FACTORY_COORDINATOR_ERROR',
+          commandId:coordinatorContext.receipt?.commandId||null,
+          error:String(error?.message||error),
+          workflow:error?.workflow||null,
+          status:error?.statusCode||null
+        }));
+      });
+    }
+
     const responseHeaders={};
 
     for(const [key,value] of upstream.headers){
