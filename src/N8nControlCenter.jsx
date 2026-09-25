@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useAuth } from "./AuthProvider";
-import { controlWorkflow, enrollWorkflowOwner, fetchN8nSnapshot, fetchWorkflowResult } from "./n8nControlApi";
+import { controlWorkflow, enrollWorkflowOwner, fetchFactoryLive, fetchN8nSnapshot, fetchWorkflowResult } from "./n8nControlApi";
 import "./n8n-control.css";
 
 function fmtTime(value) {
@@ -71,6 +71,8 @@ export default function N8nControlCenter() {
   const [resultView, setResultView] = useState(null);
   const [claimCode, setClaimCode] = useState("");
   const [claimBusy, setClaimBusy] = useState(false);
+  const [factoryLive, setFactoryLive] = useState(null);
+  const [factoryError, setFactoryError] = useState(null);
 
   const refresh = async ({ quiet = false } = {}) => {
     if (!quiet) setLoading(true);
@@ -90,6 +92,27 @@ export default function N8nControlCenter() {
     const timer = window.setInterval(() => refresh({ quiet: true }), 30_000);
     return () => window.clearInterval(timer);
   }, [currentUser]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const readFactory = async () => {
+      try {
+        const data = await fetchFactoryLive();
+        if (!cancelled) {
+          setFactoryLive(data);
+          setFactoryError(null);
+        }
+      } catch (err) {
+        if (!cancelled) setFactoryError(err.message);
+      }
+    };
+    readFactory();
+    const timer = window.setInterval(readFactory, 3_000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+    };
+  }, []);
 
   const workflows = snapshot?.workflows || [];
   const executions = snapshot?.executions || [];
@@ -180,6 +203,7 @@ export default function N8nControlCenter() {
   };
 
   const nav = [
+    ["live", "Live Factory"],
     ["overview", "Overview"],
     ["workflows", "Workflows"],
     ["executions", "Executions"],
@@ -199,8 +223,8 @@ export default function N8nControlCenter() {
     <div className="n8nc-page">
       <aside className="n8nc-sidebar">
         <div className="n8nc-brand">
-          <div className="n8nc-mark">n8n</div>
-          <div><strong>Control Center</strong><span>Factory orchestration</span></div>
+          <div className="n8nc-mark">FC</div>
+          <div><strong>Factory Control</strong><span>Work Control + orchestration</span></div>
         </div>
 
         <nav>
@@ -224,9 +248,9 @@ export default function N8nControlCenter() {
       <main className="n8nc-main">
         <header className="n8nc-header">
           <div>
-            <div className="n8nc-eyebrow">FACTORY · ORCHESTRATION CONTROL PLANE</div>
-            <h1>n8n Control Center</h1>
-            <p>See workflow state, analyze recent outcomes, isolate failures and control managed automation from one surface.</p>
+            <div className="n8nc-eyebrow">FACTORY · GOVERNED EXECUTION CONTROL PLANE</div>
+            <h1>Factory Control Center</h1>
+            <p>See Work Control commands, the agent or worker currently acting, the active SourceMargin process, n8n workflow state, failures and governed execution from one surface.</p>
           </div>
           <div className="n8nc-header-actions">
             {snapshot?.sourceUiUrl && (
@@ -245,6 +269,11 @@ export default function N8nControlCenter() {
           <div>
             <strong>{snapshot?.writeEnabled ? "Owner controls enabled" : "Read-only cockpit"}</strong>
             <small>{snapshot?.writeEnabled ? "Pause / resume / restart are authorized and audited." : "Viewing and analysis are open here; lifecycle mutations remain owner-protected."}</small>
+          </div>
+          <div>
+            <span className={factoryLive?.ok ? "n8nc-dot live" : "n8nc-dot"} />
+            <strong>{factoryLive?.ok ? "Work Control live" : factoryError ? "Work Control offline" : "Checking Work Control"}</strong>
+            <small>{factoryLive?.fetchedAt ? `Updated ${fmtTime(factoryLive.fetchedAt)} · 3s live refresh` : "Reading canonical command / claim / receipt ledger"}</small>
           </div>
           {snapshot?.coverage?.managed != null && (
             <span className="n8nc-warning">{snapshot.coverage.managed} Factory-managed workflows in this live scope</span>
@@ -334,6 +363,46 @@ export default function N8nControlCenter() {
           </div>
           <span>{visibleCount} visible</span>
         </div>
+
+        {section === "live" && (
+          <section className="n8nc-live-factory">
+            <div className="n8nc-live-hero">
+              <div>
+                <span>CANONICAL WORK CONTROL LEDGER</span>
+                <h2>What the Factory is doing now</h2>
+                <p>Every row is a governed Work Control command. SourceMargin canonical persistence now requires a matching live command and active worker claim before a result can be written.</p>
+              </div>
+              <div className="n8nc-live-summary">
+                <Metric value={factoryLive?.metrics?.active ?? "—"} label="Active Factory work" />
+                <Metric value={factoryLive?.metrics?.sourceMarginActive ?? "—"} label="SourceMargin active" />
+                <Metric value={factoryLive?.metrics?.blocked ?? "—"} label="Blocked recorded" />
+              </div>
+            </div>
+
+            {factoryError && (
+              <div className="n8nc-notice error">Work Control telemetry: {factoryError}</div>
+            )}
+
+            <div className="n8nc-panel n8nc-live-panel">
+              <div className="n8nc-panel-head">
+                <div><span>RUNNING / QUEUED / CLAIMED</span><h2>Active governed work</h2></div>
+                <small>{factoryLive?.connection?.mode || "—"} · {factoryLive?.connection?.executor || "—"}</small>
+              </div>
+              <FactoryWorkTable rows={factoryLive?.active || []} />
+              {!factoryLive?.active?.length && !factoryError && (
+                <Empty title="No active commands">The Work Control ledger has no queued, claimed, or running command at this instant.</Empty>
+              )}
+            </div>
+
+            <div className="n8nc-panel n8nc-live-panel">
+              <div className="n8nc-panel-head">
+                <div><span>SOURCEMARGIN · RUN 004</span><h2>Latest SourceMargin processes</h2></div>
+                <small>Agent 000 → Work Control → specialist worker → canonical persistence</small>
+              </div>
+              <FactoryWorkTable rows={factoryLive?.sourceMarginRecent || []} limit={25} />
+            </div>
+          </section>
+        )}
 
         {section === "overview" && (
           <>
@@ -564,6 +633,31 @@ export default function N8nControlCenter() {
           </section>
         </div>
       )}
+    </div>
+  );
+}
+
+function FactoryWorkTable({ rows, limit = 30 }) {
+  const visible = (rows || []).slice(0, limit);
+  if (!visible.length) return null;
+  return (
+    <div className="n8nc-table-wrap">
+      <table className="n8nc-factory-table">
+        <thead><tr><th>Command</th><th>Process</th><th>Team / agent</th><th>Status</th><th>Progress</th><th>Current stage</th><th>Started</th></tr></thead>
+        <tbody>
+          {visible.map((row) => (
+            <tr key={row.commandId}>
+              <td><strong>{row.commandId}</strong><small>{row.priority || "normal"}</small></td>
+              <td><strong>{row.process || "Governed work"}</strong><small title={row.title}>{row.title}</small></td>
+              <td><strong>{row.teamId || "—"}</strong><small>{row.teamName || "—"}</small></td>
+              <td><Status value={row.status} /></td>
+              <td>{row.progress == null ? "—" : `${row.progress}%`}</td>
+              <td><strong>{row.latestStage?.name || row.next || "—"}</strong><small>{row.latestStage?.detail || row.next || "—"}</small></td>
+              <td>{fmtTime(row.createdAt)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
