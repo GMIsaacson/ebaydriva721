@@ -54,3 +54,12 @@ export async function enrollWorkflowOwner(user, bootstrapCode) {
   });
   return readJson(response);
 }
+
+
+export async function fetchFactoryLive() {
+  const response = await fetch("/api/factory-live", {
+    method: "GET",
+    cache: "no-store",
+  });
+  return readJson(response);
+}
