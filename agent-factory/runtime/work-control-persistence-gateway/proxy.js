@@ -23,6 +23,7 @@ const PRODUCT_CLUSTERING_V1_PERSIST=process.env.PRODUCT_CLUSTERING_V1_PERSIST_UR
 const ATTRIBUTE_RESOLUTION_V1_PERSIST=process.env.ATTRIBUTE_RESOLUTION_V1_PERSIST_URL||'https://aittnuqrrenkencygfje.supabase.co/functions/v1/amazon-product-attribute-resolution-v1-persistence';
 const PRODUCT_GRAPH_PROMOTION_V1_PERSIST=process.env.PRODUCT_GRAPH_PROMOTION_V1_PERSIST_URL||'https://aittnuqrrenkencygfje.supabase.co/functions/v1/product-graph-promotion-v1-persistence';
 const SALE_OBSERVATION_READ=process.env.SALE_OBSERVATION_READ_URL||'https://aittnuqrrenkencygfje.supabase.co/functions/v1/amazon-sale-observation-read-v1';
+const ROUTE_CONTRACT_PERSIST=process.env.ROUTE_CONTRACT_PERSIST_URL||'https://aittnuqrrenkencygfje.supabase.co/functions/v1/amazon-route-contract-v1';
 const TOKEN=fs.readFileSync('/secret/token','utf8').trim();
 
 function reply(res,code,obj){
@@ -328,6 +329,68 @@ async function canonicalSaleObservations(leafId,asins){
   return Array.isArray(payload?.observations)?payload.observations:[];
 }
 
+
+async function updateRouteContract({leafId,commercialRoute='RESALE_EXISTING_ASIN',action='ENSURE',sourceCommandId=null,selectionReason=null,terminalReason=null}){
+  const response=await fetch(ROUTE_CONTRACT_PERSIST,{
+    method:'POST',
+    headers:{'content-type':'application/json','x-source-margin-observe-token':TOKEN},
+    body:JSON.stringify({
+      leafId,commercialRoute,action,sourceCommandId,
+      selectedBy:'FACTORY_COORDINATOR',
+      selectionReason,terminalReason
+    }),
+    signal:AbortSignal.timeout(15000)
+  });
+  const body=await response.text();
+  let payload={};try{payload=body?JSON.parse(body):{};}catch{}
+  if(!response.ok){
+    throw Object.assign(new Error('FACTORY_ROUTE_CONTRACT_PERSIST_FAILED'),{
+      kind:'FACTORY_ROUTE_CONTRACT',
+      statusCode:response.status,
+      detail:body.slice(0,500)
+    });
+  }
+  console.log(JSON.stringify({
+    event:'FACTORY_ROUTE_CONTRACT_UPDATED',
+    leafId,commercialRoute,action,sourceCommandId,
+    contractVersion:payload?.contractVersion||null,
+    routeStatus:payload?.routeStatus||null
+  }));
+  return payload;
+}
+
+
+async function readRouteContract(leafId,commercialRoute='RESALE_EXISTING_ASIN'){
+  const response=await fetch(ROUTE_CONTRACT_PERSIST,{
+    method:'POST',
+    headers:{'content-type':'application/json','x-source-margin-observe-token':TOKEN},
+    body:JSON.stringify({leafId,commercialRoute,action:'READ'}),
+    signal:AbortSignal.timeout(15000)
+  });
+  const body=await response.text();
+  let payload={};try{payload=body?JSON.parse(body):{};}catch{}
+  if(!response.ok){
+    throw Object.assign(new Error('FACTORY_ROUTE_CONTRACT_READ_FAILED'),{
+      kind:'FACTORY_ROUTE_CONTRACT',
+      statusCode:response.status,
+      detail:body.slice(0,500)
+    });
+  }
+  return payload?.record||null;
+}
+
+async function assertAutoStagePermitted(leafId,stage,commercialRoute='RESALE_EXISTING_ASIN'){
+  const contract=await readRouteContract(leafId,commercialRoute);
+  const requirement=String(contract?.stage_requirements?.[stage]||'UNDECLARED').toUpperCase();
+  if(!['REQUIRED','CONDITIONAL'].includes(requirement)){
+    throw Object.assign(new Error('FACTORY_ROUTE_STAGE_NOT_AUTO_PERMITTED'),{
+      kind:'FACTORY_ROUTE_CONTRACT',
+      leafId,commercialRoute,stage,requirement
+    });
+  }
+  return {contract,requirement};
+}
+
 async function coordinateAfterPersistence(receipt,governance,persistedKind){
   const contract=String(receipt?.stageResult?.contractVersion||'');
   const outcome=String(receipt?.stageResult?.outcome||'').toUpperCase();
@@ -340,6 +403,8 @@ async function coordinateAfterPersistence(receipt,governance,persistedKind){
   if(contract==='amazon-leaf-census-v2'){
     const sourcePayload=parseCommandPayload(governance.command,'[AMAZON_LEAF_CENSUS_V2]');
     const leafName=String(sourcePayload.leafName||'Unknown Leaf').trim().slice(0,120);
+    // Establish explicit route contract before resale downstream work.
+    await updateRouteContract({leafId,commercialRoute:'RESALE_EXISTING_ASIN',action:'ENSURE',sourceCommandId,selectionReason:'Factory selected existing-ASIN resale evaluation after canonical census.'});
     const candidates=uniqueAsins(receipt?.stageResult?.candidates);
     if(!candidates.length){
       console.log(JSON.stringify({event:'FACTORY_COORDINATOR_BRANCH_TERMINAL',workflow:'amazon-demand-validation-v1',leafId,reason:'NO_CENSUS_ASINS'}));
@@ -350,6 +415,7 @@ async function coordinateAfterPersistence(receipt,governance,persistedKind){
     for(let start=0;start<candidates.length;start+=batchSize){
       const asins=candidates.slice(start,start+batchSize);
       const batchTag='B'+String(start).padStart(3,'0');
+      await assertAutoStagePermitted(leafId,'DEMAND_VALIDATION');
       const demandRunId='SM-AMZ-DEMAND-'+leafId+'-'+sourceSuffix+'-'+batchTag;
       const demand=await dispatchRun({
         workflow:'amazon-demand-validation-v1',
@@ -366,6 +432,7 @@ async function coordinateAfterPersistence(receipt,governance,persistedKind){
         serviceUrl:'http://amazon-demand-validator-v1:8793/run'
       });
       if(!demand.commandId)continue;
+      await assertAutoStagePermitted(leafId,'LISTING_EVIDENCE');
       const evidenceRunId='SM-AMZ-LIST-EVID-'+leafId+'-'+sourceSuffix+'-'+batchTag;
       await dispatchRun({
         workflow:'amazon-listing-evidence-v1',
@@ -399,6 +466,7 @@ async function coordinateAfterPersistence(receipt,governance,persistedKind){
       String(row.signalCode||'UN').toUpperCase(),
       Number(row.confidencePct||35)
     ]);
+    await assertAutoStagePermitted(leafId,'LISTING_CLASSIFICATION');
     const runId='SM-AMZ-LIST-CLASS-'+leafId+'-'+suffixFrom(sourceCommandId);
     await dispatchRun({
       workflow:'amazon-listing-classification-v1',
@@ -441,10 +509,19 @@ async function coordinateAfterPersistence(receipt,governance,persistedKind){
       .filter(x=>/^B[A-Z0-9]{9}$/.test(x))
       .slice(0,20);
     if(!eligible.length){
+      await updateRouteContract({
+        leafId,
+        commercialRoute:'RESALE_EXISTING_ASIN',
+        action:'STOP',
+        sourceCommandId,
+        selectionReason:'Existing-ASIN resale route evaluated through listing classification.',
+        terminalReason:'NO_ROUTE_ELIGIBLE_ASINS'
+      });
       console.log(JSON.stringify({event:'FACTORY_COORDINATOR_BRANCH_TERMINAL',workflow:'amazon-supplier-discovery-v2',leafId,reason:'NO_ROUTE_ELIGIBLE_ASINS'}));
       return null;
     }
     const leafName=String(commandPayload.leafName||'Unknown Leaf').trim().slice(0,120);
+    await assertAutoStagePermitted(leafId,'SUPPLIER_DISCOVERY');
     const runId='SM-AMZ-SUPPLIER-'+leafId+'-'+suffixFrom(sourceCommandId);
     await dispatchRun({
       workflow:'amazon-supplier-discovery-v2',
@@ -478,6 +555,7 @@ async function coordinateAfterPersistence(receipt,governance,persistedKind){
       return null;
     }
     const leafName=String(commandPayload.leafName||'Unknown Leaf').trim().slice(0,120);
+    await assertAutoStagePermitted(leafId,'PP_EQUIVALENCE');
     const runId='SM-AMZ-PP-EQ-'+leafId+'-'+suffixFrom(sourceCommandId);
     await dispatchRun({
       workflow:'amazon-pp-equivalence-v1',
@@ -505,6 +583,7 @@ async function coordinateAfterPersistence(receipt,governance,persistedKind){
     const exact=[...new Set(rows.filter(r=>r?.verdict==='EXACT_MATCH'&&r?.channelEligibility==='ELIGIBLE').map(r=>String(r.asin||'').toUpperCase()))].slice(0,20);
     const caseBreak=[...new Set(rows.filter(r=>r?.verdict==='EXACT_PRODUCT_CASE_BREAK_REQUIRED'&&r?.channelEligibility==='ELIGIBLE').map(r=>String(r.asin||'').toUpperCase()))].slice(0,20);
     if(exact.length){
+      await assertAutoStagePermitted(leafId,'SUPPLIER_COMMERCIAL_VALIDITY');
       const runId='SM-AMZ-COMM-'+leafId+'-'+suffixFrom(sourceCommandId);
       await dispatchRun({
         workflow:'amazon-supplier-commercial-validity-v1',
@@ -516,6 +595,7 @@ async function coordinateAfterPersistence(receipt,governance,persistedKind){
       });
     }
     if(caseBreak.length){
+      await assertAutoStagePermitted(leafId,'CASE_BREAK_PROCUREMENT');
       const runId='SM-AMZ-CASE-BREAK-'+leafId+'-'+suffixFrom(sourceCommandId);
       await dispatchRun({
         workflow:'amazon-case-break-procurement-v1',
@@ -541,6 +621,7 @@ async function coordinateAfterPersistence(receipt,governance,persistedKind){
       console.log(JSON.stringify({event:'FACTORY_COORDINATOR_BRANCH_TERMINAL',workflow:'amazon-landed-cost-v1',leafId,reason:'NO_ORDERABLE_COMMERCIAL_CANDIDATES'}));
       return null;
     }
+    await assertAutoStagePermitted(leafId,'LANDED_COST');
     const runId='SM-AMZ-LANDED-'+leafId+'-'+suffixFrom(sourceCommandId);
     await dispatchRun({
       workflow:'amazon-landed-cost-v1',
@@ -588,6 +669,7 @@ async function coordinateAfterPersistence(receipt,governance,persistedKind){
       console.log(JSON.stringify({event:'FACTORY_COORDINATOR_WAITING',workflow:'amazon-economics-v1',leafId,reason:'NO_FRESH_CANONICAL_SALE_OBSERVATIONS',asins}));
       return null;
     }
+    await assertAutoStagePermitted(leafId,'ECONOMICS');
     const runId='SM-AMZ-ECON-'+leafId+'-'+suffixFrom(sourceCommandId);
     await dispatchRun({
       workflow:'amazon-economics-v1',
@@ -601,8 +683,30 @@ async function coordinateAfterPersistence(receipt,governance,persistedKind){
   }
 
   if(contract==='amazon-economics-v1'){
+    const rows=Array.isArray(receipt?.stageResult?.results)?receipt.stageResult.results:[];
+    const allTerminal=rows.length>0&&rows.every(r=>r?.terminal===true);
+    const allKilled=allTerminal&&rows.every(r=>String(r?.disposition||'').startsWith('KILL_'));
+    if(allKilled){
+      await updateRouteContract({
+        leafId,
+        commercialRoute:'RESALE_EXISTING_ASIN',
+        action:'STOP',
+        sourceCommandId,
+        selectionReason:'Existing-ASIN resale route reached Economics.',
+        terminalReason:[...new Set(rows.map(r=>String(r?.disposition||'KILL')))].join(',')
+      });
+    }else if(allTerminal){
+      await updateRouteContract({
+        leafId,
+        commercialRoute:'RESALE_EXISTING_ASIN',
+        action:'COMPLETE',
+        sourceCommandId,
+        selectionReason:'Existing-ASIN resale route reached terminal Economics evaluation.',
+        terminalReason:[...new Set(rows.map(r=>String(r?.disposition||'TERMINAL')))].join(',')
+      });
+    }
     console.log(JSON.stringify({event:'FACTORY_COORDINATOR_BRANCH_COMPLETE',workflow:'amazon-economics-v1',leafId,commandId:sourceCommandId,counts:receipt?.stageResult?.counts||null}));
-    return {state:'COMPLETE',workflow:'amazon-economics-v1',leafId};
+    return {state:allKilled?'STOPPED':'COMPLETE',workflow:'amazon-economics-v1',leafId};
   }
 
   return null;
