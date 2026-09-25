@@ -294,23 +294,34 @@ async function coordinateAfterPersistence(receipt,governance,persistedKind){
       leafId,leafName,batchStart:batch.start,candidateCount:batch.asins.length,runId
     }));
 
-    void fetch('http://amazon-demand-validator-v1:8793/run',{
-      method:'POST',
-      headers:{'content-type':'application/json'},
-      body:JSON.stringify({expectedCommandId:nextCommandId}),
-      signal:AbortSignal.timeout(300000)
-    }).then(async r=>{
-      const detail=(await r.text()).slice(0,800);
-      console.log(JSON.stringify({
-        event:r.ok?'FACTORY_COORDINATOR_EXECUTOR_COMPLETED':'FACTORY_COORDINATOR_EXECUTOR_FAILED',
-        workflow:'amazon-demand-validation-v1',nextCommandId,status:r.status,detail
-      }));
-    }).catch(error=>{
-      console.error(JSON.stringify({
-        event:'FACTORY_COORDINATOR_EXECUTOR_ERROR',
-        workflow:'amazon-demand-validation-v1',nextCommandId,error:String(error?.message||error)
-      }));
-    });
+
+  }
+  const runnable=dispatched.filter(x=>x.state==='DISPATCHED'&&x.nextCommandId).map(x=>x.nextCommandId);
+  if(runnable.length){
+    void (async()=>{
+      for(const nextCommandId of runnable){
+        try{
+          const r=await fetch('http://amazon-demand-validator-v1:8793/run',{
+            method:'POST',
+            headers:{'content-type':'application/json'},
+            body:JSON.stringify({expectedCommandId:nextCommandId}),
+            signal:AbortSignal.timeout(300000)
+          });
+          const detail=(await r.text()).slice(0,800);
+          console.log(JSON.stringify({
+            event:r.ok?'FACTORY_COORDINATOR_EXECUTOR_COMPLETED':'FACTORY_COORDINATOR_EXECUTOR_FAILED',
+            workflow:'amazon-demand-validation-v1',nextCommandId,status:r.status,detail
+          }));
+          if(!r.ok)break;
+        }catch(error){
+          console.error(JSON.stringify({
+            event:'FACTORY_COORDINATOR_EXECUTOR_ERROR',
+            workflow:'amazon-demand-validation-v1',nextCommandId,error:String(error?.message||error)
+          }));
+          break;
+        }
+      }
+    })();
   }
   return {state:'COORDINATED',workflow:'amazon-demand-validation-v1',leafId,sourceCommandId,batches:dispatched};
 }
