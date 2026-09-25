@@ -100,7 +100,7 @@ async function verifyGovernedReceipt(receipt){
     throw Object.assign(new Error('FACTORY_COMMAND_TARGET_MISMATCH'),{kind:'FACTORY_GOVERNANCE'});
   }
 
-  return {commandId,workerId:claim.workerId,teamId:command.team.id,marker:marker||null};
+  return {commandId,workerId:claim.workerId,teamId:command.team.id,marker:marker||null,command};
 }
 
 async function persistBeforeReceipt(receipt){
@@ -218,6 +218,60 @@ async function persistBeforeReceipt(receipt){
   return kind;
 }
 
+
+function parseCommandPayload(command,marker){
+  const instruction=String(command?.instruction||'');
+  const idx=instruction.lastIndexOf(marker);
+  if(idx<0)return {};
+  const tail=instruction.slice(idx+marker.length).trim();
+  const start=tail.indexOf('{');
+  if(start<0)return {};
+  try{return JSON.parse(tail.slice(start));}catch{return {};}
+}
+async function workControlState(){
+  const response=await fetch(UP+'/api/v1/state',{method:'GET',headers:{'accept':'application/json'},signal:AbortSignal.timeout(5000)});
+  if(!response.ok)throw Object.assign(new Error('FACTORY_COORDINATOR_STATE_UNAVAILABLE'),{kind:'FACTORY_COORDINATOR',statusCode:response.status});
+  return response.json();
+}
+async function coordinateAfterPersistence(receipt,governance,persistedKind){
+  if(persistedKind!=='OBSERVE')return null;
+  if(String(receipt?.stageResult?.contractVersion||'')!=='amazon-leaf-census-v2')return null;
+  if(String(receipt?.stageResult?.outcome||'').toUpperCase()!=='PASS')return null;
+  const leafId=String(receipt?.stageResult?.leafId||'').trim();
+  const sourceCommandId=String(receipt?.commandId||'').trim();
+  const candidates=Array.isArray(receipt?.stageResult?.candidates)
+    ? [...new Set(receipt.stageResult.candidates.map(x=>String(x?.asin||'').trim()).filter(x=>/^B[A-Z0-9]{9}$/.test(x)))]
+    : [];
+  if(!leafId||!candidates.length){
+    console.log(JSON.stringify({event:'FACTORY_COORDINATOR_WAITING',reason:'CENSUS_FACTS_INCOMPLETE',leafId,sourceCommandId}));
+    return null;
+  }
+  const sourcePayload=parseCommandPayload(governance.command,'[AMAZON_LEAF_CENSUS_V2]');
+  const leafName=String(sourcePayload.leafName||'Unknown Leaf').trim().slice(0,120);
+  const sourceSuffix=sourceCommandId.replace(/[^A-Za-z0-9]/g,'').slice(-10).toUpperCase();
+  const runId='SM-AMZ-DEMAND-'+leafId+'-'+sourceSuffix;
+  const state=await workControlState();
+  const serialized=JSON.stringify(state?.work||[]);
+  if(serialized.includes(runId)){
+    console.log(JSON.stringify({event:'FACTORY_COORDINATOR_IDEMPOTENT',workflow:'amazon-demand-validation-v1',leafId,runId,sourceCommandId}));
+    return {state:'EXISTS',runId};
+  }
+  const payload={runId,leafId,leafName,contractVersion:'amazon-demand-validation-v1',specialist:'AGT-RESEARCH-VALIDATION-001',candidateAsins:candidates};
+  const instruction='[AMAZON_DEMAND_VALIDATION_V1] '+JSON.stringify(payload);
+  const response=await fetch(UP+'/api/v1/commands',{
+    method:'POST',
+    headers:{'content-type':'application/json','accept':'application/json'},
+    body:JSON.stringify({teamId:'RUN-004',priority:'high',modelBudgetCents:10,instruction}),
+    signal:AbortSignal.timeout(5000)
+  });
+  const body=await response.text();
+  if(!response.ok)throw Object.assign(new Error('FACTORY_COORDINATOR_DISPATCH_FAILED'),{kind:'FACTORY_COORDINATOR',statusCode:response.status,detail:body.slice(0,500)});
+  let created={}; try{created=JSON.parse(body);}catch{}
+  const nextCommandId=created?.command?.commandId||null;
+  console.log(JSON.stringify({event:'FACTORY_COORDINATOR_DISPATCHED',sourceCommandId,nextCommandId,workflow:'amazon-demand-validation-v1',leafId,leafName,candidateCount:candidates.length,runId}));
+  return {state:'DISPATCHED',nextCommandId,runId};
+}
+
 const server=http.createServer(async(req,res)=>{
   try{
     const chunks=[];
@@ -245,7 +299,8 @@ const server=http.createServer(async(req,res)=>{
             workerId:governance.workerId,
             teamId:governance.teamId
           }));
-          await persistBeforeReceipt(receipt);
+          const persistedKind=await persistBeforeReceipt(receipt);
+          await coordinateAfterPersistence(receipt,governance,persistedKind);
         }catch(error){
           return reply(res,503,{
             error:'CANONICAL_STAGE_PERSISTENCE_FAILED',
