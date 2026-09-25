@@ -247,9 +247,24 @@ async function workControlCommand(commandId){
 const workflowQueues=new Map();
 function enqueueWorkflow(key,fn){
   const prior=workflowQueues.get(key)||Promise.resolve();
-  const next=prior.catch(()=>{}).then(fn);
-  workflowQueues.set(key,next.finally(()=>{if(workflowQueues.get(key)===next)workflowQueues.delete(key);}));
-  return next;
+  const task=prior.catch(()=>{}).then(fn);
+  let queueTail=null;
+  queueTail=task.then(
+    ()=>undefined,
+    error=>{
+      console.error(JSON.stringify({
+        event:'FACTORY_COORDINATOR_QUEUE_TASK_FAILED',
+        workflow:key,
+        error:String(error?.message||error),
+        status:error?.statusCode||null
+      }));
+      return undefined;
+    }
+  ).finally(()=>{
+    if(workflowQueues.get(key)===queueTail)workflowQueues.delete(key);
+  });
+  workflowQueues.set(key,queueTail);
+  return task;
 }
 
 async function createGovernedCommand({workflow,runId,marker,payload,budget=2,priority='high'}){
@@ -280,27 +295,62 @@ async function createGovernedCommand({workflow,runId,marker,payload,budget=2,pri
 
 async function executeMicroWorker({workflow,serviceUrl,commandId}){
   if(!commandId)return {state:'NOOP'};
-  const response=await fetch(serviceUrl,{
-    method:'POST',
-    headers:{'content-type':'application/json'},
-    body:JSON.stringify({expectedCommandId:commandId}),
-    signal:AbortSignal.timeout(300000)
-  });
-  const body=await response.text();
+  let response=null;
+  let body='';
+  try{
+    response=await fetch(serviceUrl,{
+      method:'POST',
+      headers:{'content-type':'application/json'},
+      body:JSON.stringify({expectedCommandId:commandId}),
+      signal:AbortSignal.timeout(300000)
+    });
+    body=await response.text();
+  }catch(error){
+    throw Object.assign(new Error('FACTORY_COORDINATOR_EXECUTOR_TRANSPORT_FAILED'),{
+      kind:'FACTORY_COORDINATOR',workflow,commandId,detail:String(error?.message||error)
+    });
+  }
   console.log(JSON.stringify({
     event:response.ok?'FACTORY_COORDINATOR_EXECUTOR_COMPLETED':'FACTORY_COORDINATOR_EXECUTOR_FAILED',
     workflow,commandId,status:response.status,detail:body.slice(0,800)
   }));
-  if(!response.ok)throw Object.assign(new Error('FACTORY_COORDINATOR_EXECUTOR_FAILED'),{kind:'FACTORY_COORDINATOR',workflow,statusCode:response.status,detail:body.slice(0,800)});
-  return {state:'COMPLETED',commandId};
+  if(!response.ok){
+    const record=await workControlCommand(commandId).catch(()=>null);
+    if(record?.receipt?.terminalState==='FAILED'){
+      console.log(JSON.stringify({
+        event:'FACTORY_COORDINATOR_WORKER_FAILED_CLOSED',
+        workflow,commandId,
+        summary:record.receipt.summary||null,
+        detail:record.receipt.detail||null
+      }));
+      return {state:'FAILED_CLOSED',commandId,terminalState:'FAILED'};
+    }
+    throw Object.assign(new Error('FACTORY_COORDINATOR_EXECUTOR_FAILED'),{
+      kind:'FACTORY_COORDINATOR',workflow,commandId,statusCode:response.status,detail:body.slice(0,800)
+    });
+  }
+  return {state:'COMPLETED',commandId,terminalState:'DELIVERED'};
 }
 
 async function dispatchRun(spec){
   return enqueueWorkflow(spec.workflow,async()=>{
     const created=await createGovernedCommand(spec);
     if(created.state!=='DISPATCHED')return created;
-    await executeMicroWorker({workflow:spec.workflow,serviceUrl:spec.serviceUrl,commandId:created.commandId});
-    return created;
+    const execution=await executeMicroWorker({
+      workflow:spec.workflow,
+      serviceUrl:spec.serviceUrl,
+      commandId:created.commandId
+    });
+    if(execution.state!=='COMPLETED'){
+      return {
+        state:execution.state,
+        commandId:null,
+        failedCommandId:created.commandId,
+        runId:created.runId,
+        terminalState:execution.terminalState||null
+      };
+    }
+    return {...created,state:'COMPLETED'};
   });
 }
 
@@ -377,6 +427,24 @@ async function readRouteContract(leafId,commercialRoute='RESALE_EXISTING_ASIN'){
     });
   }
   return payload?.record||null;
+}
+
+
+async function readRouteCoverage(leafId,commercialRoute='RESALE_EXISTING_ASIN'){
+  const response=await fetch(ROUTE_CONTRACT_PERSIST,{
+    method:'POST',
+    headers:{'content-type':'application/json','x-source-margin-observe-token':TOKEN},
+    body:JSON.stringify({leafId,commercialRoute,action:'READ_COVERAGE'}),
+    signal:AbortSignal.timeout(15000)
+  });
+  const body=await response.text();
+  let payload={};try{payload=body?JSON.parse(body):{};}catch{}
+  if(!response.ok){
+    throw Object.assign(new Error('FACTORY_ROUTE_COVERAGE_READ_FAILED'),{
+      kind:'FACTORY_ROUTE_CONTRACT',statusCode:response.status,detail:body.slice(0,500)
+    });
+  }
+  return payload;
 }
 
 async function assertAutoStagePermitted(leafId,stage,commercialRoute='RESALE_EXISTING_ASIN'){
@@ -516,16 +584,57 @@ async function coordinateAfterPersistence(receipt,governance,persistedKind){
       .filter(x=>/^B[A-Z0-9]{9}$/.test(x))
       .slice(0,20);
     if(!eligible.length){
-      await updateRouteContract({
+      const coverage=await readRouteCoverage(leafId,'RESALE_EXISTING_ASIN');
+      if(
+        coverage.classificationCoverageComplete&&
+        Number(coverage.eligibleAsinCount||0)===0&&
+        Number(coverage.unresolvedAsinCount||0)===0
+      ){
+        await updateRouteContract({
+          leafId,
+          commercialRoute:'RESALE_EXISTING_ASIN',
+          action:'STOP',
+          sourceCommandId,
+          selectionReason:'Existing-ASIN resale route classification coverage completed with no route-eligible or unresolved ASINs.',
+          terminalReason:'NO_ROUTE_ELIGIBLE_ASINS'
+        });
+        console.log(JSON.stringify({
+          event:'FACTORY_COORDINATOR_BRANCH_TERMINAL',
+          workflow:'amazon-supplier-discovery-v2',
+          leafId,
+          reason:'NO_ROUTE_ELIGIBLE_ASINS',
+          classifiedAsinCount:coverage.classifiedAsinCount,
+          observedAsinCount:coverage.observedAsinCount,
+          unresolvedAsinCount:coverage.unresolvedAsinCount
+        }));
+        return null;
+      }
+      if(
+        coverage.classificationCoverageComplete&&
+        Number(coverage.eligibleAsinCount||0)===0&&
+        Number(coverage.unresolvedAsinCount||0)>0
+      ){
+        console.log(JSON.stringify({
+          event:'FACTORY_COORDINATOR_WAITING',
+          workflow:'amazon-deep-listing-classification-v1',
+          leafId,
+          reason:'DEEP_CLASSIFICATION_REQUIRED',
+          classifiedAsinCount:coverage.classifiedAsinCount,
+          observedAsinCount:coverage.observedAsinCount,
+          unresolvedAsinCount:coverage.unresolvedAsinCount
+        }));
+        return {state:'WAITING_DEEP_CLASSIFICATION',workflow:'amazon-deep-listing-classification-v1',leafId};
+      }
+      console.log(JSON.stringify({
+        event:'FACTORY_COORDINATOR_BATCH_COMPLETE',
+        workflow:'amazon-listing-classification-v1',
         leafId,
-        commercialRoute:'RESALE_EXISTING_ASIN',
-        action:'STOP',
-        sourceCommandId,
-        selectionReason:'Existing-ASIN resale route evaluated through listing classification.',
-        terminalReason:'NO_ROUTE_ELIGIBLE_ASINS'
-      });
-      console.log(JSON.stringify({event:'FACTORY_COORDINATOR_BRANCH_TERMINAL',workflow:'amazon-supplier-discovery-v2',leafId,reason:'NO_ROUTE_ELIGIBLE_ASINS'}));
-      return null;
+        reason:'NO_ELIGIBLE_IN_BATCH_CONTINUE_CLASSIFICATION_COVERAGE',
+        classifiedAsinCount:coverage.classifiedAsinCount,
+        observedAsinCount:coverage.observedAsinCount,
+        eligibleAsinCount:coverage.eligibleAsinCount
+      }));
+      return {state:'COVERAGE_CONTINUES',workflow:'amazon-listing-classification-v1',leafId};
     }
     const leafName=String(commandPayload.leafName||'Unknown Leaf').trim().slice(0,120);
     await assertAutoStagePermitted(leafId,'SUPPLIER_DISCOVERY');
