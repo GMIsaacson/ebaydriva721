@@ -381,14 +381,21 @@ async function readRouteContract(leafId,commercialRoute='RESALE_EXISTING_ASIN'){
 
 async function assertAutoStagePermitted(leafId,stage,commercialRoute='RESALE_EXISTING_ASIN'){
   const contract=await readRouteContract(leafId,commercialRoute);
+  const routeStatus=String(contract?.route_status||'UNKNOWN').toUpperCase();
   const requirement=String(contract?.stage_requirements?.[stage]||'UNDECLARED').toUpperCase();
+  if(routeStatus!=='ACTIVE'){
+    throw Object.assign(new Error('FACTORY_ROUTE_NOT_ACTIVE'),{
+      kind:'FACTORY_ROUTE_CONTRACT',
+      leafId,commercialRoute,stage,requirement,routeStatus
+    });
+  }
   if(!['REQUIRED','CONDITIONAL'].includes(requirement)){
     throw Object.assign(new Error('FACTORY_ROUTE_STAGE_NOT_AUTO_PERMITTED'),{
       kind:'FACTORY_ROUTE_CONTRACT',
-      leafId,commercialRoute,stage,requirement
+      leafId,commercialRoute,stage,requirement,routeStatus
     });
   }
-  return {contract,requirement};
+  return {contract,requirement,routeStatus};
 }
 
 async function coordinateAfterPersistence(receipt,governance,persistedKind){
