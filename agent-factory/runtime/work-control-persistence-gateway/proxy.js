@@ -237,6 +237,7 @@ async function coordinateAfterPersistence(receipt,governance,persistedKind){
   if(persistedKind!=='OBSERVE')return null;
   if(String(receipt?.stageResult?.contractVersion||'')!=='amazon-leaf-census-v2')return null;
   if(String(receipt?.stageResult?.outcome||'').toUpperCase()!=='PASS')return null;
+
   const leafId=String(receipt?.stageResult?.leafId||'').trim();
   const sourceCommandId=String(receipt?.commandId||'').trim();
   const candidates=Array.isArray(receipt?.stageResult?.candidates)
@@ -246,30 +247,72 @@ async function coordinateAfterPersistence(receipt,governance,persistedKind){
     console.log(JSON.stringify({event:'FACTORY_COORDINATOR_WAITING',reason:'CENSUS_FACTS_INCOMPLETE',leafId,sourceCommandId}));
     return null;
   }
+
   const sourcePayload=parseCommandPayload(governance.command,'[AMAZON_LEAF_CENSUS_V2]');
   const leafName=String(sourcePayload.leafName||'Unknown Leaf').trim().slice(0,120);
   const sourceSuffix=sourceCommandId.replace(/[^A-Za-z0-9]/g,'').slice(-10).toUpperCase();
-  const runId='SM-AMZ-DEMAND-'+leafId+'-'+sourceSuffix;
   const state=await workControlState();
   const serialized=JSON.stringify(state?.work||[]);
-  if(serialized.includes(runId)){
-    console.log(JSON.stringify({event:'FACTORY_COORDINATOR_IDEMPOTENT',workflow:'amazon-demand-validation-v1',leafId,runId,sourceCommandId}));
-    return {state:'EXISTS',runId};
+  const batches=[];
+  for(let start=0;start<candidates.length;start+=24)batches.push({start,asins:candidates.slice(start,start+24)});
+
+  const dispatched=[];
+  for(const batch of batches){
+    const runId='SM-AMZ-DEMAND-'+leafId+'-'+sourceSuffix+'-B'+String(batch.start).padStart(3,'0');
+    if(serialized.includes(runId)){
+      dispatched.push({state:'EXISTS',runId,batchStart:batch.start});
+      continue;
+    }
+
+    const payload={
+      runId,
+      leafId,
+      leafName,
+      contractVersion:'amazon-demand-validation-v1',
+      specialist:'AGT-RESEARCH-VALIDATION-001',
+      candidateAsins:batch.asins
+    };
+    const instruction='[AMAZON_DEMAND_VALIDATION_V1] '+JSON.stringify(payload);
+    const response=await fetch(UP+'/api/v1/commands',{
+      method:'POST',
+      headers:{'content-type':'application/json','accept':'application/json'},
+      body:JSON.stringify({teamId:'RUN-004',priority:'high',modelBudgetCents:2,instruction}),
+      signal:AbortSignal.timeout(5000)
+    });
+    const body=await response.text();
+    if(!response.ok){
+      throw Object.assign(new Error('FACTORY_COORDINATOR_DISPATCH_FAILED'),{kind:'FACTORY_COORDINATOR',statusCode:response.status,detail:body.slice(0,500)});
+    }
+    let created={}; try{created=JSON.parse(body);}catch{}
+    const nextCommandId=created?.command?.commandId||null;
+    if(!nextCommandId)throw Object.assign(new Error('FACTORY_COORDINATOR_COMMAND_ACK_MISSING'),{kind:'FACTORY_COORDINATOR'});
+
+    dispatched.push({state:'DISPATCHED',nextCommandId,runId,batchStart:batch.start,candidateCount:batch.asins.length});
+    console.log(JSON.stringify({
+      event:'FACTORY_COORDINATOR_DISPATCHED',
+      sourceCommandId,nextCommandId,workflow:'amazon-demand-validation-v1',
+      leafId,leafName,batchStart:batch.start,candidateCount:batch.asins.length,runId
+    }));
+
+    void fetch('http://amazon-demand-validator-v1:8793/run',{
+      method:'POST',
+      headers:{'content-type':'application/json'},
+      body:JSON.stringify({expectedCommandId:nextCommandId}),
+      signal:AbortSignal.timeout(300000)
+    }).then(async r=>{
+      const detail=(await r.text()).slice(0,800);
+      console.log(JSON.stringify({
+        event:r.ok?'FACTORY_COORDINATOR_EXECUTOR_COMPLETED':'FACTORY_COORDINATOR_EXECUTOR_FAILED',
+        workflow:'amazon-demand-validation-v1',nextCommandId,status:r.status,detail
+      }));
+    }).catch(error=>{
+      console.error(JSON.stringify({
+        event:'FACTORY_COORDINATOR_EXECUTOR_ERROR',
+        workflow:'amazon-demand-validation-v1',nextCommandId,error:String(error?.message||error)
+      }));
+    });
   }
-  const payload={runId,leafId,leafName,contractVersion:'amazon-demand-validation-v1',specialist:'AGT-RESEARCH-VALIDATION-001',candidateAsins:candidates};
-  const instruction='[AMAZON_DEMAND_VALIDATION_V1] '+JSON.stringify(payload);
-  const response=await fetch(UP+'/api/v1/commands',{
-    method:'POST',
-    headers:{'content-type':'application/json','accept':'application/json'},
-    body:JSON.stringify({teamId:'RUN-004',priority:'high',modelBudgetCents:10,instruction}),
-    signal:AbortSignal.timeout(5000)
-  });
-  const body=await response.text();
-  if(!response.ok)throw Object.assign(new Error('FACTORY_COORDINATOR_DISPATCH_FAILED'),{kind:'FACTORY_COORDINATOR',statusCode:response.status,detail:body.slice(0,500)});
-  let created={}; try{created=JSON.parse(body);}catch{}
-  const nextCommandId=created?.command?.commandId||null;
-  console.log(JSON.stringify({event:'FACTORY_COORDINATOR_DISPATCHED',sourceCommandId,nextCommandId,workflow:'amazon-demand-validation-v1',leafId,leafName,candidateCount:candidates.length,runId}));
-  return {state:'DISPATCHED',nextCommandId,runId};
+  return {state:'COORDINATED',workflow:'amazon-demand-validation-v1',leafId,sourceCommandId,batches:dispatched};
 }
 
 const server=http.createServer(async(req,res)=>{
