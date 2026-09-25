@@ -1,0 +1,62 @@
+name: Validate Factory UI Registry
+
+on:
+  push:
+    branches:
+      - main
+      - feat/factory-work-control-v2-preview
+      - feat/ui-hub-project-direction-v1
+      - feat/project-direction-work-control-adapter
+    paths:
+      - 'agent-factory/governance/ui-registry-v1.json'
+      - 'agent-factory/governance/verify-ui-registry.mjs'
+      - 'agent-factory/governance/project-direction-registry-v1.json'
+      - 'agent-factory/governance/verify-project-direction.mjs'
+      - 'agent-factory/governance/PROJECT-DIRECTION-POLICY-v1.md'
+      - 'src/UIHub.jsx'
+      - 'src/ui-hub.css'
+      - 'src/ui-hub-live-work-control.css'
+      - 'src/projectDirectionWorkControl.js'
+      - 'src/workControlLedger.js'
+      - 'src/FactoryShell.jsx'
+      - 'src/factory-shell.css'
+      - 'src/App.jsx'
+      - '.github/workflows/ui-registry-guard.yml'
+  pull_request:
+    paths:
+      - 'agent-factory/governance/ui-registry-v1.json'
+      - 'agent-factory/governance/verify-ui-registry.mjs'
+      - 'agent-factory/governance/project-direction-registry-v1.json'
+      - 'agent-factory/governance/verify-project-direction.mjs'
+      - 'agent-factory/governance/PROJECT-DIRECTION-POLICY-v1.md'
+      - 'src/UIHub.jsx'
+      - 'src/ui-hub.css'
+      - 'src/ui-hub-live-work-control.css'
+      - 'src/projectDirectionWorkControl.js'
+      - 'src/workControlLedger.js'
+      - 'src/FactoryShell.jsx'
+      - 'src/factory-shell.css'
+      - 'src/App.jsx'
+      - '.github/workflows/ui-registry-guard.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-ui-registry:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Validate canonical UI registry
+        run: node agent-factory/governance/verify-ui-registry.mjs
+      - name: Validate canonical Project Direction registry
+        run: node agent-factory/governance/verify-project-direction.mjs
+      - name: Build Factory Control UI
+        run: npm run build

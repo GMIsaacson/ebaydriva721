@@ -1,0 +1,32 @@
+{
+  "decision_id": "A0-SOURCEMARGIN-FACTORY-GOVERNANCE-001",
+  "date": "2026-09-25",
+  "verdict": "EXTEND",
+  "owner": "Agent 000 / Factory Work Control",
+  "objective": "Hard-enforce that canonical SourceMargin execution and persistence originate from governed Work Control commands, and surface live execution ownership/process state in the existing Factory UI.",
+  "existing_capabilities_reused": [
+    "Agent 000 strategic coordination",
+    "Factory Work Control v1 command/claim/receipt ledger",
+    "Run 004 SourceMargin specialist workers",
+    "Work Control persistence gateway",
+    "Existing n8n Factory Control Center"
+  ],
+  "duplication_guard": {
+    "new_team": false,
+    "new_scheduler": false,
+    "new_control_plane": false,
+    "new_database": false,
+    "treatment": "Extend existing Work Control persistence boundary and existing Factory UI."
+  },
+  "authority_boundary": [
+    "Workers may produce evidence/results but may not create canonical production state outside a governed Work Control command.",
+    "Manual/direct research is shadow/debug only.",
+    "Canonical persistence must fail closed unless the command exists in Work Control, belongs to RUN-004, has an active claim, and matches the receipt stage/run/target."
+  ],
+  "acceptance_tests": [
+    "Nonexistent Work Control command is rejected before canonical persistence.",
+    "Completed/replayed Work Control command is rejected before canonical persistence.",
+    "Stage/run/target mismatch is rejected before canonical persistence.",
+    "Factory UI identifies current command, team/agent, process, state, progress and latest stage with near-real-time refresh."
+  ]
+}

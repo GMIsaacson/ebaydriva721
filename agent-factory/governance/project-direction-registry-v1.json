@@ -1,0 +1,129 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-09-17",
+  "policy": "Project Direction is the canonical strategic state for serious Factory projects. UI Hub cards render this record; card strategy is never maintained as separate hard-coded text.",
+  "stewardship": {
+    "strategicAccountability": "Agent 000 / Project Steward",
+    "executionSource": "Work Control",
+    "implementationOwner": "Run 014",
+    "uiQualityOwner": "Run 015",
+    "evidenceOwners": "Specialist teams",
+    "qaOwner": "Independent Q1/Q2/Q3 QA",
+    "ownerDecisionRole": "Material pivots, spending, launch/publication, and kill/revive decisions",
+    "maintenanceRule": "Update canonical project state once; UI Hub reflects it. Work Control may hydrate operational readouts but may not rewrite strategic fields."
+  },
+  "stages": ["DISCOVER", "VALIDATE", "BUILD", "PILOT", "PROVE", "SCALE"],
+  "freshnessStates": ["FRESH", "STALE", "BLOCKED", "AWAITING_EVIDENCE", "NEEDS_OWNER"],
+  "migration": {
+    "mode": "PROGRESSIVE",
+    "rule": "Migrate serious active projects first. Unmigrated UI assets remain valid but the Hub must visibly identify that Project Direction has not been normalized yet.",
+    "firstWave": [
+      "sourcemargin-research-console",
+      "CI-001",
+      "privacy-removal",
+      "investment-intelligence",
+      "autonomous-newsroom"
+    ]
+  },
+  "projects": [
+    {
+      "uiProjectId": "sourcemargin-research-console",
+      "canonicalProjectId": "sourcemargin",
+      "name": "SourceMargin",
+      "steward": "Agent 000 / Project Steward",
+      "sources": {
+        "strategy": "Project Direction Registry",
+        "execution": "Work Control live adapter",
+        "evidence": "Specialist teams + QA receipts"
+      },
+      "strategy": {
+        "problem": "Reduce the research burden and uncertainty involved in deciding which inventory an eBay seller should investigate before spending money.",
+        "customer": "Active eBay sellers sourcing new inventory.",
+        "whyNow": "SourceMargin already has a working research workflow and a canonical research console. The immediate prerequisite is a launch-ready product/app; after that, the largest unresolved question is commercial validation.",
+        "northStar": "Help sellers find products with demonstrated demand, viable sources and understandable economics before buying inventory.",
+        "businessModel": "Low-friction sourcing report or starter offer → app subscription → higher-value seller intelligence.",
+        "longTermDestination": "A commerce-intelligence platform with a proprietary graph of products, sellers, suppliers, demand, economics and observed outcomes."
+      },
+      "decision": {
+        "phase": "BUILD",
+        "phaseLabel": "BUILD → PAID PILOT",
+        "decisionBeingEarned": "Will active eBay sellers repeatedly pay for validated sourcing intelligence and use it to make real sourcing decisions?",
+        "currentHypothesis": "If SourceMargin combines demand evidence, viable supplier options and understandable economics in one workflow, active sellers will use it to reduce sourcing uncertainty and will pay repeatedly for fresh opportunities.",
+        "nextGate": "Reach launch-ready product/app state, then recruit and serve the first 10 paying pilot customers.",
+        "successCriteria": [
+          "First 10 paying pilot customers complete real use of the product.",
+          "Reach 25 paying customers as the initial commercial proof gate.",
+          "At least 40% of paying customers return weekly during the proof period.",
+          "At least 5 customers take a real sourcing action from a SourceMargin opportunity.",
+          "Validated opportunities can be produced at sustainable unit economics."
+        ],
+        "killCriteria": [
+          "Repeated paid-user evidence shows the intelligence does not materially change sourcing decisions.",
+          "Validated opportunities cannot be replenished at sustainable unit economics after reasonable process and automation improvements.",
+          "Supplier/product equivalence cannot be made reliable enough to support customer trust."
+        ]
+      },
+      "execution": {
+        "workControlBinding": {
+          "milestoneId": "M-004",
+          "label": "SourceMargin common-engine integration",
+          "scopeNote": "This binding reflects the Factory integration workstream, not the entire commercial SourceMargin project. Strategic phase and gates remain owned by Project Direction."
+        },
+        "nextActions": [
+          "Complete the production-ready SourceMargin product/app.",
+          "Prepare the launch dataset, onboarding flow and low-friction starter offer.",
+          "Recruit the first 10 paying pilot customers and instrument the sourcing-action funnel."
+        ],
+        "blockers": [
+          "Paid pilot should not begin until the product/app is launch-ready."
+        ],
+        "dependencies": [
+          "Reliable demand evidence pipeline",
+          "Supplier-equivalence QA",
+          "Opportunity economics calculations",
+          "Customer event/funnel instrumentation"
+        ],
+        "ownerApprovals": []
+      },
+      "evidence": {
+        "confidence": "MEDIUM",
+        "confidenceNote": "Research capability is established, but willingness-to-pay and repeat usage remain unproven until the paid pilot.",
+        "proven": [
+          "Seller catalog mining is already part of the SourceMargin research workflow.",
+          "Demand validation and supplier-candidate research are already represented in the project workflow.",
+          "A canonical SourceMargin research console is deployed and registered in Factory Control."
+        ],
+        "unproven": [
+          "Active sellers will pay repeatedly for the intelligence.",
+          "High-quality opportunities can be replenished cheaply enough for attractive SaaS economics.",
+          "Supplier equivalence and economics can scale with enough reliability for broad customer use."
+        ],
+        "latestResult": "SourceMargin research console auto-deploy pipeline was verified on 2026-09-16.",
+        "links": [
+          {
+            "label": "SourceMargin Research Console",
+            "url": "https://sourcemargin-research-console.vercel.app"
+          }
+        ]
+      },
+      "freshness": {
+        "status": "FRESH",
+        "lastStrategicUpdate": "2026-09-17",
+        "lastWorkActivity": null,
+        "lastEvidenceAt": "2026-09-16"
+      },
+      "history": [
+        {
+          "date": "2026-09-17",
+          "decision": "Adopt paid-validation launch sequencing and canonical Project Direction tracking for SourceMargin.",
+          "previousState": "Product and research execution existed without a standardized strategic state layer on the Hub card.",
+          "newState": "Build → paid pilot → prove → scale, with explicit evidence and kill gates.",
+          "reason": "Once the product/app is launch-ready, commercial willingness-to-pay is the next major decision to earn.",
+          "authorizedBy": "Owner + Agent 000",
+          "ownerApprovalRequired": true,
+          "ownerApproved": true
+        }
+      ]
+    }
+  ]
+}

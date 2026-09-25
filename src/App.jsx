@@ -16,6 +16,10 @@ import VerifyEmail from "./verifyemail";
 import Calculators from "./resources";
 import AccountPage from "./accountspage";
 import AppShell from "./AppShell";
+import WorkControlV2 from "./WorkControlV2";
+import FactoryShell from "./FactoryShell";
+import UIHub from "./UIHub";
+import N8nControlCenter from "./N8nControlCenter";
 
 const PublicLayout = () => (
   <div className="App">
@@ -30,6 +34,22 @@ const App = () => {
     <AuthProvider>
       <Router>
         <Routes>
+          <Route path="/factory-control" element={<ErrorBoundary><FactoryShell /></ErrorBoundary>}>
+            <Route
+              index
+              element={
+                <ProtectedRoute>
+                  <ErrorBoundary><WorkControlV2 /></ErrorBoundary>
+                </ProtectedRoute>
+              }
+            />
+            <Route path="ui-hub" element={<ErrorBoundary><UIHub /></ErrorBoundary>} />
+            <Route
+              path="n8n"
+              element={<ErrorBoundary><N8nControlCenter /></ErrorBoundary>}
+            />
+          </Route>
+
           <Route element={<PublicLayout />}>
             <Route path="/" element={<ErrorBoundary><Home /></ErrorBoundary>} />
             <Route path="/ResetPassword" element={<ErrorBoundary><ResetPassword /></ErrorBoundary>} />

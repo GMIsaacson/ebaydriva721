@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/factory-control",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/factory-control/:path*",
+      "destination": "/index.html"
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+workcontrol.159-65-169-244.sslip.io {
+    encode zstd gzip
+
+    header {
+        Strict-Transport-Security "max-age=31536000"
+        X-Robots-Tag "noindex, nofollow, noarchive"
+        X-Content-Type-Options "nosniff"
+        Referrer-Policy "no-referrer"
+        -Server
+    }
+
+    handle_path /gateway/* {
+        reverse_proxy factory-work-control-auth-gateway-v1:8791
+    }
+
+    handle {
+        basic_auth argon2id {
+            factory-owner $argon2id$v=19$m=47104,t=1,p=1$ShOHuxvNGEivbnfbqbDMkA$hMqK+YSUg/YrcanC7WpF/qzVkGRrbxI1GmHQ/OXTANM
+        }
+        reverse_proxy factory-work-control-v1:8787
+    }
+}
+
+xtrakare-preview-73649.159-65-169-244.sslip.io {
+    encode zstd gzip
+    header {
+        X-Robots-Tag "noindex, nofollow, noarchive"
+        X-Content-Type-Options "nosniff"
+        Referrer-Policy "no-referrer"
+        -Server
+    }
+    reverse_proxy xtrakare-run014-preview:80
+}
+
+n8n-pulse-7a4c9f2d.159-65-169-244.sslip.io {
+    encode zstd gzip
+    header {
+        X-Robots-Tag "noindex, nofollow, noarchive"
+        X-Content-Type-Options "nosniff"
+        Referrer-Policy "no-referrer"
+        -Server
+    }
+    reverse_proxy n8n-demo-ui:8788
+}
