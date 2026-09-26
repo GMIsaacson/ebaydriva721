@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - "src/**"
+      - "api/engineering-health*" 
+      - "agent-factory/run-004/tests/engineering-health-model.test.cjs"
       - "index.html"
       - "package.json"
       - "pnpm-lock.yaml"
@@ -25,4 +27,5 @@ jobs:
           node-version: "22"
           cache: npm
       - run: npm ci --ignore-scripts
+      - run: node --test agent-factory/run-004/tests/engineering-health-model.test.cjs
       - run: npm run build
