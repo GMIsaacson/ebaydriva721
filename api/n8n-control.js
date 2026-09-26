@@ -346,3 +346,6 @@ module.exports = async function handler(req, res) {
     });
   }
 };
+
+// Reuse the same validated Firebase JWT verifier in other owner-gated Factory APIs.
+module.exports.verifyFirebaseIdToken = verifyFirebaseIdToken;
