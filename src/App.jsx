@@ -19,7 +19,7 @@ import AppShell from "./AppShell";
 import WorkControlV2 from "./WorkControlV2";
 import FactoryShell from "./FactoryShell";
 import UIHub from "./UIHub";
-import N8nControlCenter from "./N8nControlCenter";
+import N8nControlCenter from "./N8nControlCenter";\nimport EngineeringHealth from "./EngineeringHealth";
 
 const PublicLayout = () => (
   <div className="App">

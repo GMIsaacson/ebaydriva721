@@ -13,7 +13,7 @@ export default function FactoryShell() {
         <NavLink to="/factory-control/ui-hub" className={({ isActive }) => isActive ? "active" : ""}>
           <span>▦</span> UI Hub
         </NavLink>
-        <NavLink to="/factory-control/n8n" className={({ isActive }) => isActive ? "active" : ""}>
+        <NavLink to="/factory-control/engineering" className={({ isActive }) => isActive ? "active" : ""}>\n          <span>◇</span> Engineering\n        </NavLink>\n        <NavLink to="/factory-control/n8n" className={({ isActive }) => isActive ? "active" : ""}>
           <span>⌁</span> n8n
         </NavLink>
       </nav>
