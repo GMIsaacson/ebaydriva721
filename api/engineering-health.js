@@ -1,7 +1,7 @@
 'use strict';
 const { REPOS, summarize } = require('./engineering-health-model.cjs');
 const { verifyFirebaseIdToken } = require('./n8n-control');
-const CONTROL_BASE = (process.env.WORKFLOW_CONTROL_BASE_URL || 'https://workcontrol.159-65-169-244.sslip.io/workflows').replace(/\\/+$/, '');
+const CONTROL_BASE = (process.env.WORKFLOW_CONTROL_BASE_URL || 'https://workcontrol.159-65-169-244.sslip.io/workflows').replace(/[/]+$/, '');
 const API = 'https://api.github.com';
 function json(res,status,body){res.setHeader('Cache-Control','no-store');res.setHeader('X-Content-Type-Options','nosniff');return res.status(status).json(body);}
 async function limitedFetch(url, headers, timeout = 8500) {
